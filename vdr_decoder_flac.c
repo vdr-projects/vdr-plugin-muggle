@@ -106,6 +106,7 @@ bool mgFlacDecoder::clean()
       delete[] m_reservoir[1];
     }
   delete[] m_reservoir;
+  m_reservoir = 0;
   
   // why false? true?
   return true;

@@ -4,6 +4,8 @@
 #include <stdio.h>
 
 
+const char * EMPTY = "XNICHTGESETZTX";
+
 bool iskeyGenre(mgKeyTypes kt)
 {
 	return kt>=keyGenre1  && kt <= keyGenres;
@@ -596,6 +598,11 @@ mgOrder::mgOrder()
        	setKey (2,keyTrack);
 }
 
+mgOrder::~mgOrder()
+{
+	truncate(0);
+}
+
 mgKey*
 mgOrder::Key(unsigned int idx) const
 {
@@ -626,6 +633,18 @@ const mgOrder&
 mgOrder::operator=(const mgOrder& from)
 {
 	clear();
+	InitFrom(from);
+	return *this;
+}
+
+mgOrder::mgOrder(const mgOrder &from)
+{
+	InitFrom(from);
+}
+
+void
+mgOrder::InitFrom(const mgOrder &from)
+{
     	for (unsigned int i = 0; i < from.size();i++)
     	{
         	mgKey *k = ktGenerate(from.getKeyType(i),m_db);
@@ -633,14 +652,6 @@ mgOrder::operator=(const mgOrder& from)
 		Keys.push_back(k);
     	}
 	if (from.m_db) setDB(from.m_db);
-	return *this;
-}
-
-mgOrder&
-mgOrder::operator+=(mgKey* k) {
-	k->setdb(m_db);
-	Keys.push_back(k);
-	return *this;
 }
 
 string
@@ -766,6 +777,12 @@ mgOrder::truncate(unsigned int i)
 		delete Keys.back();
 		Keys.pop_back();
 	}
+}
+
+void
+mgOrder::clear()
+{
+	truncate(0);
 }
 
 void

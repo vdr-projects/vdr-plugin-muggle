@@ -269,9 +269,10 @@ mgMainMenu::SaveState()
 mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
 {
     m_Status = new mgStatus(this);
-    m_message = NULL;
-    moveselection = NULL;
-    external_commands = NULL;
+    m_message = 0;
+    moveselection = 0;
+    m_root = 0;
+    external_commands = 0;
     queue_playing=false;
     instant_playing=false;
     play_collection = tr("play");
@@ -331,14 +332,14 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
     UseNormalSelection ();
     unsigned int posi = selection()->gotoPosition();
     LoadExternalCommands();	// before AddMenu()
-    mgMenu *root = new mgTree;
-    root->TreeRedAction = mgActions(nmain.getuint("TreeRedAction"));
-    root->TreeGreenAction = mgActions(nmain.getuint("TreeGreenAction"));
-    root->TreeYellowAction = mgActions(nmain.getuint("TreeYellowAction"));
-    root->CollRedAction = mgActions(nmain.getuint("CollRedAction"));
-    root->CollGreenAction = mgActions(nmain.getuint("CollGreenAction"));
-    root->CollYellowAction = mgActions(nmain.getuint("CollYellowAction"));
-    AddMenu (root,posi);
+    m_root = new mgTree;
+    m_root->TreeRedAction = mgActions(nmain.getuint("TreeRedAction"));
+    m_root->TreeGreenAction = mgActions(nmain.getuint("TreeGreenAction"));
+    m_root->TreeYellowAction = mgActions(nmain.getuint("TreeYellowAction"));
+    m_root->CollRedAction = mgActions(nmain.getuint("CollRedAction"));
+    m_root->CollGreenAction = mgActions(nmain.getuint("CollGreenAction"));
+    m_root->CollYellowAction = mgActions(nmain.getuint("CollYellowAction"));
+    AddMenu (m_root,posi);
 
     //SetCurrent (Get (posi));
 
@@ -425,8 +426,11 @@ mgMainMenu::LoadExternalCommands()
 mgMainMenu::~mgMainMenu()
 {
 	delete m_Status;
-	if (moveselection)
-		delete moveselection;
+	delete moveselection;
+	delete m_root;
+	delete external_commands;
+	for (unsigned int i=0;i<orders.size();i++)
+		delete orders[i];
 }
 
 void

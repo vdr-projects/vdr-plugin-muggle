@@ -16,7 +16,7 @@ typedef list<string> strlist;
 
 strlist& operator+=(strlist&a, strlist b);
 
-static const string EMPTY = "XNICHTGESETZTX";
+extern const char * EMPTY;
 
 //! \brief adds string n to string s, using string sep to separate them
 string& addsep (string & s, string sep, string n);
@@ -137,17 +137,19 @@ const unsigned int MaxKeys = 20;
 class mgOrder {
 public:
 	mgOrder();
+	mgOrder(const mgOrder &from);
 	mgOrder(mgValmap& nv, char *prefix);
 	mgOrder(vector<mgKeyTypes> kt);
+	~mgOrder();
+	void InitFrom(const mgOrder &from);
 	void setDB(MYSQL *db);
 	mgParts Parts(unsigned int level,bool orderby=true) const;
 	const mgOrder& operator=(const mgOrder& from);
-	mgOrder& operator+=(mgKey* k);
 	mgKey*& operator[](unsigned int idx);
 	unsigned int size() const { return Keys.size(); }
 	void truncate(unsigned int i);
 	bool empty() const { return Keys.empty(); }
-	void clear() { Keys.clear();}
+	void clear();
 	void clean();
 	mgKey* Key(unsigned int idx) const;
 	mgKey* find(const mgKeyTypes kt) ;

@@ -244,6 +244,7 @@ mgPCMPlayer::~mgPCMPlayer ()
 {
     Detach ();
     delete m_playlist;
+    delete m_current;
     delete m_ringbuffer;
 }
 
@@ -253,7 +254,7 @@ mgPCMPlayer::PlayTrack()
     mgContentItem * newcurr = m_playlist->getCurrentTrack ();
     if (newcurr)
     {
-       if (m_current) delete m_current;
+        delete m_current;
         m_current = new mgContentItem(newcurr);
     }
     Play ();
@@ -271,7 +272,7 @@ mgPCMPlayer::Activate (bool on)
             Start ();
 
             m_started = true;
-	    if (m_current) delete m_current;
+	    delete m_current;
             m_current = 0;
 
             m_playmode_mutex.Lock ();
@@ -602,6 +603,7 @@ mgPCMPlayer::Action (void)
                     if (m_decoder)
                     {                             // who deletes decoder?
                         m_decoder->stop ();
+			delete m_decoder;
                         m_decoder = 0;
                     }
 
@@ -704,6 +706,7 @@ mgPCMPlayer::Action (void)
     if (m_decoder)
     {                                             // who deletes decoder?
         m_decoder->stop ();
+	delete m_decoder;
         m_decoder = 0;
     }
 
@@ -768,7 +771,7 @@ bool mgPCMPlayer::SkipFile (int step)
     {
         newcurr = m_playlist->getCurrentTrack ();
         if (newcurr) {
-	    if (m_current) delete m_current;
+	    delete m_current;
             m_current = new mgContentItem(newcurr);
 	}
     }
@@ -866,7 +869,7 @@ mgPCMPlayer::Goto (int index, bool still)
     {
         Lock ();
         StopPlay ();
-	if (m_current) delete m_current;
+	delete m_current;
         m_current = new mgContentItem(next);
         Play ();
         Unlock ();
