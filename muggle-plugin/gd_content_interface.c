@@ -1,17 +1,17 @@
-/*! \file  content_interface.cpp
- *  \brief  Data Objects for content (e.g. mp3 files, movies) for the vdr muggle plugindatabase
+/*! \file   gd_content_interface.c
+ *  \brief  Data Objects for content (e.g. mp3 files, movies) for the vdr muggle plugin
  *
- * \version $Revision: 1.25 $
- * \date    $Date: 2004/08/23 06:36:25 $
- * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ *  \version $Revision: 1.26 $
+ *  \date    $Date: 2004/08/27 15:19:34 $
+ *  \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
+ *  \author  Responsible author: $Author: LarsAC $
  *
- * Implements main classes of for content items and interfaces to SQL databases
+ *  Implements main classes of for content items and interfaces to SQL databases
  *
- * This file implements the following classes 
- * - GdPlaylist    a playlist
- * - mgGdTrack     a single track (content item). e.g. an mp3 file
- * - mgSelection   a set of tracks (e.g. a database subset matching certain criteria)
+ *  This file implements the following classes 
+ *   - GdPlaylist    a playlist
+ *   - mgGdTrack     a single track (content item). e.g. an mp3 file
+ *   - mgSelection   a set of tracks (e.g. a database subset matching certain criteria)
  *
  */
 /*******************************************************************/
@@ -31,27 +31,24 @@ using namespace std;
 #define DUMMY_CONDITION true // we use that as dummy condition to satisfy C++ syntax
 #define DUMMY
 
-// non-member function
-int GdInitDatabase(MYSQL *db)
+int GdInitDatabase( MYSQL *db )
 {
-    if( mysql_init(db) == NULL )
+  if( mysql_init(db) == NULL )
     {	
-	return -1;
+      return -1;
     }
-    
-    //    if(mysql_real_connect( db, "localhost", "root", "",
-    //			   "GiantDisc2", 0, NULL, 0) == NULL)
-    if( mysql_real_connect( db,
-			    the_setup.DbHost, 
-			    the_setup.DbUser, 
-			    the_setup.DbPass, 
-			    the_setup.DbName,
-			    the_setup.DbPort,
-			    NULL, 0 ) == NULL )
-      {
-	return -2;
-      }
-    return 0;
+  
+  if( mysql_real_connect( db,
+			  the_setup.DbHost, 
+			  the_setup.DbUser, 
+			  the_setup.DbPass, 
+			  the_setup.DbName,
+			  the_setup.DbPort,
+			  NULL, 0 ) == NULL )
+    {
+      return -2;
+    }
+  return 0;
 }
 
 vector<string> *GdGetStoredPlaylists(MYSQL db)
@@ -60,7 +57,7 @@ vector<string> *GdGetStoredPlaylists(MYSQL db)
     MYSQL_RES	*result;
     MYSQL_ROW	row;
 
-    result=mgSqlReadQuery(&db, "SELECT title FROM playlist");
+    result = mgSqlReadQuery(&db, "SELECT title FROM playlist");
 
     while((row = mysql_fetch_row(result)) != NULL)
     {
@@ -69,12 +66,6 @@ vector<string> *GdGetStoredPlaylists(MYSQL db)
     return list;
 }
 
-/*! 
- *
- * \brief constructor, constracts a number >=1 of filter sets
- *
- * the first set (index 0 ) is active by default
- */
 gdFilterSets::gdFilterSets()
 {
   mgFilter* filter;
@@ -150,21 +141,11 @@ gdFilterSets::gdFilterSets()
   m_activeSet = m_sets[m_activeSetId];
 }
 
-/*! 
- *******************************************************************
- * \briefdestructor
- ********************************************************************/
 gdFilterSets::~gdFilterSets()
 {
   // everything is done in the destructor of the base class
 }
 
-/*! 
- *******************************************************************
- * \brief  computes the restrictions specified by the active filter set
- * \param  viewPrt index of the appropriate defualt view 
- * \return  sql string representing the restrictions
- ********************************************************************/
 string gdFilterSets::computeRestriction(int *viewPrt)
 {
   string sql_str = "1";
@@ -172,111 +153,108 @@ string gdFilterSets::computeRestriction(int *viewPrt)
   switch (m_activeSetId) 
     {
     case 0:
-      *viewPrt =  100; // tracks (flatlist for mountain man ;-))
-      break;
+      {
+	// tracks (flatlist for mountain man ;-))
+	*viewPrt =  100; 
+      } break;
     case 1:
-      *viewPrt =  101; // album -> tracks
-      break;
-    case 2: // playlist -> tracks
-      *viewPrt =  102; // playlist -> tracks
-      break;
+      {
+	// album -> tracks
+	*viewPrt =  101; 
+      } break;
+    case 2: 
+      {
+	// playlist -> tracks
+	*viewPrt =  102;
+      } break;
     default:
-      mgWarning("Ignoring Filter Set %i", m_activeSetId);
-      break;
+      {
+	mgWarning( "Ignoring Filter Set %i", m_activeSetId );
+      }	break;
   }
 
-  for(vector<mgFilter*>::iterator iter = m_activeSet->begin();
-      iter != m_activeSet->end(); iter++)
-  {
-    if((*iter)->isSet())
+  for( vector<mgFilter*>::iterator iter = m_activeSet->begin();
+       iter != m_activeSet->end(); 
+       iter++ )
     {
-      if(strcmp((*iter)->getName(), tr("playlist title")) == 0 )
-      {
-        sql_str = sql_str + " AND playlist.title like '%%" 
-           + (*iter)->getStrVal() + "%%'";
-      }
-      else if(strcmp((*iter)->getName(), tr("playlist author")) == 0 )
-      {
-        sql_str = sql_str + " AND playlist.author like '%%" 
-           + (*iter)->getStrVal() + "%%'";
-      }
-      else if(strcmp((*iter)->getName(), tr("album title")) == 0 )
-      {
-        sql_str = sql_str + " AND album.title like '%%" 
-           + (*iter)->getStrVal() + "%%'";
-      }
-      else if(strcmp((*iter)->getName(), tr("album artist")) == 0 )
-      { 
-        sql_str = sql_str + " AND album.artist like '%%" 
-         + (*iter)->getStrVal() + "%%'";
-      }
-      else if(strcmp((*iter)->getName(), tr("title")) == 0 )
-      {
-        sql_str = sql_str + " AND tracks.title like '%%" 
-           + (*iter)->getStrVal() + "%%'";
-      }
-      else if(strcmp((*iter)->getName(), tr("artist")) == 0 )
-      { 
-        sql_str = sql_str + " AND tracks.artist like '%%" 
-         + (*iter)->getStrVal() + "%%'";
-      }
-      else if(strcmp((*iter)->getName(), tr("genre")) == 0 )
-      { 
-        sql_str = sql_str + " AND (genre1.genre like '" 
-         + (*iter)->getStrVal() + "'";
-        sql_str = sql_str + " OR genre2.genre like '" 
-         + (*iter)->getStrVal() + "')";
-      }
-      else if(strcmp((*iter)->getName(), tr("year (from)")) == 0 )
-      { 
-        sql_str = sql_str + " AND tracks.year >= " + (*iter)->getStrVal();
-      }
-      else if(strcmp((*iter)->getName(), tr("year (to)")) == 0 )
-      { 
-        sql_str = sql_str + " AND tracks.year <= " + (*iter)->getStrVal();
-      }
-      else if(strcmp((*iter)->getName(), tr("rating")) == 0 )
-      { 
-        if ((*iter)->getStrVal() == "-") {
-          sql_str = sql_str + " AND tracks.rating >= 0 ";
-        } else if ((*iter)->getStrVal() == "O") {
-          sql_str = sql_str + " AND tracks.rating >= 1 ";
-        } else if ((*iter)->getStrVal() == "+") {
-          sql_str = sql_str + " AND tracks.rating >= 2 ";
-        } else if ((*iter)->getStrVal() == "++") {
-          sql_str = sql_str + " AND tracks.rating >= 3 ";
-        }
-      }
-      else
-      {
-        mgWarning("Ignoring unknown filter %s", (*iter)->getName());
-      }  
-    }
-  }
-
-  mgDebug(1, "Applying sql string %s (view=%d)",sql_str.c_str(), *viewPrt); 
+      if( (*iter)->isSet() )
+	{
+	  if( strcmp((*iter)->getName(), tr("playlist title") ) == 0 )
+	    {
+	      sql_str = sql_str + " AND playlist.title like '%%" 
+		+ (*iter)->getStrVal() + "%%'";
+	    }
+	  else if(strcmp( (*iter)->getName(), tr("playlist author") ) == 0 )
+	    {
+	      sql_str = sql_str + " AND playlist.author like '%%" 
+		+ (*iter)->getStrVal() + "%%'";
+	    }
+	  else if(strcmp((*iter)->getName(), tr("album title")) == 0 )
+	    {
+	      sql_str = sql_str + " AND album.title like '%%" 
+		+ (*iter)->getStrVal() + "%%'";
+	    }
+	  else if(strcmp((*iter)->getName(), tr("album artist")) == 0 )
+	    { 
+	      sql_str = sql_str + " AND album.artist like '%%" 
+		+ (*iter)->getStrVal() + "%%'";
+	    }
+	  else if(strcmp((*iter)->getName(), tr("title")) == 0 )
+	    {
+	      sql_str = sql_str + " AND tracks.title like '%%" 
+		+ (*iter)->getStrVal() + "%%'";
+	    }
+	  else if(strcmp((*iter)->getName(), tr("artist")) == 0 )
+	    { 
+	      sql_str = sql_str + " AND tracks.artist like '%%" 
+		+ (*iter)->getStrVal() + "%%'";
+	    }
+	  else if(strcmp((*iter)->getName(), tr("genre")) == 0 )
+	    { 
+	      sql_str = sql_str + " AND (genre1.genre like '" 
+		+ (*iter)->getStrVal() + "'";
+	      sql_str = sql_str + " OR genre2.genre like '" 
+		+ (*iter)->getStrVal() + "')";
+	    }
+	  else if(strcmp((*iter)->getName(), tr("year (from)")) == 0 )
+	    { 
+	      sql_str = sql_str + " AND tracks.year >= " + (*iter)->getStrVal();
+	    }
+	  else if(strcmp((*iter)->getName(), tr("year (to)")) == 0 )
+	    { 
+	      sql_str = sql_str + " AND tracks.year <= " + (*iter)->getStrVal();
+	    }
+	  else if(strcmp((*iter)->getName(), tr("rating")) == 0 )
+	    { 
+	      if ((*iter)->getStrVal() == "-") 
+		{
+		  sql_str = sql_str + " AND tracks.rating >= 0 ";
+		} 
+	      else if ((*iter)->getStrVal() == "O") 
+		{
+		  sql_str = sql_str + " AND tracks.rating >= 1 ";
+		}
+	      else if ((*iter)->getStrVal() == "+")
+		{
+		  sql_str = sql_str + " AND tracks.rating >= 2 ";
+		} 
+	      else if ((*iter)->getStrVal() == "++") 
+		{
+		  sql_str = sql_str + " AND tracks.rating >= 3 ";
+		}
+	    }
+	  else
+	    {
+	      mgWarning( "Ignoring unknown filter %s", (*iter)->getName() );
+	    }  
+	}
+    }  
+  mgDebug(1, "Applying sql string %s (view=%d)", sql_str.c_str(), *viewPrt ); 
   return sql_str;
 }
 
-//------------------------------------------------------------------
-//------------------------------------------------------------------
-//                
-//          class mgTrack      
-//                
-//------------------------------------------------------------------
-//------------------------------------------------------------------
 mgGdTrack mgGdTrack::UNDEFINED =  mgGdTrack();
 
-/*!
- *****************************************************************************
- * \brief Constructor: creates a mgGdTrack object
- *
- * \param sqlIdentifier identifies a unique row in the track database
- * \param dbase  database which stores the track table
- *
- * On creation, the object contains only the idea. The actual data fields
- * are filled when readData() is called for the first time.
- ****************************************************************************/
 mgGdTrack::mgGdTrack(int sqlIdentifier, MYSQL dbase)
 {
   m_uniqID = sqlIdentifier;
@@ -840,13 +818,15 @@ bool GdPlaylist::storePlaylist()
     }
     // add new playlist items to db
    
-    for(iter= m_list.begin(), num=0; iter != m_list.end(); iter++, num++)
-    {
+    for( iter=m_list.begin(), num=0; 
+	 iter != m_list.end(); 
+	 iter++, num++)
+      {
 	mgSqlWriteQuery(&m_db, 
 			"INSERT into playlistitem  "
 			"SET tracknumber=\"%d\", trackid=\"%d\", playlist=%d",
 			num, (*iter)->getId(), m_sqlId);
-    }
+      }
     return true;
 }
 /*!
@@ -892,11 +872,11 @@ int GdPlaylist::getPlayTimeRemaining()
 GdTreeNode::GdTreeNode(MYSQL db, int view, string filters)
   :  mgSelectionTreeNode(db, view)
 {
-    // create a root node
-    // everything is done in the parent class
-    m_restriction = filters;
-    m_view = view;
-    m_label = tr("Browser");
+  // create a root node
+  // everything is done in the parent class
+  m_restriction = filters;
+  m_view = view;
+  m_label = tr("Browser");
 }
 GdTreeNode::GdTreeNode(mgSelectionTreeNode* parent,
 			     string id, string label, string restriction)
@@ -926,8 +906,10 @@ GdTreeNode::~GdTreeNode()
  ****************************************************************************/
 bool GdTreeNode::isLeafNode()
 {
-    if( m_level == 0)
+    if( m_level == 0 )
+      {
 	return false;
+      }
     switch(m_view)
      {
 	 case 1: // artist -> album -> title
@@ -985,7 +967,6 @@ bool GdTreeNode::isLeafNode()
 }
 
 /*!
- *****************************************************************************
  * \brief compute children on the fly 
  *
  * \return: true, if the node could be expanded (or was already), false,of
@@ -994,10 +975,10 @@ bool GdTreeNode::isLeafNode()
  * retrieves all entries for the next level that satisfy the restriction of
  * the current level and create a child-arc for each distinct entry
  * 
- ****************************************************************************/
+ * \todo use asnprintf!
+ */
 bool GdTreeNode::expand()
-{
-    
+{    
     MYSQL_ROW	row;
     MYSQL_RES	*result;
     int	nrows;
@@ -1006,272 +987,331 @@ bool GdTreeNode::expand()
     char idbuf[255];
     int numchild;
 
-    string labelfield; // human readable db field for the column to be expanded
-    string idfield;  // unique id field for the column to be expanded
+    string labelfield;            // human readable db field for the column to be expanded
+    string idfield;               // unique id field for the column to be expanded
     string new_restriction_field; // field to be restricted by the new level
-    string new_restriction; // complete restriction str for the current child
-    string new_label; 
+    string new_restriction;       // complete restriction str for the current child
+    string new_label;
     GdTreeNode* new_child;
 
     string tables;  // stores the db tables used
+    
+#define  FROMJOIN " FROM tracks, genre as genre1, genre as genre2, album WHERE tracks.sourceid=album.cddbid AND genre1.id=tracks.genre1 AND genre2.id=tracks.genre2 AND %s "
 
-    #define  FROMJOIN " FROM tracks, genre as genre1, genre as genre2, album WHERE tracks.sourceid=album.cddbid AND genre1.id=tracks.genre1 AND genre2.id=tracks.genre2 AND %s "
-
-    if (m_expanded)
+    if( m_expanded )
     {
-	mgWarning("Node already expanded\n");
-	return true;
+      mgWarning("Node already expanded\n");
+      return true;
     }
-    if (m_level == 1 && m_view < 100) 
-    {
-      m_view = atoi(m_id.c_str());
-    }
-    mgDebug(5, "Expanding level %d view %d\n", m_level,m_view);
-    if (m_level > 0) 
-    {
-     switch(m_view)
-     {
-	 case 1: // artist -> album -> title
-	     if(m_level == 1) {
-		 sprintf(sqlbuff,
-			 "SELECT DISTINCT album.artist,album.artist" 
-                         FROMJOIN
-			 "  ORDER BY album.artist"
-			 , m_restriction.c_str() );
-		 idfield = "album.artist";
-	} else if(m_level == 2) { // artist -> album 
-	    sprintf(sqlbuff, 
-		    "SELECT DISTINCT album.title,album.cddbid"
-                         FROMJOIN
-		    "  ORDER BY album.title"
-		    , m_restriction.c_str() );
-	    idfield = "album.cddbid";
-	} else if(m_level == 3) { // album -> title 
-	    sprintf(sqlbuff, 
-		    "SELECT tracks.title,tracks.id"
-                         FROMJOIN
-		    "  ORDER BY tracks.tracknb"
-		    , m_restriction.c_str() );
-	    idfield = "tracks.id";
-	} else {
-	    mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
-	    m_expanded = false;
-	    return false;
-	}
-	     break;
-	 case 2: // genre -> artist -> album -> track
-	     if(m_level == 1) { // genre 
-		 sprintf(sqlbuff,
-			 "SELECT DISTINCT genre1.genre,tracks.genre1"
-                         FROMJOIN
-			 "  ORDER BY genre1.id"
-			 , m_restriction.c_str());
-		 idfield = "tracks.genre1";
-	     } else if(m_level == 2) { // genre -> artist
-		 sprintf(sqlbuff,
-			 "SELECT DISTINCT album.artist,album.artist"
-                         FROMJOIN
-			 "  ORDER BY album.artist",
+    
+    if( m_level == 1 && m_view < 100 ) 
+      {
+	m_view = atoi( m_id.c_str() );
+      }
+    
+    mgDebug( 5, "Expanding level %d view %d\n", m_level, m_view );
+    if( m_level > 0 )
+      {
+	switch( m_view )
+	  {
+	  case 1:
+	    { // artist -> album -> title
+	      if( m_level == 1 ) 
+		{
+		  sprintf(sqlbuff,
+			  "SELECT DISTINCT album.artist,album.artist" 
+			  FROMJOIN
+			  " ORDER BY album.artist"
+			  , m_restriction.c_str() );
+		  idfield = "album.artist";
+		} 
+	      else if( m_level == 2 ) 
+		{ // artist -> album 
+		  sprintf(sqlbuff, 
+			  "SELECT DISTINCT album.title,album.cddbid"
+			  FROMJOIN
+			  "  ORDER BY album.title"
+			  , m_restriction.c_str() );
+		  idfield = "album.cddbid";
+		} 
+	      else if(m_level == 3) 
+		{ // album -> title 
+		  sprintf(sqlbuff, 
+			  "SELECT tracks.title,tracks.id"
+			  FROMJOIN
+			  "  ORDER BY tracks.tracknb"
+			  , m_restriction.c_str() );
+		  idfield = "tracks.id";
+		} 
+	      else 
+		{
+		  mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
+		  m_expanded = false;
+		  return false;
+		}
+	      } break;
+	  case 2: 
+	    { // genre -> artist -> album -> track
+	      if( m_level == 1 ) 
+		{ // genre 
+		  sprintf(sqlbuff,
+			  "SELECT DISTINCT genre1.genre,tracks.genre1"
+			  FROMJOIN
+			  "  ORDER BY genre1.id"
+			  , m_restriction.c_str());
+		  idfield = "tracks.genre1";
+		} 
+	      else if( m_level == 2 )
+		{ // genre -> artist
+		  sprintf(sqlbuff,
+			  "SELECT DISTINCT album.artist,album.artist"
+			  FROMJOIN
+			  "  ORDER BY album.artist",
 			  m_restriction.c_str());
-		 idfield = "album.artist";
-	     } else if(m_level == 3) { // genre -> artist -> album
-		 sprintf(sqlbuff,
-			 "SELECT DISTINCT album.title,tracks.sourceid"
-                         FROMJOIN
-			 "  ORDER BY album.title"
-			 , m_restriction.c_str());
-		 idfield = "tracks.sourceid";
-	     } else if(m_level == 4) { // genre -> artist -> album -> track
-		 sprintf(sqlbuff,
-			 "SELECT DISTINCT tracks.title, tracks.id"
-                         FROMJOIN
-			 "  ORDER BY tracks.tracknb"
-			 , m_restriction.c_str());
-		 idfield = "tracks.id";
-	     } else {
-		 mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
-		 m_expanded = false;
-		 return false;
-	     }
-	     break;
-     case 3: // Artist -> Track
-             if(m_level ==1)
-	     {
-		 sprintf(sqlbuff,
-			 "SELECT DISTINCT tracks.artist,tracks.artist"
-                         FROMJOIN
-			 "  ORDER BY tracks.artist" 
-			 , m_restriction.c_str());
-		 idfield = "tracks.artist";
-	     } else if (m_level == 2) { // Track
-		 sprintf(sqlbuff,
-			 "SELECT DISTINCT tracks.title,tracks.id"
-                         FROMJOIN
-			 "  ORDER BY tracks.title"
-			 , m_restriction.c_str());
-		 idfield = "tracks.id";
-	     } else {
-		 mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
-		 m_expanded = false;
-		 return false;
-	     }
-	     break;
-        case 4: // Genre -> Year -> Track
-              if(m_level == 1) { // Genre
-                sprintf(sqlbuff,
-                        "SELECT DISTINCT genre1.genre,tracks.genre1"
-                         FROMJOIN
-                        "  ORDER BY genre1.genre"
-                        , m_restriction.c_str());
-                idfield = "tracks.genre1";
-              } else if (m_level == 2) { // Year
-                sprintf(sqlbuff,
-                        "SELECT DISTINCT tracks.year,tracks.year"
-                         FROMJOIN
-                        "  ORDER BY tracks.year"
-                        , m_restriction.c_str());
-                idfield = "tracks.year";
-              } else if (m_level == 3) { // Track
-                sprintf(sqlbuff,
-                        "SELECT DISTINCT"
-                        "    CONCAT(tracks.artist,' - ',tracks.title) AS title"
-                        "          ,tracks.id"
-                         FROMJOIN
-                        "  ORDER BY tracks.title"
-                        , m_restriction.c_str());
-                idfield = "tracks.id";
-            } else {
-                mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
-                m_expanded = false;
-                return false;
-            }
-            break;
+		  idfield = "album.artist";
+		}
+	      else if( m_level == 3 )
+		{ // genre -> artist -> album
+		  sprintf(sqlbuff,
+			  "SELECT DISTINCT album.title,tracks.sourceid"
+			  FROMJOIN
+			  "  ORDER BY album.title"
+			  , m_restriction.c_str());
+		  idfield = "tracks.sourceid";
+		}
+	      else if( m_level == 4 ) 
+		{ // genre -> artist -> album -> track
+		  sprintf(sqlbuff,
+			  "SELECT DISTINCT tracks.title, tracks.id"
+			  FROMJOIN
+			  "  ORDER BY tracks.tracknb"
+			  , m_restriction.c_str());
+		  idfield = "tracks.id";
+		} 
+	      else 
+		{
+		  mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
+		  m_expanded = false;
+		  return false;
+		}
+	     } break;
+	  case 3:
+	    { // Artist -> Track
+	      if( m_level ==1 )
+		{
+		  sprintf( sqlbuff,
+			   "SELECT DISTINCT tracks.artist,tracks.artist"
+			   FROMJOIN
+			   "  ORDER BY tracks.artist",
+			   m_restriction.c_str());
+		  idfield = "tracks.artist";
+		} 
+	      else if( m_level == 2) 
+		{ // Track
+		  sprintf(sqlbuff,
+			  "SELECT DISTINCT tracks.title,tracks.id"
+			  FROMJOIN
+			  "  ORDER BY tracks.title",
+			  m_restriction.c_str());
+		  idfield = "tracks.id";
+		} 
+	      else 
+		{
+		  mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
+		  m_expanded = false;
+		  return false;
+		}
+	    } break;
+        case 4:
+	  { // Genre -> Year -> Track
+              if( m_level == 1 ) 
+		{ // Genre
+		  sprintf(sqlbuff,
+			  "SELECT DISTINCT genre1.genre,tracks.genre1"
+			  FROMJOIN
+			  "  ORDER BY genre1.genre",
+			  m_restriction.c_str());
+		  idfield = "tracks.genre1";
+		}
+	      else if (m_level == 2)
+		{ // Year
+		  sprintf(sqlbuff,
+			  "SELECT DISTINCT tracks.year,tracks.year"
+			  FROMJOIN
+			  "  ORDER BY tracks.year"
+			  , m_restriction.c_str());
+		  idfield = "tracks.year";
+		} 
+	      else if( m_level == 3 ) 
+		{ // Track
+		  sprintf(sqlbuff,
+			  "SELECT DISTINCT"
+			  "    CONCAT(tracks.artist,' - ',tracks.title) AS title"
+			  "          ,tracks.id"
+			  FROMJOIN
+			  "  ORDER BY tracks.title",
+			  m_restriction.c_str());
+		  idfield = "tracks.id";
+		} 
+	      else 
+		{
+		  mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
+		  m_expanded = false;
+		  return false;
+		}
+	  } break;
         case 5: // Album -> Tracks
-              if(m_level == 1) { // Album
-                sprintf(sqlbuff,
-                        "SELECT DISTINCT"
-                        "    CONCAT(album.artist,' - ',album.title) AS title,"
-                        "    album.cddbid"
-                         FROMJOIN
-                        "  ORDER BY title"
-                        , m_restriction.c_str());
-                idfield = "tracks.sourceid";
-              } else if (m_level == 2) { // 
-		 sprintf(sqlbuff,
-			 "SELECT DISTINCT tracks.title, tracks.id"
-                         FROMJOIN
-			 "  ORDER BY tracks.tracknb"
-			 , m_restriction.c_str());
-		 idfield = "tracks.id";
-              } else {
-                mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
-                m_expanded = false;
-                return false;
+              if( m_level == 1 ) 
+		{ // Album
+		  sprintf(sqlbuff,
+			  "SELECT DISTINCT"
+			  "    CONCAT(album.artist,' - ',album.title) AS title,"
+			  "    album.cddbid"
+			  FROMJOIN
+			  "  ORDER BY title"
+			  , m_restriction.c_str());
+		  idfield = "tracks.sourceid";
+		} 
+	      else if (m_level == 2) 
+		{ // Track 
+		  sprintf(sqlbuff,
+			  "SELECT DISTINCT tracks.title, tracks.id"
+			  FROMJOIN
+			  "  ORDER BY tracks.tracknb",
+			  m_restriction.c_str());
+		  idfield = "tracks.id";
+		} 
+	      else 
+		{
+		  mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
+		  m_expanded = false;
+		  return false;
+		}
+	      break;
+	  case 100:
+	    if (m_level == 1) 
+	      {
+		sprintf(sqlbuff,
+			"SELECT CONCAT(tracks.artist,' - ',tracks.title),"
+			"       tracks.id"
+			FROMJOIN
+			"  ORDER BY CONCAT(tracks.artist,' - ',tracks.title)"
+			, m_restriction.c_str());
+		idfield = "tracks.id";
+	      } 
+	    else 
+	      {
+		mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
+		m_expanded = false;
+		return false;
 	      }
-	   break;
-         case 100:
-           if (m_level == 1) {
-             sprintf(sqlbuff,
-                      "SELECT CONCAT(tracks.artist,' - ',tracks.title),"
-                      "       tracks.id"
-                         FROMJOIN
-                      "  ORDER BY CONCAT(tracks.artist,' - ',tracks.title)"
-                      , m_restriction.c_str());
-             idfield = "tracks.id";
-           } else {
-                 mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
-                 m_expanded = false;
-                 return false;
-           }
-           break;
-         case 101: // Albumsearch result
-           if (m_level == 1) {
-             sprintf(sqlbuff,
-                         "SELECT DISTINCT"
-                         "    CONCAT(album.artist,' - ',album.title) as title,"
-                         "    album.cddbid"
-                         FROMJOIN
-                         "  ORDER BY CONCAT(album.artist,' - ',album.title)"
-                         , m_restriction.c_str());
-             idfield = "tracks.sourceid";
-           } else if (m_level == 2) {
-               sprintf(sqlbuff,
-                         "SELECT tracks.title,tracks.id"
-                         FROMJOIN
-                         "  ORDER BY tracks.tracknb"
-                         , m_restriction.c_str());
-               idfield = "tracks.id";
-           } else {
-                 mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
-                 m_expanded = false;
-                 return false;
-           }
-           break;
+	    break;
+	  case 101: 
+	    { // Albumsearch result
+	      if( m_level == 1 ) 
+		{
+		  sprintf(sqlbuff,
+			  "SELECT DISTINCT"
+			  "    CONCAT(album.artist,' - ',album.title) as title,"
+			  "    album.cddbid"
+			  FROMJOIN
+			  "  ORDER BY CONCAT(album.artist,' - ',album.title)",
+			  m_restriction.c_str());
+		  idfield = "tracks.sourceid";
+		} else if( m_level == 2 ) 
+		  {
+		    sprintf(sqlbuff,
+			    "SELECT tracks.title,tracks.id"
+			    FROMJOIN
+			    "  ORDER BY tracks.tracknb",
+			    m_restriction.c_str());
+		    idfield = "tracks.id";
+		  } 
+	      else 
+		{
+		  mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
+		  m_expanded = false;
+		  return false;
+		}
+	      } break;
         case 102:
-           if (m_level == 1) {
-             sprintf(sqlbuff,
-                     "SELECT DISTINCT playlist.title,"
-                     "    playlist.id"
-                     "  FROM playlist,playlistitem,tracks,genre as genre1,genre as genre2"
-                     "  WHERE playlist.id=playlistitem.playlist AND"
-                     "        playlistitem.trackid=tracks.id AND"
-                     "        genre1.id=tracks.genre1 AND"
-                     "        genre2.id=tracks.genre2 AND"
-                     "        %s"
-                     "  ORDER BY playlist.title,"
-                     , m_restriction.c_str());
-             idfield = "playlist.id";
-           } else if (m_level == 2) {
-             sprintf(sqlbuff,
-                     "SELECT CONCAT(tracks.artist,' - ',tracks.title),"
-                     "    tracks.id"
-                     "  FROM playlist,playlistitem,tracks"
-                     "  WHERE playlist.id=playlistitem.playlist AND"
-                     "        playlistitem.trackid=tracks.id AND"
-                     "        %s"
-                     "  ORDER BY playlistitem.tracknumber"
-                     , m_restriction.c_str());
-             idfield = "tracks.id";
-           } else {
-                 mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
-                 m_expanded = false;
-                 return false;
-           }
-          break;
-	default:
-	     mgError("View '%d' not yet implemented", m_view);
-     }
-     
-     // now get all childrean ofthe current node fromthe database
-     result = mgSqlReadQuery(&m_db, sqlbuff);
-     nrows   = mysql_num_rows(result);
-     nfields = mysql_num_fields(result);
-     
-     numchild=1;
-     while((row = mysql_fetch_row(result)) != NULL)
-     { 
-	 // row[0] is the printable label for the new child
-	 // row[1] is the unique id for the new child
-	 sprintf(idbuf, "%s_%03d",  m_id.c_str(), numchild);
-	 
-         // Zweite ebene zeigt alle Tracks des Albums und nicht nur 
-         // diese die den Filterkriterien entsprechen.
-         // das betrifft nur die Search Views!
-         if(m_view <100) {
-	   new_restriction = m_restriction + " AND " 
-	       + idfield + "='" + row[1] + "'";
-         } else {
-	   new_restriction = idfield + "='" + row[1] + "'";
-         }
-	 
-	 new_child = new GdTreeNode(this, // parent
-				    (string) idbuf, // id
-				    row[0], // label,
-				    new_restriction);
-	 m_children.push_back(new_child);
-	 numchild++;
-     }
-    } else if (m_view <100) {
+	  { 
+	    if (m_level == 1) 
+	      {
+		sprintf(sqlbuff,
+			"SELECT DISTINCT playlist.title,"
+			"    playlist.id"
+			"  FROM playlist,playlistitem,tracks,genre as genre1,genre as genre2"
+			"  WHERE playlist.id=playlistitem.playlist AND"
+			"        playlistitem.trackid=tracks.id AND"
+			"        genre1.id=tracks.genre1 AND"
+			"        genre2.id=tracks.genre2 AND"
+			"        %s"
+			"  ORDER BY playlist.title,",
+			m_restriction.c_str());
+		idfield = "playlist.id";
+	      } 
+	    else if (m_level == 2) 
+	      {
+		sprintf(sqlbuff,
+			"SELECT CONCAT(tracks.artist,' - ',tracks.title),"
+			"    tracks.id"
+			"  FROM playlist,playlistitem,tracks"
+			"  WHERE playlist.id=playlistitem.playlist AND"
+			"        playlistitem.trackid=tracks.id AND"
+			"        %s"
+			"  ORDER BY playlistitem.tracknumber",
+			m_restriction.c_str());
+		idfield = "tracks.id";
+	      } 
+	    else 
+	      {
+		mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
+		m_expanded = false;
+		return false;
+	      }
+          } break;
+	  default:
+	    {
+	      mgError("View '%d' not yet implemented", m_view);
+	    }
+	  }
+	
+	// now get all childrean ofthe current node fromthe database
+	result = mgSqlReadQuery(&m_db, sqlbuff);
+	nrows   = mysql_num_rows(result);
+	nfields = mysql_num_fields(result);
+	
+	numchild=1;
+	while((row = mysql_fetch_row(result)) != NULL)
+	  { 
+	    // row[0] is the printable label for the new child
+	    // row[1] is the unique id for the new child
+	    sprintf(idbuf, "%s_%03d",  m_id.c_str(), numchild);
+	    
+	    // Zweite ebene zeigt alle Tracks des Albums und nicht nur 
+	    // diese die den Filterkriterien entsprechen.
+	    // das betrifft nur die Search Views!
+	    if(m_view < 100) 
+	      {
+		new_restriction = m_restriction + " AND " 
+		  + idfield + "='" + row[1] + "'";
+	      } 
+	    else 
+	      {
+		new_restriction = idfield + "='" + row[1] + "'";
+	      }
+	    
+	    new_child = new GdTreeNode(this, // parent
+				       (string) idbuf, // id
+				       row[0], // label,
+				       new_restriction);
+	    m_children.push_back(new_child);
+	    numchild++;
+	  }
+      } 
+    else if (m_view <100) 
+      {
 	new_child = new GdTreeNode(this, // parent
 				   "1" , // id
 				   tr("Artist -> Album -> Track"), // label,
@@ -1297,24 +1337,24 @@ bool GdTreeNode::expand()
 				   tr("Album -> Track") , // label,
 				   m_restriction);
 	m_children.push_back(new_child);
-      } else {
+      } 
+    else 
+      {
         new_child = new GdTreeNode(this, // parent
                                    "" , // id
                                    tr("Search Result"), // label,
                                    m_restriction);
         m_children.push_back(new_child);
-    }
-
-  m_expanded = true;
-  mgDebug(5, "%d children expanded\n", m_children.size());
-  return true;
+      }
+    
+    m_expanded = true;
+    mgDebug(5, "%d children expanded\n", m_children.size());
+    return true;
 }
 
 /*!
- *****************************************************************************
- * \brief go over all children recursively to find the tracks
- *
- ****************************************************************************/
+ * \brief iterate all children recursively to find the tracks
+ */
 vector<mgContentItem*>* GdTreeNode::getTracks()
 {
     MYSQL_ROW	row;
@@ -1396,6 +1436,9 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.26  2004/08/27 15:19:34  LarsAC
+ * Changed formatting and documentation
+ *
  * Revision 1.25  2004/08/23 06:36:25  lvw
  * Initial version of an import module added
  *
@@ -1469,7 +1512,6 @@ mgContentItem* GdTreeNode::getSingleTrack()
  * Revision 1.15  2004/02/12 09:15:07  LarsAC
  * Moved filter classes into separate files
  *
->>>>>>> 1.14.2.4
  * Revision 1.14  2004/02/12 07:56:46  RaK
  * - SQL Fehler bei der Playlist Search korrigiert
  *

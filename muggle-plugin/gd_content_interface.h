@@ -3,21 +3,21 @@
  * \brief  Data objects for content (e.g. mp3 files, movies)
  *         for the vdr muggle plugin database
  *          
- * \version $Revision: 1.9 $
- * \date    $Date: 2004/07/29 06:17:50 $
+ * \version $Revision: 1.10 $
+ * \date    $Date: 2004/08/27 15:19:34 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author: LarsAC $
  * 
  * Declares main classes for content items and interfaces to SQL databases
  *
  * This file defines the following classes 
- *  - gdFilterSets
- *  - mgGdTrack     a single track (content item). e.g. an mp3 file
- *  - mgSelection   a set of tracks (e.g. a database subset matching certain criteria)
- *
+ *  - gdFilterSets:  filters to specifically search for GD items
+ *  - mgGdTrack:     a single track (content item). e.g. an mp3 file
+ *  - GdTracklist:
+ *  - GdPlaylist:
+ *  - GdTreeNode:
  */
 
-/* makes sure we dont use the same declarations twice */
 #ifndef _GD_CONTENT_INTERFACE_H
 #define _GD_CONTENT_INTERFACE_H
 
@@ -33,8 +33,16 @@
 #include "mg_filters.h"
 #include "i18n.h"
 
-// non-member functions
+/*! 
+ * \brief Initialize a database for GD use
+ * \todo Should be a static member of some GD class
+ */
 int GdInitDatabase(MYSQL *db);
+
+/*! 
+ * \brief Obtain the playlists stored within the GD schema
+ * \todo Should be a static member of some GD class
+ */
 std::vector<std::string> *GdGetStoredPlaylists(MYSQL db);
 
 /*! 
@@ -65,15 +73,16 @@ class gdFilterSets : public mgFilterSets
    * the active filter sets.
    *
    * \param viewPort - after call, contains the index of the appropriate default view in  
+   * \return  sql string representing the restrictions
    * \todo should viewPort be a reference?
    */
-  virtual std::string computeRestriction(int *viewPrt);
+  virtual std::string computeRestriction(int *viewPort);
 };
 
 
 /*! 
  * \brief represents a a single track 
- 
+ *
  * This may be any content item. e.g. a mp3 fileselection
  * The object is initially created with a database identifier.
  * The actual data is only read when a content field is accessed for
@@ -81,10 +90,84 @@ class gdFilterSets : public mgFilterSets
  *
  * \todo does each track node need a reference to the database?
  *       maybe we can use a static db handle in mgDatabase?
- * \
  */
-class  mgGdTrack : public mgContentItem
+class mgGdTrack : public mgContentItem
 {
+ public:
+ 
+  /*! 
+   * \brief a constructor 
+   * 
+   * Creates an invalid item.
+   *
+   * \todo does this make sense? used anywhere?
+   */
+  mgGdTrack()
+  { 
+    m_uniqID = -1;
+  }  
+  
+  /*!
+   * \brief a constructor for a specific item
+   *
+   * The constructor creates a specific item in a given database
+   * On creation, the object is only a wrapper without data. Actual 
+   * data fields are filled when readData() is called for the first time.
+   *
+   * \param sqlIdentifier - a unique ID of the item which will be represented
+   * \param dbase - the database in which the item exists
+   */
+  mgGdTrack( int sqlIdentifier, MYSQL dbase );
+
+  /*!
+   * \brief a copy constructor
+   */
+  mgGdTrack(const mgGdTrack&);
+
+  /*!
+   * \brief the destructor 
+   */
+  virtual ~mgGdTrack();
+  
+  virtual mgContentItem::contentType getContentType(){return mgContentItem::GD_AUDIO;}
+  
+  virtual mgMediaPlayer getPlayer()
+    {
+      return mgMediaPlayer();
+    }
+
+  /*! \addtogroup Data read access */
+  /*\@{*/
+  virtual std::string getLabel( int col = 0 );
+
+  virtual std::string getTitle();  
+  virtual std::string getSourceFile();  
+  virtual std::string getGenre();  
+  std::string getArtist();
+  std::string getAlbum();
+  std::string getImageFile();
+  int getYear();
+  int getDuration();
+  virtual int getRating();
+
+  virtual std::vector<mgFilter*> *getTrackInfo();  
+  /*\@}*/
+
+  /*! \addtogroup Data write access */ 
+  /*\@{*/
+  void setTitle(std::string new_title);
+  void setArtist(std::string new_artist);
+  void setAlbum(std::string new_album);
+  void setGenre(std::string new_genre);
+  void setYear(int new_rating);
+  void setRating(int new_rating);
+
+  virtual bool setTrackInfo(std::vector<mgFilter*>*);
+
+  bool writeData();
+  /*\@}*/
+  
+  static mgGdTrack UNDEFINED;
 
 private:
 
@@ -102,10 +185,7 @@ private:
    */
   bool m_retrieved;
 
-  // content fields
-  /*!
-   * \brief the artist name
-   */
+  //! \brief the artist name
   std::string m_artist;
 
   /*! 
@@ -149,81 +229,6 @@ private:
    */
   bool readData();
 
- public:
- 
-  /*!
-   * \brief a constructor 
-   * 
-   * Creates an invalid item.
-   *
-   * \todo does this make sense?
-   */
-  mgGdTrack()
-  { 
-    m_uniqID = -1;
-  }  
-  
-  /*!
-   * \brief a constructor for a specific item
-   *
-   * The constructor creates a specific item in a given database
-   *
-   * \param sqlIdentifier - a unique ID of the item which will be represented
-   * \param dbase - the database in which the item exists
-   */
-  mgGdTrack( int sqlIdentifier, MYSQL dbase );
-
-  /*!
-   * \brief a copy constructor
-   */
-  mgGdTrack(const mgGdTrack&);
-
-  /*!
-   * \brief the destructor 
-   */
-  virtual ~mgGdTrack();
-  
-  virtual mgContentItem::contentType getContentType(){return mgContentItem::GD_AUDIO;}
-  
-  virtual mgMediaPlayer getPlayer()
-    {
-      return mgMediaPlayer();
-    }
-
-  /* data acess */
-  //virtual functions of the base class 
-  virtual std::string getSourceFile();
-  
-  virtual std::string getTitle();
-  
-  virtual std::string getLabel(int col = 0);
-
-  virtual std::vector<mgFilter*> *getTrackInfo();
-  
-  virtual bool setTrackInfo(std::vector<mgFilter*>*);
-
-  virtual std::string getGenre();
-  
-  virtual int getRating();
-
-  // additional class-specific functions
-  std::string getArtist();
-  std::string getAlbum();
-  int getYear();
-  int getDuration();
-  std::string getImageFile();
- 
-  /* data manipulation */
-  void setTitle(std::string new_title);
-  void setArtist(std::string new_artist);
-  void setAlbum(std::string new_album);
-  void setGenre(std::string new_genre);
-  void setYear(int new_rating);
-  void setRating(int new_rating);
-  
-  bool writeData();
-  static mgGdTrack UNDEFINED;
-
 };
 
 class GdTracklist : public mgTracklist
@@ -233,50 +238,42 @@ class GdTracklist : public mgTracklist
 };
 
 /*! 
- *******************************************************************
  * \class GdPlaylist
  *
  * \brief represents a playlist, i.e. an ordered collection of tracks
- ********************************************************************/
+ */
 class  GdPlaylist : public mgPlaylist
 {	  
-  private:
-     int m_sqlId; /* -1 means: not valid */
-     int m_listtype; // used in GiantDisc db queries
-     std::string m_author;
-     MYSQL m_db;
+ public:
      
-  private:
-     int insertDataFromSQL();
-
-  public:
+  GdPlaylist(std::string listname, MYSQL db_handle);
+  /* opens existing or creates empty playlist */
+  
+  virtual ~GdPlaylist();
      
-     
-     /*==== constructors ====*/
-     GdPlaylist(std::string listname, MYSQL db_handle);
-     /* opens existing or creates empty playlist */
+  virtual void setListname(std::string name);
+  /* changes the listname of the playlist (and unset the sql id */
+  
+  int getPlayTime();
+  /* returns the total duration of all songs in the list in seconds */
+  
+  int getPlayTimeRemaining();
+  /* returns the duration of all remaining songs in the list in seconds */
+  
+  bool storePlaylist();
 
-     
-     /*==== destructor ====*/
-     virtual ~GdPlaylist();
-     
-     virtual void setListname(std::string name);
-     /* changes the listname of the playlist (and unset the sql id */
-
-     int getPlayTime();
-     /* returns the total duration of all songs in the list in seconds */
-
-     int getPlayTimeRemaining();
-     /* returns the duration of all remaining songs in the list in seconds */
-
-
-     bool storePlaylist();
+ private:
+  int m_sqlId; /* -1 means: not valid */
+  int m_listtype; // used in GiantDisc db queries
+  std::string m_author;
+  MYSQL m_db;
+  
+  int insertDataFromSQL();
 };
+
 /*! 
- *******************************************************************
- * \class mgSelectionTreeNode
- *
  * \brief hierarchical representation of a set of tracks
+ *
  * The selection can be based on the whole database or a subset of it.
  * Within this selection, the data is organized in a tree hierarchy
  * The levels hof the hierarchy can be expanded dynamically by specifying
@@ -285,11 +282,9 @@ class  GdPlaylist : public mgPlaylist
  * When a node is expanded, a list of children is created. 
  * Each child inherits the restrictions of its father and an additional
  * restriction on the recently expanded db field
- ********************************************************************/
-class  GdTreeNode : public mgSelectionTreeNode{
-
-private:
-    // everything is in the base class
+ */
+class  GdTreeNode : public mgSelectionTreeNode
+{
 public:
 
     /*==== constructors ====*/
@@ -311,6 +306,9 @@ public:
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.h,v $
+ * Revision 1.10  2004/08/27 15:19:34  LarsAC
+ * Changed formatting and documentation
+ *
  * Revision 1.9  2004/07/29 06:17:50  lvw
  * Added todo entries
  *
@@ -351,7 +349,6 @@ public:
  * Revision 1.5  2004/02/12 09:15:07  LarsAC
  * Moved filter classes into separate files
  *
->>>>>>> 1.4.2.6
  * Revision 1.4  2004/02/09 19:27:52  MountainMan
  * filter set implemented
  *
