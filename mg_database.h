@@ -3,9 +3,9 @@
  * \brief  A capsule around MySql database access
  *
  * \version $Revision: 1.2 $
- * \date    $Date: 2004/05/28 15:29:18 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  */
 
 #ifndef __MG_DATABASE_H
@@ -14,6 +14,11 @@
 #include <string>
 #include <mysql/mysql.h>
 
+/*!
+ * \brief an abstract database class
+ * 
+ * \todo Currently unused. This class could abstract database connection and query handling, but this will be tedious as an abstract representation of results would be needed.
+ */
 class mgDB
 {
  public:
@@ -39,6 +44,13 @@ class mgDB
 
   /*! \brief obtain database handle*/
   MYSQL getDBHandle();
+
+  /*!
+   * \brief escape arguments to be contained in a query
+   *
+   * \todo use m_dbase member of this class
+   */
+  static std::string escape_string( MYSQL *db, std::string s );
   
  private:
   MYSQL m_dbase;
