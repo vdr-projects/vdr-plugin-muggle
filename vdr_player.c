@@ -168,10 +168,10 @@ private:
   //
   int m_index;
 
-  void Empty(void);
-  bool NextFile(void);
-  bool PrevFile(void);
-  void StopPlay(void);
+  void Empty();
+  bool NextFile( );
+  bool PrevFile();
+  void StopPlay();
 
   void SetPlayMode(ePlayMode mode);
   void WaitPlayMode(ePlayMode mode, bool inv);
@@ -184,11 +184,11 @@ public:
   mgPCMPlayer(mgPlaylist *plist);
   virtual ~mgPCMPlayer();
 
-  bool Active(void) { return m_active; }
-  void Pause(void);
-  void Play(void);
-  void Forward(void);
-  void Backward(void);
+  bool Active() { return m_active; }
+  void Pause();
+  void Play();
+  void Forward();
+  void Backward();
   void Goto(int Index, bool Still=false);
   void SkipSeconds(int secs);
   void ToggleShuffle(void);
@@ -673,7 +673,7 @@ void mgPCMPlayer::StopPlay()
     }
 }
 
-bool mgPCMPlayer::NextFile()
+bool mgPCMPlayer::NextFile( )
 {
   mgContentItem *newcurr;
 
@@ -707,12 +707,17 @@ bool mgPCMPlayer::NextFile()
 	    - move corresponding playlist item to front
 	    - continue
       */
-
     }
   else
     {
-      m_playlist->skipFwd();
-      newcurr = m_playlist->getCurrent();
+      if( m_playlist->skipFwd() )
+	{
+	  newcurr = m_playlist->getCurrent();
+	}
+      else
+	{
+	  newcurr = &(mgContentItem::UNDEFINED);
+	}
     }
   
   if( newcurr && newcurr != &(mgContentItem::UNDEFINED) ) 
@@ -727,14 +732,16 @@ bool mgPCMPlayer::NextFile()
 bool mgPCMPlayer::PrevFile(void)
 {
   bool res = false;
-    
-  m_playlist->skipBack();
-  mgContentItem *newcurr = m_playlist->getCurrent();
 
-  if( newcurr && newcurr != &(mgContentItem::UNDEFINED) ) 
+  if( m_playlist->skipBack() )
     {
-      m_current = newcurr; 
-      res = true;
+      mgContentItem *newcurr = m_playlist->getCurrent();
+
+      if( newcurr && newcurr != &(mgContentItem::UNDEFINED) ) 
+	{
+	  m_current = newcurr; 
+	  res = true;
+	}
     }
 
   return res;
@@ -784,12 +791,12 @@ void mgPCMPlayer::Play(void)
   Unlock();
 }
 
-void mgPCMPlayer::Forward(void)
+void mgPCMPlayer::Forward()
 {
   MGLOG( "mgPCMPlayer::Forward" );
 
   Lock();
-  if( NextFile() ) 
+  if( NextFile() )
     { 
       StopPlay(); 
       Play(); 
