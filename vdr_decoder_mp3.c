@@ -60,8 +60,7 @@ mgMP3Decoder::mgMP3Decoder (mgContentItem * item, bool preinit):mgDecoder
     m_stream = 0;
     m_isStream = false;
 
-    m_filename = the_setup.getFilename( item->getSourceFile () );    
-    // m_filename = item->getSourceFile ();
+    m_filename = item->getSourceFile ();
 
     if (preinit)
     {
@@ -102,6 +101,7 @@ mgMP3Decoder::init ()
     m_playtime = mad_timer_zero;
     m_skiptime = mad_timer_zero;
     m_framenum = m_framemax = 0;
+    m_frameinfo = 0;
     m_mute = m_errcount = 0;
 }
 

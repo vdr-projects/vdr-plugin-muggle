@@ -2,6 +2,12 @@
 #include "mg_tools.h"
 #include "i18n.h"
 
+
+bool iskeyGenre(mgKeyTypes kt)
+{
+	return kt>=keyGenre1  && kt <= keyGenres;
+}
+
 class mgRefParts : public mgParts {
 	public:
 		mgRefParts(const mgReference& r);
@@ -25,16 +31,6 @@ sql_string (MYSQL *db, const string s)
 	string result = "'" + std::string (buf) + "'";
 	free (buf);
 	return result;
-}
-
-//! \brief adds n1=n2 to string s, using AND to separate several such items
-static string
-undequal (string & s, string n1, string op, string n2)
-{
-	if (n1.compare (n2) || op != "=")
-		return addsep (s, " AND ", n1 + op + n2);
-	else
-		return s;
 }
 
 /*! \brief if the SQL command works on only 1 table, remove all table
@@ -83,28 +79,98 @@ exec_sql (MYSQL *db,string query)
 	return mysql_store_result (db);
 }
 
+string
+get_col0(MYSQL *db, string query)
+{
+    MYSQL_RES * sql_result = exec_sql (db, query);
+    if (!sql_result)
+	    return "NULL";
+    MYSQL_ROW row = mysql_fetch_row (sql_result);
+    string result;
+    if (row == NULL)
+        result = "NULL";
+    else if (row[0] == NULL)
+        result = "NULL";
+    else
+        result = row[0];
+    mysql_free_result (sql_result);
+    return result;
+}
+
+int
+exec_count(MYSQL *db, string query)
+{
+    return atol (get_col0 (db, query).c_str ());
+}
+
+
+string&
+addsep (string & s, string sep, string n)
+{
+	if (!n.empty ())
+	{
+		if (!s.empty ())
+    		s.append (sep);
+		s.append (n);
+	}
+	return s;
+}
+
+
+static string
+sql_list (string prefix,strlist v,string sep=",",string postfix="")
+{
+	string result = "";
+	for (list < string >::iterator it = v.begin (); it != v.end (); ++it)
+	{
+		addsep (result, sep, *it);
+	}
+	if (!result.empty())
+	{
+    		result.insert(0," "+prefix+" ");
+    	result += postfix;
+	}
+	return result;
+}
+
+//! \brief converts long to string
+string
+itos (int i)
+{
+	stringstream s;
+	s << i;
+	return s.str ();
+}
+
+//! \brief convert long to string
+string
+ltos (long l)
+{
+	stringstream s;
+	s << l;
+	return s.str ();
+}
 
 class mgKeyNormal : public mgKey {
 	public:
 		mgKeyNormal(const mgKeyNormal& k);
-		mgKeyNormal(const mgKeyTypes kt, string table, string field);
+			mgKeyNormal(const mgKeyTypes kt, string table, string field);
 		virtual mgParts Parts(bool orderby=false) const;
 		string value() const;
 		string id() const;
 		void set(string value,string id);
 		mgKeyTypes Type() const { return m_kt; }
-		virtual string expr() const { return field(); }
-		virtual string field() const { return m_table + "." + m_field; }
+		virtual string expr() const { return m_table + "." + m_field; }
 		virtual string table() const { return m_table; }
 	protected:
-		virtual string orderfield() const { return expr(); }
+		string IdClause(string what,string::size_type start=0,string::size_type len=string::npos) const;
 		void AddIdClause(mgParts &result,string what) const;
+		string m_id;
 	private:
 		mgKeyTypes m_kt;
 		string m_field;
 		string m_table;
 		string m_value;
-		string m_id;
 };
 
 class mgKeyTrack : public mgKeyNormal {
@@ -113,23 +179,95 @@ class mgKeyTrack : public mgKeyNormal {
 		mgParts Parts(bool orderby=false) const;
 };
 
-class mgKeyGenre1 : public mgKeyNormal {
+class mgKeyGenres : public mgKeyNormal {
 	public:
-		mgKeyGenre1() : mgKeyNormal(keyGenre1,"tracks","genre1") {};
+		mgKeyGenres() : mgKeyNormal(keyGenres,"tracks","genre1") {};
+		mgKeyGenres(mgKeyTypes kt) : mgKeyNormal(kt,"tracks","genre1") {};
 		mgParts Parts(bool orderby=false) const;
 		string map_idfield() const { return "id"; }
 		string map_valuefield() const { return "genre"; }
 		string map_valuetable() const { return "genre"; }
+		string GenreClauses(bool orderby) const;
+		virtual unsigned int genrelevel() const { return 4; }
 };
 
-class mgKeyGenre2 : public mgKeyNormal {
+class mgKeyGenre1 : public mgKeyGenres
+{
 	public:
-		mgKeyGenre2() : mgKeyNormal(keyGenre2,"tracks","genre2") {};
-		mgParts Parts(bool orderby=false) const;
-		string map_idfield() const { return "id"; }
-		string map_valuefield() const { return "genre"; }
-		string map_valuetable() const { return "genre"; }
+		mgKeyGenre1() : mgKeyGenres(keyGenre1) {}
+		unsigned int genrelevel() const { return 1; }
 };
+
+class mgKeyGenre2 : public mgKeyGenres
+{
+	public:
+		mgKeyGenre2() : mgKeyGenres(keyGenre2) {}
+		unsigned int genrelevel() const { return 2; }
+};
+
+class mgKeyGenre3 : public mgKeyGenres
+{
+	public:
+		mgKeyGenre3() : mgKeyGenres(keyGenre3) {}
+		unsigned int genrelevel() const { return 3; }
+};
+
+string
+mgKeyGenres::GenreClauses(bool orderby) const
+{
+	strlist g1;
+	strlist g2;
+
+	if (orderby)
+		if (genrelevel()==4)
+		{
+			g1.push_back("tracks.genre1=genre.id");
+			g2.push_back("tracks.genre2=genre.id");
+		}
+		else
+		{
+			g1.push_back("substring(tracks.genre1,1,"+ltos(genrelevel())+")=genre.id");
+			g2.push_back("substring(tracks.genre2,1,"+ltos(genrelevel())+")=genre.id");
+		}
+
+	if (id() != EMPTY)
+	{
+		unsigned int len=genrelevel();
+		if (len==4) len=0;
+      		g1.push_back(IdClause("tracks.genre1",0,genrelevel()));
+      		g2.push_back(IdClause("tracks.genre2",0,genrelevel()));
+	}
+
+	extern bool needGenre2;
+	if (needGenre2)
+	{
+		string o1=sql_list("(",g1," AND ",")");
+		if (o1.empty())
+			return "";
+		string o2=sql_list("(",g2," AND ",")");
+		return string("(") + o1 + " OR " + o2 + string(")");
+	}
+	else
+		return sql_list("",g1," AND ");
+}
+
+
+mgParts
+mgKeyGenres::Parts(bool orderby) const
+{
+	mgParts result;
+   	result.clauses.push_back(GenreClauses(orderby));
+	result.tables.push_back("tracks");
+	if (orderby)
+	{
+		result.fields.push_back("genre.genre");
+		result.fields.push_back("genre.id");
+		result.tables.push_back("genre");
+       		result.orders.push_back("genre.genre");
+	}
+	return result;
+}
+
 
 class mgKeyLanguage : public mgKeyNormal {
 	public:
@@ -182,6 +320,11 @@ mgKey::~mgKey()
 {
 }
 
+void
+mgKey::setdb(MYSQL *db)
+{
+	m_db = db;
+}
 
 mgKeyNormal::mgKeyNormal(const mgKeyNormal& k)
 {
@@ -226,32 +369,33 @@ mgKeyNormal::Parts(bool orderby) const
 	if (orderby)
 	{
 		result.fields.push_back(expr());
-       		result.orders.push_back(orderfield());
+       		result.orders.push_back(expr());
 	}
 	return result;
+}
+
+string
+mgKeyNormal::IdClause(string what,string::size_type start,string::size_type len) const
+{
+	assert(strlen(m_db->host));
+	if (len==0)
+		len=string::npos;
+       	if (id() == "'NULL'")
+		return what + " is NULL";
+       	else if (len==string::npos)
+		return what + "=" + sql_string(m_db,id());
+	else
+	{
+		return "substring("+what + ","+ltos(start+1)+","+ltos(len)+")="
+			+ sql_string(m_db,id().substr(start,len));
+	}
 }
 
 void
 mgKeyNormal::AddIdClause(mgParts &result,string what) const
 {
-	assert(strlen(m_db->host));
 	if (id() != EMPTY)
-	{
-       		string op;
-       		string xid;
-       		if (id() == "'NULL'")
-       		{
-	       		op = "is";
-	       		xid = "NULL";
-       		}
-       		else
-       		{
-	       		op = "=";
-	       		xid = sql_string(m_db,id());
-       		}
-       		string clause = "";
-       		result.clauses.push_back(undequal(clause,what,op,xid));
-	}
+       		result.clauses.push_back(IdClause(what));
 }
 
 mgParts
@@ -266,38 +410,6 @@ mgKeyTrack::Parts(bool orderby) const
 		// change mgContentItem::getKeyValue()
 		result.fields.push_back("tracks.title");
        		result.orders.push_back("tracks.tracknb");
-	}
-	return result;
-}
-
-mgParts
-mgKeyGenre1::Parts(bool orderby) const
-{
-	mgParts result;
-	AddIdClause(result,"tracks.genre1");
-	result.tables.push_back("tracks");
-	if (orderby)
-	{
-		result.fields.push_back("genre.genre");
-		result.fields.push_back("tracks.genre1");
-		result.tables.push_back("genre");
-       		result.orders.push_back("genre.genre");
-	}
-	return result;
-}
-
-mgParts
-mgKeyGenre2::Parts(bool orderby) const
-{
-	mgParts result;
-	AddIdClause(result,"tracks.genre2");
-	result.tables.push_back("tracks");
-	if (orderby)
-	{
-		result.fields.push_back("genre.genre");
-		result.fields.push_back("tracks.genre2");
-		result.tables.push_back("genre");
-       		result.orders.push_back("genre.genre");
 	}
 	return result;
 }
@@ -366,54 +478,6 @@ mgParts::operator+=(mgParts a)
 	return *this;
 }
 
-
-string&
-addsep (string & s, string sep, string n)
-{
-	if (!n.empty ())
-	{
-		if (!s.empty ())
-    		s.append (sep);
-		s.append (n);
-	}
-	return s;
-}
-
-
-static string
-sql_list (string prefix,list < string > v,string sep=",",string postfix="")
-{
-	string result = "";
-	for (list < string >::iterator it = v.begin (); it != v.end (); it++)
-	{
-		addsep (result, sep, *it);
-	}
-	if (!result.empty())
-	{
-    		result.insert(0," "+prefix+" ");
-    	result += postfix;
-	}
-	return result;
-}
-
-//! \brief converts long to string
-string
-itos (int i)
-{
-	stringstream s;
-	s << i;
-	return s.str ();
-}
-
-//! \brief convert long to string
-string
-ltos (long l)
-{
-	stringstream s;
-	s << l;
-	return s.str ();
-}
-
 mgRefParts::mgRefParts(const mgReference& r)
 {
 	tables.push_back(r.t1());
@@ -428,7 +492,7 @@ mgParts::Prepare()
 	tables.unique();
 	strlist::reverse_iterator it;
 	string prevtable = "";
-	for (it = tables.rbegin(); it != tables.rend(); it++)
+	for (it = tables.rbegin(); it != tables.rend(); ++it)
 	{
 		if (!prevtable.empty())
 			*this += ref.Connect(prevtable,*it);
@@ -475,7 +539,7 @@ mgParts::sql_count()
 bool
 mgParts::UsesTracks()
 {
-	for (list < string >::iterator it = tables.begin (); it != tables.end (); it++)
+	for (list < string >::iterator it = tables.begin (); it != tables.end (); ++it)
 		if (*it == "tracks") return true;
 	return false;
 }
@@ -525,6 +589,10 @@ mgReference::mgReference(string t1,string f1,string t2,string f2)
 
 mgOrder::mgOrder()
 {
+	setDB(0);
+       	setKey (0,keyArtist);
+       	setKey (1,keyAlbum);
+       	setKey (2,keyTrack);
 }
 
 mgKey*
@@ -540,10 +608,22 @@ mgOrder::operator[](unsigned int idx)
 	return Keys[idx];
 }
 
+bool
+operator==(const mgOrder& a, const mgOrder &b)
+{
+    bool result =  a.size()==b.size();
+    if (result)
+    	for (unsigned int i=0; i<a.size();i++)
+    	{
+    		result &= a.Key(i)->Type()==b.Key(i)->Type();
+		if (!result) break;
+    	}
+    return result;
+}
+
 const mgOrder&
 mgOrder::operator=(const mgOrder& from)
 {
-	Name = from.Name;
 	Keys.clear();
     	for (unsigned int i = 0; i < from.size();i++)
     	{
@@ -551,7 +631,7 @@ mgOrder::operator=(const mgOrder& from)
 		k->set(from.getKeyValue(i),from.getKeyId(i));
 		Keys.push_back(k);
     	}
-	setDB(from.m_db);
+	if (from.m_db) setDB(from.m_db);
 	return *this;
 }
 
@@ -561,6 +641,77 @@ mgOrder::operator+=(mgKey* k) {
 	Keys.push_back(k);
 	return *this;
 }
+
+string
+mgOrder::Name()
+{
+	string result="";
+	for (unsigned int idx=0;idx<size();idx++)
+	{
+		if (!result.empty()) result += ":";
+		result += ktName(Keys[idx]->Type());
+	}
+	return result;
+}
+
+void
+mgOrder::setKey (const unsigned int level, const mgKeyTypes kt)
+{
+    mgKey *newkey = ktGenerate(kt,m_db);
+    if (level == 0 && kt == keyCollection)
+    {
+        clear ();
+	Keys.push_back(newkey);
+	Keys.push_back(ktGenerate(keyCollectionItem,m_db));
+        return;
+    }
+    if (level == size ())
+    {
+        Keys.push_back(newkey);
+    }
+    else
+    {
+	if (level >= Keys.size())
+	  mgError("mgOrder::setKey(%u,%s): level greater than size() %u",
+	      level,ktName(kt),Keys.size());
+        delete Keys[level];
+	Keys[level] = newkey;
+    }
+
+// clear values for this and following levels (needed for copy constructor)
+    for (unsigned int i = level; i < Keys.size (); i++)
+        Keys[i]->set ("",EMPTY);
+}
+
+mgOrder::mgOrder(mgValmap& nv,char *prefix)
+{
+	setDB(0);
+	for (unsigned int i = 0; i < 999 ; i++)
+	{
+		char *idx;
+		asprintf(&idx,"%s.Keys.%u.Type",prefix,i);
+		unsigned int v = nv.getuint(idx);
+		free(idx);
+		if (v==0) break;
+        	setKey (i,mgKeyTypes(v) );
+	}
+}
+
+mgOrder::mgOrder(vector<mgKeyTypes> kt)
+{
+	setDB(0);
+	setKeys(kt);
+}
+
+void
+mgOrder::setKeys(vector<mgKeyTypes> kt)
+{
+	clear();
+	for (unsigned int i=0;i<kt.size();i++)
+		setKey(size(),kt[i]);
+        clean();
+}
+
 
 mgKeyTypes
 mgOrder::getKeyType(unsigned int idx) const
@@ -588,7 +739,7 @@ mgOrder::setDB(MYSQL *db)
 {
 	m_db = db;
 	keyvector::iterator i;
-	for (i = Keys.begin () ; i != Keys.end (); i++)
+	for (i = Keys.begin () ; i != Keys.end (); ++i)
 	{
 		(*i)->setdb(db);
 	}
@@ -598,7 +749,7 @@ mgKey*
 mgOrder::find(const mgKeyTypes kt) 
 {
 	keyvector::iterator i;
-	for (i = Keys.begin () ; i != Keys.end (); i++)
+	for (i = Keys.begin () ; i != Keys.end (); ++i)
 	{
 		if ((*i)->Type() == kt)
 			return *i;
@@ -625,24 +776,46 @@ mgOrder::clean()
 	bool album_found = false;	
 	bool tracknb_found = false;	
 	bool title_found = false;	
-	for (i = Keys.begin () ; i != Keys.end (); i++)
+	bool is_unique = false;
+	for (i = Keys.begin () ; i != Keys.end (); ++i)
 	{
 		mgKeyNormal* k = dynamic_cast<mgKeyNormal*>(*i);
 		album_found |= (k->Type()==keyAlbum);
 		tracknb_found |= (k->Type()==keyTrack);
 		title_found |= (k->Type()==keyTitle);
-		if (tracknb_found || (album_found && title_found))
+		is_unique = tracknb_found || (album_found && title_found);
+		if (is_unique)
 		{
-			for (j = i+1 ; j !=Keys.end(); j++)
+			for (j = i+1 ; j !=Keys.end(); ++j)
 				delete *j;
 			Keys.erase(i+1,Keys.end ());
 			break;
 		}
-		for (j = i+1 ; j != Keys.end(); j++)
-			if (*i == *j) {
+		if (k->Type()==keyYear)
+		{
+			for (j = i+1 ; j != Keys.end(); ++j)
+				if ((*j)->Type() == keyDecade)
+				{
+					delete *j;
+					Keys.erase(j);
+					break;
+				}
+		}
+cleanagain:
+		for (j = i+1 ; j != Keys.end(); ++j)
+			if ((*i)->Type() == (*j)->Type())
+			{
 				delete *j;
 				Keys.erase(j);
+				goto cleanagain;
 			}
+	}
+	if (!is_unique)
+	{
+		if (!album_found)
+			Keys.push_back(ktGenerate(keyAlbum,m_db));
+		if (!title_found)
+			Keys.push_back(ktGenerate(keyTitle,m_db));
 	}
 }
 
@@ -657,18 +830,37 @@ mgOrder::Parts(unsigned int level,bool orderby) const
 		if (i==Keys.size()) break;
 		mgKeyNormal *k = dynamic_cast<mgKeyNormal*>(Keys[i]);
 		k->setdb(m_db);
+		mgKeyTypes kt = k->Type();
+		if (iskeyGenre(kt))
+		{
+			for (unsigned int j=i+1;j<=level;j++)
+			{
+				if (j>=Keys.size())
+					break;
+				mgKeyNormal *kn = dynamic_cast<mgKeyNormal*>(Keys[j]);
+				if (kn)
+				{
+					mgKeyTypes knt = kn->Type();
+					if (iskeyGenre(knt) 
+						&& knt>kt && kn->id()!=EMPTY)
+						goto next;
+				}
+			}
+		}
 		result += k->Parts(orderby && (i==level));
+next:
+		continue;
 	}
 	return result;
 }
 
+//! \brief right now thread locking should not be needed here
 mgReferences::mgReferences()
 {
 	push_back(mgReference ("tracks","id","playlistitem","trackid"));
 	push_back(mgReference ("playlist","id","playlistitem","playlist"));
 	push_back(mgReference ("tracks","sourceid","album","cddbid"));
-	push_back(mgReference ("tracks","genre1","genre","id"));
-	push_back(mgReference ("tracks","genre2","genre","id"));
+	push_back(mgReference ("tracks","lang","language","id"));
 }
 
 bool
@@ -691,6 +883,8 @@ mgParts
 mgReferences::ConnectToTracks(string table) const
 {
 	mgParts result;
+	if (table=="tracks")
+		return result;
 	result += FindConnectionBetween(table,"tracks");
 	if (result.empty())
 	{
@@ -711,6 +905,8 @@ mgReferences::Connect(string table1, string table2) const
 	mgParts result;
 	// same table?
 	if (table1 == table2) return result;
+	if (table1=="genre") return ConnectToTracks(table2);
+	if (table2=="genre") return ConnectToTracks(table1);
 	// do not connect aliases. See sql_delete_from_collection
 	if (table1.find(" as ")!=string::npos) return result;
 	if (table2.find(" as ")!=string::npos) return result;
@@ -734,8 +930,10 @@ ktGenerate(const mgKeyTypes kt,MYSQL* db)
 	mgKey* result = 0;
 	switch (kt)
 	{
+		case keyGenres:	result = new mgKeyGenres;break;
 		case keyGenre1:	result = new mgKeyGenre1;break;
 		case keyGenre2:	result = new mgKeyGenre2;break;
+		case keyGenre3:	result = new mgKeyGenre3;break;
 		case keyArtist: result = new mgKeyNormal(kt,"tracks","artist");break;
 		case keyTitle: result = new mgKeyNormal(kt,"tracks","title");break;
 		case keyTrack: result = new mgKeyTrack;break;
@@ -757,8 +955,10 @@ ktName(const mgKeyTypes kt)
 	const char * result = "";
 	switch (kt)
 	{
-		case keyGenre1: result = "Genre";break;
-		case keyGenre2: result = "Genre 2";break;
+		case keyGenres: result = "Genre";break;
+		case keyGenre1: result = "Genre1";break;
+		case keyGenre2: result = "Genre2";break;
+		case keyGenre3: result = "Genre3";break;
 		case keyArtist: result = "Artist";break;
 		case keyTitle: result = "Title";break;
 		case keyTrack: result = "Track";break;
@@ -771,5 +971,25 @@ ktName(const mgKeyTypes kt)
 		case keyYear: result = "Year";break;
 	}
 	return tr(result);
+}
+
+mgKeyTypes
+ktValue(const char * name)
+{
+	for (int kt=int(mgKeyTypesLow);kt<int(mgKeyTypesHigh);kt++)
+		if (!strcmp(name,ktName(mgKeyTypes(kt))))
+				return mgKeyTypes(kt);
+	mgError("ktValue(%s): unknown name",name);
+	return mgKeyTypes(0);
+}
+
+
+vector<const char*>
+ktNames()
+{
+	static vector<const char*> result;
+	for (unsigned int i = int(mgKeyTypesLow); i <= int(mgKeyTypesHigh); i++)
+		result.push_back(ktName(mgKeyTypes(i)));
+	return result;
 }
 

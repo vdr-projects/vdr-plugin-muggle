@@ -84,7 +84,8 @@ mgWarning (const char *fmt, ...)
         isyslog ("Warning: %s\n", buffer);
 #endif
     }
-
+    extern void showmessage(const char*);
+    showmessage(buffer);
     va_end (ap);
 }
 

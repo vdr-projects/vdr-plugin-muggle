@@ -58,7 +58,6 @@ class mgSetup
     public:
         mgSetup (void);
 
-	std::string getFilename( std::string basename );
 };
 
 extern mgSetup the_setup;

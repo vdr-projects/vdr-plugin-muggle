@@ -12,6 +12,8 @@
 #include <sstream>
 #include <ostream>
 
+#include "mg_valmap.h"
+
 using namespace std;
 
 typedef list<string> strlist;
@@ -24,20 +26,26 @@ static const string EMPTY = "XNICHTGESETZTX";
 string& addsep (string & s, string sep, string n);
 
 enum mgKeyTypes {
-	keyGenre1 = 1,
+	keyGenre1=1, // the genre types must have exactly this order!
 	keyGenre2,
+	keyGenre3,
+	keyGenres,
+	keyDecade,
+	keyYear,
 	keyArtist,
+	keyAlbum,
 	keyTitle,
 	keyTrack,
-	keyDecade,
-	keyCollection,
-	keyCollectionItem,
-	keyAlbum,
 	keyLanguage,
 	keyRating,
-	keyYear,
+	keyCollection,
+	keyCollectionItem,
 };
-const mgKeyTypes mgKeyTypesHigh = keyYear;
+const mgKeyTypes mgKeyTypesLow = keyGenre1;
+const mgKeyTypes mgKeyTypesHigh = keyCollectionItem;
+const unsigned int mgKeyTypesNr = keyCollectionItem;
+
+bool iskeyGenre(mgKeyTypes kt);
 
 class mgParts;
 
@@ -79,7 +87,7 @@ class mgKey {
 		virtual string map_idfield() const { return ""; }
 		virtual string map_valuefield() const { return ""; }
 		virtual string map_valuetable() const { return ""; }
-		void setdb(MYSQL *db) { m_db = db; }
+		void setdb(MYSQL *db);
 	protected:
 		MYSQL *m_db;
 };
@@ -88,9 +96,10 @@ class mgKey {
 mgKey*
 ktGenerate(const mgKeyTypes kt,MYSQL *db);
 
-const char * const
-ktName(const mgKeyTypes kt);
-
+const char * const ktName(const mgKeyTypes kt);
+mgKeyTypes ktValue(const char * name);
+vector < const char*> ktNames();
+ 
 typedef vector<mgKey*> keyvector;
 
 class mgParts {
@@ -117,6 +126,8 @@ string
 sql_string (MYSQL *db, const string s);
 
 MYSQL_RES * exec_sql (MYSQL *db,string query);
+string get_col0 (MYSQL *db,string query);
+int exec_count (MYSQL *db,string query);
 
 //! \brief converts long to string
 string itos (int i);
@@ -130,9 +141,10 @@ const unsigned int MaxKeys = 20;
 class mgOrder {
 public:
 	mgOrder();
+	mgOrder(mgValmap& nv, char *prefix);
+	mgOrder(vector<mgKeyTypes> kt);
 	void setDB(MYSQL *db);
 	mgParts Parts(unsigned int level,bool orderby=true) const;
-	string Name;
 	const mgOrder& operator=(const mgOrder& from);
 	mgOrder& operator+=(mgKey* k);
 	mgKey*& operator[](unsigned int idx);
@@ -146,9 +158,14 @@ public:
 	mgKeyTypes getKeyType(unsigned int idx) const;
 	string getKeyValue(unsigned int idx) const;
 	string getKeyId(unsigned int idx) const;
+	void setKeys(vector<mgKeyTypes> kt);
+	string Name();
 private:
 	MYSQL *m_db;
 	keyvector Keys;
+	void setKey (const unsigned int level, const mgKeyTypes kt);
 };
+
+bool operator==(const mgOrder& a,const mgOrder&b); //! \brief compares only the order, not the current key values
 
 #endif               // _MG_SQL_H

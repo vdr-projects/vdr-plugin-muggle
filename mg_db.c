@@ -13,6 +13,9 @@
 #include "vdr_setup.h"
 #include "mg_tools.h"
 
+bool needGenre2;
+bool needGenre2_set;
+
 //! \brief adds string n to string s, using a comma to separate them
 static string comma (string & s, string n);
 
@@ -36,11 +39,21 @@ comma (string & s, string n)
 
 static string zerostring;
 
+bool
+mgSelection::mgSelStrings::operator==(const mgSelStrings&x) const
+{
+	bool result = strings.size()==x.strings.size();
+	if (result)
+		for (unsigned int i=0;i<size();i++)
+			result &= strings[i]==x.strings[i];
+	return result;
+}
+
 size_t
-mgSelection::mgSelStrings::size()
+mgSelection::mgSelStrings::size() const
 {
 	if (!m_sel)
-		mgError("mgSelStrings: m_sel is NULL");
+		mgError("mgSelStrings: m_sel is 0");
 	m_sel->refreshValues();
 	return strings.size();
 }
@@ -49,7 +62,7 @@ string&
 mgSelection::mgSelStrings::operator[](unsigned int idx)
 {
 	if (!m_sel)
-		mgError("mgSelStrings: m_sel is NULL");
+		mgError("mgSelStrings: m_sel is 0");
 	m_sel->refreshValues();
 	if (idx>=strings.size()) return zerostring;
 	return strings[idx];
@@ -77,8 +90,15 @@ mgSelection::getCurrentValue()
 string
 mgSelection::getKeyValue(const unsigned int level) const
 {
-	return order.getKeyValue(level);
+       return order.getKeyValue(level);
 }
+
+unsigned int
+mgSelection::getKeyIndex(const unsigned int level) const
+{
+	return valindex(getKeyValue(level));
+}
+
 
 mgKeyTypes
 mgSelection::getKeyType (const unsigned int level) const
@@ -98,26 +118,14 @@ mgSelection::exec_sql(string query) const
  */
 string mgSelection::get_col0 (string query) const
 {
-    MYSQL_RES * sql_result = exec_sql (query);
-    if (!sql_result)
-	    return "NULL";
-    MYSQL_ROW row = mysql_fetch_row (sql_result);
-    string result;
-    if (row == NULL)
-        result = "NULL";
-    else if (row[0] == NULL)
-        result = "NULL";
-    else
-        result = row[0];
-    mysql_free_result (sql_result);
-    return result;
+    return ::get_col0(m_db, query);
 }
 
 
 unsigned long
 mgSelection::exec_count (string query) const
 {
-    return atol (get_col0 (query).c_str ());
+    return ::exec_count(m_db, query);
 }
 
 
@@ -133,13 +141,29 @@ mgSelection::sql_string (const string s) const
 }
 
 string
+mgContentItem::getKeyId(mgKeyTypes kt)
+{
+	if (m_id<0) 
+		return "";
+	switch (kt) {
+		case keyGenres:
+		case keyGenre1:
+		case keyGenre2:
+		case keyGenre3: return m_genre1_id;
+		default: return getKeyValue(kt);
+	}
+}
+
+string
 mgContentItem::getKeyValue(mgKeyTypes kt)
 {
 	if (m_id<0) 
 		return "";
 	switch (kt) {
-		case keyGenre1: return getGenre1();
-		case keyGenre2: return getGenre2();
+		case keyGenres:
+		case keyGenre1:
+		case keyGenre2:
+		case keyGenre3: return getGenre();
 		case keyArtist: return getArtist();
 		case keyAlbum: return getAlbum();
 		case keyYear: return string(ltos(getYear()));
@@ -154,26 +178,23 @@ mgContentItem *
 mgSelection::getTrack (unsigned int position)
 {
     if (position >= getNumTracks ())
-        return NULL;
+        return 0;
     return &(m_tracks[position]);
 }
 
 
 string mgContentItem::getGenre () const
 {
-    return m_genre1;
-}
-
-
-string mgContentItem::getGenre1 () const
-{
-    return m_genre1;
-}
-
-
-string mgContentItem::getGenre2 () const
-{
-    return m_genre2;
+    string result="";
+    if (m_genre1!="NULL")
+	    result = m_genre1;
+    if (m_genre2!="NULL")
+    {
+	    if (!result.empty())
+		    result += "/";
+	    result += m_genre2;
+    }
+    return result;
 }
 
 
@@ -350,7 +371,7 @@ void mgSelection::ClearCollection (const string Name)
 {
     if (!m_db) return;
     string listid = id(keyCollection,Name);
-    exec_sql ("DELETE FROM playlistitem WHERE playlist="+listid);
+    exec_sql ("DELETE FROM playlistitem WHERE playlist="+sql_string(listid));
     if (inCollection(Name)) clearCache ();
 }
 
@@ -371,18 +392,19 @@ string mgSelection::exportM3U ()
 {
 
 // open a file for writing
-    string fn = m_Directory + '/' + ListFilename () + ".m3u";
+    string fn = "/tmp/" + ListFilename () + ".m3u";
     FILE * listfile = fopen (fn.c_str (), "w");
     if (!listfile)
         return "";
-    fprintf (listfile, "#EXTM3U");
+    fprintf (listfile, "#EXTM3U\n");
     unsigned int tracksize = getNumTracks ();
     for (unsigned i = 0; i < tracksize; i++)
     {
         mgContentItem& t = m_tracks[i];
         fprintf (listfile, "#EXTINF:%d,%s\n", t.getDuration (),
             t.getTitle ().c_str ());
-        fprintf (listfile, "%s", t.getSourceFile ().c_str ());
+	fprintf (listfile, "#MUGGLE:%d\n", t.getId());
+        fprintf (listfile, "%s\n", t.getSourceFile (false).c_str ());
     }
     fclose (listfile);
     return fn;
@@ -400,45 +422,40 @@ mgSelection::empty()
 void
 mgSelection::setPosition (unsigned int position)
 {
-    if (m_level < order.size ())
-        m_position[m_level] = position;
-    if (m_level >= order.size ()-1)
-        setTrackPosition(position);
+    if (m_level == order.size())
+	setTrackPosition(position);
+    else
+    	m_position = position;
 }
-
 
 void
 mgSelection::setTrackPosition (unsigned int position)
 {
-    m_tracks_position = position;
+	m_tracks_position = position;
 }
 
-
 unsigned int
-mgSelection::getPosition (unsigned int level)  const
+mgSelection::getPosition ()  const
 {
-    if (level == order.size ())
-        return getTrackPosition();
+    if (m_level == order.size())
+	    return getTrackPosition();
     else
-        return m_position[m_level];
+	    return m_position;
 }
 
 unsigned int
-mgSelection::gotoPosition (unsigned int level)
+mgSelection::gotoPosition ()
 {
-    if (level>order.size()) 
-	    mgError("mgSelection::gotoPosition: level %u > order.size %u",
-	 	level,order.size());
-    if (level == order.size ())
+    if (m_level == order.size ())
         return gotoTrackPosition();
     else
     {
     	unsigned int valsize = values.size();
     	if (valsize==0)
-		m_position[m_level] = 0;
-    	else if (m_position[m_level] >= valsize)
-        	m_position[m_level] = valsize -1;
-        return m_position[m_level];
+		m_position = 0;
+    	else if (m_position >= valsize)
+        	m_position = valsize -1;
+        return m_position;
     }
 }
 
@@ -517,13 +534,18 @@ mgSelection::getCompletedLength () const
 
 string mgSelection::getListname () const
 {
-    string
-        result = "";
+    list<string> st;
     for (unsigned int i = 0; i < m_level; i++)
-        addsep (result, ":", getKeyValue(i));
+	    st.push_back(order.getKeyValue(i));
+    st.unique();
+    string result="";
+    for (list < string >::iterator it = st.begin (); it != st.end (); ++it)
+    {
+	addsep (result, ":", *it);
+    }
     if (result.empty ())
 	if (order.size()>0)
-        	result = string(ktName(order.Key(0)->Type ()));
+        	result = string(ktName(order.getKeyType(0)));
     return result;
 }
 
@@ -531,6 +553,20 @@ string mgSelection::ListFilename ()
 {
     string res = getListname ();
     // convert char set ?
+    string::iterator it;
+    for (it=res.begin();it!=res.end();it++)
+    {
+	    char& c = *it;
+	    switch (c)
+	    {
+		    case '\'':
+		    case '/':
+		    case '\\':
+		    case ' ':
+		    case ')':
+	    	    case '(': c = '_';break;
+    	    }
+    }
     return res;
 }
 
@@ -557,22 +593,25 @@ mgSelection::tracks () const
     p.tables.push_back("tracks");
     p.tables.push_back("album");
     for (unsigned int i = m_level; i<order.size(); i++)
-    	p.orders += order.Key(i)->Parts(true).orders;
+    	p += order.Key(i)->Parts(true);
      m_current_tracks = p.sql_select(false); 
      m_tracks.clear ();
         MYSQL_RES *rows = exec_sql (m_current_tracks);
         if (rows)
         {
         	MYSQL_ROW row;
-           	while ((row = mysql_fetch_row (rows)) != NULL)
-           	{
+           	while ((row = mysql_fetch_row (rows)) != 0)
 		  m_tracks.push_back (mgContentItem (this,row));
-            	}
             	mysql_free_result (rows);
 	}
     return m_tracks;
 }
 
+
+mgContentItem::mgContentItem ()
+{
+    m_id = -1;
+}
 
 mgContentItem::mgContentItem (const mgContentItem* c)
 {
@@ -581,6 +620,8 @@ mgContentItem::mgContentItem (const mgContentItem* c)
     m_mp3file = c->m_mp3file;
     m_artist = c->m_artist;
     m_albumtitle = c->m_albumtitle;
+    m_genre1_id = c->m_genre1_id;
+    m_genre2_id = c->m_genre2_id;
     m_genre1 = c->m_genre1;
     m_genre2 = c->m_genre2;
     m_bitrate = c->m_bitrate;
@@ -589,6 +630,55 @@ mgContentItem::mgContentItem (const mgContentItem* c)
     m_duration = c->m_duration;
     m_samplerate = c->m_samplerate;
     m_channels = c->m_channels;
+}
+
+#if VDRVERSNUM >= 10318
+static char *readline(FILE *f)
+{
+  static char buffer[MAXPARSEBUFFER];
+  if (fgets(buffer, sizeof(buffer), f) > 0) {
+     int l = strlen(buffer) - 1;
+     if (l >= 0 && buffer[l] == '\n')
+        buffer[l] = 0;
+     return buffer;
+     }
+  return 0;
+}
+#endif
+
+static const char *FINDCMD = "cd '%s' 2>/dev/null && find -follow -name '%s' -print 2>/dev/null";
+
+static string
+GdFindFile( string tld, string mp3file )
+{
+  string result = "";
+  char *cmd = 0;
+  asprintf( &cmd, FINDCMD, tld.c_str(), mp3file.c_str() );
+  FILE *p = popen( cmd, "r" );
+  if (p) 
+    {
+      char *s;
+      if( (s = readline(p) ) != 0) 
+	  result = tld + s;
+      pclose(p);
+    }
+
+  free( cmd );
+
+  return result;
+}
+
+string
+mgContentItem::getSourceFile(bool AbsolutePath) const
+{
+	const string& tld = the_setup.ToplevelDir;
+	string result="";
+	if (AbsolutePath) result = tld;
+	if (the_setup.GdCompatibility)
+		result += GdFindFile(tld,m_mp3file);
+	else
+    		result += m_mp3file;
+	return result;
 }
 
 mgContentItem::mgContentItem (const mgSelection* sel,const MYSQL_ROW row)
@@ -605,17 +695,23 @@ mgContentItem::mgContentItem (const mgSelection* sel,const MYSQL_ROW row)
     if (row[3])
     	m_artist = row[3];
     else
-    	m_artist = row[3];
+    	m_artist = "NULL";
     if (row[4])
     	m_albumtitle = row[4];
     else
     	m_albumtitle = "NULL";
     if (row[5])
-    	m_genre1 = sel->value(keyGenre1,row[5]);
+    {
+	m_genre1_id = row[5];
+    	m_genre1 = sel->value(keyGenres,row[5]);
+    }
     else
     	m_genre1 = "NULL";
     if (row[6])
-    	m_genre2 = sel->value(keyGenre2,row[5]);
+    {
+	m_genre2_id = row[6];
+    	m_genre2 = sel->value(keyGenres,row[6]);
+    }
     else
     	m_genre2 = "NULL";
     if (row[7])
@@ -648,31 +744,24 @@ void mgSelection::InitSelection() {
 	m_Directory=".";
 	InitDatabase();
     	m_level = 0;
-        m_position.reserve (20);
+    	m_position = 0;
     	m_tracks_position = 0;
     	m_trackid = -1;
     	m_shuffle_mode = SM_NONE;
     	m_loop_mode = LM_NONE;
     	clearCache();
 	values.setOwner(this);
+	if (!needGenre2_set)
+	{
+		needGenre2_set=true;
+		needGenre2=exec_count("SELECT COUNT(DISTINCT genre2) from tracks")>1;
+	}
 }
 
-mgSelection::mgSelection()
-{
-    setDB(0);
-    m_Host = "";
-    m_User = "";
-    m_Password = "";
-    InitSelection ();
-    m_fall_through = false;
-}
 
-mgSelection::mgSelection (const string Host, const string User, const string Password, const bool fall_through)
+mgSelection::mgSelection (const bool fall_through)
 {
     setDB(0);
-    m_Host = Host;
-    m_User = User;
-    m_Password = Password;
     InitSelection ();
     m_fall_through = fall_through;
 }
@@ -700,36 +789,35 @@ mgSelection::setDB(MYSQL *db)
 }
 
 void
+mgSelection::setOrder(mgOrder* o)
+{
+	if (o)
+ 	{
+		order = *o;
+		order.setDB(m_db);
+	}
+	else
+		mgWarning("mgSelection::setOrder(0)");
+}
+
+void
 mgSelection::InitFrom(mgValmap& nv)
 {
         setDB(0);
-	m_Host = nv.getstr("Host");
-	m_User = nv.getstr("User");
-	m_Password = nv.getstr("Password");
 	InitSelection();
 	m_fall_through = nv.getbool("FallThrough");
     	m_Directory = nv.getstr("Directory");
-	for (unsigned int i = 0; i < 99 ; i++)
-	{
-		char *idx;
-		asprintf(&idx,"Keys.%u.Choice",i);
-		unsigned int v = nv.getuint(idx);
-		free(idx);
-		if (v==0) break;
-        	setKey (i,mgKeyTypes(v) );
-	}
 	while (m_level < nv.getuint("Level"))
 	{
 		char *idx;
-		asprintf(&idx,"Keys.%u.Position",m_level);
-        	unsigned int newpos = nv.getuint(idx);
+		asprintf(&idx,"order.Keys.%u.Position",m_level);
+        	string newval = nv.getstr(idx);
 		free(idx);
-        	if (!enter (newpos))
-            		if (!select (newpos)) break;
+        	if (!enter (newval))
+            		if (!select (newval)) break;
 	}
 	m_trackid = nv.getlong("TrackId");
-	// TODO do we really need Position AND TrackPosition in muggle.state?
-	setPosition(nv.getlong("Position"));
+	setPosition(nv.getstr("Position"));
 	if (m_level>=order.size()-1) 
 		setTrackPosition(nv.getlong("TrackPosition"));
 	setShuffleMode(ShuffleMode(nv.getuint("ShuffleMode")));
@@ -740,18 +828,12 @@ mgSelection::InitFrom(mgValmap& nv)
 mgSelection::~mgSelection ()
 {
     if (m_db)
-    {
-	mgDebug(3,"%X: closing m_db %X",this,m_db);
     	mysql_close (m_db);
-    }
 }
 
 void mgSelection::InitFrom(const mgSelection* s)
 {
     setDB(0);
-    m_Host = s->m_Host;	 
-    m_User = s->m_User;	 
-    m_Password = s->m_Password;	 
     InitSelection();
     m_fall_through = s->m_fall_through;
     m_Directory = s->m_Directory;
@@ -759,9 +841,7 @@ void mgSelection::InitFrom(const mgSelection* s)
     map_ids = s->map_ids;
     order = s->order;
     m_level = s->m_level;
-    m_position.reserve (s->m_position.capacity());
-    for (unsigned int i = 0; i < s->m_position.capacity(); i++)
-    	m_position[i] = s->m_position[i];
+    m_position = s->m_position;
     m_trackid = s->m_trackid;
     m_tracks_position = s->m_tracks_position;
     setShuffleMode (s->getShuffleMode ());
@@ -770,7 +850,7 @@ void mgSelection::InitFrom(const mgSelection* s)
 
 const mgSelection& mgSelection::operator=(const mgSelection &s)
 {
-    if ((&m_Host)==&(s.m_Host)) {	// prevent s = s
+    if (this==&s) {	// prevent s = s
 	    return *this;
     }
     InitFrom(&s);
@@ -785,7 +865,7 @@ mgSelection::ordersize ()
 }
 
 unsigned int
-mgSelection::valindex (const string val,const bool second_try)
+mgSelection::valindex (const string val,const bool second_try) const
 {
     for (unsigned int i = 0; i < values.size (); i++)
     {
@@ -794,8 +874,9 @@ mgSelection::valindex (const string val,const bool second_try)
     }
     // nochmal mit neuen Werten:
     clearCache();
+    refreshValues();
     if (second_try) {
-    	mgWarning("valindex: Gibt es nicht:%s",val.c_str());
+    	esyslog("valindex: Gibt es nicht:%s",val.c_str());
     	return 0;
     }
     else
@@ -803,13 +884,32 @@ mgSelection::valindex (const string val,const bool second_try)
 }
 
 
+unsigned int
+mgSelection::idindex (const string id,const bool second_try) const
+{
+    for (unsigned int i = 0; i < m_ids.size (); i++)
+        if (m_ids[i] == id)
+            return i;
+    // nochmal mit neuen Werten:
+    clearCache();
+    refreshValues();
+    if (second_try) {
+    	mgWarning("idindex: Gibt es nicht:%s",id.c_str());
+    	return 0;
+    }
+    else
+        return idindex(id,true);
+}
+
+
 void
 mgSelection::refreshValues ()  const
 {
+    assert(this);
     if (!m_db) return;
-    mgOrder o1 = order;
     if (m_current_values.empty())
     {
+    	mgOrder o1 = order;
 	mgParts p =  order.Parts(m_level);
         m_current_values = p.sql_select();
         values.strings.clear ();
@@ -819,16 +919,16 @@ mgSelection::refreshValues ()  const
         {
                 unsigned int num_fields = mysql_num_fields(rows);
 		MYSQL_ROW row;
-            	while ((row = mysql_fetch_row (rows)) != NULL)
+            	while ((row = mysql_fetch_row (rows)) != 0)
             	{
-			string r0 = "NULL";
-			if (row[0])
-				r0 = row[0];
+			if (!row[0]) continue;
+			string r0 = row[0];
+			if (r0=="NULL") // there is a genre NULL!
+				continue;
 			if (num_fields==2)
 			{
-				string r1 = "NULL";
-				if (row[1])
-					r1 = row[1];
+				if (!row[1]) continue;
+				string r1 = row[1];
                 		values.strings.push_back (r0);
                 		m_ids.push_back (r1);
 			}
@@ -848,66 +948,57 @@ mgSelection::count () const
 {
     return values.size ();
 }
-
 void
 mgSelection::InitDatabase ()
 {
     if (m_db) 
     {
-       mgDebug(3,"%X: InitDatabase closes %X",this,m_db);
        mysql_close (m_db);
        setDB(0);
     }
-    if (m_Host == "") return;
+    if (the_setup.DbHost == "") return;
     setDB(mysql_init (0));
-    mgDebug(3,"%X: InitDatabase opens %X",this, m_db);
     if (!m_db)
         return;
-    if (mysql_real_connect (m_db, m_Host.c_str (), m_User.c_str (), m_Password.c_str (),
-        "GiantDisc", 0, NULL, 0) == NULL) {
-	    mgWarning("Failed to connect to host '%s' as User '%s', Password '%s': Error: %s",
-			    m_Host.c_str(),m_User.c_str(),m_Password.c_str(),mysql_error(m_db));
-        mysql_close (m_db);
-	setDB(0);
-	return;
-    }
-    return;
-}
-
-
-void
-mgSelection::setKey (const unsigned int level, const mgKeyTypes kt)
-{
-    mgKey *newkey = ktGenerate(kt,m_db);
-    if (level == 0 && kt == keyCollection)
+    bool success;
+    if (the_setup.DbSocket != NULL)
     {
-        order.clear ();
-        order += newkey;
-	order += ktGenerate(keyCollectionItem,m_db);
-        return;
-    }
-    if (level == order.size ())
-    {
-        order += newkey;
+      mgDebug(1,"Using socket %s for connecting to Database %s as user %s.",
+		      the_setup.DbSocket,
+		      the_setup.DbName,
+		      the_setup.DbUser);
+      mgDebug(3,"DbPassword is: '%s'",the_setup.DbPass);
+      success = (mysql_real_connect( m_db,
+			      "",
+			      the_setup.DbUser,       
+			      the_setup.DbPass, 
+			      the_setup.DbName,
+			      0,
+			      the_setup.DbSocket, 0 ) != 0 );
     }
     else
     {
-	if (level >= order.size())
-	  mgError("mgSelection::setKey(%u,%s): level greater than order.size() %u",
-	      level,ktName(kt),order.size());
-        delete order[level];
-	order[level] = newkey;
+      mgDebug(1,"Using TCP-%s for connecting to Database %s as user %s.",
+		      the_setup.DbHost,
+		      the_setup.DbName,
+		      the_setup.DbUser);
+      mgDebug(3,"DbPassword is: '%s'",the_setup.DbPass);
+      success = ( mysql_real_connect( m_db,
+			      the_setup.DbHost, 
+			      the_setup.DbUser,       
+			      the_setup.DbPass, 
+			      the_setup.DbName,
+			      the_setup.DbPort,
+			      0, 0 ) != 0 );
     }
-
-    order.clean();
-
-// clear values for this and following levels (needed for copy constructor)
-    for (unsigned int i = level; i < order.size (); i++)
-        order[i]->set ("",EMPTY);
-
-    if (m_level > level)
-        m_level = level;
-    if (m_level == level) setPosition(0);
+    if (!success)
+    {
+	mgWarning("Failed to connect to host '%s' as User '%s', Password '%s': Error: %s",
+			    the_setup.DbHost,the_setup.DbUser,the_setup.DbPass,mysql_error(m_db));
+        mysql_close (m_db);
+	setDB(0);
+    }
+    return;
 }
 
 
@@ -921,9 +1012,11 @@ bool mgSelection::enter (unsigned int position)
     position = gotoPosition();		// reload adjusted position
     string value = values[position];
     string id = m_ids[position];
+    mgSelStrings prev;
+    if (m_fall_through && values.size()<10)
+	    prev=values;
     while (1)
     {
-        mgDebug(3,"enter(level=%u,pos=%u, id=%s)",m_level,position,id.c_str());
         if (m_level >= order.size () - 1)
             return false;
         order[m_level++]->set (value,id);
@@ -931,18 +1024,18 @@ bool mgSelection::enter (unsigned int position)
 	if (m_level >= order.size())
 	  mgError("mgSelection::enter(%u): level greater than order.size() %u",
 	      m_level,order.size());
-        if (m_position.capacity () == m_position.size ())
-            m_position.reserve (m_position.capacity () + 10);
-        m_position[m_level] = 0;
+        m_position = 0;
+	refreshValues();
+	if (count()==0)
+		break;
+	value = values[0];
+        id = m_ids[0];
         if (!m_fall_through)
             break;
-        if (count () > 1)
+        if (m_level==order.size()-1)
+	    break;
+	if (count () > 1 && !(prev==values))
             break;
-        if (count () == 1)
-	{
-	    value = values[0];
-            id = m_ids[0];
-	}
     }
     return true;
 }
@@ -950,7 +1043,6 @@ bool mgSelection::enter (unsigned int position)
 
 bool mgSelection::select (unsigned int position)
 {
-    mgDebug(3,"select(%u) on Level %d",position,m_level);
     if (m_level == order.size () - 1)
     {
         if (getNumTracks () <= position)
@@ -966,9 +1058,10 @@ bool mgSelection::select (unsigned int position)
         return enter (position);
 }
 
-
-bool mgSelection::leave ()
+bool
+mgSelection::leave ()
 {
+    string prevvalue;
     if (order.empty())
     {
 	mgWarning("mgSelection::leave(): order is empty");
@@ -977,29 +1070,103 @@ bool mgSelection::leave ()
     if (m_level == order.size ())
     {
         m_level--;
+	prevvalue=order.getKeyValue(m_level);
+	order[m_level]->set("",EMPTY);
         m_trackid = -1;
 	clearCache();
+	setPosition(prevvalue);
         return true;
     }
+    mgSelStrings prev;
+    if (m_fall_through && values.size()<10)
+	    prev=values;
     while (1)
     {
         if (m_level < 1)
             return false;
-        order[m_level]->set ("",EMPTY);
-        order[--m_level]->set ("",EMPTY);
+        if (m_level<order.size()) order[m_level]->set ("",EMPTY);
+	m_level--;
+	prevvalue=order.getKeyValue(m_level);
+        if (m_level<order.size()) order[m_level]->set ("",EMPTY);
 	clearCache();
         if (!m_fall_through)
             break;
-        if (count () > 1)
+        if (count () > 1 && !(prev==values))
             break;
     }
+    setPosition(prevvalue);
     return true;
+}
+
+void
+mgSelection::leave_all ()
+{
+	m_level=0;
+	for (unsigned int i=0;i<ordersize();i++)
+		order[i]->set ("",EMPTY);
+	clearCache();
+}
+
+void 
+mgSelection::selectfrom(mgOrder& oldorder,mgContentItem* o)
+{
+	leave_all();
+	string selval;
+	string selid;
+	assert(m_level==0);
+	for (unsigned int idx = 0; idx < ordersize(); idx++)
+	{
+		selval = EMPTY;
+		selid = EMPTY;
+		mgKeyTypes new_kt = getKeyType(idx);
+		for (unsigned int i=0;i<oldorder.size();i++)
+		{
+			mgKeyTypes old_kt = oldorder.getKeyType(i);
+			if (old_kt==new_kt)
+			{
+				selval = oldorder.getKeyValue(i);
+				selid = oldorder.getKeyId(i);
+			}
+			else if (old_kt>new_kt
+					&& iskeyGenre(old_kt)
+					&& iskeyGenre(new_kt))
+			{
+				selid = id(new_kt,value(new_kt,oldorder.getKeyId(i)));
+				selval= value(new_kt,selid);
+			}
+			if (selid!=EMPTY) break;
+		}
+		if (selid==EMPTY && o && o->getId()>=0)
+		{
+			selval = o->getKeyValue(new_kt);
+			selid = o->getKeyId(new_kt);
+		}
+		if (selid==EMPTY)
+			break;
+		if (m_level<ordersize()-1)
+		{
+			order[m_level++]->set (selval, selid);
+		}
+		else
+		{
+			setPosition(selval);
+			return;
+		}
+	}
+	if (m_level>0)
+	{
+		m_level--;
+		selval = order.getKeyValue(m_level);
+		order[m_level]->set("",EMPTY);
+		setPosition(selval);
+		order[m_level+1]->set("",EMPTY);
+	}
+	assert(m_level<ordersize());
 }
 
 string
 mgSelection::value(mgKeyTypes kt, string id) const
 {
-	if (kt==keyGenre2) kt = keyGenre1;
 	if (loadvalues (kt))
 	{
 		map<string,string>& valmap = map_values[kt];
@@ -1035,11 +1202,14 @@ mgSelection::value(mgKey* k) const
 string
 mgSelection::id(mgKeyTypes kt, string val) const
 {
-	if (kt==keyGenre2) kt = keyGenre1;
 	if (loadvalues (kt))
 	{
 		map<string,string>& idmap = map_ids[kt];
-		return idmap[val];
+		string v = idmap[val];
+		if (kt==keyGenre1) v=v.substr(0,1);
+		if (kt==keyGenre2) v=v.substr(0,2);
+		if (kt==keyGenre3) v=v.substr(0,3);
+		return v;
 	}
 	else
 		return val;
@@ -1058,12 +1228,12 @@ mgSelection::id(mgKey* k) const
 }
 
 bool
-mgSelection::UsedBefore(const mgKeyTypes kt,unsigned int level) const
+mgSelection::UsedBefore(mgOrder *o,const mgKeyTypes kt,unsigned int level) const
 {
-	if (level>=order.size())
-		level = order.size() -1;
+	if (level>=o->size())
+		level = o->size() -1;
 	for (unsigned int lx = 0; lx < level; lx++)
-		if (order.Key(lx)->Type()==kt)
+		if (o->getKeyType(lx)==kt)
 			return true;
 	return false;
 }
@@ -1072,16 +1242,16 @@ mgSelection::UsedBefore(const mgKeyTypes kt,unsigned int level) const
 bool mgSelection::isCollectionlist () const
 {
     if (order.size()==0) return false;
-    return (order.Key(0)->Type() == keyCollection && m_level == 0);
+    return (order.getKeyType(0) == keyCollection && m_level == 0);
 }
 
 bool
 mgSelection::inCollection(const string Name) const
 {
     if (order.size()==0) return false;
-    bool result = (order.Key(0)->Type() == keyCollection && m_level == 1);
+    bool result = (order.getKeyType(0) == keyCollection && m_level == 1);
     if (result)
-	    if (order.Key(1)->Type() != keyCollectionItem)
+	    if (order.getKeyType(1) != keyCollectionItem)
 		    mgError("inCollection: key[1] is not keyCollectionItem");
     if (!Name.empty())
     	result &= (order.getKeyValue(0) == Name);
@@ -1089,52 +1259,8 @@ mgSelection::inCollection(const string Name) const
 }
 
 
-#if 0
-void
-keychoice(mgOrder& o,const unsigned int level)
-{
-    if (level > o.size ())
-        return;
-    std::cout<<"possible choices:";
-    for (mgKeyTypes kt = mgKeyTypes(1); kt <= mgKeyTypesHigh; kt = mgKeyTypes(int(kt)+1))
-    {
-	if (level !=0 && kt == keyCollection)
-		continue;
-	if (level !=1 && kt == keyCollectionItem)
-		continue;
-	if (level == 1 && o[0]->Type() != keyCollection && kt == keyCollectionItem)
-		continue;
-	if (level == 1 && o[0]->Type() == keyCollection && kt != keyCollectionItem)
-		continue;
-	if (level >1 && o[0]->Type() == keyCollection)
-		break;
-	if (kt == keyDecade && UsedBefore(o,keyYear,level))
-		continue;
-	if (o[0]->Type() == keyCollection)
-	{
-		std::cout<<" "<<ktName(kt);
-	}
-	else if (!UsedBefore(o,kt,level))
-	{
-		if (keycounts[kt]==-1)
-		{
-			mgOrder oc(db);
-			oc += ktGenerate(kt,db);
-			keycounts[kt]=atol(get_col0(oc.Parts(0).sql_count()).c_str());
-		}
-		if (keycounts[kt]>1)
-			std::cout<<" "<<ktName(kt)<<"("<<keycounts[kt]<<")";
-	}
-    }
-    std::cout<<endl;
-}
-#endif
-
 void mgSelection::DumpState(mgValmap& nv) const
 {
-	nv.put("Host",m_Host);
-	nv.put("User",m_User);
-	nv.put("Password",m_Password);
 	nv.put("FallThrough",m_fall_through);
 	nv.put("ShuffleMode",int(m_shuffle_mode));
 	nv.put("LoopMode",int(m_loop_mode));
@@ -1142,36 +1268,31 @@ void mgSelection::DumpState(mgValmap& nv) const
 	nv.put("Level",int(m_level));
     	for (unsigned int i=0;i<order.size();i++)
     	{
-		char *n;
-		asprintf(&n,"Keys.%d.Choice",i);
-		nv.put(n,int(order.Key(i)->Type()));
-		free(n);
 		if (i<m_level) {
-			asprintf(&n,"Keys.%d.Position",i);
-			nv.put(n,m_position[i]);
+			char *n;
+			asprintf(&n,"order.Keys.%u.Position",i);
+			nv.put(n,getKeyValue(i));
 			free(n);
 		}
 	}
 	nv.put("TrackId",m_trackid);
-    	if (m_level == order.size ())
-		nv.put("Position",getTrackPosition());
-	else
-		nv.put("Position",m_position[m_level]);
-	nv.put("TrackPosition",getTrackPosition());
+	nv.put("Position",values[m_position]);
+	if (m_level>=order.size()-1) 
+		nv.put("TrackPosition",getTrackPosition());
 }
 
-map <mgKeyTypes, string> *
+map <mgKeyTypes, string>
 mgSelection::UsedKeyValues() 
 {
-	map <mgKeyTypes, string> *result = new map<mgKeyTypes, string>;
+	map <mgKeyTypes, string> result;
 	for (unsigned int idx = 0 ; idx < level() ; idx++)
 	{
-		(*result)[order.Key(idx)->Type()] = order.getKeyValue(idx);
+		result[order.getKeyType(idx)] = order.getKeyValue(idx);
 	}
 	if (level() < order.size()-1)
 	{
 		mgKeyTypes ch =  order.getKeyType(level());
-		(*result)[ch] = getCurrentValue();
+		result[ch] = getCurrentValue();
 	}
 	return result;
 }
@@ -1179,17 +1300,14 @@ mgSelection::UsedKeyValues()
 bool
 mgSelection::loadvalues (mgKeyTypes kt) const
 {
+	if (map_ids.count(kt)>0) 
+		return true;
+	map<string,string>& idmap = map_ids[kt];
 	mgKey* k = ktGenerate(kt,m_db);
 	if (k->map_idfield().empty())
 	{
 		delete k;
 		return false;
-	}
-	map<string,string>& idmap = map_ids[kt];
-	if (!idmap.empty())
-	{
-		delete k;
-		return true;
 	}
 	map<string,string>& valmap = map_values[kt];
 	char *b;
@@ -1199,14 +1317,82 @@ mgSelection::loadvalues (mgKeyTypes kt) const
 	if (rows) 
 	{
 		MYSQL_ROW row;
-		while ((row = mysql_fetch_row (rows)) != NULL)
+		while ((row = mysql_fetch_row (rows)) != 0)
 		{
 			if (row[0] && row[1])
+			{
 				valmap[row[0]] = row[1];
 				idmap[row[1]] = row[0];
+			}
 		}
 		mysql_free_result (rows);
 	}
 	delete k;
 	return true;
+}
+
+static vector<int> keycounts;
+
+unsigned int
+mgSelection::keycount(mgKeyTypes kt)
+{
+	assert(strlen(m_db->host));
+	if (keycounts.size()==0)
+	{
+		for (unsigned int ki=int(mgKeyTypesLow);ki<=int(mgKeyTypesHigh);ki++)
+		{
+			keycounts.push_back(-1);
+		}
+	}
+	int& count = keycounts[int(kt-mgKeyTypesLow)];
+	if (count==-1)
+	{
+		mgKey* k = ktGenerate(kt,m_db);
+		count = exec_count(k->Parts(true).sql_count());
+		delete k;
+	}
+	return count;
+}
+
+
+vector <const char *>
+mgSelection::choices(mgOrder *o,unsigned int level, unsigned int *current)
+{
+	vector<const char*> result;
+	if (level>o->size())
+	{
+		*current = 0;
+		return result;
+	}
+	for (unsigned int ki=int(mgKeyTypesLow);ki<=int(mgKeyTypesHigh);ki++)
+	{
+		mgKeyTypes kt = mgKeyTypes(ki);
+		if (kt==o->getKeyType(level))
+		{
+			*current = result.size();
+			result.push_back(ktName(kt));
+			continue;
+		}
+		if (UsedBefore(o,kt,level))
+			continue;
+		if (kt==keyDecade && UsedBefore(o,keyYear,level))
+			continue;
+		if (kt==keyGenre1 && UsedBefore(o,keyGenres,level))
+			continue;
+		if (kt==keyGenre2 && UsedBefore(o,keyGenres,level))
+			continue;
+		if (kt==keyGenre3 && UsedBefore(o,keyGenres,level))
+			continue;
+		if (kt==keyGenre1 && UsedBefore(o,keyGenre3,level))
+			continue;
+		if (kt==keyGenre2 && UsedBefore(o,keyGenre3,level))
+			continue;
+		if (kt==keyGenre1 && UsedBefore(o,keyGenre2,level))
+			continue;
+		if (kt==keyCollection || kt==keyCollectionItem)
+			result.push_back(ktName(kt));
+		else if (keycount(kt)>1)
+			result.push_back(ktName(kt));
+	}
+	return result;
 }
