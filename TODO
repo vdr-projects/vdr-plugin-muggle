@@ -1,0 +1,42 @@
+TODO File for Muggle
+====================
+
+Code polishing
+==============
+- check for memory leaks
+- check for (reasonably) consistent usage of char*/string
+
+Short term items
+================
+
+OSD
+---
+- DisplayTrackInfo
+- DisplayAlbumInfo
+- Edit playlist (means moving tracks around?)
+- handle filters:
+    - create tracklist from filter
+    - create tree from filter
+
+Content
+-------
+
+Medium term items
+=================
+
+- Add a player for various formats
+    - from mp3 plugin
+    - use mplayer in slave mode
+    - check mpg123 (used in GD)
+
+Long term items
+===============
+
+- Display covers as still pictures
+
+Visions
+=======
+
+- handle films
+- handle off-line media (CDs, DVDs)
+- handle EPG
