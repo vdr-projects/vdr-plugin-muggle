@@ -1553,6 +1553,7 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 	case kOk:
 	  {
 	    m_visible = !m_visible;
+	    the_setup.visible = m_visible;
 	    Display();
 
 	    return osContinue;
