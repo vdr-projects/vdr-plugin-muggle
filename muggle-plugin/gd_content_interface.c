@@ -1,8 +1,8 @@
 /*! \file  content_interface.cpp
  *  \brief  Data Objects for content (e.g. mp3 files, movies) for the vdr muggle plugindatabase
  *
- * \version $Revision: 1.24 $
- * \date    $Date: 2004/07/25 21:33:35 $
+ * \version $Revision: 1.25 $
+ * \date    $Date: 2004/08/23 06:36:25 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  Responsible author: $Author: lvw $
  *
@@ -791,6 +791,7 @@ int GdPlaylist::insertDataFromSQL()
     }
     return nrows;
 }
+
 bool GdPlaylist::storePlaylist()
 {
     vector<mgContentItem*>::iterator iter;
@@ -1395,6 +1396,9 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.25  2004/08/23 06:36:25  lvw
+ * Initial version of an import module added
+ *
  * Revision 1.24  2004/07/25 21:33:35  lvw
  * Removed bugs in finding track files and playlist indexing.
  *
