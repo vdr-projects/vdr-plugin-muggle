@@ -2,8 +2,8 @@
  * \file   mg_playlist.c
  * \brief  defines functions to be executed on playlists for the vdr muggle plugindatabase
  *
- * \version $Revision: 1.5 $
- * \date    $Date: 2004/07/25 21:33:35 $
+ * \version $Revision: 1.6 $
+ * \date    $Date: 2004/07/26 22:20:55 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  Responsible author: $Author: lvw $
  *
@@ -29,6 +29,7 @@ class mgPlaylist : public mgTracklist
 {	  
 
 private:
+
   //! \brief current index in the playlist
   // TODO: should be a property of the player?
   int m_current_idx;
@@ -39,9 +40,6 @@ protected:
   
   //! \brief the name of the playlist
   std::string m_listname;
-  
-  //! \brief the current item as an iterator
-  std::vector<mgContentItem*>::iterator m_current;
   
 public:
      
@@ -114,6 +112,9 @@ public:
   //! \brief obtain the listname
   std::string getListname() ;
 
+  //! \brief returns the current item of the list
+  virtual mgContentItem* getCurrent();
+    
   /*! \brief set the listname
    *
    *  \param name - the new name of this list
@@ -123,24 +124,21 @@ public:
   //! \brief returns the count of items in the list
   int count();
 
-  //! \brief returns the first item of the list
-  virtual mgContentItem* getFirst();
-
   /*! \brief returns the nth track from the playlist
    *
    *  \param position - the position to skip to
    */
-  virtual mgContentItem* getPosition(unsigned int position);
+  virtual void gotoPosition(unsigned int position);
   
   //! \brief proceeds to the next item
-  virtual mgContentItem* skipFwd();
+  virtual void skipFwd();
 
   //! \brief goes back to the previous item
-  virtual mgContentItem* skipBack();
+  virtual void skipBack();
  
   //! \brief obtain the next item without skipping the current position
   virtual mgContentItem* sneakNext(); 
-  virtual bool storePlaylist()=0;
+  virtual bool storePlaylist() = 0;
 
   //! \brief export the playlist in m3u format
   virtual bool exportM3U( std::string m3u_file );

@@ -2,8 +2,8 @@
  * \file   mg_playlist.c
  * \brief  defines functions to be executed on playlists for the vdr muggle plugindatabase
  *
- * \version $Revision: 1.4 $
- * \date    $Date: 2004/07/25 21:33:35 $
+ * \version $Revision: 1.5 $
+ * \date    $Date: 2004/07/26 22:20:54 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  Responsible author: $Author: lvw $
  *
@@ -24,7 +24,7 @@ using namespace std;
 
 mgPlaylist::mgPlaylist()
 {
-  m_current_idx = 0;
+  m_current_idx = -1;
 
   char *buffer;
   asprintf( &buffer, "Playlist-%ld", random() );
@@ -54,7 +54,7 @@ void mgPlaylist::toggleLoop()
 
 void mgPlaylist::initialize()
 {
-  m_current_idx = -1;
+  m_current_idx = 0;
 }
 
 /* ==== add/remove tracks ==== */
@@ -66,7 +66,7 @@ void mgPlaylist::append(mgContentItem* item)
 }
 
 /* append a list of tracks at the end of the playlist */
-void mgPlaylist::appendList(vector<mgContentItem*> *tracks)
+void mgPlaylist::appendList( vector<mgContentItem*> *tracks )
 {
   vector<mgContentItem*>::iterator iter;
   
@@ -82,7 +82,7 @@ void mgPlaylist::appendList(vector<mgContentItem*> *tracks)
 }
 
 /* add a song after 'position' */
-void mgPlaylist::insert(mgContentItem* item, unsigned int position)
+void mgPlaylist::insert( mgContentItem* item, unsigned int position )
 {
     if( position >= m_list.size() )
       {
@@ -136,80 +136,64 @@ int mgPlaylist::count()
 }
 
 // returns the first item of the list
-mgContentItem* mgPlaylist::getFirst()
+mgContentItem* mgPlaylist::getCurrent()
 {
-    m_current = m_list.begin();
-    m_current_idx = 0;
-
-    return *m_current;
+  return *( m_list.begin() + m_current_idx );
 }
 
 // returns the  nth track from the playlist
-mgContentItem* mgPlaylist::getPosition(unsigned int position)
+void mgPlaylist::gotoPosition(unsigned int position)
 {
     if( position >= m_list.size() )
       {
 	// TODO: why not return a NULL pointer? LVW
-	return &(mgContentItem::UNDEFINED); //invalid
+	m_current_idx = -1;
       }
-    m_current = m_list.begin() + position;
-
-    return *m_current;
+    else
+      {
+	m_current_idx = position;
+      }
 }
 
 // proceeds to the next item
-mgContentItem*  mgPlaylist::skipFwd()
+void mgPlaylist::skipFwd()
 {
-  mgContentItem* next;
-
-  if( m_current_idx < 0 )
+  if( m_current_idx + 1 <= m_list.size() ) // unless loop mode
     {
-      return getFirst();
-    }
-
-  if( m_current + 1 == m_list.end() ) // unless loop mode
-    {
-      // TODO: why not return a NULL pointer? LVW
-      next = &(mgContentItem::UNDEFINED); //invalid item
+      m_current_idx ++;      
     }
   else
     {
-      return * (++ m_current);
+      // or goto 1 in case of loop mode
+      m_current_idx = -1;
     }
-  
-  return next;
 }
 
 // goes back to the previous item
-mgContentItem*  mgPlaylist::skipBack()
+void mgPlaylist::skipBack()
 {
-  mgContentItem* prev;
-
-  if( m_current == m_list.begin() )
+  if( m_current_idx > 0 )
     {
-      // TODO: why not return a NULL pointer? LVW
-      prev = &(mgContentItem::UNDEFINED); //invalid
+      m_current_idx --;
     }
   else
     {
-      prev = * (--m_current);
+      // or goto last in case of loop mode
+      m_current_idx = -1;
     }
-
-  return prev;
 }
 
 // get next track, do not update data structures
 mgContentItem* mgPlaylist::sneakNext()
 {
-    if( m_current+1 == m_list.end() )
-      {
-	// TODO: why not return a NULL pointer? LVW
-	return &(mgContentItem::UNDEFINED); //invalid
-      }
-    else
-      {
-	return * (m_current+1);
-      }
+  if( m_current_idx + 1 <= m_list.size() ) // unless loop mode
+    {
+      return *(m_list.begin() + m_current_idx + 1);
+    }
+  else
+    {
+      return &(mgContentItem::UNDEFINED);
+    }
 }
 
 bool mgPlaylist::exportM3U( string m3u_file )
@@ -229,7 +213,7 @@ bool mgPlaylist::exportM3U( string m3u_file )
 
   for( iter = m_list.begin(); iter != m_list.end(); iter++ )
     { //  each item in the list
-      fprintf( listfile, "#EXTINF:0,%s", (*iter)->getLabel().c_str() );
+      fprintf( listfile, "#EXTINF:0,%s\n", (*iter)->getLabel().c_str() );
       fprintf( listfile, "%s", (*iter)->getSourceFile().c_str() );
     }
 
