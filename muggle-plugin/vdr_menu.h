@@ -174,11 +174,13 @@ class mgMainMenu:public cOsdMenu
 	//! \brief clears the screen, sets a title and buttons with text on them
         void InitOsd (const char *title,const bool hashotkeys);
 
+#if VDRVERSNUM >= 10307
 	//! \brief expose the protected DisplayMenu() from cOsdMenu
 	cSkinDisplayMenu *DisplayMenu(void)
 	{
 		return cOsdMenu::DisplayMenu();
 	}
+#endif
 
 	//! \brief expose the protected cOsdMenu::hk()
         const char *hk (const char *s)

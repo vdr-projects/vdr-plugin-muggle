@@ -675,7 +675,9 @@ mgMainMenu::DisplayGoto (unsigned int select)
         RefreshCurrent ();
     }
     Display ();
+#if VDRVERSNUM >= 10307
     DisplayMenu()->SetTabs(25);
+#endif
 }
 
 
