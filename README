@@ -25,15 +25,6 @@ Please provide feedback to the authors whenever you
 think, these instructions are not appropriate, wrong,
 or useless in any other sense.
 
-\section ack Acknowledgements
-
-Thanks to all who have supported the development of this plugin. Special thanks go to
-- Muempf for the mp3 plugin. All code related to audio replay is largely taken over from this plugin.
-- LordJaxom for constant support in the chat of VDR portal regarding OSD programming in VDR
-- eloy (member of vdrportal.de) for alpha testing
-- All beta testers at vdrportal.de and on the VDR mailing list
-- decembersoul (member of vdrportal.de) for finding out how to run muggle on LinVDR
-
 \section desc DESCRIPTION
 
 The muggle plugin provides a database link for VDR so that selection of media becomes more flexible.
@@ -205,12 +196,75 @@ above do not make use of passwords, but restrict database acccess on a server ba
 The -t argument specifies the top level directory of the music files. On a local installation, this is the
 directory in which you executed the import steps (Chapter 4.2).
 
-\section use USING MUGGLE
+\section use USING MUGGLE - OVERVIEW
 
 Quick version: select Muggle on the OSD, browse titles (using up/down and Ok), add them using the red button.
 Then turn to the playlist view using yellow and start play using again the red function key.
 
 During playback, Up/Down jumps forth and back in the current playlist. Yellow toggles play/pause mode and Ok
 brings up a progress display. For VDR 1.3.6- the progress display is "quite simple".
+
+\section use-detail USING MUGGLE
+
+The idea behind muggle and the concept of the GUI was driven by the requirement, that almost all funtionalities must be possible with only using the cursor keys, the colour keys and menu, ok and back. 
+
+Muggle consist of three main views. The different views could allways be switch with the yellow key. In every view there is a context sensitiv menu with certain commands suitable for the current view. This menu could be reached from every view with the blue key. The two most common commands for a view could be reached with the remaining two colour keys red and green.
+
+In all views the cursor keys are used like in every VDR menu.
+
+That is all you have to know to get full access to all functions of muggle. So now lets look in more detail in the three different views.
+
+\subsection browserview BROWSER VIEW
+
+The Browser view will be the most used view within muggle. It presents all stored media within the database in a sort of tree view. A tree consist of nodes wich have child nodes which are also nodes. A leaf of such a tree consist of one single media file. Just to make it clear beneath a node there are on the bottom line at least on, but in the higher regions of the tree several media files.
+
+At present there are 5 different main trees:
+- artist -> album -> title
+- genre -> artist -> album -> tilte
+- artist -> title
+- genre -> year -> title
+- album -> title
+
+To add all songs from Abba to the active playlist just use the "artist -> title" tree and look for Abba in the resulting list. Press OK and here you are. All songs from Abba which are stored in the database are shown on the screen and the higlighted one could be added with the red key (you remember: most common commands are on red/green) to the active playlist. If you want to add all songs from Abba to the active playlist just go up one level, Abba is highlighted and then press red and ready you are.
+
+With the green colour key you could easily reach the main trees (this is not implemented yet).
+
+Thats all you have to know about this view. Please keep in mind that red adds always _ALL_ songs beneath the current node to the active playlist. So pressing red on one of the main trees leads to adding _ALL_ media files within the database (this could be thousands) to the active playlist. 
+
+\subsection playlistview PLAYLIST VIEW
+
+In this view you see the active playlist. All songs currently added to the playlist are shown here. With the blue colour key you can reach the context sensitive menu. Here you can find some actions to modify the playlist, clear it totaly and many others.
+
+\subsection searchview SEARCH VIEW
+
+The search view is a more advanced method to look into the content of your database. If you search for all songs from Abba which are rated "++" this is your tool. You could find three different search methods which are descripte later. You switch betweeen this search methods with the green colour key.
+
+\subsubsection titlesearch TITLE SEARCH
+
+If you want to search for a single media file, this is for you. You could insert some search criteria and after pressing the red button you see all media files which fullfill the restrictions.
+
+Example: Search for all songs from Abba which have "water" in the title an are publisched befor 2000.
+
+ Artist:     Abba
+ Title:      water
+ Year(till): 2000
+
+\subsubsection albumsearch ALBUM SEARCH
+
+If you want to search for a certain album and are interested in all songs of that album even if the songs not fullfill the search criteria, than this search is for you.
+
+Example: Search for all songs on an album from "U2" with "tree" in the album title.
+
+ Album Title: tree
+ Album Artist: U2
+
+\subsubsection playlistsearch PLAYLIST SEARCH
+
+If you want to search for a playlist wích contains songs which fullfill the criteria.
+
+Example: Yesterday during your birthday party you played a song from Tina Turner during your party, your best friend is interested in the song which was played just behind that Tina Turner song. The search presents all titles of that playlist. You could easily browser the list, find Tinas song and you have the one behind.
+
+ Playlist Title: Birthday Party 2004
+ Artist:         Tina Turner
 
 */
