@@ -26,12 +26,17 @@
 
 using namespace std;
 
-#define GD_PLAYLIST_TYPE 0 // listtype for giant disc db
+#define GD_PLAYLIST_TYPE 0 //< listtype for giant disc db
 
 // some dummies to keep the compiler happy
 #define DUMMY_CONDITION true // we use that as dummy condition to satisfy C++ syntax
 #define DUMMY
 
+/*!
+ * \brief initialize a database used by Giantdisc
+ *
+ * \todo should be a static function in some Gd class
+ */
 int GdInitDatabase( MYSQL *db )
 {
   if( mysql_init(db) == NULL )
