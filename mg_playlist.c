@@ -20,9 +20,6 @@
 #include <vector>
 #include <iostream>
 
-
-/* ==== constructors ==== */
-
 mgPlaylist::mgPlaylist()
 {
   m_current_idx = -1;
@@ -45,17 +42,21 @@ mgPlaylist::~mgPlaylist()
 {
 }
 
-void mgPlaylist::toggleShuffle()
+void mgPlaylist::setLoopMode( LoopMode lm )
 {
+  m_loop_mode = lm;
 }
 
-void mgPlaylist::toggleLoop()
+void mgPlaylist::setShuffleMode( ShuffleMode sm )
 {
+  m_shuffle_mode = sm;
 }
 
 void mgPlaylist::initialize()
 {
   m_current_idx = 0;
+  m_loop_mode = mgPlaylist::LM_NONE;
+  m_shuffle_mode = mgPlaylist::SM_NONE;
 }
 
 /* ==== add/remove tracks ==== */
@@ -148,7 +149,6 @@ void mgPlaylist::move( int from, int to )
     }
 }
 
-/*====  access tracks ====*/
 std::string mgPlaylist::getListname() 
 { 
   return m_listname; 
@@ -207,9 +207,23 @@ bool mgPlaylist::skipFwd()
 {
   bool result = false;
 
-  if( m_current_idx + 1 < (int) m_list.size() ) // unless loop mode
+  if( m_loop_mode == mgPlaylist::LM_SINGLE )
     {
-      m_current_idx ++;
+      result = true;
+    }
+  else
+    {
+      if( m_current_idx + 1 < (int) m_list.size() ) // unless loop mode
+	{
+	  m_current_idx ++;
+	}
+      else
+	{
+	  if( m_loop_mode == mgPlaylist::LM_FULL )
+	    {
+	      m_current_idx = 0;
+	    }
+	}
       result = true;
     }
 
@@ -222,12 +236,25 @@ bool mgPlaylist::skipBack()
 {
   bool result = false;
 
-  if( m_current_idx > 0 )
+  if( m_loop_mode == mgPlaylist::LM_SINGLE )
     {
-      m_current_idx --;
       result = true;
     }
-
+  else
+    {
+      if( m_current_idx > 0 )
+	{
+	  m_current_idx --;
+	}
+      else
+	{
+	  if( m_loop_mode == mgPlaylist::LM_FULL )
+	    {
+	      m_current_idx = m_list.size() -1;
+	    }
+	}
+      result = true;
+    }
   // if we are at the beginning -- just do nothing unless in loop mode
   return result;
 }
@@ -235,14 +262,25 @@ bool mgPlaylist::skipBack()
 // get next track, do not update data structures
 mgContentItem* mgPlaylist::sneakNext()
 {
+  mgContentItem* result;
+
   if( m_current_idx + 1 <= (int) m_list.size() ) // unless loop mode
     {
-      return *(m_list.begin() + m_current_idx + 1);
+      result =  *(m_list.begin() + m_current_idx + 1);
     }
   else
     {
-      return &(mgContentItem::UNDEFINED);
+      if( m_loop_mode == mgPlaylist::LM_FULL )
+	{
+	  result = *(m_list.begin());
+	}
+      else
+	{
+	  return &(mgContentItem::UNDEFINED);
+	}
     }
+
+  return result;
 }
 
 bool mgPlaylist::exportM3U( std::string m3u_file )
@@ -262,7 +300,7 @@ bool mgPlaylist::exportM3U( std::string m3u_file )
 
   for( iter = m_list.begin(); iter != m_list.end(); iter++ )
     { //  each item in the list
-      fprintf( listfile, "#EXTINF:0,%s\n", (*iter)->getLabel().c_str() );
+      fprintf( listfile, "#EXTINF:%d,%s\n", (*iter)->getLength(), (*iter)->getLabel().c_str() );
       fprintf( listfile, "%s", (*iter)->getSourceFile().c_str() );
     }
 
