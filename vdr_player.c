@@ -378,6 +378,7 @@ mgPCMPlayer::Action (void)
     m_state = msStop;
     SetPlayMode (pmStopped);
 
+    cDevice::PrimaryDevice()->SetCurrentAudioTrack(ttDolbyFirst);
     while (m_active)
     {
 #ifdef DEBUG
