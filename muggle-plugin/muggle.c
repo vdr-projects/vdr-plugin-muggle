@@ -110,7 +110,15 @@ mgMuggle::CommandLineHelp (void)
 bool mgMuggle::ProcessArgs (int argc, char *argv[])
 {
     mgSetDebugLevel (1);
-    mgDebug (1, "mgMuggle::ProcessArgs");
+    char b[1000];
+    sprintf(b,"mgMuggle::ProcessArgs ");
+    for (int i=1;i<argc;i++)
+    {
+	if (strlen(b)+strlen(argv[i]+2)>1000) break;;
+    	strcat(b,"  ");
+    	strcat(b,argv[i]);
+    }
+    mgDebug(1,b);
 
 // Implement command line argument processing here if applicable.
     static struct option
