@@ -1,0 +1,224 @@
+b	20	Alternative
+ba	40	Alternative General
+bb	\N	Art Rock
+bc	90	Avant Rock
+be	\N	Experimental
+bh	6	Grunge
+bi	\N	Indie
+bm	12	Unclassifiable
+bn	\N	Crossover
+c	\N	Books & Spoken
+ca	\N	Short Stories
+cb	57	Comedy
+cc	77	Musicals/Broadway
+cd	\N	Poetry
+ce	\N	Cabaret / Satire
+cf	\N	Religion
+cg	101	Spoken Word
+ch	\N	Stories/Fairytales
+ci	\N	Radio Play
+cia	\N	Literary Radio Play
+cib	\N	Thriller
+e	32	Classical
+ea	104	Chamber Music
+eaa	105	Sonata
+eb	\N	Classical General
+ec	\N	Contemporary
+eca	\N	Contemp. Crossover
+ecb	\N	Electronic Classical
+ecc	\N	Experimental Classical
+ecd	\N	Minimal Music
+ed	\N	Film Music
+ee	33	Instrumental
+ef	\N	Period Music
+efa	\N	Baroque
+efb	\N	Medieval
+efc	\N	Renaissance
+efd	\N	Romantic
+efda	\N	19th Century
+eg	\N	Solo Instruments
+ega	\N	Guitar
+egb	\N	Percussion
+egc	\N	Piano
+eh	106	Symphonic
+ei	28	Classic Vocal
+eia	97	Choral
+eib	\N	Ensembles
+eic	103	Opera
+ej	\N	Baroque
+f	2	Country
+fa	\N	Alternative Country
+fb	89	Bluegrass
+fd	\N	Country Blues
+fe	\N	Country General
+fg	\N	Country and Western
+fh	80	Folk
+fha	\N	Irish Folk
+fi	\N	Rockabilly
+g	98	Easy Listening
+gb	\N	Lounge
+gc	\N	Love Songs
+gca	116	Ballads
+gd	\N	Mood Music
+ge	10	New Age
+gf	\N	Soft Rock
+gfa	\N	Acoustic Rock
+gg	\N	Schlager
+gh	\N	Soft Pop
+gi	45	Meditative
+gj	\N	Pair Dance
+gja	\N	Walz
+gjb	\N	Tango
+h	102	Songs/Chansons
+ha	\N	Singer-Songwriter
+hb	65	Children's Music
+i	52	Electronic
+ia	34	Acid
+ib	26	Ambient
+ic	\N	Breakbeat/Breaks
+ica	\N	Breakbeat
+icb	\N	Darkside
+icc	63	Jungle
+icd	\N	Ragga
+ice	27	Trip Hop
+id	3	Dance
+ie	\N	Drum n' Bass
+if	\N	Electronica
+ig	\N	Envir. Soundscapes
+ih	\N	Experimental Elect.
+iha	\N	Minimal Experimental
+ihb	39	Noise
+ii	37	Game Soundtracks
+ij	35	House
+ija	\N	Acid House
+ijb	\N	Funk House
+ijc	\N	Hard House
+ijd	\N	Progressive House
+ik	19	Industrial
+il	18	Techno
+ilb	\N	Dub
+ild	\N	Goa
+ile	\N	Hardcore Techno
+ilf	\N	Illbient
+ilg	\N	Minimal
+ilh	25	Old Skool Techno
+ili	68	Rave
+ilj	31	Trance
+im	44	Space Music
+j	\N	Hip Hop/Rap
+ja	7	Hip Hop
+jb	15	Rap
+jbb	61	Christian Rap
+jbd	\N	Hardcore Rap
+jbf	59	Gangsta
+k	\N	Blues/R&B
+ka	0	Blues
+kaa	\N	Acoustic Blues
+kab	\N	Blues Rock
+kac	\N	Blues Vocalist
+kae	\N	Electric Blues
+kag	\N	Jazz Blues
+kb	38	Gospel
+kc	\N	Improvised
+kd	14	R&B
+ke	42	Soul
+kea	\N	Sweet Soul
+l	8	Jazz
+la	73	Acid Jazz
+lb	85	Bebop
+lc	\N	Dancefloor Jazz
+lf	30	Jazz Fusion
+lh	\N	Jazz Vocals
+lj	\N	Ragtime
+lk	\N	Smooth Jazz
+ll	83	Swing
+lla	96	Big Band
+llb	76	Retro-Swing
+lm	\N	Cool Jazz
+ln	\N	Ethno Jazz
+lna	\N	African Ethno Jazz
+lnb	\N	Arab Ethno Jazz
+lnc	\N	Cuban Jazz
+lnd	\N	Latin Jazz
+lne	\N	Far East Jazz
+lo	\N	Modern Jazz
+lp	\N	New Orleans Brass
+m	\N	Pop & Rock
+ma	\N	Country Rock
+mb	5	Funk
+mba	\N	Acid Funk
+mc	9	Metal
+mcc	22	Death Metal
+mcd	\N	Doom Metal
+mcf	\N	Hard Core Metal
+mcg	\N	Heavy Metal
+mck	\N	Thrash/Speed Metal
+md	13	Pop
+mda	99	Acoustic
+mdb	\N	Synthesizer Pop
+mdd	\N	Latin Pop
+mdg	123	A capella/Pop Vocals
+mdh	\N	Neue Deutsche Welle
+mdi	\N	Disco
+mdj	\N	Dance Pop
+mdja	\N	Twist
+mdk	\N	Doo-Wop
+me	43	Punk
+mea	121	Hardcore/Punk Rock
+meb	71	Lo-Fi/Garage
+mec	\N	Old School Punk
+med	21	Ska
+mf	17	Rock
+mfb	\N	Acid Rock
+mfe	81	Folk Rock
+mfg	\N	Groove Rock
+mfh	\N	Guitar Rock
+mfha	1	Classic Rock
+mfhb	\N	Improv Rock
+mfhc	47	Instrumental Rock
+mfhf	\N	Surf Rock
+mfj	66	New Wave
+mfk	67	Psychedelic
+mfl	78	Rock & Roll
+mfm	94	Symphonic Rock
+mg	\N	Rock En Espanol
+n	\N	World
+na	16	Reggae
+nb	\N	Steel Drums
+nc	\N	World Popular
+nca	\N	African Pop
+ncb	\N	Oriental Pop
+ncc	\N	Scandinavian Ethnopop
+ncd	\N	Asian Pop
+nce	\N	Arabian Pop
+ncf	\N	European Ethnopop
+ncg	\N	Latin Pop
+nch	\N	Caribbean Pop
+nd	82	World Traditions
+nda	\N	African
+ndaa	\N	Mali Blues
+ndb	\N	Arabic
+ndc	\N	Asian
+ndd	\N	Bossa Nova
+nde	\N	Caribbean
+ndf	88	Celtic
+ndg	53	European Folk/Pop
+ndga	\N	Jodel
+ndh	\N	France
+ndi	\N	Germany
+ndj	\N	India
+ndk	\N	Ireland
+ndl	86	Latin
+ndlb	\N	Flamenco
+ndlc	\N	Mambo
+ndld	\N	Mariachi
+ndle	\N	Meringue
+ndlg	\N	Salsa
+ndlh	114	Samba
+ndm	64	Native American
+ndn	\N	Quebecois
+ndo	\N	Russian
+ndp	\N	South/Cent. American
+ndq	\N	Spain
+ndr	113	Tango
+		NULl
