@@ -1,0 +1,45 @@
+-	Instrumental
+CHde	Swiss German
+af	Afrikaans
+ar	Arabic
+bg	Bulgarian
+bn	Bengali; Bangla
+bo	Tibetan
+cs	Czech
+da	Danish
+de	German
+el	Greek
+en	English
+eo	Esperanto
+es	Spanish
+fi	Finnish
+fr	French
+hi	Hindi
+hu	Hungarian
+is	Icelandic
+it	Italian
+iw	Hebrew
+ja	Japanese
+ku	Kurdish
+la	Latin
+lt	Lithuanian
+lv	Latvian, Lettish
+nl	Dutch
+no	Norwegian
+pl	Polish
+pt	Portuguese
+rm	Rhaeto-Romance
+ro	Romanian
+ru	Russian
+sh	Serbo-Croatian
+sk	Slovak
+sl	Slovenian
+sq	Albanian
+sr	Serbian
+sv	Swedish
+ta	Tamil
+th	Thai
+tr	Turkish
+vi	Vietnamese
+zh	Chinese
+zu	African

@@ -1,0 +1,6 @@
+cd
+radio
+vinyl
+tape
+tv
+video
