@@ -266,9 +266,10 @@ void update_db( long uid, std::string filename )
 	}
       else
 	{ // the entry does not exist, create it
-	  mgSqlWriteQuery( db,"INSERT INTO tracks (artist,title,year,"
-			   "sourceid,tracknb,mp3file,length,bitrate,samplerate,channels,genre1, genre1)"
-			   " VALUES (\"%s\", \"%s\", %d, \"%s\", %d, \"%s\", %d, \"%d\", %d, %d, \"%s\", \"%s\")",
+	  mgSqlWriteQuery( db,
+			   "INSERT INTO tracks "
+			   "(artist, title,  year,sourceid,tracknb,mp3file,length,bitrate,samplerate,channels,genre1,genre2) VALUES"
+			   "(\"%s\", \"%s\", %d,  \"%s\",  %d,     \"%s\", %d,    \"%d\", %d,        %d,      \"%s\",\"\")",
 			   artist.toCString(), title.toCString(), year, cddbid.toCString(), 
 			   trackno, filename.c_str(), len, bitrate, sample, channels, gid.toCString() );
 
