@@ -26,6 +26,7 @@
 #include "vdr_config.h"
 #include "vdr_decoder_mp3.h"
 #include "vdr_stream.h"
+#include "vdr_setup.h"
 
 #include "mg_tools.h"
 #include "mg_db.h"
@@ -58,7 +59,9 @@ mgMP3Decoder::mgMP3Decoder (mgContentItem * item, bool preinit):mgDecoder
 {
     m_stream = 0;
     m_isStream = false;
-    m_filename = item->getSourceFile ();
+
+    m_filename = the_setup.getFilename( item->getSourceFile () );    
+    // m_filename = item->getSourceFile ();
 
     if (preinit)
     {

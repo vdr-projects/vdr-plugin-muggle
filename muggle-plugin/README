@@ -47,10 +47,11 @@ but your mileage may vary. In addition, the following pieces of software are req
  - libtag (for ID3 tag reading/writing)
    (Debian package libtag1-dev or 
     http://developer.kde.org/~wheeler/taglib.html)
- - optionally libvorbis and libvorbisfile
-   (Debian packages  or
+ - optionally libvorbis and libvorbisfile to replay OGG Vorbis files
+   (Debian packages libvorbis-dev or
     http://www.xiph.org/ogg/vorbis/)
-
+ - optionally libFLAC++ to replay FLAC files
+   (Debian package libflac++-dev or sources from flac.sourceforge.net)
 The developer versions are needed because their headers are required for compilation.
 The server need not be on the same machine as the VDR. Also, music tracks can reside somewhere else,
 if they are available through a remote filesystem (NFS, Samba). However, in this case you should

@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #include <sys/vfs.h>
 
+#include "vdr_setup.h"
 #include "vdr_decoder.h"
 #include "vdr_decoder_mp3.h"
 
@@ -43,34 +44,33 @@ mgMediaType mgDecoders::getMediaType (std::string s)
 {
   mgMediaType mt = MT_UNKNOWN;
 
-// TODO: currently handles only mp3. LVW
-    char *
-        f = (char *) s.c_str ();
-    char *
-        p = f + strlen (f) - 1;                   // point to the end
+  char *
+    f = (char *) s.c_str ();
+  char *
+    p = f + strlen (f) - 1;                   // point to the end
 
-    while (p >= f && *p != '.')
-        --p;
+  while (p >= f && *p != '.')
+    --p;
 
-    if (!strcmp (p, ".mp3"))
+  if (!strcmp (p, ".mp3"))
     {
-        mt = MT_MP3;
+      mt = MT_MP3;
     }
-    else
+  else
     {
-        if (!strcmp (p, ".ogg"))
+      if (!strcmp (p, ".ogg"))
         {
-            mt = MT_OGG;
+	  mt = MT_OGG;
         }
-	else
-	  {
-	    if (!strcmp (p, ".flac"))
-	      {
-		mt = MT_FLAC;
-	      }	    
-	  }
+      else
+	{
+	  if (!strcmp (p, ".flac"))
+	    {
+	      mt = MT_FLAC;
+	    }	    
+	}
     }
-    return mt;
+  return mt;
 }
 
 
@@ -79,54 +79,55 @@ mgDecoders::findDecoder (mgContentItem * item)
 {
     mgDecoder *decoder = 0;
 
-    std::string filename = item->getSourceFile ();
+    std::string filename = the_setup.getFilename( item->getSourceFile () );
 
     struct stat st;
     if (stat (filename.c_str (), &st))
     {
-        esyslog ("ERROR: no valid decoder found for %s", filename.c_str ());
+        esyslog ("ERROR: cannot stat %s. Meaning not found, not a valid file, or no access rights", filename.c_str ());
         return 0;
     }
+
     switch (getMediaType (filename))
-    {
-    case MT_MP3:
       {
-	decoder = new mgMP3Decoder (item);
-      } break;
+      case MT_MP3:
+	{
+	  decoder = new mgMP3Decoder (item);
+	} break;
 #ifdef HAVE_VORBISFILE
-    case MT_OGG:
-      {
-	decoder = new mgOggDecoder (item);
-      } break;
+      case MT_OGG:
+	{
+	  decoder = new mgOggDecoder (item);
+	} break;
 #endif
 #ifdef HAVE_FLAC
-    case MT_FLAC:
-      {
-	decoder = new mgFlacDecoder( item );
-      } break;
+      case MT_FLAC:
+	{
+	  decoder = new mgFlacDecoder( item );
+	} break;
 #endif
-/*
-   case MT_MP3_STREAM: decoder = new mgMP3StreamDecoder(full); break;
-   #ifdef HAVE_SNDFILE
-   case MT_SND:  decoder = new cSndDecoder(full); break;
-   #endif
- */
-        default:
+	/*
+	  case MT_MP3_STREAM: decoder = new mgMP3StreamDecoder(full); break;
+	  #ifdef HAVE_SNDFILE
+	  case MT_SND:  decoder = new cSndDecoder(full); break;
+	  #endif
+	*/
+      default:
         {
-            esyslog ("ERROR: unknown media type");
+	  esyslog ("ERROR: unknown media type ");
         }
         break;
-    }
-
+      }
+    
     if (decoder && !decoder->valid ())
-    {
-// no decoder found or decoder doesn't match
-
-        delete decoder;                           // might be carried out on NULL pointer!
+      {
+	// no decoder found or decoder doesn't match
+	
+        delete decoder;                           // might be carried out on NULL pointer
         decoder = 0;
-
+	
         esyslog ("ERROR: no valid decoder found for %s", filename.c_str ());
-    }
+      }
     return decoder;
 }
 
