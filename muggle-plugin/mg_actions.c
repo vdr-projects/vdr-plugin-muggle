@@ -950,7 +950,11 @@ void
 mgClearCollection::Execute()
 {
 	if (Interface->Confirm(tr("Clear the collection?")))
-			selection()->ClearCollection(selection()->getCurrentValue());
+	{
+		string target = selection()->getCurrentValue();
+		selection()->ClearCollection(target);
+    		osd()->CollectionChanged(target);
+	}
 }
 
 //! \brief remove selected items from default collection
