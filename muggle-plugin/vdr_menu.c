@@ -795,14 +795,27 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
       } break;
     case 3:
       {	// clear playlist
-	m_current_playlist->clear();
+
+	cControl *control = cControl::Control();
+	string buffer;
+
+	if( control && typeid(*control) == typeid(mgPlayerControl) ) 
+	  {
+	    buffer = "Cannot clear playlist while playing.";
+	  }
+	else
+	  {
+	    m_current_playlist->clear();
+
+	    buffer = "Playlist cleared";
+	  }
 	
 	// confirmation
 #if VDRVERSNUM >= 10307
-	Skins.Message(mtInfo,"Playlist cleared");
+	Skins.Message( mtInfo, buffer.c_str() );
 	Skins.Flush();
 #else
-	Interface->Status( "Playlist cleared" );
+	Interface->Status( buffer.c_str() );
 	Interface->Flush();
 #endif
 	
@@ -944,12 +957,10 @@ void mgMainMenu::Play(mgPlaylist *plist)
 
   if( control && typeid(*control) == typeid(mgPlayerControl) ) 
     { // is there a running MP3 player?
-      cout << "mgMainMenu::Play: signal new playlist to existing control" << endl;
       static_cast<mgPlayerControl*>(control)->NewPlaylist(plist); // signal the running player to load the new playlist
     }
   else
     {
-      cout << "mgMainMenu::Play: starting new control" << endl;
       cControl::Launch( new mgPlayerControl(plist) );
     }
 }
