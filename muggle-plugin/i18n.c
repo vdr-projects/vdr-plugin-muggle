@@ -3,7 +3,7 @@
  *
  * See the README file for copyright information and how to reach the author.
  *
- * $Id: i18n.c,v 1.4 2004/02/23 16:18:15 RaK Exp $
+ * $Id: i18n.c,v 1.5 2004/02/23 17:07:08 RaK Exp $
  */
 
 #include "i18n.h"
@@ -507,7 +507,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
   },
   { "Cycle tree",
-    "Ansicht wechseln",
+    "Browser Modus",
     "",// TODO
     "",// TODO
     "",// TODO
