@@ -3,16 +3,11 @@ TODO File for Muggle
 
 Ogg/Vorbis decoder integration
 ==============================
-- cOggFile kept
-- cOggInfo dismissed in favor of obtaining info from DB
-- coding conventions adapted
-
-- mugglei.c: Store audio properties in DB (most notably samplerate, no. channels
-- mgOggDecoder: obtain audio properties from DB
+- mgPCMPlayer::getSourceFile to be moved to mgContentItem class (abstract)
+  and made concrete in subclasses
 - in mgPCMPlayer/vdr_player.c:
-  - pass m_playing to decoder (instead of filename)
-  - getSourceFile to be moved to mgTrack class and subclasses
-
+  - pass m_playing to mp3/ogg decoder (instead of filename)
+- mgOggDecoder: obtain audio properties from DB (via mgContentItem)
 
 Deployment
 ==========
@@ -29,7 +24,7 @@ Deployment
 Testing/bugs
 ============
 - Test execution of playlist commands
-- Test mgPCMPlayer::getSourceFile() for GD case (find)
+- Keep this? Test mgPCMPlayer::getSourceFile() for GD case (find)
 - Test saving/loading playlists to database
 
 Import
@@ -41,7 +36,6 @@ Import
   - Modified
 
 - Tracks
-  - !Audio properties( bitrate, channels, length, sampleRate )
   - Language (?)
   - Genre1, 2
   - Rating?
@@ -165,6 +159,15 @@ Already Done
 - i18n (english and german)
 - Album import
   - Various artists
+- Ogg/Vorbis decoder integration
+  - cOggFile kept
+  - cOggInfo dismissed in favor of obtaining info from DB
+  - coding conventions adapted
+  - Schema extended to keep audio properties
+  - Import (mugglei) extended to store audio properties in DB 
+    (most notably samplerate, no. channels)
+  - Extended mgContentItem with audio properties
+  - Extended mgGdTrack with audio properties (bitrate, samplerate, channels)
 
 ************************************************************
 *
