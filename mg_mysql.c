@@ -541,8 +541,7 @@ mgmySql::Connect ()
 	    {
 		    if (!Connected())
 		    	if (!createtime)
-			    mgWarning("Database %s not found:%s",
-				    the_setup.DbName,mysql_error(m_db));
+			    mgWarning(mysql_error(m_db));
 	    }
     }
     if (!needGenre2_set && Connected())

@@ -152,7 +152,7 @@ mgSync::mgSync()
 
 mgSync::~mgSync()
 {
-	if (m_genre_rows) mysql_free_result(m_genre_rows);
+  if (m_genre_rows) mysql_free_result(m_genre_rows);
 }
 
 void
@@ -296,8 +296,9 @@ mgSync::SyncFile(const char *filename)
 void
 mgSync::Sync(char * const * path_argv, bool delete_missing)
 {
-	if (!m_db.Connected())
-		return;
+  	extern void showimportcount(unsigned int,bool final=false);
+  	if (!m_db.Connected())
+    		return;
 	unsigned int count=0;
 	m_db.CreateFolderFields();
 	chdir(the_setup.ToplevelDir);
@@ -320,14 +321,12 @@ mgSync::Sync(char * const * path_argv, bool delete_missing)
 				SyncFile(ftsent->fts_path);
 				count++;
 				if (count%1000==0)
-				{
-					extern void showimportcount(unsigned int);
 					showimportcount(count);
-				}
 			}
 		}
 		fts_close(fts);
 	}
+	showimportcount(count,true);
 }
 
 void

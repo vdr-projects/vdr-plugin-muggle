@@ -45,7 +45,7 @@ void showmessage(const char *msg,int duration)
 {
 }
 
-void showimportcount(unsigned int count)
+void showimportcount(unsigned int count,bool final=false)
 {
 }
 

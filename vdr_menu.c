@@ -869,12 +869,21 @@ showmessage(const char * msg,int duration)
 }
 
 void
-showimportcount(unsigned int count)
+showimportcount(unsigned int count,bool final=false)
 {
 	char b[100];
-	sprintf(b,tr("Imported %d tracks..."),count);
-	assert(strlen(b)<100);
-	showmessage(b,1);
+	if (final)
+	{
+		sprintf(b,tr("Import done:Imported %d tracks"),count);
+		assert(strlen(b)<100);
+		showmessage(b,1);
+	}
+	else
+	{
+		sprintf(b,tr("Imported %d tracks..."),count);
+		assert(strlen(b)<100);
+		showmessage(b);
+	}
 }
 
 void

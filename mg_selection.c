@@ -20,7 +20,7 @@
 #include "mg_selection.h"
 #include "vdr_setup.h"
 #include "mg_tools.h"
-#include "mg_sync.h"
+#include "mg_thread_sync.h"
 
 #include <mpegfile.h>
 #include <flacfile.h>
@@ -591,9 +591,12 @@ mgSelection::InitFrom(mgValmap& nv)
 		    m_db.Create();
 	            if (Interface->Confirm(tr("Import tracks?")))
 		    {
-		        mgSync *s = new mgSync;
-		        s->Sync(argv);
-		        delete s;
+		        mgThreadSync *s = mgThreadSync::get_instance();
+		        if (s)
+		        {
+				extern char *sync_args[];
+				s->Sync(sync_args,the_setup.DeleteStaleReferences);
+			}
 		    }
 	    }
 	    free(b);

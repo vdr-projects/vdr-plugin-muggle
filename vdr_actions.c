@@ -688,7 +688,7 @@ class mgCmdSync : public mgOsdItem
 };
 
 
-static char *sync_args[] =
+char *sync_args[] =
 {
 	".",
 	0
