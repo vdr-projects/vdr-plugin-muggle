@@ -334,7 +334,7 @@ void update_tags( long uid )
 #ifdef VERBOSE
 	      std::cout << "Deleting entry " << row[6] << " from database because the file no longer exists." << std::endl;
 #endif
-	      mgSqlWriteQuery( db, "DELETE FROM tracks where id=%d", row[6] );
+	      mgSqlWriteQuery( db, "DELETE FROM tracks where id=%s", row[6] );
 	    }
         }
     }
