@@ -25,6 +25,16 @@ Please provide feedback to the authors whenever you
 think, these instructions are not appropriate, wrong,
 or useless in any other sense.
 
+\section ack Acknowledgements
+
+Thanks to all who have supported the development of this plugin. Special thanks go to
+- Muempf for the mp3 plugin. All code related to audio replay is largely taken over from this plugin.
+- LordJaxom for constant support in the chat of VDR portal regarding OSD programming in VDR
+- eloy (member of vdrportal.de) for alpha testing
+- All beta testers at vdrportal.de and on the VDR mailing list
+- decembersoul (member of vdrportal.de) for finding out how to run muggle on LinVDR
+- Hulk (member of vdrportal.de) for submitting several patches and helping out
+
 \section desc DESCRIPTION
 
 The muggle plugin provides a database link for VDR so that selection of media becomes more flexible.
@@ -208,7 +218,7 @@ brings up a progress display. For VDR 1.3.6- the progress display is "quite simp
 
 The idea behind muggle and the concept of the GUI was driven by the requirement, that almost all funtionalities must be possible with only using the cursor keys, the colour keys and menu, ok and back. 
 
-Muggle consist of three main views. The different views could allways be switch with the yellow key. In every view there is a context sensitiv menu with certain commands suitable for the current view. This menu could be reached from every view with the blue key. The two most common commands for a view could be reached with the remaining two colour keys red and green.
+Muggle consist of three main views. The different views could always be switched with the yellow key. In every view there is a context sensitive menu with certain commands suitable for the current view. This menu could be reached from every view with the blue key. The two most common commands for a view could be reached with the remaining two colour keys red and green.
 
 In all views the cursor keys are used like in every VDR menu.
 
