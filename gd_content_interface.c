@@ -3,8 +3,8 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.13 $
- * \date    $Date: 2004/02/11 21:55:16 $
+ * \version $Revision: 1.14 $
+ * \date    $Date: 2004/02/12 07:56:46 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: RaK $
  *
@@ -1252,7 +1252,7 @@ bool GdTreeNode::expand()
         case 102:
            if (m_level == 1) {
              sprintf(sqlbuff,
-                     "SELECT CONCAT(playlist.title,' (',playlist.author,')'),"
+                     "SELECT DISTINCT playlist.title,"
                      "    playlist.id"
                      "  FROM playlist,playlistitem,tracks,genre as genre1,genre as genre2"
                      "  WHERE playlist.id=playlistitem.playlist AND"
@@ -1260,18 +1260,18 @@ bool GdTreeNode::expand()
                      "        genre1.id=tracks.genre1 AND"
                      "        genre2.id=tracks.genre2 AND"
                      "        %s"
-                     "  ORDER CONCAT(playlist.title,' (',playlist.author,')'),"
+                     "  ORDER BY playlist.title,"
                      , m_restriction.c_str());
              idfield = "playlist.id";
            } else if (m_level == 2) {
              sprintf(sqlbuff,
-                     "SELECT DISTINCT CONCAT(tracks.artist,' - ',tracks.title),"
+                     "SELECT CONCAT(tracks.artist,' - ',tracks.title),"
                      "    tracks.id"
                      "  FROM playlist,playlistitem,tracks"
                      "  WHERE playlist.id=playlistitem.playlist AND"
                      "        playlistitem.trackid=tracks.id AND"
                      "        %s"
-                     "  ORDER playlistitem.tracknumber"
+                     "  ORDER BY playlistitem.tracknumber"
                      , m_restriction.c_str());
              idfield = "tracks.id";
            } else {
@@ -1438,6 +1438,9 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.14  2004/02/12 07:56:46  RaK
+ * - SQL Fehler bei der Playlist Search korrigiert
+ *
  * Revision 1.13  2004/02/11 21:55:16  RaK
  * - playlistsearch eingebaut
  * - filter search liefert nun in der zweiten
