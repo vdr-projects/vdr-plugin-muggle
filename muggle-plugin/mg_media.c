@@ -3,10 +3,10 @@
  *  \brief  Top level access to media in vdr plugin muggle
  *          for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.5 $
- * \date    $Date: 2004/02/02 19:42:18 $
+ * \version $Revision: 1.6 $
+ * \date    $Date: 2004/02/02 22:33:24 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: MountainMan $
  * 
  *
  */
@@ -78,11 +78,14 @@ int mgFilterInt::getMax()
 //-------------------------------------------------------------------
 //       mgFilterString
 //-------------------------------------------------------------------
-mgFilterString::mgFilterString(const char *name, const char* value)
+mgFilterString::mgFilterString(const char *name, const char* value,
+			       int maxlen, string allowedchar)
   : mgFilter(name)
 {
   m_type = STRING;
   m_strval = strdup(value);
+  m_allowedchar = allowedchar;
+  m_maxlen = maxlen;
 }
 mgFilterString::~mgFilterString()
 {
@@ -91,7 +94,16 @@ mgFilterString::~mgFilterString()
       free(m_strval);
     }
 }
+  
+int mgFilterString::getMaxLength()
+{
+  return m_maxlen;
+} 
 
+string mgFilterString::getAllowedChars()
+{
+  return m_allowedchar;
+}
 string mgFilterString::getStrVal()
 {
  
@@ -101,11 +113,15 @@ string mgFilterString::getStrVal()
 //-------------------------------------------------------------------
 //        mgFilterBool
 //-------------------------------------------------------------------
-mgFilterBool::mgFilterBool(const char *name, bool value)
+mgFilterBool::mgFilterBool(const char *name, bool value,
+			   string truestr, string falsestr)
   : mgFilter(name)
 {
   m_type = BOOL;
-  m_bval = value;
+  m_bval = (bool) value;
+  m_truestr = truestr;
+  m_falsestr = falsestr;
+  
 }
 mgFilterBool::~mgFilterBool()
 {
@@ -118,11 +134,23 @@ string mgFilterBool::getStrVal()
   else
     return "false";
 }
+string mgFilterBool::getTrueString()
+{
+  return m_truestr;
+}
+string mgFilterBool::getFalseString()
+{
+  return m_falsestr;
+}
+bool mgFilterBool::getVal()
+{
+  return (bool) m_bval;
+}
 
 //-------------------------------------------------------------------
 //        mgFilterChoice
 //-------------------------------------------------------------------
-mgFilterChoice::mgFilterChoice(const char *name, int val, vector<char*> *choices)
+mgFilterChoice::mgFilterChoice(const char *name, int val, vector<string> *choices)
   : mgFilter(name)
 {
   m_choices = *choices;
@@ -145,7 +173,7 @@ string mgFilterChoice::getStrVal()
   }
   return m_choices[m_selval];
 }
-vector<char*> &mgFilterChoice::getChoices()
+vector<string> &mgFilterChoice::getChoices()
 {
   return m_choices;
 }

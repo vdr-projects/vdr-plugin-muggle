@@ -3,8 +3,8 @@
  * \brief  Top level access to media in vdr plugin muggle
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.4 $
- * \date    $Date: 2004/02/02 18:34:34 $
+ * \version $Revision: 1.5 $
+ * \date    $Date: 2004/02/02 22:33:24 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: MountainMan $
  * 
@@ -39,11 +39,11 @@ class mgFilter
    char* m_name;
 
  public:
-  mgFilter(const char* name);
-  virtual ~mgFilter();
-  filterType getType();
-  const char* getName();
-  virtual std::string getStrVal()=0;
+   mgFilter(const char* name);
+   virtual ~mgFilter();
+   filterType getType();
+   const char* getName();
+   virtual std::string getStrVal()=0;
 };
  
 /*! 
@@ -75,13 +75,18 @@ class mgFilterInt : public mgFilter
 class mgFilterString : public mgFilter
 {
  private:
-  
+  std::string m_allowedchar;
+  int m_maxlen;
  public:
   char* m_strval;
 
-  mgFilterString(const char *name, const char* value);
+  mgFilterString(const char *name, const char* value, int maxlen=255,
+		 std::string allowedchar="abcdefghijklmnopqrstuvwxyz0123456789-");
+  
   virtual ~mgFilterString();
 
+  int getMaxLength(); 
+  std::string getAllowedChars();
   virtual std::string getStrVal();
 };  
 
@@ -92,15 +97,20 @@ class mgFilterString : public mgFilter
 class mgFilterBool : public mgFilter
 {
  private:
-  
- public:
-  bool m_bval;
+  std::string m_truestr;
+  std::string m_falsestr;
 
-  mgFilterBool(const char *name, bool value);
+ public:
+  int m_bval;
+
+  mgFilterBool(const char *name, bool value, 
+	       std::string truestr="yes", std::string falsestr="no");
   virtual ~mgFilterBool();
 
   virtual std::string getStrVal();
-
+  std::string getTrueString();
+  std::string getFalseString();
+  bool getVal();
 };  
 
 /*! 
@@ -110,16 +120,16 @@ class mgFilterBool : public mgFilter
 class mgFilterChoice : public mgFilter
 {
  private:
-  std::vector<char* > m_choices;
+  std::vector<std::string> m_choices;
   
  public:
   int m_selval; // index of the currently selected item
 
-  mgFilterChoice(const char *name, int val, std::vector<char* > *choices);
+  mgFilterChoice(const char *name, int val, std::vector<std::string> *choices);
   virtual ~mgFilterChoice();
 
   virtual std::string getStrVal();
-  virtual std::vector<char*> &getChoices();
+  virtual std::vector<std::string> &getChoices();
 
 };  
 
