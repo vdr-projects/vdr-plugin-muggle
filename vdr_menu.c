@@ -225,13 +225,9 @@ mgMainMenu::DumpOrders(mgValmap& nv)
 		mgOrder *o = orders[idx];
 		if (!o) 
 			mgError("DumpOrders:order[%u] is 0",idx);
-		char *n;
-    		for (unsigned int i=0;i<o->size();i++)
-		{
-			asprintf(&n,"order%u.Keys.%d.Type",idx,i);
-			nv.put(n,int(o->Key(i)->Type()));
-			free(n);
-		}
+		char prefix[20];
+		sprintf(prefix,"order%u",idx);
+		o->DumpState(nv,prefix);
 	}
 }
 
@@ -910,6 +906,8 @@ mgMenuOrder::BuildOsd ()
     m_keytypes.reserve(mgKeyTypesNr+1);
     m_keynames.clear();
     m_keynames.reserve(50);
+    m_orderbycount = m_order->getOrderByCount();
+    mgDebug(1,"m_orderbycount wird %d",m_orderbycount);
     for (unsigned int i=0;i<m_order->size();i++)
     {
 	unsigned int kt;
@@ -921,6 +919,9 @@ mgMenuOrder::BuildOsd ()
 	a->SetMenu(this);
         osd()->AddItem(a);
     }
+    mgAction *a = actGenerateBoolItem(tr("Sort by count"),&m_orderbycount);
+    a->SetMenu(this);
+    osd()->AddItem(a);
 }
 
 bool
@@ -931,6 +932,8 @@ mgMenuOrder::ChangeOrder(eKeys key)
     for (unsigned int i=0; i<m_keytypes.size();i++)
     	newtypes.push_back(ktValue(m_keynames[i][m_keytypes[i]]));
     mgOrder n = mgOrder(newtypes);
+    n.setOrderByCount(m_orderbycount);
+    mgDebug(1,"m_orderbycount %d nach n",m_orderbycount);
     bool result = !(n == *m_order);
     *m_order = n;
     if (result)

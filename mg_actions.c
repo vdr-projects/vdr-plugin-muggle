@@ -87,6 +87,14 @@ class mgKeyItem : public mgAction, public cMenuEditStraItem
 	   eOSState Process(eKeys key);
 };
 
+class mgBoolItem: public mgAction, public cMenuEditBoolItem
+{
+	public:
+	   mgBoolItem(const char *Name,int *Value) : cMenuEditBoolItem(Name, Value) {}
+	   eOSState ProcessKey(eKeys key) { return mgAction::ProcessKey(key); }
+	   eOSState Process(eKeys key);
+};
+
 class mgDoCollEntry : public mgEntry
 {
 	public:
@@ -1238,6 +1246,12 @@ actGenerateKeyItem(const char *Name, int *Value, int NumStrings, const char * co
 }
 
 mgAction*
+actGenerateBoolItem(const char *Name, int *Value)
+{
+	return new mgBoolItem(Name,Value);
+}
+
+mgAction*
 actGenerate(const mgActions action)
 {
 	mgAction * result = NULL;
@@ -1331,5 +1345,31 @@ mgKeyItem::Process(eKeys key)
 		if (menu->ChangeOrder(key))
 			return osContinue;
 	return cMenuEditStraItem::ProcessKey(key);
+}
+
+
+eOSState
+mgBoolItem::Process(eKeys key)
+{
+	mgMenuOrder *menu = dynamic_cast<mgMenuOrder*>(m);
+	if (key==kOk)
+	{
+		if (menu->ChangeOrder(key))
+			return osContinue;
+		else
+		{
+			menu->SaveOrder();
+    			osd ()->newmenu = NULL;
+    			return osContinue;
+		}
+	} else if (key==kBack)
+	{
+    		osd ()->newmenu = NULL;
+    		return osContinue;
+	}
+	if (key==kUp || key==kDown)
+		if (menu->ChangeOrder(key))
+			return osContinue;
+	return cMenuEditBoolItem::ProcessKey(key);
 }
 

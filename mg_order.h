@@ -122,6 +122,7 @@ public:
 	string sql_update(strlist new_values);
 	bool empty() const { return tables.size()==0;}
 	string m_sql_select;
+	bool orderByCount;
 private:
 	bool UsesTracks();
 	mgReferences ref;
@@ -151,6 +152,7 @@ public:
 	mgOrder(vector<mgKeyTypes> kt);
 	~mgOrder();
 	void InitFrom(const mgOrder &from);
+        void DumpState(mgValmap& nv, char *prefix) const;
 	void setDB(MYSQL *db);
 	mgParts Parts(unsigned int level,bool orderby=true) const;
 	const mgOrder& operator=(const mgOrder& from);
@@ -167,7 +169,10 @@ public:
 	string getKeyId(unsigned int idx) const;
 	void setKeys(vector<mgKeyTypes> kt);
 	string Name();
+	void setOrderByCount(bool orderbycount) { m_orderByCount = orderbycount;}
+	bool getOrderByCount() { return m_orderByCount; }
 private:
+	bool m_orderByCount;
 	MYSQL *m_db;
 	keyvector Keys;
 	void setKey (const unsigned int level, const mgKeyTypes kt);

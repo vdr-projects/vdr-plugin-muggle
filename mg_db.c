@@ -932,7 +932,6 @@ mgSelection::refreshValues ()  const
 	return;
     if (m_current_values.empty())
     {
-    	mgOrder o1 = order;
 	mgParts p =  order.Parts(m_level);
         m_current_values = p.sql_select();
         values.strings.clear ();

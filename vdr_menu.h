@@ -375,6 +375,7 @@ class mgMenuOrder : public mgMenu
     private:
 	void AddKeyActions(mgMenu *m,mgOrder *o);
 	mgOrder * m_order;
+	int m_orderbycount;
 	vector<int> m_keytypes;
 	vector < vector <const char*> > m_keynames;
 };

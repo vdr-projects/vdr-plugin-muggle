@@ -422,6 +422,7 @@ mgKeyNormal::set(string value, string id)
 mgParts::mgParts()
 {
 	m_sql_select="";
+	orderByCount = false;
 }
 
 mgParts::~mgParts()
@@ -583,7 +584,7 @@ mgParts::sql_select(bool distinct)
 	string result;
 	if (distinct)
 	{
-		fields.push_back("COUNT(*)");
+		fields.push_back("COUNT(*) AS mgcount");
 		result = sql_list("SELECT",fields);
 		fields.pop_back();
 	}
@@ -594,7 +595,11 @@ mgParts::sql_select(bool distinct)
 	result += sql_list("FROM",tables);
 	result += sql_list("WHERE",clauses," AND ");
 	if (distinct)
+	{
 		result += sql_list("GROUP BY",fields);
+ 		if (orderByCount)
+			orders.insert(orders.begin(),"mgcount desc");
+	}
 	result += sql_list("ORDER BY",orders);
 	optimize(result);
 	return result;
@@ -670,6 +675,7 @@ mgOrder::mgOrder()
        	setKey (0,keyArtist);
        	setKey (1,keyAlbum);
        	setKey (2,keyTrack);
+	m_orderByCount = false;
 }
 
 mgOrder::~mgOrder()
@@ -726,6 +732,7 @@ mgOrder::InitFrom(const mgOrder &from)
 		Keys.push_back(k);
     	}
 	if (from.m_db) setDB(from.m_db);
+	m_orderByCount=from.m_orderByCount;
 }
 
 string
@@ -771,10 +778,13 @@ mgOrder::setKey (const unsigned int level, const mgKeyTypes kt)
 
 mgOrder::mgOrder(mgValmap& nv,char *prefix)
 {
+	char *idx;
 	setDB(0);
+	asprintf(&idx,"%s.OrderByCount",prefix);
+	m_orderByCount = nv.getbool(idx);
+	free(idx);
 	for (unsigned int i = 0; i < 999 ; i++)
 	{
-		char *idx;
 		asprintf(&idx,"%s.Keys.%u.Type",prefix,i);
 		unsigned int v = nv.getuint(idx);
 		free(idx);
@@ -783,8 +793,22 @@ mgOrder::mgOrder(mgValmap& nv,char *prefix)
 	}
 }
 
+void
+mgOrder::DumpState(mgValmap& nv, char *prefix) const
+{
+	char n[100];
+	sprintf(n,"%s.OrderByCount",prefix);
+	nv.put(n,m_orderByCount);
+    	for (unsigned int i=0;i<size();i++)
+	{
+		sprintf(n,"%s.Keys.%d.Type",prefix,i);
+		nv.put(n,int(Key(i)->Type()));
+	}
+}
+
 mgOrder::mgOrder(vector<mgKeyTypes> kt)
 {
+	m_orderByCount = false;
 	setDB(0);
 	setKeys(kt);
 }
@@ -918,6 +942,7 @@ mgOrder::Parts(unsigned int level,bool orderby) const
 {
 	assert(strlen(m_db->host));
 	mgParts result;
+	result.orderByCount = m_orderByCount;
 	mgKeyNormal *k0 = dynamic_cast<mgKeyNormal*>(Keys[0]);
 	mgKeyTypes kt0 = k0->Type();
 	if (level==0 &&  kt0==keyCollection)

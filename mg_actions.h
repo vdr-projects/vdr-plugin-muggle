@@ -181,6 +181,7 @@ class mgActionWithIntValue: public mgAction
 
 //! \brief generate an mgAction for action
 mgAction* actGenerate(const mgActions action);
+mgAction* actGenerateBoolItem(const char *Name, int *Value);
 mgAction* actGenerateKeyItem(const char *Name, int *Value, int NumStrings, const char * const * Strings);
 
 #endif

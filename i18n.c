@@ -13,6 +13,23 @@ const tI18nPhrase Phrases[] =
 {
 
     {
+        "Sort by count",
+        "Nach Häufigkeit sortieren",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "Sort by count",       			// TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {
         "Key %d",
         "Schlüsselfeld %d",
         "",                                       // TODO
