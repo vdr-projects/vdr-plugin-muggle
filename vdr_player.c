@@ -868,6 +868,7 @@ mgPlayerControl::mgPlayerControl( mgPlaylist *plist )
 {
   MGLOG( "mgPlayerControl::mgPlayerControl" );
 
+  m_display = NULL;
   m_visible = false;
   m_has_osd = false;
 }
@@ -989,14 +990,15 @@ void mgPlayerControl::ShowProgress()
       // now an osd is open, go on
       
 #if VDRVERSNUM >= 10307
-      cSkinDisplayReplay *m_display;
-
-      m_display = Skins.Current()->DisplayReplay(false);
+      if( !m_display )
+	{
+	  m_display = Skins.Current()->DisplayReplay(false);
+	}
       if( m_player && m_display ) 
 	{
 	  int current_frame, total_frames;
 	  m_player->GetIndex( current_frame, total_frames ); 
-	  
+
 	  m_display->SetProgress( current_frame, total_frames );
 	  m_display->SetCurrent( IndexToHMSF( current_frame ) );
 	  m_display->SetTotal( IndexToHMSF( total_frames ) );
@@ -1004,11 +1006,13 @@ void mgPlayerControl::ShowProgress()
 	  char *buf;
 	  asprintf( &buf, "%s", m_player->GetCurrent()->getTitle().c_str() );
 	  m_display->SetTitle( buf );
-	  free( buf );
-
+	  // free( buf );
+	  
 	  bool play = true, forward = true;
 	  int speed = -1;	  
 	  m_display->SetMode( play, forward, speed );
+
+	  m_display->Flush();
 	}
 #else
       int w = Interface->Width();
@@ -1033,8 +1037,15 @@ void mgPlayerControl::Hide()
   if( m_has_osd )
     {
 #if VDRVERSNUM >= 10307
+      /*
       osd->Flush();
       delete osd;
+      */
+      if( m_display )
+	{
+	  delete m_display;
+	  m_display = NULL;
+	}
 #else
       Interface->Close();
 #endif
