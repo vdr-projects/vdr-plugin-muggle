@@ -2,12 +2,15 @@
 /*! \file   vdr_menu.c
  *  \brief  Implements menu handling for broswing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.3 $
- * \date    $Date: 2004/02/02 19:42:37 $
+ * \version $Revision: 1.4 $
+ * \date    $Date: 2004/02/02 22:33:24 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: MountainMan $
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.4  2004/02/02 22:33:24  MountainMan
+ *  changes in mgFilter classes (and ttheir use in the osd)
+ *
  * Revision 1.3  2004/02/02 19:42:37  LarsAC
  * Added positioning of menubar when collapsing nodes.
  *
@@ -550,19 +553,17 @@ void mgMainMenu::DisplayFilter()
 	case mgFilter::STRING:
 	  {
 	    mgFilterString *fs = (mgFilterString *) (*iter);
-	    /*
-	    Add( new cMenuEditStrItem( fs->getName(), &( fs->m_strval),
-				       fs->getMaxLength(), fs->getAllowedChars() );
+	    Add( new cMenuEditStrItem( fs->getName(), fs->m_strval,
+				       fs->getMaxLength(), 
+				       fs->getAllowedChars().c_str() ) );
 	    
-	    */
 	  } break;
 	case mgFilter::BOOL:
 	  {
 	    mgFilterBool *fb = (mgFilterBool *) (*iter);
-	    /*
-	    Add( new cMenuEditIntItem(  fb->getName(), &( fb->m_bval), 
-					fb->getTrueString(), fb->getFalseString() );
-	    */
+	    Add( new cMenuEditBoolItem(  fb->getName(), &( fb->m_bval), 
+					fb->getTrueString().c_str(), 
+					fb->getFalseString().c_str() ) );
 	  } break;
 	default:
 	case mgFilter::UNDEF:
