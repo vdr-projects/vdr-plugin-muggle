@@ -76,14 +76,19 @@
 	      - generate a random number 0..n-1
 	      - move corresponding playlist item to front
 	      - continue
-    - Party mode (see iTunes)
-      - generate a random uid
-      - if file exists:
-        - determine maximum playcount of all tracks
-        - generate a random number n
-        - if n < playcount / max. playcount
-          - play the file
-    
+        - Party mode (see iTunes)
+          - initialization
+            - find 15 titles according to the scheme below
+          - playing 
+            - before entering next title perform track selection
+          - track selection
+  	    - generate a random uid
+	    - if file exists:
+	      - determine maximum playcount of all tracks
+	      - generate a random number n
+	        - if n < playcount / max. playcount
+	          - add the file to the end of the list
+
 	\subsection urgentplayer Player extensions
 	
 	- Determine max. framecount (needed for rewinding)?
@@ -175,6 +180,7 @@
 	
 	- Display covers
 	- Add flac decoder
+	- Handle recoding samplerate, limiter etc correctly
     
 	\section vision Long term ideas and visions
 

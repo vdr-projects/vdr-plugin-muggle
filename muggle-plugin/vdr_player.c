@@ -363,22 +363,24 @@ void mgPCMPlayer::Action(void)
 		m_index = 0; 
 		m_playing = m_current;
 
-		string filename = m_playing->getSourceFile();
-		mgDebug( 1, "mgPCMPlayer::Action: music file is %s", filename.c_str() );
+		if( m_playing && m_playing != &(mgContentItem::UNDEFINED) )
+		    {
+		      string filename = m_playing->getSourceFile();
+		      // mgDebug( 1, "mgPCMPlayer::Action: music file is %s", filename.c_str() );
 
-		if( ( m_decoder = mgDecoders::findDecoder( m_playing ) ) && m_decoder->start() )
-		  {
-		    levelgood = true; 
-		    haslevel = false;
+		      if( ( m_decoder = mgDecoders::findDecoder( m_playing ) ) && m_decoder->start() )
+		      {
+			levelgood = true; 
+			haslevel = false;
 		    
-		    scale.Init();
-		    level.Init();
-		    
-		    m_state = msDecode;
-		    
-		    break;
-		  }
-
+			scale.Init();
+			level.Init();
+			
+			m_state = msDecode;
+			
+			break;
+		      }
+		    }
 		m_state = msEof;
 	      } break;
 	    case msDecode:
@@ -673,17 +675,52 @@ void mgPCMPlayer::StopPlay()
 
 bool mgPCMPlayer::NextFile()
 {
-  bool res = false;
-    
-  m_playlist->skipFwd();
-  mgContentItem *newcurr = m_playlist->getCurrent();
+  mgContentItem *newcurr;
 
+  bool res = false;
+  bool m_partymode = false;
+  bool m_shufflemode = false;
+
+  if( m_partymode )
+    {
+      /*
+      - Party mode (see iTunes)
+        - initialization
+          - find 15 titles according to the scheme below
+        - playing 
+          - before entering next title perform track selection
+        - track selection
+  	  - generate a random uid
+	  - if file exists:
+	    - determine maximum playcount of all tracks
+	    - generate a random number n
+	      - if n < playcount / max. playcount
+	        - add the file to the end of the list
+      */
+    }
+  else if( m_shufflemode )
+    {
+      /*
+	- Handle shuffle mode in mgPlaylist
+ 	  - for next file:
+	    - generate a random number 0..n-1
+	    - move corresponding playlist item to front
+	    - continue
+      */
+
+    }
+  else
+    {
+      m_playlist->skipFwd();
+      newcurr = m_playlist->getCurrent();
+    }
+  
   if( newcurr && newcurr != &(mgContentItem::UNDEFINED) ) 
     {
       m_current = newcurr; 
       res = true;
     }
-
+  
   return res;
 }
 
@@ -735,7 +772,7 @@ void mgPCMPlayer::Play(void)
 
   Lock();
 
-  if( m_playmode != pmPlay && m_current ) 
+  if( m_playmode != pmPlay && m_current && m_current != &(mgContentItem::UNDEFINED) ) 
     {
       if( m_playmode == pmStopped ) 
 	{
