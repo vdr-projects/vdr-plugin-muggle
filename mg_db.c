@@ -985,6 +985,7 @@ bool mgSelection::leave ()
     {
         if (m_level < 1)
             return false;
+        order[m_level]->set ("",EMPTY);
         order[--m_level]->set ("",EMPTY);
 	clearCache();
         if (!m_fall_through)

@@ -412,24 +412,18 @@ mgPCMPlayer::Action (void)
 
                     if (m_playing)
                     {
-		      std::string filename = the_setup.getFilename( m_playing->getSourceFile () );
-		      mgDebug( 1, "mgPCMPlayer::Action: music file is %s", filename.c_str() );
-                        if ((m_decoder = mgDecoders::findDecoder (m_playing))
-                            && m_decoder->start ())
+		      if ((m_decoder = mgDecoders::findDecoder (m_playing))
+			  && m_decoder->start ())
                         {
-                            levelgood = true;
-                            haslevel = false;
-
-                            scale.Init ();
-                            level.Init ();
-
-                            m_state = msDecode;
-			    mgDebug(1,"found a decoder for %s",filename.c_str());
-
-                            break;
+			  levelgood = true;
+			  haslevel = false;
+			  
+			  scale.Init ();
+			  level.Init ();
+			  
+			  m_state = msDecode;
+			  break;
                         }
-			else
-			    mgWarning("Cannot find a decoder for %s",filename.c_str());
                     }
                     m_state = msEof;
                 }

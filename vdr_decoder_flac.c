@@ -11,7 +11,9 @@
 #ifdef HAVE_FLAC
 
 #define DEBUG
+#include "vdr_setup.h"
 #include "vdr_decoder_flac.h"
+
 #include "mg_tools.h"
 #include "mg_db.h"
 
@@ -32,8 +34,8 @@ mgFlacDecoder::mgFlacDecoder( mgContentItem *item )
 {
   mgLog lg( "mgFlacDecoder::mgFlacDecoder" );
 
-  m_filename = item->getSourceFile();
-  // m_filename = "/test.flac";
+  m_filename = the_setup.getFilename( item->getSourceFile () );
+  //   m_filename = item->getSourceFile();
   m_pcm = 0;
   m_reservoir = 0;
 
@@ -81,14 +83,7 @@ bool mgFlacDecoder::initialize()
   m_reservoir[0] = new FLAC__int32[MAX_RES_SIZE];
   m_reservoir[1] = new FLAC__int32[MAX_RES_SIZE];
 
-  FLAC::Decoder::File::State d = init(); // TODO check this?
-
-  cout << "Status of decoder: " << string( d.as_cstring() ) << endl;
-  FLAC::Decoder::SeekableStream::State ssd = get_seekable_stream_decoder_state();
-  cout << "Status of seekable stream decoder: " << string( ssd.as_cstring() ) << endl;
-  FLAC::Decoder::Stream::State sd = get_stream_decoder_state();
-  cout << "Status of stream decoder: " << string( sd.as_cstring() ) << endl;
-  // set state accordingly
+  FLAC::Decoder::File::State d = init(); // TODO: check this
 
   process_until_end_of_metadata(); // basically just skip metadata
 
@@ -119,15 +114,6 @@ bool mgFlacDecoder::start()
   MGLOG( "mgFlacDecoder::start" );
   bool res = false;
   lock(true);
-
-  /*
-  FLAC::Decoder::File::State d = get_state();
-  cout << "Status of decoder: " << string( d.as_cstring() ) << endl;
-  FLAC::Decoder::SeekableStream::State ssd = get_seekable_stream_decoder_state();
-  cout << "Status of seekable stream decoder: " << string( ssd.as_cstring() ) << endl;
-  FLAC::Decoder::Stream::State sd = get_stream_decoder_state();
-  cout << "Status of stream decoder: " << string( sd.as_cstring() ) << endl;
-  */
 
   // can FLAC handle more than 2 channels anyway?
   if( m_item->getChannels() <= 2 )
@@ -255,11 +241,6 @@ struct mgDecode *mgFlacDecoder::decode()
        }    
      m_reservoir_count -= n;
      
-     FLAC::Decoder::File::State d = get_state();
-     FLAC::Decoder::SeekableStream::State ssd = get_seekable_stream_decoder_state();
-     FLAC::Decoder::Stream::State sd = get_stream_decoder_state();
-     // if any states are not okay, abort and override m_decode_state
-     
      // and return, indicating that playing will continue (unless an error has occurred)
      return done( m_decode_status );
     }      
@@ -271,8 +252,7 @@ struct mgDecode *mgFlacDecoder::decode()
 mgFlacDecoder::write_callback(const ::FLAC__Frame *frame,
 			      const FLAC__int32 * const buffer[])
 {
-  mgLog lg( "mgFlacDecoder::write_callback" );
-  ::FLAC__StreamDecoderWriteStatus retval;
+  // mgLog lg( "mgFlacDecoder::write_callback" );
 
   // add decoded buffer to reservoir
   m_len_decoded = frame->header.blocksize;
@@ -352,7 +332,7 @@ void mgFlacDecoder::error_callback( ::FLAC__StreamDecoderErrorStatus status )
       }
     }
 
-  cout << "Error occured: " << m_error << endl;
+  // cout << "Error occured: " << m_error << endl;
   m_decode_status = dsError;
 }
 
