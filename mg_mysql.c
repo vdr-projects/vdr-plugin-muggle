@@ -252,29 +252,34 @@ mgmySql::sql_string( const string s )
 }
 
 char*
-mgmySql::sql_Cstring( const string s )
+mgmySql::sql_Cstring( const string s, char *buf )
 {
-  return sql_Cstring(s.c_str());
+  return sql_Cstring(s.c_str(),buf);
 }
 
 char*
-mgmySql::sql_Cstring( const char *s)
+mgmySql::sql_Cstring( const char *s, char *buf)
 {
-  char *buf;
-  int buflen;
-  if (!this)
-	  buflen=strlen(s)+2;
+  char *b;
+  if (buf)
+	b=buf;
   else
-	  buflen=2*strlen(s)+3;
-  buf = (char *) malloc( buflen);
-  buf[0]='\'';
+  {
+  	int buflen;
+  	if (!this)
+	  	buflen=strlen(s)+2;
+  	else
+		buflen=2*strlen(s)+3;
+  	b = (char *) malloc( buflen);
+  }
+  b[0]='\'';
   if (!this)
-	strcpy(buf+1,s);
+	strcpy(b+1,s);
   else
-  	mysql_real_escape_string( m_db, buf+1, s, strlen(s) );
-  *(strchr(buf,0)+1)=0;
-  *(strchr(buf,0))='\'';
-  return buf;
+  	mysql_real_escape_string( m_db, b+1, s, strlen(s) );
+  *(strchr(b,0)+1)=0;
+  *(strchr(b,0))='\'';
+  return b;
 }
 
 void

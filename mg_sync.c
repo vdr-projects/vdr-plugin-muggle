@@ -13,6 +13,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <fts.h>
 #include <sys/time.h>
 #include <time.h>
@@ -27,9 +28,9 @@
 #include "mg_setup.h"
 
 char *
-mgSync::sql_Cstring(TagLib::String s)
+mgSync::sql_Cstring(TagLib::String s,char *buf)
 {
-	return m_db.sql_Cstring(s.toCString());
+	return m_db.sql_Cstring(s.toCString(),buf);
 }
 
 char *
@@ -50,12 +51,7 @@ mgSync::getlanguage(const char *filename)
 {
       TagLib::String result = "";
       TagLib::ID3v2::Tag * id3v2tag=0;
-      char *extension = strrchr(filename,'.');
-      if (!extension)
-	      return result;
-      extension++;
-      lower(extension);
-      if (!strcmp(extension,"flac"))
+      if (!strcmp(c_extension,"flac"))
       {
       	TagLib::FLAC::File f(filename);
 	id3v2tag = f.ID3v2Tag();
@@ -66,7 +62,7 @@ mgSync::getlanguage(const char *filename)
   	    result = l.front()->toString();
         }
       }
-      else if (!strcmp(extension,"mp3"))
+      else if (!strcmp(c_extension,"mp3"))
       {
       	TagLib::MPEG::File f(filename);
 	id3v2tag = f.ID3v2Tag();
@@ -148,43 +144,70 @@ mgSync::~mgSync()
 }
 
 void
-mgSync::AddTrack(const char *filename)
+mgSync::UpdateTrack(long trackid)
+{
+	char sql[7000];
+	char *c_cddbid=getAlbum(c_album,c_artist,c_directory);
+	sprintf(sql,"UPDATE tracks SET artist=%s, title=%s,year=%d,sourceid=%s,"
+			"tracknb=%d,length=%d,bitrate=%d,samplerate=%d,"
+			"channels=%d,genre1=%s,lang=%s WHERE id=%ld",
+			c_artist,c_title,year,c_cddbid,
+			trackno,len,bitrate,sample,
+			channels,c_genre1,c_lang,trackid);
+	free(c_cddbid);
+	m_db.exec_sql(sql);
+}
+
+void
+mgSync::AddTrack()
+{
+	char sql[7000];
+	char *c_cddbid=getAlbum(c_album,c_artist,c_directory);
+	sprintf(sql,"INSERT INTO tracks SET artist=%s,title=%s,year=%u,sourceid=%s,"
+			"tracknb=%u,mp3file=%s,length=%d,bitrate=%d,samplerate=%d,"
+			"channels=%d,genre1=%s,genre2='',lang=%s,"
+			"folder1=%s,folder2=%s,folder3=%s,folder4=%s",
+			c_artist,c_title,year,c_cddbid,
+			trackno,c_mp3file,len,bitrate,sample,
+			channels,c_genre1,c_lang,
+			c_folder1,c_folder2,c_folder3,c_folder4);
+	free(c_cddbid);
+	m_db.exec_sql(sql);
+}
+
+bool
+mgSync::GetFileInfo(const char *filename)
 {
 	TagLib::FileRef f( filename) ;
 	if (f.isNull())
-		return;
+		return false;
 	TagLib::Tag *tag = f.tag();
 	if (!f.tag())
-		return;
-        char *c_album;
+		return false;
 	if (tag->album()=="")
-		c_album=strdup("'Unassigned'");
+		strcpy(c_album,"'Unassigned'");
 	else
-		c_album=sql_Cstring(tag->album());
-        char *c_artist=sql_Cstring(tag->artist());
-	char *c_title=sql_Cstring(tag->title());
-	char *c_directory=sql_Cstring(filename);
+		sql_Cstring(tag->album(),c_album);
+        sql_Cstring(tag->artist(),c_artist);
+	sql_Cstring(tag->title(),c_title);
+	sql_Cstring(filename,c_directory);
 	char *slash=strrchr(c_directory,'/');
 	if (slash)
 	{
 		*slash='\'';
 		*(slash+1)=0;
 	}
-	char *c_cddbid=getAlbum(c_album,c_artist,c_directory);
-	char *c_mp3file=sql_Cstring(filename);
 	const char *genrename=tag->genre().toCString();
 	const char *genreid=m_Genres[genrename].c_str();
-	char *c_genre1=sql_Cstring(genreid);
-	char *c_lang=sql_Cstring(getlanguage(filename));
-	char *folderstring=(char*)malloc(strlen(c_mp3file)*3);
-	unsigned int trackno=tag->track();
-	unsigned int year=tag->year();
+	sql_Cstring(genreid,c_genre1);
+	sql_Cstring(getlanguage(filename),c_lang);
+	trackno=tag->track();
+	year=tag->year();
         TagLib::AudioProperties *ap = f.audioProperties();
-        int len      = ap->length();     // tracks.length
-        int bitrate  = ap->bitrate();    // tracks.bitrate
-        int sample   = ap->sampleRate(); //tracks.samplerate
-        int channels = ap->channels();   //tracks.channels
-	folderstring[0]=0;
+        len      = ap->length();     // tracks.length
+        bitrate  = ap->bitrate();    // tracks.bitrate
+        sample   = ap->sampleRate(); //tracks.samplerate
+        channels = ap->channels();   //tracks.channels
 	if (m_db.HasFolderFields())
 	{
 	    char *path = strdup(filename);
@@ -221,35 +244,13 @@ mgSync::AddTrack(const char *filename)
 			}
 		}
 	    }
-		char *c_folder1=sql_Cstring(folder1);
-		char *c_folder2=sql_Cstring(folder2);
-		char *c_folder3=sql_Cstring(folder3);
-		char *c_folder4=sql_Cstring(folder4);
+		sql_Cstring(folder1,c_folder1);
+		sql_Cstring(folder2,c_folder2);
+		sql_Cstring(folder3,c_folder3);
+		sql_Cstring(folder4,c_folder4);
 		free(path);
-		sprintf(folderstring,"folder1=%s,folder2=%s,folder3=%s,folder4=%s",
-				c_folder1,c_folder2,c_folder3,c_folder4);
-		free(c_folder1);
-		free(c_folder2);
-		free(c_folder3);
-		free(c_folder4);
 	}
-	char sql[2000];
-	sprintf(sql,"INSERT INTO tracks SET artist=%s,title=%s,year=%d,sourceid=%s,"
-			"tracknb=%d,mp3file=%s,length=%d,bitrate=%d,samplerate=%d,"
-			"channels=%d,genre1=%s,genre2='',lang=%s,%s",
-			c_artist,c_title,year,c_cddbid,
-			trackno,c_mp3file,len,bitrate,sample,
-			channels,c_genre1,c_lang,folderstring);
-	free(c_directory);
-	free(c_album);
-	free(c_artist);
-	free(c_title);
-	free(c_cddbid);
-	free(c_mp3file);
-	free(c_genre1);
-	free(c_lang);
-	free(folderstring);
-	m_db.exec_sql(sql);
+	return true;
 }
 
 void
@@ -262,14 +263,20 @@ mgSync::SyncFile(const char *filename)
 		mgWarning("Length of file exceeds database field capacity: %s", filename);
 		return;
 	}
-	string escapedmp3file = m_db.sql_string(filename);
-	string s = m_db.get_col0("SELECT id from tracks WHERE mp3file="+escapedmp3file);
+	mgDebug(3,"Importing %s",filename);
+	sql_Cstring(filename,c_mp3file);
+	char sql[600];
+	sprintf(sql,"SELECT id from tracks WHERE mp3file=%s",c_mp3file);
+	string s = m_db.get_col0(sql);
 	if (s!="NULL")
 	{
+		if (GetFileInfo(filename))
+			UpdateTrack(atol(s.c_str()));
 	}
 	else
 	{
-		AddTrack(filename);
+		if (GetFileInfo(filename))
+			AddTrack();
 	}
 }
 
@@ -296,7 +303,15 @@ mgSync::Sync(const char * path, bool delete_missing)
 	fts = fts_open( const_cast<char *const *>(paths), FTS_LOGICAL, 0);
 	while ( (ftsent = fts_read(fts)) != NULL)
 	{
-		SyncFile(ftsent->fts_path);
+		if (!((ftsent->fts_statp->st_mode)||S_IFREG))
+			continue;
+      		char *extension = strrchr(ftsent->fts_path,'.');
+      		if (!extension)
+	      		continue;
+		strcpy(c_extension,extension+1);
+      		lower(c_extension);
+		if (!strcmp(c_extension,"flac") || !strcmp(c_extension,"ogg") || !strcmp(c_extension,"mp3"))
+			SyncFile(ftsent->fts_path);
 	}
 	fts_close(fts);
 }

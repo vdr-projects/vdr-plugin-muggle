@@ -41,8 +41,8 @@ class mgmySql
    */
   string sql_string( string s );
 
-  char* sql_Cstring( const string s );
-  char* sql_Cstring( const char *s );
+  char* sql_Cstring( const string s,char *buf=0);
+  char* sql_Cstring( const char *s,char *buf=0);
 
   string get_col0( const string query);
   
