@@ -2,29 +2,17 @@
 /*! \file   vdr_menu.c
  *  \brief  Implements menu handling for broswing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.5 $
- * \date    $Date: 2004/02/02 23:33:41 $
+ * \version $Revision: 1.6 $
+ * \date    $Date: 2004/02/03 00:13:24 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: MountainMan $
+ * \author  file owner: $Author: LarsAC $
  *
- * $Log: vdr_menu.c,v $
- * Revision 1.5  2004/02/02 23:33:41  MountainMan
- * impementation of gdTrackFilters
- *
- * Revision 1.4  2004/02/02 22:33:24  MountainMan
- *  changes in mgFilter classes (and ttheir use in the osd)
- *
- * Revision 1.3  2004/02/02 19:42:37  LarsAC
- * Added positioning of menubar when collapsing nodes.
- *
- * Revision 1.2  2004/02/02 19:17:44  LarsAC
- * Added generic filter handling to OSD
- *
+ * $Id: vdr_menu.c,v 1.6 2004/02/03 00:13:24 LarsAC Exp $
  */
 /*******************************************************************/
 
-#include <vdr/menuitems.h>
-#include <vdr/tools.h>
+#include <menuitems.h>
+#include <tools.h>
 #include <mysql/mysql.h>
 
 #include "vdr_menu.h"
@@ -39,8 +27,6 @@
 #include <vector>
 
 using namespace std;
-
-// static const char* alpha_num_keys = "abcdefghijklmnopqrstuvwxyz0123456789-";
 
 // ----------------------- mgMenuTreeItem ------------------
 
@@ -221,6 +207,7 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	    {
 	      // OK: Create filter and selection tree and display
 	      mgDebug( 1,  "mgMainMenu: create and apply filter" );
+	      // m_media->applyFilters();
 	    } break;
 	  case kRed: // ???
 	  case kYellow:
@@ -249,6 +236,10 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	    }
 	  }
       }
+    else if( state == osBack )
+      {
+	// m_media->resetFilters();	
+      }
   }
   else if( m_state == TREE )
     {
@@ -264,6 +255,7 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 		mgDebug( 1,  "mgMainMenu: switch to filter" );
 
 		m_history.push_back( Current() );
+		mgDebug( 1, "Remember current node #%i", Current() );
 
 		mgSelectionTreeNode *child = CurrentNode();		
 		DisplayTree( child );
@@ -338,9 +330,17 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	      DisplayTree( parent );
 
 	      // restore last selected entry
-	      cOsdItem *item = Get( m_history.back() );
+	      int last = m_history.back();
+	      mgDebug( 1, "Setting current to #%d", last );
+
+	      cOsdItem *item = Get( last );
 	      m_history.pop_back();
 	      SetCurrent( item );
+
+	      RefreshCurrent();	      
+	      DisplayCurrent(true);
+	      
+	      Interface->Flush();
 	    }
 	  state = osContinue;
 	}
@@ -491,11 +491,6 @@ void mgMainMenu::DisplayTree( mgSelectionTreeNode* node )
 {
   m_state = TREE;
 
-  if( node == m_root )
-    {
-      m_history.clear();
-    }
-  
   if( node->expand( ) )
     {
       Clear();
@@ -565,8 +560,8 @@ void mgMainMenu::DisplayFilter()
 	  {
 	    mgFilterBool *fb = (mgFilterBool *) (*iter);
 	    Add( new cMenuEditBoolItem(  fb->getName(), &( fb->m_bval), 
-					fb->getTrueString().c_str(), 
-					fb->getFalseString().c_str() ) );
+					 fb->getTrueString().c_str(), 
+					 fb->getFalseString().c_str() ) );
 	  } break;
 	default:
 	case mgFilter::UNDEF:
@@ -582,3 +577,13 @@ void mgMainMenu::DisplayFilterSelector()
 {
 
 }
+
+/************************************************************
+ *
+ * $Log: vdr_menu.c,v $
+ * Revision 1.6  2004/02/03 00:13:24  LarsAC
+ * Improved OSD handling of collapse/back
+ *
+ *
+ ************************************************************
+ */

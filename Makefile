@@ -1,7 +1,7 @@
 #
 # Makefile for a Video Disk Recorder plugin
 #
-# $Id: Makefile,v 1.3 2004/02/01 22:35:22 RaK Exp $
+# $Id: Makefile,v 1.4 2004/02/03 00:13:24 LarsAC Exp $
 
 # The official name of this plugin.
 # This name will be used in the '-P...' option of VDR to load the plugin.
@@ -40,7 +40,7 @@ PACKAGE = vdr-$(ARCHIVE)
 
 ### Includes and Defines (add further entries here):
 
-INCLUDES += -I$(VDRDIR)/include -I$(DVBDIR)/include -I/usr/include/mysql/
+INCLUDES += -I$(VDRDIR) -I$(DVBDIR)/include -I/usr/include/mysql/
 
 DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
 

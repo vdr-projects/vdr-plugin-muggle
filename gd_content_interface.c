@@ -3,10 +3,10 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.6 $
- * \date    $Date: 2004/02/02 22:48:04 $
+ * \version $Revision: 1.7 $
+ * \date    $Date: 2004/02/03 00:13:24 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: MountainMan $
+ * \author  file owner: $Author: LarsAC $
  *
  * DUMMY
  * Implements main classes of for content items and interfaces to SQL databases
@@ -40,7 +40,7 @@ int GdInitDatabase(MYSQL *db)
     }
     
     if(mysql_real_connect(db,"localhost","root","",
-			  "GiantDisc",0,NULL,0) == NULL)
+			  "GiantDisc2",0,NULL,0) == NULL)
     {
 	return -2;
     }
@@ -1199,6 +1199,9 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.7  2004/02/03 00:13:24  LarsAC
+ * Improved OSD handling of collapse/back
+ *
  * Revision 1.6  2004/02/02 22:48:04  MountainMan
  *  added CVS $Log
  *
