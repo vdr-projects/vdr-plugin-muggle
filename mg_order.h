@@ -132,7 +132,7 @@ sql_string (MYSQL *db, const string s);
 
 MYSQL_RES * exec_sql (MYSQL *db,string query);
 string get_col0 (MYSQL *db,string query);
-int exec_count (MYSQL *db,string query);
+long exec_count (MYSQL *db,string query);
 
 //! \brief converts long to string
 string itos (int i);

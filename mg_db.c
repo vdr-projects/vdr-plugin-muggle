@@ -330,20 +330,32 @@ mgSelection::AddToCollection (const string Name)
     CreateCollection(Name);
     string listid = sql_string (get_col0
         ("SELECT id FROM playlist WHERE title=" + sql_string (Name)));
-    string tmp =
-        get_col0 ("SELECT MAX(tracknumber) FROM playlistitem WHERE playlist=" +
-        listid);
-    int high;
-    if (tmp == "NULL")
-        high = 0;
-    else
-        high = atol (tmp.c_str ());
     unsigned int tracksize = getNumTracks ();
+
+    // this code is rather complicated but works in a multi user
+    // environment:
+ 
+    // insert a unique trackid:
+    string trackid = ltos(mysql_thread_id(m_db)+1000000);
+    exec_sql("INSERT INTO playlistitem SELECT "+listid+","
+	   "MAX(tracknumber)+"+ltos(tracksize)+","+trackid+
+	   " FROM playlistitem WHERE playlist="+listid);
+    
+    // find tracknumber of the trackid we just inserted:
+    string sql = string("SELECT tracknumber FROM playlistitem WHERE "
+		    "playlist=")+listid+" AND trackid="+trackid;
+    long first = atol(get_col0(sql).c_str()) - tracksize + 1;
+
+    // replace the place holder trackid by the correct value:
+    exec_sql("UPDATE playlistitem SET trackid="+ltos(m_tracks[tracksize-1].getId())+
+		    " WHERE playlist="+listid+" AND trackid="+trackid);
+    
+    // insert all other tracks:
     const char *sql_prefix = "INSERT INTO playlistitem VALUES ";
-    string sql = "";
-    for (unsigned int i = 0; i < tracksize; i++)
+    sql = "";
+    for (unsigned int i = 0; i < tracksize-1; i++)
     {
-	string item = "(" + listid + "," + ltos (high + 1 + i) + "," +
+	string item = "(" + listid + "," + ltos (first + i) + "," +
             ltos (m_tracks[i].getId ()) + ")";
 	comma(sql, item);
 	if ((i%100)==99)

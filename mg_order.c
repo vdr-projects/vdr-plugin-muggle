@@ -100,7 +100,7 @@ get_col0(MYSQL *db, string query)
     return result;
 }
 
-int
+long
 exec_count(MYSQL *db, string query)
 {
     return atol (get_col0 (db, query).c_str ());
