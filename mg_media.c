@@ -3,8 +3,8 @@
  *  \brief  Top level access to media in vdr plugin muggle
  *          for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.2 $
- * \date    $Date: 2004/02/02 02:01:11 $
+ * \version $Revision: 1.3 $
+ * \date    $Date: 2004/02/02 17:57:53 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: MountainMan $
  * 
@@ -48,10 +48,6 @@ mgFilterInt::~mgFilterInt()
 {
 }
 
-int mgFilterInt::getVal()
-{
-  return m_intval;
-}
 string mgFilterInt::getStrVal()
 {
   char buffer[20];
@@ -68,11 +64,6 @@ int mgFilterInt::getMax()
   return m_max;
 }
 
-void mgFilterInt::setVal(int value)
-{
-  m_intval = value;
-}
-
 mgFilterString::mgFilterString(const char *name, const char* value)
   : mgFilter(name)
 {
@@ -87,24 +78,12 @@ mgFilterString::~mgFilterString()
     }
 }
 
-const char* mgFilterString::getVal()
-{
-  return m_strval;
-}
 string mgFilterString::getStrVal()
 {
  
   return (string) m_strval;
 }
 
-void mgFilterString::setVal(const char* value)
-{
-  if(m_strval)
-    {
-      free(m_strval);
-    }
-   m_strval = strdup(value);
-}
 mgFilterBool::mgFilterBool(const char *name, bool value)
   : mgFilter(name)
 {
@@ -115,22 +94,12 @@ mgFilterBool::~mgFilterBool()
 {
 }
 
-bool mgFilterBool::getVal()
-{
-  return  m_bval;
-}
-
 string mgFilterBool::getStrVal()
 {
   if(m_bval)
     return "true";
   else
     return "false";
-}
-
-void mgFilterBool::setVal(bool value)
-{
-  m_bval = value;
 }
 
 mgTrackFilters::mgTrackFilters()
