@@ -17,11 +17,12 @@
 #ifndef ___VDR_SETUP_MG_H
 #define ___VDR_SETUP_MG_H
 
-// #include <osd.h>
-#include <menuitems.h>
 #include <string>
 
 #include "mg_setup.h"
+
+#include <menuitems.h>
+
 
 /*!
  * \brief allow user to modify setup on OSD
