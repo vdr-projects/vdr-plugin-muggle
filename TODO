@@ -14,17 +14,18 @@ Code polishing
 ==============
 - Check for memory leaks
 - Check for (reasonably) consistent usage of char*/string
-- mgDatabase is not used? mgPlayer used what for?
+- mgDatabase is not used? 
+- mgPlayer used what for?
 - Check for unnecessary log commands
-- Generate HTML documentation using doxygen, dotty/gv for state machines
+- Generate HTML documentation using doxygen,
+  use dotty/gv for state machines of player
 
 Short term items
 ================
-- Import existing m3u playlists
+- Import existing m3u playlists (in import)
 
-OSD (general)
--------------
-- Add separators for first letter (A, B, C, ...) that can be skipped using left/right
+OSD in general
+--------------
 
 Content
 -------
@@ -43,13 +44,13 @@ Player
 
 Medium term items
 =================
-
 - really abstract from specific queries etc.
 - mgDatabase should abstract database (mySQL) stuff!?
 
 OSD
 ---
 - Type numbers to enter characters and jump to first title accordingly
+- Check whether hierarchical menus are more suitable
 
 Content
 -------
@@ -64,11 +65,12 @@ Player
 
 Web interface
 -------------
-- Look at PHP stuff from c't 11/04 and adapt to schema
+- Look at PHP stuff from c't 11/04 and adapt to schema?
 
 Long term ideas
 ===============
 - daapd integration?
+- netjuke integration?
 - Display arbitrary images while playing music
 
 Visions
@@ -102,6 +104,9 @@ Already Done
 ************************************************************
 *
 * $Log: TODO,v $
+* Revision 1.9  2004/07/27 07:06:00  LarsAC
+* Added file for doxygen documentation generation
+*
 * Revision 1.8  2004/07/09 13:47:07  LarsAC
 * Updated next steps
 *
