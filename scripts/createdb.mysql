@@ -4,7 +4,6 @@
 DROP DATABASE IF EXISTS GiantDisc;
 CREATE DATABASE GiantDisc;
 use GiantDisc;
-grant all privileges on GiantDisc.* to music@'%';
-grant all privileges on GiantDisc.* to music@localhost;
-grant all privileges on GiantDisc.* to apache@localhost with grant option; 
+grant all privileges on GiantDisc.* to vdr@'%';
+grant all privileges on GiantDisc.* to vdr@localhost;
 

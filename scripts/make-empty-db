@@ -1,22 +1,19 @@
 #!/bin/sh
 
-export SCRIPTDIR=/home/lvw/Development/muggle-plugin/scripts
-cd $SCRIPTDIR
-
 echo "creating db"
 mysql -u root < createdb.mysql
  
 echo "creating tables"
-mysql -u root < $SCRIPTDIR/createtables.mysql
+mysql -u root < createtables.mysql
 
 echo "reading genres"
-echo " use GiantDisc; load data local infile '$SCRIPTDIR/genres.txt' into table genre;"| mysql -u root --local-infile=1 
+echo " use GiantDisc; load data local infile 'genres.txt' into table genre;"| mysql -u root --local-infile=1 
 
 echo "reading languages"
-echo "use GiantDisc; load data local infile '$SCRIPTDIR/languages.txt' into table language;" | mysql -u root --local-infile=1
+echo "use GiantDisc; load data local infile 'languages.txt' into table language;" | mysql -u root --local-infile=1
 
 echo "reading musictypes"
-echo "use GiantDisc; load data local infile '$SCRIPTDIR/musictypes.txt' into table language;" | mysql -u root --local-infile=1
+echo "use GiantDisc; load data local infile 'musictypes.txt' into table language;" | mysql -u root --local-infile=1
 
 echo "reading sources"
-echo "use GiantDisc; load data local infile '$SCRIPTDIR/sources.txt' into table language;" | mysql -u root --local-infile=1
+echo "use GiantDisc; load data local infile 'sources.txt' into table language;" | mysql -u root --local-infile=1
