@@ -425,6 +425,8 @@ mgDebug( 1, "mgPCMPlayer::Action: music file is %s", filename.c_str() );
 
                             break;
                         }
+			else
+			    mgWarning("Cannot find a decoder for %s",filename.c_str());
                     }
                     m_state = msEof;
                 }
