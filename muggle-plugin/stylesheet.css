@@ -1,5 +1,11 @@
-body { 		background-color:	white 
-		}
+body { 		background-color:	white ;
+		font-family: 		arial, sans-serif; 
+		font-size: 		10pt; 
+		color:			black; 
+		text-align: 		justify; 
+		vertical-align:		top; 
+		margin-right: 		10pt		
+	}
 		
 P {		font-family: 		arial, sans-serif; 
 		font-size: 		10pt; 
@@ -7,14 +13,14 @@ P {		font-family: 		arial, sans-serif;
 		text-align: 		justify; 
 		vertical-align:		top; 
 		margin-right: 		10pt
-		}
+	}
 		
 P.header { 	font-family: 		arial,sans-serif; 
 		font-size: 		10pt; 
 		color:			black; 
 		text-align: 		right; 
 		margin-right: 		10pt
-		}
+	}
 		
 P.klein { 	font-family: 		arial,sans-serif; 
 		font-size: 		8pt; 
