@@ -1,8 +1,0 @@
-#!/bin/sh
-
-export SCRIPTDIR=/home/andi/muggle/import
-cd $SCRIPTDIR
-echo "creating db"
-mysql < createdb.mysql
-
-#
