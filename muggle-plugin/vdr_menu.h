@@ -115,6 +115,9 @@ class mgMainMenu : public cOsdMenu
   cCommands *m_playlist_commands;
 
   int      m_last_osd_index;
+
+  char m_listname[32];
+  bool m_editing_listname;
 };
 
 #endif

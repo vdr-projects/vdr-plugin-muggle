@@ -39,7 +39,6 @@
 
 #include "gd_content_interface.h"
 
-
 // ----------------------- mgMenuTreeItem ------------------
 
 mgMenuTreeItem::mgMenuTreeItem( mgSelectionTreeNode *node )
@@ -73,6 +72,10 @@ mgMainMenu::mgMainMenu(mgMedia *media, mgSelectionTreeNode *root,
   SetButtons();
 
   DisplayTree( m_root );
+
+  strncpy( m_listname, playlist->getListname(), 31 );
+  m_listname[31] = "\0";
+  m_editing_listname 
 }
 
 mgSelectionTreeNode *mgMainMenu::CurrentNode()
@@ -386,7 +389,18 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	      } break;
 	    case kOk:
 	      {
-		state = PlaylistSubmenuAction( Current() );
+		if( Current() != 0 )
+		  { // not editing playlist name
+		    state = PlaylistSubmenuAction( Current() );
+		  }
+		else
+		  { // editing playlist name
+		    s_editing_listname = !s_editing_listname;
+		    if( s_editing_listname = false )
+		      { // we just changed from true to false so editing was terminated
+			m_playlist->setListname( s_listname );
+		      }
+		  }
 	      } break;
 	    default:
 	      {
@@ -660,15 +674,25 @@ void mgMainMenu::SavePlaylist()
   m_current_playlist->storePlaylist();
 }
 
-void mgMainMenu::RenamePlaylist()
+void mgMainMenu::RenamePlaylist( std::string name )
 {
   // dummy function. USes current date as name
-  time_t currentTime = time(NULL);
-  m_current_playlist->setListname(ctime(&currentTime));
+  m_current_playlist->setListname( name );
+
+  // confirmation
+#if VDRVERSNUM >= 10307
+  Skins.Message(mtInfo, "Playlist renamed" );
+  Skins.Flush();
+#else
+  Interface->Status( "Playlist renamed" );
+  Interface->Flush();
+#endif
 }
 
 void mgMainMenu::DisplayPlaylistSubmenu()
 {
+  static const char allowed[] = { "abcdefghijklmnopqrstuvwxyz0123456789-_" };
+
   m_state = PLAYLIST_SUBMENU;
 
   Clear();
@@ -676,9 +700,9 @@ void mgMainMenu::DisplayPlaylistSubmenu()
   SetTitle( "Muggle - Playlist View Commands" );
 
   // Add items
+  Add( new cMenuEditStrItem( tr("Playlist name"), s_listname, 32, allowed ) );
   Add( new cOsdItem( tr("Load playlist" ) ) );
   Add( new cOsdItem( tr("Save playlist" ) ) );
-  Add( new cOsdItem( tr("Rename playlist" ) ) );
   Add( new cOsdItem( tr("Clear playlist" ) ) );
   Add( new cOsdItem( tr("Remove entry from list" ) ) );
   Add( new cOsdItem( tr("Export playlist" ) ) );
@@ -730,8 +754,8 @@ eOSState mgMainMenu::ExecutePlaylistCommand( int current )
        {
 	 asprintf( &buffer, "%s...", command->Title() );
 #if VDRVERSNUM >= 10307
-   Skins.Message(mtInfo,buffer);
-   Skins.Flush();
+	 Skins.Message(mtInfo,buffer);
+	 Skins.Flush();
 #else
 	 Interface->Status( buffer );
 	 Interface->Flush();
@@ -766,6 +790,11 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
   switch( n )
     {
     case 0:
+      {	// rename playlist - should never get here!
+	state = osContinue;	
+      } break;
+      
+    case 1:
       {
 	LoadPlaylist();
 #if VDRVERSNUM < 10307
@@ -775,31 +804,16 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
 #endif
 	// jump to playlist view from here?
       } break;
-    case 1:
+    case 2:
       {	
 	SavePlaylist();
 #if VDRVERSNUM >= 10307
-  Skins.Message(mtInfo,"Playlist saved");
-  Skins.Flush();
+	Skins.Message(mtInfo,"Playlist saved");
+	Skins.Flush();
 #else
 	Interface->Status( "Playlist saved");
 	Interface->Flush();
 #endif
-      } break;
-    case 2:
-      {	// renamer playlist
-	RenamePlaylist();
-
-	// confirmation
-#if VDRVERSNUM >= 10307
-	Skins.Message(mtInfo,"Playlist renamed (dummy)");
-	Skins.Flush();
-#else
-	Interface->Status( "Playlist renamed (dummy)" );
-	Interface->Flush();
-#endif
-
-	state = osContinue;	
       } break;
     case 3:
       {	// clear playlist
