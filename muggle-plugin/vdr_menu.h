@@ -2,12 +2,12 @@
 /*! \file   vdr_menu.h
  *  \brief  Implements menu handling for broswing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.5 $
- * \date    $Date: 2004/02/03 00:13:24 $
+ * \version $Revision: 1.6 $
+ * \date    $Date: 2004/02/03 19:15:08 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: LarsAC $
  *
- * $Id: vdr_menu.h,v 1.5 2004/02/03 00:13:24 LarsAC Exp $
+ * $Id: vdr_menu.h,v 1.6 2004/02/03 19:15:08 LarsAC Exp $
  *
  */
 /*******************************************************************/
@@ -70,7 +70,7 @@ class mgMainMenu : public cOsdMenu
   // To be rewritten mode dependent 
   void SetButtons();
 
-  void DisplayTree( mgSelectionTreeNode *node );
+  void DisplayTree( mgSelectionTreeNode *node, int select = 0 );
   void DisplayTreeViewSelector();
 
   void DisplayFilter();
@@ -104,6 +104,9 @@ class mgMainMenu : public cOsdMenu
 /************************************************************
  *
  * $Log: vdr_menu.h,v $
+ * Revision 1.6  2004/02/03 19:15:08  LarsAC
+ * OSD selection now jumps back to parent when collapsing.
+ *
  * Revision 1.5  2004/02/03 00:13:24  LarsAC
  * Improved OSD handling of collapse/back
  *
