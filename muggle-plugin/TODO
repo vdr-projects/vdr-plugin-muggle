@@ -1,35 +1,40 @@
 TODO File for Muggle
 ====================
 
+Testing/bugs
+============
+- Save/load playlists to database
+- Export playlists
+- Execute playlist commands
+- Check play speed
+- Playlists starts with 2nd song
+- Check for getSourceFile
+
 Code polishing
 ==============
 - Check for memory leaks
 - Check for (reasonably) consistent usage of char*/string
 - mgDatabase is not used? mgPlayer used what for?
 - Check for unnecessary log commands
-- Add logs, documentation (generate in HTML)
 - Generate HTML documentation using doxygen, dotty/gv for state machines
 
 Short term items
 ================
-- Adapt scripts
-  - use working directory by default or argument
-  - how to install into correct path
+- Import existing m3u playlists
 
-OSD
----
+OSD (general)
+-------------
+- Add separators for first letter (A, B, C, ...) that can be skipped using left/right
 
 Content
 -------
 - Handle loop mode in mgPlaylist
 - Handle shuffle mode in mgPlaylist
-- Save/load playlists to database
 
 Player
 ------
-- Determine max. framecount (needed for rewinding) ?
+- Determine max. framecount (needed for rewinding)?
 - Init scale/level/normalize?
-- Check play speed
 - Add ogg decoder
 
 - Add a simple progress display (song title, artist, ...)
@@ -40,12 +45,11 @@ Medium term items
 =================
 
 - really abstract from specific queries etc.
-- mgDatabase should abstract database stuff!?
+- mgDatabase should abstract database (mySQL) stuff!?
 
 OSD
 ---
 - Type numbers to enter characters and jump to first title accordingly
-- Add separators for first letter (A, B, C, ...) that can be skipped using left/right
 
 Content
 -------
@@ -98,6 +102,9 @@ Already Done
 ************************************************************
 *
 * $Log: TODO,v $
+* Revision 1.8  2004/07/09 13:47:07  LarsAC
+* Updated next steps
+*
 * Revision 1.7  2004/05/28 15:29:18  lvw
 * Merged player branch back on HEAD branch.
 *
