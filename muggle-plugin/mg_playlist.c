@@ -199,16 +199,23 @@ void mgPlaylist::setListname(std::string name)
   m_listname = name;
 }
 
-// returns the count of items in the list
-int mgPlaylist::getCount()
-{ 
-  return m_list.size();
-}
-
 // returns current index in the playlist
 int mgPlaylist::getIndex() const
 { 
   return m_current_idx;
+}
+
+unsigned long mgPlaylist::getCompletedLength()
+{
+  unsigned long result = 0;
+
+  std::vector<mgContentItem*>::iterator iter;
+  for( iter = m_list.begin(); iter != m_list.begin() + m_current_idx; iter++ )
+    { //  each item in the list
+      result += (*iter)->getLength();
+    }
+
+  return result;
 }
 
 // returns the current item of the list
@@ -228,7 +235,7 @@ mgContentItem* mgPlaylist::getCurrent()
   return result;
 }
 
-// returns the nth track from the playlist
+// skip to the nth track from the playlist
 bool mgPlaylist::gotoPosition(unsigned int position)
 {
   bool result = false;

@@ -1,5 +1,5 @@
 /*! \file  mg_content_interface.h
- *  \brief data Objects for content (e.g. mp3 files, movies) for the vdr muggle plugin
+ *  \brief Data objects for content (e.g. mp3 files, movies) for the vdr muggle plugin
  *
  *  \version $Revision: 1.4 $
  *  \date    $Date$
@@ -27,7 +27,6 @@
 #define ILLEGAL_ID -1
 
 class mgFilter;
-class mgPlaylist;
 
 /*! 
  * \brief dummy player class
@@ -63,9 +62,9 @@ class mgContentItem
    */
   typedef enum contentType
     {
-      ABSTRACT =0, //< an abstract item which cannot be used
-      GD_AUDIO,    //< a GiantDisc audio track
-      EPG          //< an EPG item (i.e. a TV show)
+      ABSTRACT = 0, //< an abstract item which cannot be used
+      GD_AUDIO,     //< a GiantDisc audio track
+      EPG           //< an EPG item (i.e. a TV show)
     };
 
  protected:
@@ -274,6 +273,11 @@ class mgTracklist
   unsigned int getNumItems();
 
   /*!
+   * \brief returns the complete length of the playlist in seconds
+   */
+  unsigned long getLength();
+
+  /*!
    * \brief randomizes the order of the elements in the list 
    */
   virtual void shuffle();
@@ -311,12 +315,10 @@ class mgTracklist
   /*!
    * \brief returns an item from the list at the specified position
    */
-  virtual mgContentItem* mgTracklist::getItem(unsigned int position);
+  virtual mgContentItem* getItem(unsigned int position);
 
   /*!
    * \brief remove item at position
-   *
-   * \todo needed? if so, it hides bool remove(int)
    */
   virtual int removeItem(mgContentItem* item); // remove all occurences of item
 

@@ -199,12 +199,12 @@ public:
   void ToggleShuffle(void);
   void ToggleLoop(void);
 
-  virtual bool GetIndex(int &Current, int &Total, bool SnapToIFrame=false);
+  virtual bool getIndex(int &Current, int &Total, bool SnapToIFrame=false);
   //  bool GetPlayInfo(cMP3PlayInfo *rm); // LVW
 
   void NewPlaylist( mgPlaylist *plist, int first );
-  mgContentItem *GetCurrent () { return m_current; }  
-  mgPlaylist *GetPlaylist () { return m_playlist; }  
+  mgContentItem *getCurrent () { return m_current; }  
+  mgPlaylist *getPlaylist () { return m_playlist; }  
 };
 
 mgPCMPlayer::mgPCMPlayer(mgPlaylist *plist, int first)
@@ -868,13 +868,14 @@ void mgPCMPlayer::SkipSeconds(int secs)
     }
 }
 
-bool mgPCMPlayer::GetIndex( int &current, int &total, bool snaptoiframe )
+bool mgPCMPlayer::getIndex( int &current, int &total, bool snaptoiframe )
 {
-  if(m_current) {  
-    current = SecondsToFrames( m_index ); 
-    total = SecondsToFrames( m_current->getLength() );
-    return true;
-  }
+  if( m_current ) 
+    {  
+      current = SecondsToFrames( m_index ); 
+      total = SecondsToFrames( m_current->getLength() );
+      return true;
+    }
   return false;
 }
 
@@ -887,9 +888,12 @@ mgPlayerControl::mgPlayerControl( mgPlaylist *plist, int start )
 
 #if VDRVERSNUM >= 10307
   m_display = NULL;
+  m_menu = NULL;
 #endif
   m_visible = false;
   m_has_osd = false;
+  m_track_view = true;
+  m_progress_view = true;
 
   m_szLastShowStatusMsg = NULL;
 
@@ -913,8 +917,6 @@ mgPlayerControl::~mgPlayerControl()
 
 bool mgPlayerControl::Active(void)
 {
-  MGLOG( "mgPlayerControl::Active" );
-
   return m_player && m_player->Active();
 }
 
@@ -999,7 +1001,163 @@ void mgPlayerControl::NewPlaylist(mgPlaylist *plist, int start)
     }
 }
 
+void mgPlayerControl::ShowContents()
+{
+#if VDRVERSNUM >= 10307
+  if( !m_menu )
+    {
+      m_menu = Skins.Current()->DisplayMenu();
+    }
+
+  if( m_player && m_menu ) 
+    {
+      int num_items = m_menu->MaxItems();
+
+      if( m_track_view )
+	{
+	  m_menu->Clear();
+	  m_menu->SetTitle( "Track info view" );
+
+	  m_menu->SetTabs( 15 );
+	  
+	  char *buf;
+	  if( num_items > 0 )
+	    {
+	      asprintf( &buf, "Title:\t%s", m_player->getCurrent()->getLabel(0).c_str() );
+	      m_menu->SetItem( buf, 0, false, false );
+	      free( buf );
+	    }
+	  if( num_items > 1 )
+	    {
+	      asprintf( &buf, "Artist:\t%s", m_player->getCurrent()->getLabel(1).c_str() );
+	      m_menu->SetItem( buf, 1, false, false );
+	      free( buf );
+	    }
+	  if( num_items > 2 )
+	    {
+	      asprintf( &buf, "Album:\t%s", m_player->getCurrent()->getLabel(2).c_str() );
+	      m_menu->SetItem( buf, 2, false, false );
+	      free( buf );
+	    }
+	  if( num_items > 3 )
+	    {
+	      asprintf( &buf, "Genre:\t%s", m_player->getCurrent()->getLabel(3).c_str() );
+	      m_menu->SetItem( buf, 3, false, false );
+	      free( buf );
+	    }
+	  if( num_items > 4 )
+	    {
+	      int len = m_player->getCurrent()->getLength();
+	      asprintf( &buf, "Length:\t%s", IndexToHMSF( SecondsToFrames( len ) ) );
+	      m_menu->SetItem( buf, 4, false, false );
+	      free( buf );
+	    }
+	  if( num_items > 5 )
+	    {
+	      asprintf( &buf, "Bit rate:\t%s", m_player->getCurrent()->getBitrate().c_str() );
+	      m_menu->SetItem( buf, 5, false, false );
+	      free( buf );
+	    }
+	  if( num_items > 6 )
+	    {
+	      int sr = m_player->getCurrent()->getSampleRate();
+	      
+	      asprintf( &buf, "Sampling rate:\t%d", sr );
+	      m_menu->SetItem( buf, 6, false, false );
+	      free( buf );
+	    }
+	}
+      else
+	{
+	  mgPlaylist *list = m_player->getPlaylist();
+	  if( list )
+	    {
+	      // use items for playlist tag display
+	      m_menu->Clear();
+	      m_menu->SetTitle( "Playlist info view" );
+
+	      int cur = list->getIndex();
+	      
+	      char *buf;
+	      for( int i=0; i < num_items; i ++ )
+		{
+		  mgContentItem *item = list->getItem( cur-3+i );
+		  if( item->isValid() )
+		    {
+		      asprintf( &buf, "%s\t%s", item->getLabel(0).c_str(), item->getLabel(1).c_str() );
+		      if( i < 3 )
+			{ // already played
+			  m_menu->SetItem( buf, i, false, false );
+			}
+		      if( i > 3 )
+			{ // to be played
+			  m_menu->SetItem( buf, i, false, true );
+			}
+		      if( i == 3 )
+			{
+			  m_menu->SetItem( buf, i, true, true );
+			}
+		      free( buf );
+		    }
+		}
+	    }
+	}
+    }
+#endif
+}
+
 void mgPlayerControl::ShowProgress()
+{
+  if( m_player )
+    {
+      char *buf;
+      bool play = true, forward = true;
+      int speed = -1;
+
+      int current_frame, total_frames;
+      m_player->getIndex( current_frame, total_frames ); 
+      
+      if( !m_track_view )
+	{ // playlist stuff
+	  mgPlaylist *list = m_player->getPlaylist();
+	  if( list )
+	    {
+	      total_frames = SecondsToFrames( list->getLength() );
+	      current_frame += SecondsToFrames( list->getCompletedLength() );
+	      asprintf( &buf, "Playlist %s (%d/%d)", list->getListname().c_str(), list->getIndex()+1, list->getNumItems() );
+	    }
+	}
+      else
+	{ // track view
+	  asprintf( &buf, "%s: %s", m_player->getCurrent()->getLabel(1).c_str(), m_player->getCurrent()->getTitle().c_str() );
+	}
+
+#if VDRVERSNUM >= 10307
+      if( !m_display )
+	{
+	  m_display = Skins.Current()->DisplayReplay(false);
+	}
+      if( m_display ) 
+	{
+	  m_display->SetProgress( current_frame, total_frames );
+	  m_display->SetCurrent( IndexToHMSF( current_frame ) );
+	  m_display->SetTotal( IndexToHMSF( total_frames ) );	  
+	  m_display->SetTitle( buf );
+	  m_display->SetMode( play, forward, speed );
+	  m_display->Flush();
+	}
+#else
+      int w = Interface->Width();
+      int h = Interface->Height();
+      
+      Interface->WriteText( w/2, h/2, "Muggle is active!" );
+      Interface->Flush();
+#endif
+      free( buf );
+    }
+}
+
+void mgPlayerControl::Display()
 {
   StatusMsgReplaying();
 
@@ -1009,12 +1167,6 @@ void mgPlayerControl::ShowProgress()
 	{
 	  // open the osd if its not already there...
 #if VDRVERSNUM >= 10307
-	  /*
-	    osd = cOsdProvider::NewOsd (Setup.OSDLeft, Setup.OSDTop);
-	    tArea Areas[] = { { 0, 0, Setup.OSDWidth, Setup.OSDHeight, 2 } };
-	    osd->SetAreas(Areas,sizeof(Areas)/sizeof(tArea));
-	    font = cFont::GetFont (fontOsd);
-	  */
 #else
 	  Interface->Open();
 #endif
@@ -1022,43 +1174,25 @@ void mgPlayerControl::ShowProgress()
 	}
       
       // now an osd is open, go on
-      
-#if VDRVERSNUM >= 10307
-      if( !m_display )
-	{
-	  m_display = Skins.Current()->DisplayReplay(false);
-	}
-      if( m_player && m_display ) 
-	{
-	  int current_frame, total_frames;
-	  m_player->GetIndex( current_frame, total_frames ); 
 
-	  m_display->SetProgress( current_frame, total_frames );
-	  m_display->SetCurrent( IndexToHMSF( current_frame ) );
-	  m_display->SetTotal( IndexToHMSF( total_frames ) );
-	  
-	  char *buf;
-	  asprintf( &buf, "%s", m_player->GetCurrent()->getTitle().c_str() );
-	  m_display->SetTitle( buf );
-	  // free( buf );
-	  
-	  bool play = true, forward = true;
-	  int speed = -1;	  
-	  m_display->SetMode( play, forward, speed );
-
-	  m_display->Flush();
+      if( m_progress_view )
+	{
+	  if( m_menu )
+	    {
+	      delete m_menu;
+	      m_menu = NULL;
+	    }
+	  ShowProgress();
 	}
-#else
-      int w = Interface->Width();
-      int h = Interface->Height();
-      
-      Interface->WriteText( w/2, h/2, "Muggle is active!" );
-      
-      // Add: song info (name, artist, pos in playlist, time, ...)
-      // Add: progress bar
-      
-      Interface->Flush();
-#endif
+      else
+	{
+	  if( m_display )
+	    {
+	      delete m_display;
+	      m_display = NULL;
+	    }
+	  ShowContents();
+	}
     }
   else
     {
@@ -1079,14 +1213,15 @@ void mgPlayerControl::InternalHide()
   if( m_has_osd )
     {
 #if VDRVERSNUM >= 10307
-      /*
-      osd->Flush();
-      delete osd;
-      */
       if( m_display )
 	{
 	  delete m_display;
 	  m_display = NULL;
+	}
+      if( m_menu )
+	{
+	  delete m_menu;
+	  m_menu = NULL;
 	}
 #else
       Interface->Close();
@@ -1102,7 +1237,7 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
       return osEnd;
     }
 
-  ShowProgress();
+  Display();
 
   eOSState state = cControl::ProcessKey(key);
 
@@ -1122,7 +1257,7 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 	  {
 	    if( !m_visible && m_player )
 	      {
-		mgPlaylist *pl = m_player->GetPlaylist();
+		mgPlaylist *pl = m_player->getPlaylist();
 
 		std::string s;
 		switch( pl->toggleLoopMode() )
@@ -1155,13 +1290,15 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 	    else
 	      {
 		// toggle progress display between simple and detail
+		m_progress_view = !m_progress_view;
+		Display();
 	      }
 	  } break;
 	case kGreen:
 	  {
 	    if( !m_visible && m_player )
 	      {
-		mgPlaylist *pl = m_player->GetPlaylist();
+		mgPlaylist *pl = m_player->getPlaylist();
 
 		std::string s;
 		switch( pl->toggleShuffleMode() )
@@ -1193,7 +1330,9 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 	      }
 	    else
 	      {
-		// toggle progress display between playlist and single track
+		// toggle progress display between playlist and track
+		m_track_view = !m_track_view;
+		Display();
 	      }
 	  } break;
 	case kPause:
@@ -1212,7 +1351,7 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 	case kOk:
 	  {
 	    m_visible = !m_visible;
-	    ShowProgress();
+	    Display();
 
 	    return osContinue;
 	  } break;
@@ -1236,28 +1375,28 @@ void mgPlayerControl::StatusMsgReplaying()
 {
   char *szBuf=NULL;
   if(m_player 
-      && m_player->GetCurrent() 
-      && m_player->GetCurrent()->isValid() 
-      && m_player->GetCurrent()->getContentType() == mgContentItem::GD_AUDIO
-      && m_player->GetPlaylist()) 
+      && m_player->getCurrent() 
+      && m_player->getCurrent()->isValid() 
+      && m_player->getCurrent()->getContentType() == mgContentItem::GD_AUDIO
+      && m_player->getPlaylist()) 
     {
       /* 
-	 if(m_player->GetCurrent()->getAlbum().length() > 0)
+	 if(m_player->getCurrent()->getAlbum().length() > 0)
 	 {  
 	 asprintf(&szBuf,"[%c%c] (%d/%d) %s - %s",
-	 m_player->GetPlaylist()->isLoop()?'L':'.',
-	 m_player->GetPlaylist()->isShuffle()'S':'.',
-	 m_player->GetPlaylist()->getIndex() + 1,m_player->GetPlaylist()->getCount(),
-	 m_player->GetCurrent()->getTitle().c_str(),
-	 m_player->GetCurrent()->getAlbum().c_str());
+	 m_player->getPlaylist()->isLoop()?'L':'.',
+	 m_player->getPlaylist()->isShuffle()'S':'.',
+	 m_player->getPlaylist()->getIndex() + 1,m_player->getPlaylist()->getCount(),
+	 m_player->getCurrent()->getTitle().c_str(),
+	 m_player->getCurrent()->getAlbum().c_str());
 	 }
 	 else */
       {  
 	asprintf(&szBuf,"[%c%c] (%d/%d) %s",
 		 /* TODO m_player->GetPlaylist()->isLoop()?'L':*/'.',
 		 /* TODO m_player->GetPlaylist()->isShuffle()'S':*/'.',
-		 m_player->GetPlaylist()->getIndex() + 1,m_player->GetPlaylist()->getCount(),
-		 m_player->GetCurrent()->getTitle().c_str());
+		 m_player->getPlaylist()->getIndex() + 1,m_player->getPlaylist()->getNumItems(),
+		 m_player->getCurrent()->getTitle().c_str());
       }
     }
   else

@@ -9,7 +9,6 @@
  * Implements main classes of for content items and abstract interfaces to media access
  *
  * This file implements the following classes 
- *   - mgContentItem
  *   - mgTracklist
  *   - mgSelectionTreeNode
  */
@@ -49,6 +48,19 @@ std::vector<mgContentItem*> *mgTracklist::getAll()
 unsigned int mgTracklist::getNumItems()
 {
   return m_list.size();
+}
+
+unsigned long mgTracklist::getLength()
+{
+  unsigned long result = 0;
+  std::vector<mgContentItem*>::iterator iter;
+
+  for( iter = m_list.begin(); iter != m_list.end (); iter++ )
+    {
+      result += (*iter)->getLength();
+    }
+
+  return result;
 }
 
 void mgTracklist::shuffle()
