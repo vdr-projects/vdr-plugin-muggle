@@ -243,8 +243,15 @@ mgMainMenu::SaveState()
     char *b;
     asprintf(&b,"%s/muggle.state",cPlugin::ConfigDirectory ("muggle"));
     FILE *f = fopen(b,"w");
+    if (!f) 
+    {
+	    if (!m_save_warned)
+		    mgWarning("Cannot write %s",b);
+	    m_save_warned=true;
+    	    free(b);
+	    return;
+    }
     free(b);
-    if (!f) return;
     mgValmap nmain("MainMenu");
     nmain.put("DefaultCollection",default_collection);
     nmain.put("UsingCollection",UsingCollection);
@@ -275,6 +282,7 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
     external_commands = 0;
     queue_playing=false;
     instant_playing=false;
+    m_save_warned=false;
     play_collection = tr("play");
     mgValmap nsel("tree");
     mgValmap ncol("collection");
