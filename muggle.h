@@ -32,6 +32,9 @@
 #ifndef _MUGGLE_H
 #define _MUGGLE_H
 #include <string>
+#include <stdio.h>
+#include <sys/types.h>
+#include <pthread.h>
 #include <plugin.h>
 
 class mgMainMenu;

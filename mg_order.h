@@ -7,11 +7,7 @@
 #include <assert.h>
 #include <list>
 #include <vector>
-#include <iostream>
-#include <istream>
 #include <sstream>
-#include <ostream>
-
 #include "mg_valmap.h"
 
 using namespace std;

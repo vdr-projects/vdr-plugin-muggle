@@ -1,5 +1,7 @@
 #ifndef _MG_VALMAP_H
 #define _MG_VALMAP_H
+
+#include <stdio.h>
 #include <string>
 #include <map>
 

@@ -11,17 +11,20 @@
 #ifdef HAVE_FLAC
 
 #define DEBUG
-#include "vdr_setup.h"
-#include "vdr_decoder_flac.h"
-
-#include "mg_tools.h"
-#include "mg_db.h"
-
-#include <mad.h>
 
 #include <string>
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "mg_tools.h"
+#include "mg_db.h"
+
+#include "vdr_setup.h"
+#include "vdr_decoder_flac.h"
+
+
+#include <mad.h>
+
 
 using namespace std;
 
@@ -82,7 +85,7 @@ bool mgFlacDecoder::initialize()
   m_reservoir[0] = new FLAC__int32[MAX_RES_SIZE];
   m_reservoir[1] = new FLAC__int32[MAX_RES_SIZE];
 
-  FLAC::Decoder::File::State d = init(); // TODO: check this
+  /*FLAC::Decoder::File::State d =*/ init(); // TODO: check this
 
   process_until_end_of_metadata(); // basically just skip metadata
 

@@ -21,6 +21,12 @@
 #include <sys/stat.h>
 #include <sys/vfs.h>
 
+#include "mg_db.h"
+
+#include <videodir.h>
+#include <interface.h>
+
+
 #include "vdr_setup.h"
 #include "vdr_decoder.h"
 #include "vdr_decoder_mp3.h"
@@ -35,10 +41,6 @@ extern void showmessage(const char *);
 #include "vdr_decoder_flac.h"
 #endif
 
-#include "mg_db.h"
-
-#include <videodir.h>
-#include <interface.h>
 
 // --- mgDecoders ---------------------------------------------------------------
 

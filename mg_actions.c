@@ -9,6 +9,8 @@
  * $Id: mg_actions.c 276 2004-12-25 15:52:35Z wr61 $
  */
 
+#include <stdio.h>
+
 #include <typeinfo>
 #include <string>
 #include <vector>

@@ -9,6 +9,7 @@
  *
  */
 
+#include <stdio.h>
 #include "mg_db.h"
 #include "vdr_setup.h"
 #include "mg_tools.h"
@@ -403,7 +404,7 @@ string mgSelection::exportM3U ()
         mgContentItem& t = m_tracks[i];
         fprintf (listfile, "#EXTINF:%d,%s\n", t.getDuration (),
             t.getTitle ().c_str ());
-	fprintf (listfile, "#MUGGLE:%d\n", t.getId());
+	fprintf (listfile, "#MUGGLE:%ld\n", t.getId());
         fprintf (listfile, "%s\n", t.getSourceFile (false).c_str ());
     }
     fclose (listfile);
