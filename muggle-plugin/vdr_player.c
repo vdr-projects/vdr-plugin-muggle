@@ -382,7 +382,7 @@ mgPCMPlayer::Action (void)
     SetPlayMode (pmStopped);
 
 #if VDRVERSNUM >= 10318
-    cDevice::PrimaryDevice()->SetCurrentAudioTrack(ttDolbyFirst);
+    cDevice::PrimaryDevice()->SetCurrentAudioTrack(ttAudio);
 #endif
     while (m_active)
     {
