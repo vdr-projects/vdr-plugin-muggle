@@ -713,7 +713,10 @@ eOSState
 mgCreateCollection::ProcessKey(eKeys key)
 {
 	if (key == kOk)
-		Execute();
+		if (Editing())
+			Execute();
+		else
+			return cMenuEditStrItem::ProcessKey(kRight);
 	return cMenuEditStrItem::ProcessKey(key);
 }
 
