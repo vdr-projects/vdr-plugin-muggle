@@ -1086,8 +1086,8 @@ mgPlayerControl::mgPlayerControl( mgPlaylist *plist, unsigned start )
 #endif
   m_visible = false;
   m_has_osd = false;
-  m_track_view = true;
-  m_progress_view = true;
+  m_track_view = the_setup.trackview;
+  m_progress_view = the_setup.progressview;
 
   m_szLastShowStatusMsg = NULL;
 

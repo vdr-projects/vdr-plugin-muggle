@@ -49,7 +49,10 @@ private:
   //! \brief indicates, whether an osd is currently displayed
   bool m_has_osd;
 
+  //! \brief indicates, whether the osd displays a track view (true) or a playlist view (false)
   bool m_track_view;
+
+  //! \brief indicates, whether the osd presents progress (true) or detail information (false)
   bool m_progress_view;
 
 #if VDRVERSNUM >= 10307
