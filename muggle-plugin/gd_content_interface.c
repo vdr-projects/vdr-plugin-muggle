@@ -3,8 +3,8 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.11 $
- * \date    $Date: 2004/02/10 01:23:06 $
+ * \version $Revision: 1.12 $
+ * \date    $Date: 2004/02/10 23:47:23 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: RaK $
  *
@@ -88,13 +88,13 @@ gdFilterSets::gdFilterSets()
   // title
   filter = new mgFilterString("title", ""); set->push_back(filter);
   // artist
-  filter = new mgFilterString("artist", ""); set->push_back(filter);
+  filter = new mgFilterString("artist", "abba"); set->push_back(filter);
   // genre
   filter = new mgFilterString("genre", ""); set->push_back(filter);
   // year-from
-  filter = new mgFilterInt("year (from)", 0); set->push_back(filter);
+  filter = new mgFilterInt("year (from)", 1900); set->push_back(filter);
   // year-to
-  filter = new mgFilterInt("year (to)", 9999); set->push_back(filter);
+  filter = new mgFilterInt("year (to)", 2100); set->push_back(filter);
  // rating
   filter = new mgFilterInt("rating", 0); set->push_back(filter);
 
@@ -106,20 +106,20 @@ gdFilterSets::gdFilterSets()
   // title
   filter = new mgFilterString("album title", ""); set->push_back(filter);
   // artist
-  filter = new mgFilterString("album artist", ""); set->push_back(filter);
+  filter = new mgFilterString("album artist", "abba"); set->push_back(filter);
   // genre
   filter = new mgFilterString("genre", ""); set->push_back(filter);
   // year-from
-  filter = new mgFilterInt("year (from)", 0); set->push_back(filter);
+  filter = new mgFilterInt("year (from)", 1900); set->push_back(filter);
   // year-to
-  filter = new mgFilterInt("year (to)", 9999); set->push_back(filter);
+  filter = new mgFilterInt("year (to)", 2100); set->push_back(filter);
   // rating
   filter = new mgFilterInt("rating", 0); set->push_back(filter);
 
   m_sets.push_back(set);
   
   m_activeSetId = 0;
-  m_activeSet = set;
+  m_activeSet = m_sets[m_activeSetId];
 }
 
 /*! 
@@ -149,13 +149,13 @@ string gdFilterSets::computeRestriction(int *viewPrt)
         {
           if(strcmp((*iter)->getName(), "title") == 0 )
           {
-            sql_str = sql_str + " AND tracks.title like '" 
-  	      + (*iter)->getStrVal() + "'";
+            sql_str = sql_str + " AND tracks.title like '%%" 
+  	      + (*iter)->getStrVal() + "%%'";
           }
           else if(strcmp((*iter)->getName(), "artist") == 0 )
           { 
-            sql_str = sql_str + " AND tracks.artist like '" 
-	      + (*iter)->getStrVal() + "'";
+            sql_str = sql_str + " AND tracks.artist like '%%" 
+	      + (*iter)->getStrVal() + "%%'";
           }
           else if(strcmp((*iter)->getName(), "genre") == 0 )
           { 
@@ -192,13 +192,13 @@ string gdFilterSets::computeRestriction(int *viewPrt)
         {
           if(strcmp((*iter)->getName(), "album title") == 0 )
           {
-            sql_str = sql_str + " AND album.title like ' " 
-  	      + (*iter)->getStrVal() + "'";
+            sql_str = sql_str + " AND album.title like '%%" 
+  	      + (*iter)->getStrVal() + "%%'";
           }
           else if(strcmp((*iter)->getName(), "album artist") == 0 )
           { 
-            sql_str = sql_str + " AND album.artist like '" 
-	      + (*iter)->getStrVal() + "'";
+            sql_str = sql_str + " AND album.artist like '%%" 
+	      + (*iter)->getStrVal() + "%%'";
           }
           else if(strcmp((*iter)->getName(), "genre") == 0 )
           { 
@@ -913,8 +913,32 @@ bool GdTreeNode::isLeafNode()
 		 return false;
 	     }
 	     break;
-     case 3: // Artist -> Track
+         case 3: // Artist -> Track
  	     if( m_level <= 2 )
+	     {
+		 return false;
+	     }
+	     break;
+         case 4:
+ 	     if( m_level <= 2 )
+	     {
+		 return false;
+	     }
+	     break;
+         case 5:
+ 	     if( m_level <= 1 )
+	     {
+		 return false;
+	     }
+	     break;
+         case 100:
+ 	     if( m_level <= 0 )
+	     {
+		 return false;
+	     }
+	     break;
+         case 101:
+ 	     if( m_level <= 1 )
 	     {
 		 return false;
 	     }
@@ -949,11 +973,14 @@ bool GdTreeNode::expand()
 
     string labelfield; // human readable db field for the column to be expanded
     string idfield;  // unique id field for the column to be expanded
-    string tables;  // stores the db tables used
     string new_restriction_field; // field to be restricted by the new level
     string new_restriction; // complete restriction str for the current child
     string new_label; 
     GdTreeNode* new_child;
+
+    string tables;  // stores the db tables used
+
+    #define  FROMJOIN " FROM tracks, genre as genre1, genre as genre2, album WHERE tracks.sourceid=album.cddbid AND genre1.id=tracks.genre1 AND genre2.id=tracks.genre2 AND %s "
 
     if (m_expanded)
     {
@@ -972,25 +999,22 @@ bool GdTreeNode::expand()
 	 case 1: // artist -> album -> title
 	     if(m_level == 1) {
 		 sprintf(sqlbuff,
-			 "SELECT DISTINCT album.artist,album.artist"
-			 "  FROM album"
-			 "  WHERE %s"
+			 "SELECT DISTINCT album.artist,album.artist" 
+                         FROMJOIN
 			 "  ORDER BY album.artist"
 			 , m_restriction.c_str() );
 		 idfield = "album.artist";
 	} else if(m_level == 2) { // artist -> album 
 	    sprintf(sqlbuff, 
 		    "SELECT DISTINCT album.title,album.cddbid"
-		    "  FROM album"
- 		    "  WHERE %s"
+                         FROMJOIN
 		    "  ORDER BY album.title"
 		    , m_restriction.c_str() );
 	    idfield = "album.cddbid";
 	} else if(m_level == 3) { // album -> title 
 	    sprintf(sqlbuff, 
 		    "SELECT tracks.title,tracks.id"
-		    "  FROM tracks,album"
-		    "  WHERE %s AND tracks.sourceid=album.cddbid"
+                         FROMJOIN
 		    "  ORDER BY tracks.tracknb"
 		    , m_restriction.c_str() );
 	    idfield = "tracks.id";
@@ -1003,42 +1027,29 @@ bool GdTreeNode::expand()
 	 case 2: // genre -> artist -> album -> track
 	     if(m_level == 1) { // genre 
 		 sprintf(sqlbuff,
-			 "SELECT DISTINCT genre.genre,tracks.genre1"
-			 "  FROM tracks,genre"
-			 "  WHERE (genre.id=tracks.genre1) AND"
-			 "        %s"
-			 "  ORDER BY genre.id"
+			 "SELECT DISTINCT genre1.genre,tracks.genre1"
+                         FROMJOIN
+			 "  ORDER BY genre1.id"
 			 , m_restriction.c_str());
 		 idfield = "tracks.genre1";
 	     } else if(m_level == 2) { // genre -> artist
 		 sprintf(sqlbuff,
 			 "SELECT DISTINCT album.artist,album.artist"
-			 "  FROM tracks,genre,album"
-			 "  WHERE (genre.id=tracks.genre1) AND"
-			 "        (album.cddbid=tracks.sourceid) AND"
-			 "         %s"
+                         FROMJOIN
 			 "  ORDER BY album.artist",
 			  m_restriction.c_str());
 		 idfield = "album.artist";
 	     } else if(m_level == 3) { // genre -> artist -> album
 		 sprintf(sqlbuff,
-			 "SELECT DISTINCT"
-                         "   album.title,"
-                         "   tracks.sourceid"
-			 "  FROM tracks,genre,album"
-			 "  WHERE (genre.id=tracks.genre1) AND"
-			 "        (album.cddbid=tracks.sourceid) AND"
-			 "         %s"
+			 "SELECT DISTINCT album.title,tracks.sourceid"
+                         FROMJOIN
 			 "  ORDER BY album.title"
 			 , m_restriction.c_str());
 		 idfield = "tracks.sourceid";
 	     } else if(m_level == 4) { // genre -> artist -> album -> track
 		 sprintf(sqlbuff,
 			 "SELECT DISTINCT tracks.title, tracks.id"
-			 "  FROM tracks,genre,album"
-			 "  WHERE (genre.id=tracks.genre1) AND"
-			 "        (album.cddbid=tracks.sourceid) AND"
-			 "         %s"
+                         FROMJOIN
 			 "  ORDER BY tracks.tracknb"
 			 , m_restriction.c_str());
 		 idfield = "tracks.id";
@@ -1053,18 +1064,14 @@ bool GdTreeNode::expand()
 	     {
 		 sprintf(sqlbuff,
 			 "SELECT DISTINCT tracks.artist,tracks.artist"
-			 "  FROM tracks"
-			 "  WHERE "
-			 "        %s"
+                         FROMJOIN
 			 "  ORDER BY tracks.artist" 
 			 , m_restriction.c_str());
 		 idfield = "tracks.artist";
 	     } else if (m_level == 2) { // Track
 		 sprintf(sqlbuff,
 			 "SELECT DISTINCT tracks.title,tracks.id"
-			 "  FROM tracks, album"
-			 "  WHERE"
-			 "         %s AND tracks.sourceid=album.cddbid"
+                         FROMJOIN
 			 "  ORDER BY tracks.title"
 			 , m_restriction.c_str());
 		 idfield = "tracks.id";
@@ -1077,30 +1084,24 @@ bool GdTreeNode::expand()
         case 4: // Genre -> Year -> Track
               if(m_level == 1) { // Genre
                 sprintf(sqlbuff,
-                        "SELECT DISTINCT genre.genre,tracks.genre1"
-                        "  FROM genre,tracks"
-                        "  WHERE (genre.id=tracks.genre1) AND"
-                        "        %s"
-                        "  ORDER BY genre.genre"
+                        "SELECT DISTINCT genre1.genre,tracks.genre1"
+                         FROMJOIN
+                        "  ORDER BY genre1.genre"
                         , m_restriction.c_str());
                 idfield = "tracks.genre1";
               } else if (m_level == 2) { // Year
                 sprintf(sqlbuff,
                         "SELECT DISTINCT tracks.year,tracks.year"
-                        "  FROM genre,tracks"
-                        "  WHERE (genre.id=tracks.genre1) AND"
-                        "        %s"
+                         FROMJOIN
                         "  ORDER BY tracks.year"
                         , m_restriction.c_str());
                 idfield = "tracks.year";
               } else if (m_level == 3) { // Track
                 sprintf(sqlbuff,
                         "SELECT DISTINCT"
-                          "  CONCAT(tracks.artist,' - ',tracks.title) AS title"
-                          "        ,tracks.id"
-                        "  FROM tracks,genre"
-                        "  WHERE (genre.id=tracks.genre1) AND"
-                        "         %s"
+                        "    CONCAT(tracks.artist,' - ',tracks.title) AS title"
+                        "          ,tracks.id"
+                         FROMJOIN
                         "  ORDER BY tracks.title"
                         , m_restriction.c_str());
                 idfield = "tracks.id";
@@ -1116,19 +1117,14 @@ bool GdTreeNode::expand()
                         "SELECT DISTINCT"
                         "    CONCAT(album.artist,' - ',album.title) AS title,"
                         "    album.cddbid"
-                        "  FROM album"
-                        "  WHERE 1 AND"
-                        "        %s"
+                         FROMJOIN
                         "  ORDER BY title"
                         , m_restriction.c_str());
-                idfield = "tracks.genre1";
+                idfield = "tracks.sourceid";
               } else if (m_level == 2) { // 
 		 sprintf(sqlbuff,
 			 "SELECT DISTINCT tracks.title, tracks.id"
-			 "  FROM tracks,genre,album"
-			 "  WHERE (genre.id=tracks.genre1) AND"
-			 "        (album.cddbid=tracks.sourceid) AND"
-			 "         %s"
+                         FROMJOIN
 			 "  ORDER BY tracks.tracknb"
 			 , m_restriction.c_str());
 		 idfield = "tracks.id";
@@ -1141,11 +1137,9 @@ bool GdTreeNode::expand()
          case 100:
            if (m_level == 1) {
              sprintf(sqlbuff,
-                      "SELECT CONCAT(tracks.artist,' - ',tracks.title),tracks.id"
-                      "  FROM tracks,genre as genre1,genre as genre2"
-                      "  WHERE (genre1.id=tracks.genre1 AND"
-                      "        genre2.id=tracks.genre2) AND"
-                      "         %s"
+                      "SELECT CONCAT(tracks.artist,' - ',tracks.title),"
+                      "       tracks.id"
+                         FROMJOIN
                       "  ORDER BY CONCAT(tracks.artist,' - ',tracks.title)"
                       , m_restriction.c_str());
              idfield = "tracks.id";
@@ -1157,21 +1151,14 @@ bool GdTreeNode::expand()
                          "SELECT DISTINCT"
                          "    CONCAT(album.artist,' - ',album.title) as title,"
                          "    album.cddbid"
-                         "  FROM tracks,album,genre as genre1, genre as genre2"
-                         "  WHERE (genre1.id=tracks.genre1 AND"
-                         "        genre2.id=tracks.genre2) AND"
-                         "         %s"
+                         FROMJOIN
                          "  ORDER BY CONCAT(album.artist,' - ',album.title)"
                          , m_restriction.c_str());
              idfield = "tracks.sourceid";
            } else if (m_level == 2) {
                sprintf(sqlbuff,
                          "SELECT tracks.title,tracks.id"
-                         "  FROM tracks,genre as genre1,genre as genre2,album"
-                         "  WHERE (genre1.id=tracks.genre1 OR"
-                         "        genre2.id=tracks.genre2) AND"
-                         "        (album.cddbid=tracks.sourceid) AND"
-                         "         %s"
+                         FROMJOIN
                          "  ORDER BY tracks.tracknb"
                          , m_restriction.c_str());
                idfield = "tracks.id";
@@ -1332,6 +1319,13 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.12  2004/02/10 23:47:23  RaK
+ * - views konsitent gemacht. siehe FROMJOIN
+ * - isLeafNode angepasst fuer neue views 4,5,100,101
+ * - like '%abba%' eingebaut
+ * - filter ist default mit abba gefuellt, zum leichteren testen.
+ * - search results werden jetzt gleich im ROOT expanded
+ *
  * Revision 1.11  2004/02/10 01:23:06  RaK
  * Ein fehler beim Tracksearch behoben. geht jetzt, aber nur einmal?!?!
  *

@@ -3,10 +3,10 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.2 $
- * \date    $Date: 2004/02/02 22:48:04 $
+ * \version $Revision: 1.3 $
+ * \date    $Date: 2004/02/10 23:47:23 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: MountainMan $
+ * \author  file owner: $Author: RaK $
  *
  * DUMMY
  * Implements main classes of for content items and interfaces to SQL databases
@@ -354,7 +354,7 @@ void mgSelectionTreeNode::collapse() // removes all children (recursively)
 {
   vector <mgSelectionTreeNode*>::iterator iter;
   mgSelectionTreeNode* ptr;
-  
+
   for(iter = m_children.begin(); iter != m_children.end();iter++)
   {
     ptr = *iter;
@@ -398,6 +398,13 @@ string mgSelectionTreeNode::getRestrictions()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: mg_content_interface.c,v $
+ * Revision 1.3  2004/02/10 23:47:23  RaK
+ * - views konsitent gemacht. siehe FROMJOIN
+ * - isLeafNode angepasst fuer neue views 4,5,100,101
+ * - like '%abba%' eingebaut
+ * - filter ist default mit abba gefuellt, zum leichteren testen.
+ * - search results werden jetzt gleich im ROOT expanded
+ *
  * Revision 1.2  2004/02/02 22:48:04  MountainMan
  *  added CVS $Log
  *
