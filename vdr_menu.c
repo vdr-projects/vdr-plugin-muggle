@@ -2,12 +2,12 @@
 /*! \file   vdr_menu.c
  *  \brief  Implements menu handling for broswing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.6 $
- * \date    $Date: 2004/02/03 00:13:24 $
+ * \version $Revision: 1.7 $
+ * \date    $Date: 2004/02/03 19:15:08 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: LarsAC $
  *
- * $Id: vdr_menu.c,v 1.6 2004/02/03 00:13:24 LarsAC Exp $
+ * $Id: vdr_menu.c,v 1.7 2004/02/03 19:15:08 LarsAC Exp $
  */
 /*******************************************************************/
 
@@ -327,20 +327,11 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	      
 	      m_node->collapse();
 
-	      DisplayTree( parent );
-
 	      // restore last selected entry
 	      int last = m_history.back();
-	      mgDebug( 1, "Setting current to #%d", last );
-
-	      cOsdItem *item = Get( last );
 	      m_history.pop_back();
-	      SetCurrent( item );
 
-	      RefreshCurrent();	      
-	      DisplayCurrent(true);
-	      
-	      Interface->Flush();
+	      DisplayTree( parent, last );
 	    }
 	  state = osContinue;
 	}
@@ -419,7 +410,7 @@ void mgMainMenu::Move( int from, int to )
 void mgMainMenu::DisplayTracklist()
 {
     m_state = TRACKS;
-  mgDebug( 1,  "mgBrowseMenu::DisplayTracklist");
+    mgDebug( 1,  "mgBrowseMenu::DisplayTracklist");
 
     Clear();
     SetButtons();
@@ -487,7 +478,7 @@ void mgMainMenu::DisplayAlbumInfo()
   // show info of the currently playing track
 }
 
-void mgMainMenu::DisplayTree( mgSelectionTreeNode* node )
+void mgMainMenu::DisplayTree( mgSelectionTreeNode* node, int select )
 {
   m_state = TREE;
 
@@ -513,6 +504,16 @@ void mgMainMenu::DisplayTree( mgSelectionTreeNode* node )
 	{
 	  Add( new mgMenuTreeItem( *iter ) );
 	}
+
+      mgDebug( 1, "Setting current to #%d", select );
+
+      cOsdItem *item = Get( select );
+      SetCurrent( item );
+      
+      RefreshCurrent();	      
+      DisplayCurrent(true);
+      
+      // Interface->Flush();
       
       mgDebug( 1,  "mgBrowseMenu::DisplayNode: Children added to OSD" );
     }
@@ -581,6 +582,9 @@ void mgMainMenu::DisplayFilterSelector()
 /************************************************************
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.7  2004/02/03 19:15:08  LarsAC
+ * OSD selection now jumps back to parent when collapsing.
+ *
  * Revision 1.6  2004/02/03 00:13:24  LarsAC
  * Improved OSD handling of collapse/back
  *
