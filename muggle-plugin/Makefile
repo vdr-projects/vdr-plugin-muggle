@@ -53,7 +53,7 @@ PACKAGE = vdr-$(ARCHIVE)
 INCLUDES += -I$(VDRDIR) -I$(VDRDIR)/include -I$(DVBDIR)/include \
 	$(shell mysql_config --cflags) $(shell taglib-config --cflags)
 
-DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DMYSQLCLIENTVERSION=$(shell mysql_config --version)
+DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DMYSQLCLIENTVERSION='"$(shell mysql_config --version)"'
 
 ### The object files (add further files here):
 

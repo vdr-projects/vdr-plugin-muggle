@@ -49,7 +49,7 @@ mgMuggle::mgMuggle (void)
 {
     main = NULL;
 // defaults for database arguments
-    the_setup.DbHost = strdup ("localhost");
+    the_setup.DbHost = 0;
     the_setup.DbSocket = 0;
     the_setup.DbPort = 0;
     the_setup.DbName = strdup ("GiantDisc");

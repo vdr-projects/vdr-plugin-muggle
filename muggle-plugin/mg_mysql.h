@@ -66,11 +66,11 @@ class mgmySql
   void Create();
   void FillTables();
   void CreateFolderFields();
-
  private:
   MYSQL *m_db;
   bool m_database_found;
   bool m_hasfolderfields;
+  bool sql_query(const char *query);
 };
 
 #endif

@@ -22,6 +22,8 @@
 
 bool needGenre2;
 static bool needGenre2_set;
+bool NoHost();
+bool UsingEmbedded();
 
 class mysqlhandle_t {
 	public:
@@ -29,22 +31,25 @@ class mysqlhandle_t {
 		~mysqlhandle_t();
 };
 
-#ifndef HAVE_ONLY_SERVER
+
 static char *datadir;
 
-static char *server_args[] =
+static char *embedded_args[] =
 {
 	"muggle",	
 	"--datadir=/tmp",	// stupid default
 	"--key_buffer_size=32M"
 };
-static char *server_groups[] =
+
+#ifndef HAVE_ONLY_SERVER
+static char *embedded_groups[] =
 {
 	"embedded",
 	"server",
 	"muggle_SERVER",
 	0
 };
+#endif
 
 void
 set_datadir(char *dir)
@@ -52,7 +57,7 @@ set_datadir(char *dir)
 	mgDebug(1,"setting datadir to %s",dir);
 	struct stat stbuf;
 	datadir=strdup(dir);
-	asprintf(&server_args[1],"--datadir=%s",datadir);
+	asprintf(&embedded_args[1],"--datadir=%s",datadir);
 	if (stat(datadir,&stbuf))
 		mkdir(datadir,0755);
 	if (stat(datadir,&stbuf))
@@ -60,14 +65,26 @@ set_datadir(char *dir)
 		mgError("Cannot access datadir %s: errno=%d",datadir,errno);
 	}
 }
-#endif
+
 
 mysqlhandle_t::mysqlhandle_t()
 {
 #ifndef HAVE_ONLY_SERVER
-	mgDebug(1,"calling mysql_server_init");
-	if (mysql_server_init(sizeof(server_args) / sizeof(char *),
-                      server_args, server_groups))
+	int argv_size;
+	if (UsingEmbedded())
+	{
+		mgDebug(1,"calling mysql_server_init for embedded");
+		argv_size = sizeof(embedded_args) / sizeof(char *);
+	}
+	else
+	{
+		if (strcmp(MYSQLCLIENTVERSION,"4.1.11")<0)
+			mgError("You have embedded mysql. For accessing external servers "
+				"you need mysql 4.1.11 but you have only %s", MYSQLCLIENTVERSION);
+		mgDebug(1,"calling mysql_server_init for external");
+		argv_size = -1;
+	}
+	if (mysql_server_init(argv_size, embedded_args, embedded_groups))
 		mgDebug(3,"mysql_server_init failed");
 #endif
 }
@@ -268,6 +285,12 @@ static char *db_cmds[] =
 	  "TYPE=MyISAM;"
 };
 
+bool
+mgmySql::sql_query(const char *sql)
+{
+	return mysql_query(m_db,sql);
+}
+
 
 MYSQL_RES*
 mgmySql::exec_sql( string query)
@@ -275,7 +298,7 @@ mgmySql::exec_sql( string query)
   if (!m_db || query.empty())
 	  return 0;
   mgDebug(4,"exec_sql(%X,%s)",m_db,query.c_str());
-  if (mysql_query (m_db, (query + ';').c_str ()))
+  if (sql_query (query.c_str ()))
   {
     mgError("SQL Error in %s: %s",query.c_str(),mysql_error (m_db));
     std::cout<<"ERROR in " << query << ":" << mysql_error(m_db)<<std::endl;
@@ -378,30 +401,32 @@ void mgmySql::Create()
   createtime=time(0);
   // create database and tables
   mgDebug(1,"Dropping and recreating database %s",the_setup.DbName);
-  if (mysql_query(m_db,"DROP DATABASE IF EXISTS GiantDisc;"))
+  if (sql_query("DROP DATABASE IF EXISTS GiantDisc;"))
   {
   	mgWarning("Cannot drop existing database:%s",mysql_error (m_db));
 	return;
   }
-  if (mysql_query(m_db,"CREATE DATABASE GiantDisc;"))
+  if (sql_query("CREATE DATABASE GiantDisc;"))
   {
   	mgWarning("Cannot create database:%s",mysql_error (m_db));
 	return;
   }
-#ifdef HAVE_ONLY_SERVER
-  mysql_query(m_db,"grant all privileges on GiantDisc.* to vdr@localhost;");
-  // ignore error. If we can create the data base, we can do everything
-  // with it anyway.
-#endif
+
+  if (!UsingEmbedded())
+  	sql_query("grant all privileges on GiantDisc.* to vdr@localhost;");
+  	// ignore error. If we can create the data base, we can do everything
+  	// with it anyway.
+
   if (mysql_select_db(m_db,the_setup.DbName))
 	  mgError("mysql_select_db(%s) failed with %s",mysql_error(m_db));
+
   int len = sizeof( db_cmds ) / sizeof( char* );
   for( int i=0; i < len; i ++ )
     {
-  	if (mysql_query (m_db, db_cmds[i]))
+  	if (sql_query (db_cmds[i]))
   	{
     		mgWarning("%20s: %s",db_cmds[i],mysql_error (m_db));
-  		mysql_query(m_db, "DROP DATABASE IF EXISTS GiantDisc;");	// clean up
+  		sql_query("DROP DATABASE IF EXISTS GiantDisc;");	// clean up
 		return;
 	}
     }
@@ -461,51 +486,55 @@ mgmySql::Connected () const
 	return m_database_found;
 }
 
+bool
+NoHost()
+{
+	return (!the_setup.DbHost
+		|| strlen(the_setup.DbHost)==0);
+}
+
+bool
+UsingEmbedded()
+{
+#ifdef HAVE_ONLY_SERVER
+	return false;
+#else
+	return NoHost();
+#endif
+}
+
 void
 mgmySql::Connect ()
 {
     assert(!m_db);
-#ifdef HAVE_ONLY_SERVER
-    if (the_setup.DbHost == "") return;
-#endif
     m_db = mysql_init (0);
     if (!m_db)
         return;
-#ifdef HAVE_ONLY_SERVER
-    bool success;
-    if (!the_setup.DbHost || !strcmp(the_setup.DbHost,"localhost"))
+    if (UsingEmbedded())
     {
-      mgDebug(1,"Using socket %s for connecting to local system as user %s.",
-		      the_setup.DbSocket,
-		      the_setup.DbUser);
+    	if (!mysql_real_connect(m_db, 0, 0, 0, 0, 0, 0, 0))
+		mgWarning("Failed to connect to embedded mysql in %s:%s ",datadir,mysql_error(m_db));
+    	else
+		mgDebug(1,"Connected to embedded mysql in %s",datadir);
     }
     else
     {
-      mgDebug(1,"Using TCP for connecting to server %s as user %s.",
-		      the_setup.DbHost,
-		      the_setup.DbUser);
+    	if (NoHost() || !strcmp(the_setup.DbHost,"localhost"))
+      		mgDebug(1,"Using socket %s for connecting to local system as user %s.",
+		      	the_setup.DbSocket, the_setup.DbUser);
+    	else
+      		mgDebug(1,"Using TCP for connecting to server %s as user %s.",
+		      	the_setup.DbHost, the_setup.DbUser);
+    	if (!mysql_real_connect( m_db,
+		      	the_setup.DbHost, the_setup.DbUser, the_setup.DbPass, 0,
+		      	the_setup.DbPort, the_setup.DbSocket, 0 ) != 0 )
+    	{
+		mgWarning("Failed to connect to server '%s' as User '%s', Password '%s': %s",
+			    	the_setup.DbHost,the_setup.DbUser,the_setup.DbPass,mysql_error(m_db));
+        	mysql_close (m_db);
+		m_db = 0;
+    	}
     }
-    mgDebug(3,"DbPassword is: '%s'",the_setup.DbPass);
-    success = ( mysql_real_connect( m_db,
-		      the_setup.DbHost, 
-		      the_setup.DbUser,       
-		      the_setup.DbPass, 
-		      0,
-		      the_setup.DbPort,
-		      the_setup.DbSocket, 0 ) != 0 );
-    if (!success)
-    {
-	mgWarning("Failed to connect to server '%s' as User '%s', Password '%s': %s",
-			    the_setup.DbHost,the_setup.DbUser,the_setup.DbPass,mysql_error(m_db));
-        mysql_close (m_db);
-	m_db = 0;
-    }
-#else
-    if (!mysql_real_connect(m_db, 0, 0, 0, 0, 0, 0, 0))
-	mgWarning("Failed to connect to embedded mysql in %s:%s ",datadir,mysql_error(m_db));
-    else
-	mgDebug(1,"Connected to embedded mysql in %s",datadir);
-#endif
     if (m_db)
     {
 	    m_database_found = mysql_select_db(m_db,the_setup.DbName)==0;
@@ -513,7 +542,7 @@ mgmySql::Connect ()
 		    if (!Connected())
 		    	if (!createtime)
 			    mgWarning("Database %s not found:%s",
-					    the_setup.DbName,mysql_error(m_db));
+				    the_setup.DbName,mysql_error(m_db));
 	    }
     }
     if (!needGenre2_set && Connected())
@@ -532,7 +561,7 @@ mgmySql::CreateFolderFields()
 	  return;
   if (HasFolderFields())
 	  return;
-  mysql_query(m_db,"DESCRIBE tracks folder1");
+  sql_query("DESCRIBE tracks folder1");
   MYSQL_RES *rows = mysql_store_result(m_db);
   if (rows)
     {
@@ -540,7 +569,7 @@ mgmySql::CreateFolderFields()
       mysql_free_result(rows);
       if (!m_hasfolderfields)
       {
-	      m_hasfolderfields = !mysql_query(m_db,
+	      m_hasfolderfields = !sql_query(
 	              "alter table tracks add column folder1 varchar(255),"
 		      "add column folder2 varchar(255),"
 		      "add column folder3 varchar(255),"
