@@ -658,7 +658,7 @@ GdFindFile( const char* tld, string mp3file )
     {
       char *s;
       if( (s = mg_readline(p) ) != 0) 
-	  result = tld + s;
+	  result = string(tld) + string(s);
       pclose(p);
     }
 
