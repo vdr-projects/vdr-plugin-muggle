@@ -2,12 +2,12 @@
  * \file   vdr_menu.c
  * \brief  Implements menu handling for browsing media libraries within VDR
  *
- * \version $Revision: 1.20 $
- * \date    $Date: 2004/05/28 15:29:19 $
+ * \version $Revision: 1.21 $
+ * \date    $Date: 2004/06/02 19:29:22 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  Responsible author: $Author: lvw $
  *
- * $Id: vdr_menu.c,v 1.20 2004/05/28 15:29:19 lvw Exp $
+ * $Id: vdr_menu.c,v 1.21 2004/06/02 19:29:22 lvw Exp $
  */
 
 #include <string>
@@ -155,11 +155,13 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 		    if( tracks )
 		      {
 			
-			char buffer[256];
-			sprintf( buffer, "%d tracks sent to current playlist", (int) tracks->size() );
+			char *buffer = 0;
+			asprintf( &buffer, "%d tracks sent to current playlist", (int) tracks->size() );
 			m_current_playlist->appendList(tracks);
 			Interface->Status( buffer );
 			Interface->Flush();
+
+			free( buffer );
 		      }
 		    else
 		      {
@@ -734,6 +736,9 @@ void mgMainMenu::Play(mgPlaylist *plist)
 /************************************************************
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.21  2004/06/02 19:29:22  lvw
+ * Use asprintf to create messages
+ *
  * Revision 1.20  2004/05/28 15:29:19  lvw
  * Merged player branch back on HEAD branch.
  *
