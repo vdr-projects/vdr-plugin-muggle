@@ -1,6 +1,6 @@
 /*!
- * \file mg_db.c
- * \brief A database interface to the GiantDisc
+ * \file mg_selection.c
+ * \brief A general interface to data items, currently only GiantDisc
  *
  * \version $Revision: 1.0 $
  * \date    $Date: 2004-12-07 10:10:35 +0200 (Tue, 07 Dec 2004) $
@@ -9,13 +9,28 @@
  *
  */
 
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/stat.h>
 #include <stdio.h>
-#include "mg_db.h"
+#include <fts.h>
+#include <assert.h>
+
+#include "i18n.h"
+#include "mg_selection.h"
 #include "vdr_setup.h"
 #include "mg_tools.h"
+#include "mg_sync.h"
 
-bool needGenre2;
-bool needGenre2_set;
+#include <mpegfile.h>
+#include <flacfile.h>
+#include <id3v2tag.h>
+#include <fileref.h>
+
+#if VDRVERSNUM >= 10307
+#include <vdr/interface.h>
+#include <vdr/skins.h>
+#endif
 
 //! \brief adds string n to string s, using a comma to separate them
 static string comma (string & s, string n);
@@ -107,143 +122,12 @@ mgSelection::getKeyType (const unsigned int level) const
         return order.getKeyType(level);
 }
 
-MYSQL_RES*
-mgSelection::exec_sql(string query) const
-{
-	return ::exec_sql(m_db, query);
-}
-
-/*! \brief executes a query and returns the first columnu of the
- * first row.
- * \param query the SQL query string to be executed
- */
-string mgSelection::get_col0 (string query) const
-{
-    return ::get_col0(m_db, query);
-}
-
-
-unsigned long
-mgSelection::exec_count (string query) const
-{
-    return ::exec_count(m_db, query);
-}
-
-
-
-string
-mgSelection::sql_string (const string s) const
-{
-    char *buf = (char *) malloc (s.size () * 2 + 1);
-    mysql_real_escape_string (m_db, buf, s.c_str (), s.size ());
-    string result = "'" + std::string (buf) + "'";
-    free (buf);
-    return result;
-}
-
-string
-mgContentItem::getKeyId(mgKeyTypes kt)
-{
-	if (m_id<0) 
-		return "";
-	switch (kt) {
-		case keyGenres:
-		case keyGenre1:
-		case keyGenre2:
-		case keyGenre3: return m_genre1_id;
-		default: return getKeyValue(kt);
-	}
-}
-
-string
-mgContentItem::getKeyValue(mgKeyTypes kt)
-{
-	if (m_id<0) 
-		return "";
-	switch (kt) {
-		case keyGenres:
-		case keyGenre1:
-		case keyGenre2:
-		case keyGenre3: return getGenre();
-		case keyArtist: return getArtist();
-		case keyAlbum: return getAlbum();
-		case keyYear: return string(ltos(getYear()));
-		case keyDecade: return string(ltos(int((getYear() % 100) / 10) * 10));
-		case keyTitle: return getTitle();
-		case keyTrack: return getTitle();
-		default: return "";
-	}
-}
-
 mgContentItem *
 mgSelection::getTrack (unsigned int position)
 {
     if (position >= getNumTracks ())
         return 0;
     return &(m_tracks[position]);
-}
-
-
-string mgContentItem::getGenre () const
-{
-    string result="";
-    if (m_genre1!="NULL")
-	    result = m_genre1;
-    if (m_genre2!="NULL")
-    {
-	    if (!result.empty())
-		    result += "/";
-	    result += m_genre2;
-    }
-    return result;
-}
-
-
-string mgContentItem::getBitrate () const
-{
-    return m_bitrate;
-}
-
-
-string mgContentItem::getImageFile () const
-{
-    return "Name of Imagefile";
-}
-
-
-string mgContentItem::getAlbum () const
-{
-    return m_albumtitle;
-}
-
-
-int mgContentItem::getYear () const
-{
-    return m_year;
-}
-
-
-int mgContentItem::getRating () const
-{
-    return m_rating;
-}
-
-
-int mgContentItem::getDuration () const
-{
-    return m_duration;
-}
-
-
-int mgContentItem::getSampleRate () const
-{
-    return m_samplerate;
-}
-
-
-int mgContentItem::getChannels () const
-{
-    return m_channels;
 }
 
 
@@ -326,33 +210,47 @@ mgSelection::LoopMode mgSelection::toggleLoopMode ()
 unsigned int
 mgSelection::AddToCollection (const string Name)
 {
-    if (!m_db) return 0;
+    if (!m_db.Connected()) return 0;
     CreateCollection(Name);
-    string listid = sql_string (get_col0
-        ("SELECT id FROM playlist WHERE title=" + sql_string (Name)));
-    string tmp =
-        get_col0 ("SELECT MAX(tracknumber) FROM playlistitem WHERE playlist=" +
-        listid);
-    int high;
-    if (tmp == "NULL")
-        high = 0;
-    else
-        high = atol (tmp.c_str ());
+    string listid = m_db.sql_string (m_db.get_col0
+        ("SELECT id FROM playlist WHERE title=" + m_db.sql_string (Name)));
     unsigned int tracksize = getNumTracks ();
+    if (tracksize==0)
+	    return 0;
+
+    // this code is rather complicated but works in a multi user
+    // environment:
+ 
+    // insert a unique trackid:
+    string trackid = ltos(m_db.thread_id()+1000000);
+    m_db.exec_sql("INSERT INTO playlistitem SELECT "+listid+","
+	   "MAX(tracknumber)+"+ltos(tracksize)+","+trackid+
+	   " FROM playlistitem WHERE playlist="+listid);
+    
+    // find tracknumber of the trackid we just inserted:
+    string sql = string("SELECT tracknumber FROM playlistitem WHERE "
+		    "playlist=")+listid+" AND trackid="+trackid;
+    long first = atol(m_db.get_col0(sql).c_str()) - tracksize + 1;
+
+    // replace the place holder trackid by the correct value:
+    m_db.exec_sql("UPDATE playlistitem SET trackid="+ltos(m_tracks[tracksize-1].getId())+
+		    " WHERE playlist="+listid+" AND trackid="+trackid);
+    
+    // insert all other tracks:
     const char *sql_prefix = "INSERT INTO playlistitem VALUES ";
-    string sql = "";
-    for (unsigned int i = 0; i < tracksize; i++)
+    sql = "";
+    for (unsigned int i = 0; i < tracksize-1; i++)
     {
-	string item = "(" + listid + "," + ltos (high + 1 + i) + "," +
+	string item = "(" + listid + "," + ltos (first + i) + "," +
             ltos (m_tracks[i].getId ()) + ")";
 	comma(sql, item);
 	if ((i%100)==99)
 	{
-    		exec_sql (sql_prefix+sql);
+    		m_db.exec_sql (sql_prefix+sql);
 		sql = "";
 	}
     }
-    if (!sql.empty()) exec_sql (sql_prefix+sql);
+    if (!sql.empty()) m_db.exec_sql (sql_prefix+sql);
     if (inCollection(Name)) clearCache ();
     return tracksize;
 }
@@ -361,11 +259,11 @@ mgSelection::AddToCollection (const string Name)
 unsigned int
 mgSelection::RemoveFromCollection (const string Name)
 {
-    if (!m_db) return 0;
-    mgParts p = order.Parts(m_level,false);
+    if (!m_db.Connected()) return 0;
+    mgParts p = order.Parts(m_db,m_level,false);
     string sql = p.sql_delete_from_collection(id(keyCollection,Name));
-    exec_sql (sql);
-    unsigned int removed = mysql_affected_rows (m_db);
+    m_db.exec_sql (sql);
+    unsigned int removed = m_db.affected_rows ();
     if (inCollection(Name)) clearCache ();
     return removed;
 }
@@ -373,30 +271,30 @@ mgSelection::RemoveFromCollection (const string Name)
 
 bool mgSelection::DeleteCollection (const string Name)
 {
-    if (!m_db) return false;
+    if (!m_db.Connected()) return false;
     ClearCollection(Name);
-    exec_sql ("DELETE FROM playlist WHERE title=" + sql_string (Name));
+    m_db.exec_sql ("DELETE FROM playlist WHERE title=" + m_db.sql_string (Name));
     if (isCollectionlist()) clearCache ();
-    return (mysql_affected_rows (m_db) == 1);
+    return (m_db.affected_rows () == 1);
 }
 
 
 void mgSelection::ClearCollection (const string Name)
 {
-    if (!m_db) return;
+    if (!m_db.Connected()) return;
     string listid = id(keyCollection,Name);
-    exec_sql ("DELETE FROM playlistitem WHERE playlist="+sql_string(listid));
+    m_db.exec_sql ("DELETE FROM playlistitem WHERE playlist="+m_db.sql_string(listid));
     if (inCollection(Name)) clearCache ();
 }
 
 
 bool mgSelection::CreateCollection(const string Name)
 {
-    if (!m_db) return false;
-    string name = sql_string(Name);
-    if (exec_count("SELECT count(title) FROM playlist WHERE title = " + name)>0) 
+    if (!m_db.Connected()) return false;
+    string name = m_db.sql_string(Name);
+    if (m_db.exec_count("SELECT count(title) FROM playlist WHERE title = " + name)>0) 
 	return false;
-    exec_sql ("INSERT playlist VALUES(" + name + ",'VDR',NULL,NULL,NULL)");
+    m_db.exec_sql ("INSERT playlist VALUES(" + name + ",'VDR',NULL,NULL,NULL)");
     if (isCollectionlist()) clearCache ();
     return true;
 }
@@ -587,9 +485,9 @@ string mgSelection::ListFilename ()
 const vector < mgContentItem > &
 mgSelection::tracks () const
 {
-    if (!m_db) return m_tracks;
+    if (!m_db.Connected()) return m_tracks;
     if (!m_current_tracks.empty()) return m_tracks;
-    mgParts p = order.Parts(m_level);
+    mgParts p = order.Parts(m_db,m_level);
     p.fields.clear();
     p.fields.push_back("tracks.id");
     p.fields.push_back("tracks.title");
@@ -607,10 +505,10 @@ mgSelection::tracks () const
     p.tables.push_back("tracks");
     p.tables.push_back("album");
     for (unsigned int i = m_level; i<order.size(); i++)
-    	p += order.Key(i)->Parts(true);
+    	p += order.Key(i)->Parts(m_db,true);
      m_current_tracks = p.sql_select(false); 
      m_tracks.clear ();
-        MYSQL_RES *rows = exec_sql (m_current_tracks);
+        MYSQL_RES *rows = m_db.exec_sql (m_current_tracks);
         if (rows)
         {
         	MYSQL_ROW row;
@@ -624,138 +522,7 @@ mgSelection::tracks () const
 }
 
 
-mgContentItem::mgContentItem ()
-{
-    m_id = -1;
-}
-
-mgContentItem::mgContentItem (const mgContentItem* c)
-{
-    m_id = c->m_id;
-    m_title = c->m_title;
-    m_mp3file = c->m_mp3file;
-    m_artist = c->m_artist;
-    m_albumtitle = c->m_albumtitle;
-    m_genre1_id = c->m_genre1_id;
-    m_genre2_id = c->m_genre2_id;
-    m_genre1 = c->m_genre1;
-    m_genre2 = c->m_genre2;
-    m_bitrate = c->m_bitrate;
-    m_year = c->m_year;
-    m_rating = c->m_rating;
-    m_duration = c->m_duration;
-    m_samplerate = c->m_samplerate;
-    m_channels = c->m_channels;
-}
-
-static char *mg_readline(FILE *f)
-{
-  static char buffer[MAXPARSEBUFFER];
-  if (fgets(buffer, sizeof(buffer), f) > 0) {
-     int l = strlen(buffer) - 1;
-     if (l >= 0 && buffer[l] == '\n')
-        buffer[l] = 0;
-     return buffer;
-     }
-  return 0;
-}
-
-static const char *FINDCMD = "cd '%s' 2>/dev/null && find -follow -name '%s' -print 2>/dev/null";
-
-static string
-GdFindFile( const char* tld, string mp3file )
-{
-  string result = "";
-  char *cmd = 0;
-  asprintf( &cmd, FINDCMD, tld, mp3file.c_str() );
-  FILE *p = popen( cmd, "r" );
-  if (p) 
-    {
-      char *s;
-      if( (s = mg_readline(p) ) != 0) 
-	  result = string(s);
-      pclose(p);
-    }
-
-  free( cmd );
-
-  return result;
-}
-
-string
-mgContentItem::getSourceFile(bool AbsolutePath) const
-{
-	const char* tld = the_setup.ToplevelDir;
-	string result="";
-	if (AbsolutePath) result = tld;
-	if (the_setup.GdCompatibility)
-		result += GdFindFile(tld,m_mp3file);
-	else
-    		result += m_mp3file;
-	return result;
-}
-
-mgContentItem::mgContentItem (const mgSelection* sel,const MYSQL_ROW row)
-{
-    m_id = atol (row[0]);
-    if (row[1])
-	m_title = row[1];
-    else
-	m_title = "NULL";
-    if (row[2])
-    	m_mp3file = row[2];
-    else
-    	m_mp3file = "NULL";
-    if (row[3])
-    	m_artist = row[3];
-    else
-    	m_artist = "NULL";
-    if (row[4])
-    	m_albumtitle = row[4];
-    else
-    	m_albumtitle = "NULL";
-    if (row[5])
-    {
-	m_genre1_id = row[5];
-    	m_genre1 = sel->value(keyGenres,row[5]);
-    }
-    else
-    	m_genre1 = "NULL";
-    if (row[6])
-    {
-	m_genre2_id = row[6];
-    	m_genre2 = sel->value(keyGenres,row[6]);
-    }
-    else
-    	m_genre2 = "NULL";
-    if (row[7])
-    	m_bitrate = row[7];
-    else
-    	m_bitrate = "NULL";
-    if (row[8])
-    	m_year = atol (row[8]);
-    else
-    	m_year = 0;
-    if (row[9])
-        m_rating = atol (row[9]);
-    else
-        m_rating = 0;
-    if (row[10])
-    	m_duration = atol (row[10]);
-    else
-    	m_duration = 0;
-    if (row[11])
-    	m_samplerate = atol (row[11]);
-    else
-    	m_samplerate = 0;
-    if (row[12])
-    	m_channels = atol (row[12]);
-    else
-    	m_channels = 0;
-};
-
 void mgSelection::InitSelection() {
-        setDB(0);
 	m_Directory=".";
     	m_level = 0;
     	m_position = 0;
@@ -777,7 +544,6 @@ void mgSelection::InitSelection() {
 mgSelection::mgSelection (const bool fall_through)
 {
     InitSelection ();
-    Connect();
     m_fall_through = fall_through;
 }
 
@@ -797,29 +563,42 @@ mgSelection::mgSelection (mgValmap& nv)
 }
 
 void
-mgSelection::setDB(MYSQL *db)
-{
-	m_db = db;
-	order.setDB(db);
-}
-
-void
 mgSelection::setOrder(mgOrder* o)
 {
 	if (o)
  	{
 		order = *o;
-		order.setDB(m_db);
 	}
 	else
 		mgWarning("mgSelection::setOrder(0)");
 }
 
+
 void
 mgSelection::InitFrom(mgValmap& nv)
 {
+	extern time_t createtime;
+	if (m_db.ServerConnected() && !m_db.Connected() 
+		&& (time(0)>createtime+10))
+	{
+	    char *b;
+	    asprintf(&b,tr("Create database %s?"),the_setup.DbName);
+	    if (Interface->Confirm(b))
+	    {
+		    char *argv[2];
+		    argv[0]=".";
+		    argv[1]=0;
+		    m_db.Create();
+	            if (Interface->Confirm(tr("Import tracks?")))
+		    {
+		        mgSync *s = new mgSync;
+		        s->Sync(argv);
+		        delete s;
+		    }
+	    }
+	    free(b);
+	}
 	InitSelection();
-        Connect();
 	m_fall_through = nv.getbool("FallThrough");
     	m_Directory = nv.getstr("Directory");
 	while (m_level < nv.getuint("Level"))
@@ -840,8 +619,6 @@ mgSelection::InitFrom(mgValmap& nv)
 
 mgSelection::~mgSelection ()
 {
-    if (m_db)
-    	mysql_close (m_db);
 }
 
 void mgSelection::InitFrom(const mgSelection* s)
@@ -852,12 +629,10 @@ void mgSelection::InitFrom(const mgSelection* s)
     map_values = s->map_values;
     map_ids = s->map_ids;
     order = s->order;
-    order.setDB(m_db);
     m_level = s->m_level;
     m_position = s->m_position;
     m_trackid = s->m_trackid;
     m_tracks_position = s->m_tracks_position;
-    Connect();
     setShuffleMode (s->getShuffleMode ());
     setLoopMode (s->getLoopMode ());
 }
@@ -916,17 +691,16 @@ void
 mgSelection::refreshValues ()  const
 {
     assert(this);
-    if (!m_db)
+    if (!m_db.Connected())
 	return;
     if (m_current_values.empty())
     {
-    	mgOrder o1 = order;
-	mgParts p =  order.Parts(m_level);
+	mgParts p =  order.Parts(m_db,m_level);
         m_current_values = p.sql_select();
         values.strings.clear ();
         m_ids.clear ();
 	m_counts.clear();
-        MYSQL_RES *rows = exec_sql (m_current_values);
+        MYSQL_RES *rows = m_db.exec_sql (m_current_values);
         if (rows)
         {
                 unsigned int num_fields = mysql_num_fields(rows);
@@ -961,63 +735,6 @@ unsigned int
 mgSelection::count () const
 {
     return values.size ();
-}
-void
-mgSelection::Connect ()
-{
-    if (m_db) 
-    {
-       mysql_close (m_db);
-       setDB(0);
-    }
-    if (the_setup.DbHost == "") return;
-    setDB(mysql_init (0));
-    if (!m_db)
-        return;
-    bool success;
-    if (the_setup.DbSocket != NULL)
-    {
-      mgDebug(1,"Using socket %s for connecting to Database %s as user %s.",
-		      the_setup.DbSocket,
-		      the_setup.DbName,
-		      the_setup.DbUser);
-      mgDebug(3,"DbPassword is: '%s'",the_setup.DbPass);
-      success = (mysql_real_connect( m_db,
-			      "",
-			      the_setup.DbUser,       
-			      the_setup.DbPass, 
-			      the_setup.DbName,
-			      0,
-			      the_setup.DbSocket, 0 ) != 0 );
-    }
-    else
-    {
-      mgDebug(1,"Using TCP-%s for connecting to Database %s as user %s.",
-		      the_setup.DbHost,
-		      the_setup.DbName,
-		      the_setup.DbUser);
-      mgDebug(3,"DbPassword is: '%s'",the_setup.DbPass);
-      success = ( mysql_real_connect( m_db,
-			      the_setup.DbHost, 
-			      the_setup.DbUser,       
-			      the_setup.DbPass, 
-			      the_setup.DbName,
-			      the_setup.DbPort,
-			      0, 0 ) != 0 );
-    }
-    if (!success)
-    {
-	mgWarning("Failed to connect to host '%s' as User '%s', Password '%s': Error: %s",
-			    the_setup.DbHost,the_setup.DbUser,the_setup.DbPass,mysql_error(m_db));
-        mysql_close (m_db);
-	setDB(0);
-    }
-    if (!needGenre2_set && m_db)
-    {
-	needGenre2_set=true;
-	needGenre2=exec_count("SELECT COUNT(DISTINCT genre2) from tracks")>1;
-    }
-    return;
 }
 
 
@@ -1259,6 +976,10 @@ mgSelection::UsedBefore(mgOrder *o,const mgKeyTypes kt,unsigned int level) const
 	return false;
 }
 
+bool mgSelection::isLanguagelist() const
+{
+    return (order.getKeyType(0) == keyLanguage);
+}
 
 bool mgSelection::isCollectionlist () const
 {
@@ -1322,7 +1043,7 @@ mgSelection::loadvalues (mgKeyTypes kt) const
 	if (map_ids.count(kt)>0) 
 		return true;
 	map<string,string>& idmap = map_ids[kt];
-	mgKey* k = ktGenerate(kt,m_db);
+	mgKey* k = ktGenerate(kt);
 	if (k->map_idfield().empty())
 	{
 		delete k;
@@ -1331,7 +1052,7 @@ mgSelection::loadvalues (mgKeyTypes kt) const
 	map<string,string>& valmap = map_values[kt];
 	char *b;
 	asprintf(&b,"select %s,%s from %s;",k->map_idfield().c_str(),k->map_valuefield().c_str(),k->map_valuetable().c_str());
-	MYSQL_RES *rows = exec_sql (string(b));
+	MYSQL_RES *rows = m_db.exec_sql (string(b));
 	free(b);
 	if (rows) 
 	{
@@ -1355,7 +1076,6 @@ static vector<int> keycounts;
 unsigned int
 mgSelection::keycount(mgKeyTypes kt)
 {
-	assert(strlen(m_db->host));
 	if (keycounts.size()==0)
 	{
 		for (unsigned int ki=int(mgKeyTypesLow);ki<=int(mgKeyTypesHigh);ki++)
@@ -1366,9 +1086,9 @@ mgSelection::keycount(mgKeyTypes kt)
 	int& count = keycounts[int(kt-mgKeyTypesLow)];
 	if (count==-1)
 	{
-		mgKey* k = ktGenerate(kt,m_db);
-		if (k->Enabled())
-			count = exec_count(k->Parts(true).sql_count());
+		mgKey* k = ktGenerate(kt);
+		if (k->Enabled(m_db))
+			count = m_db.exec_count(k->Parts(m_db,true).sql_count());
 		else
 			count = 0;
 		delete k;
@@ -1436,3 +1156,4 @@ mgSelection::choices(mgOrder *o,unsigned int level, unsigned int *current)
 	}
 	return result;
 }
+

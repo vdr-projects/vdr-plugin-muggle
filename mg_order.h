@@ -1,14 +1,13 @@
 #ifndef _MG_SQL_H
 #define _MG_SQL_H
 #include <stdlib.h>
-#include <mysql/mysql.h>
 #include <typeinfo>
 #include <string>
-#include <assert.h>
 #include <list>
 #include <vector>
 #include <sstream>
 #include "mg_valmap.h"
+#include "mg_mysql.h"
 
 using namespace std;
 
@@ -78,9 +77,8 @@ private:
 
 class mgKey {
 	public:
-		mgKey();
-		virtual ~mgKey();
-		virtual mgParts Parts(bool orderby=false) const = 0;
+		virtual ~mgKey() {};
+		virtual mgParts Parts(mgmySql &db,bool orderby=false) const = 0;
 		virtual string id() const = 0;
 		virtual string value () const = 0;
 		//!\brief translate field into user friendly string
@@ -89,15 +87,12 @@ class mgKey {
 		virtual string map_idfield() const { return ""; }
 		virtual string map_valuefield() const { return ""; }
 		virtual string map_valuetable() const { return ""; }
-		void setdb(MYSQL *db);
-		virtual bool Enabled() { return true; }
-	protected:
-		MYSQL *m_db;
+		virtual bool Enabled(mgmySql &db) { return true; }
 };
 
 
 mgKey*
-ktGenerate(const mgKeyTypes kt,MYSQL *db);
+ktGenerate(const mgKeyTypes kt);
 
 const char * const ktName(const mgKeyTypes kt);
 mgKeyTypes ktValue(const char * name);
@@ -122,17 +117,11 @@ public:
 	string sql_update(strlist new_values);
 	bool empty() const { return tables.size()==0;}
 	string m_sql_select;
+	bool orderByCount;
 private:
 	bool UsesTracks();
 	mgReferences ref;
 };
-
-string
-sql_string (MYSQL *db, const string s);
-
-MYSQL_RES * exec_sql (MYSQL *db,string query);
-string get_col0 (MYSQL *db,string query);
-int exec_count (MYSQL *db,string query);
 
 //! \brief converts long to string
 string itos (int i);
@@ -151,26 +140,28 @@ public:
 	mgOrder(vector<mgKeyTypes> kt);
 	~mgOrder();
 	void InitFrom(const mgOrder &from);
-	void setDB(MYSQL *db);
-	mgParts Parts(unsigned int level,bool orderby=true) const;
+        void DumpState(mgValmap& nv, char *prefix) const;
+	mgParts Parts(mgmySql &db,const unsigned int level,bool orderby=true) const;
 	const mgOrder& operator=(const mgOrder& from);
 	mgKey*& operator[](unsigned int idx);
 	unsigned int size() const { return Keys.size(); }
 	void truncate(unsigned int i);
 	bool empty() const { return Keys.empty(); }
 	void clear();
-	void clean();
 	mgKey* Key(unsigned int idx) const;
-	mgKey* find(const mgKeyTypes kt) ;
 	mgKeyTypes getKeyType(unsigned int idx) const;
 	string getKeyValue(unsigned int idx) const;
 	string getKeyId(unsigned int idx) const;
 	void setKeys(vector<mgKeyTypes> kt);
 	string Name();
+	void setOrderByCount(bool orderbycount) { m_orderByCount = orderbycount;}
+	bool getOrderByCount() { return m_orderByCount; }
 private:
-	MYSQL *m_db;
+	bool m_orderByCount;
+	bool isCollectionOrder() const;
 	keyvector Keys;
-	void setKey (const unsigned int level, const mgKeyTypes kt);
+	void setKey ( const mgKeyTypes kt);
+	void clean();
 };
 
 bool operator==(const mgOrder& a,const mgOrder&b); //! \brief compares only the order, not the current key values

@@ -1,5 +1,5 @@
 /*!
- * \file   mg_actions.h
+ * \file   vdr_actions.h
  * \brief  Implements all actions for broswing media libraries within VDR
  *
  * \version $Revision: 1.13 $
@@ -7,17 +7,16 @@
  * \author  Wolfgang Rohdewald
  * \author  Responsible author: $Author: wr61 $
  *
- *  $Id: mg_actions.h 276 2004-12-25 15:52:35Z wr61 $
+ *  $Id: vdr_actions.h 276 2004-12-25 15:52:35Z wr61 $
  */
 
-#ifndef _MG_ACTIONS_H
-#define _MG_ACTIONS_H
+#ifndef _VDR_ACTIONS_H
+#define _VDR_ACTIONS_H
 
 #include <string>
 
 #include <osd.h>
 #include <plugin.h>
-#include "i18n.h"
 
 using namespace std;
 
@@ -50,7 +49,7 @@ enum mgActions {
 	actShowCommands,
 	actCreateOrder,
 	actDeleteOrder,
-	actUnused5,	//!< order by Genre1/Artist/Album/Title
+	actSync,
 	actAddAllToDefaultCollection,
 	actAddThisToDefaultCollection,
 	actSetDefaultCollection,
@@ -137,6 +136,12 @@ class mgAction
 		 * or in muggle ?
 		 */
 	bool IgnoreNextEvent;
+
+	/*! \brief defines a reference. Can be used depending on the
+	 * concrete class type. Currently used only by mgEntry
+	 */
+	void setHandle(unsigned int handle);
+
     protected:
 
 	//! \brief returns the OSD owning the menu owning this item
@@ -157,6 +162,8 @@ class mgAction
 	virtual void Notify();
 	eOSState ProcessKey(eKeys key);
 	virtual eOSState Process(eKeys key) { return osUnknown; }
+
+	unsigned int m_handle;
     private:
 	mgMainMenu *m_osd;
 };
@@ -173,6 +180,7 @@ class mgActionWithIntValue: public mgAction
 
 //! \brief generate an mgAction for action
 mgAction* actGenerate(const mgActions action);
+mgAction* actGenerateBoolItem(const char *Name, int *Value);
 mgAction* actGenerateKeyItem(const char *Name, int *Value, int NumStrings, const char * const * Strings);
 
 #endif

@@ -1,15 +1,16 @@
 /*!
- * \file   mg_actions.c
+ * \file   vdr_actions.c
  * \brief  Implements all actions for browsing media libraries within VDR
  *
  * \version $Revision: 1.27 $ * \date    $Date: 2004-12-25 16:52:35 +0100 (Sat, 25 Dec 2004) $
  * \author  Wolfgang Rohdewald
  * \author  Responsible author: $Author: wr61 $
  *
- * $Id: mg_actions.c 276 2004-12-25 15:52:35Z wr61 $
+ * $Id: vdr_actions.c 276 2004-12-25 15:52:35Z wr61 $
  */
 
 #include <stdio.h>
+#include <libintl.h>
 
 #include <typeinfo>
 #include <string>
@@ -20,7 +21,7 @@
 #include <plugin.h>
 
 #include "vdr_setup.h"
-#include "mg_actions.h"
+#include "vdr_actions.h"
 #include "vdr_menu.h"
 #include "i18n.h"
 #include <vdr/interface.h>
@@ -41,6 +42,12 @@ class mgOsdItem : public mgAction, public cOsdItem
 		eOSState ProcessKey(eKeys key) { return mgAction::ProcessKey(key); }
 };
 
+
+void
+mgAction::setHandle(unsigned int handle)
+{
+	m_handle = handle;
+}
 
 eOSState
 mgAction::ProcessKey(eKeys key)
@@ -76,6 +83,14 @@ class mgKeyItem : public mgAction, public cMenuEditStraItem
 {
 	public:
 	   mgKeyItem(const char *Name, int *Value, int NumStrings, const char *const *Strings) : cMenuEditStraItem(Name, Value, NumStrings, Strings) {}
+	   eOSState ProcessKey(eKeys key) { return mgAction::ProcessKey(key); }
+	   eOSState Process(eKeys key);
+};
+
+class mgBoolItem: public mgAction, public cMenuEditBoolItem
+{
+	public:
+	   mgBoolItem(const char *Name,int *Value) : cMenuEditBoolItem(Name, Value) {}
 	   eOSState ProcessKey(eKeys key) { return mgAction::ProcessKey(key); }
 	   eOSState Process(eKeys key);
 };
@@ -207,8 +222,9 @@ mgAction::Enabled(mgActions on)
 
 mgAction::mgAction()
 {
-	m = NULL;
-	m_osd = NULL;
+	m = 0;
+	m_osd = 0;
+	m_handle = 0;
 	IgnoreNextEvent = false;
 }
 
@@ -303,7 +319,7 @@ mgAction::Back()
 void
 mgEntry::Notify()
 {
-	selection()->setPosition(osd()->Current());
+	selection()->setPosition(m_handle);
 	selection()->gotoPosition();
 	osd()->SaveState();
 	mgAction::Notify();	// only after selection is updated
@@ -329,6 +345,8 @@ mgEntry::MenuName(const unsigned int idx,const string value)
 	}
 	else if (selection()->inCollection())
 		asprintf(&result,"%4d %s%s",idx,value.c_str(),ct);
+	else if (selection()->isLanguagelist())
+		asprintf(&result,"%s%s",dgettext("iso_639",value.c_str()),ct);
 	else
 		asprintf(&result,"%s%s",value.c_str(),ct);
 	return result;
@@ -641,7 +659,7 @@ const char *
 mgToggleSelection::ButtonName ()
 {
     if (osd ()->UsingCollection)
-        return tr ("Search");
+        return tr ("Browse");
     else
         return tr ("Collections");
 }
@@ -659,6 +677,18 @@ mgToggleSelection::Execute ()
     osd()->newposition = selection ()->gotoPosition ();
 }
 
+class mgSync : public mgCommand
+{
+	public:
+		void Execute();
+		const char *ButtonName() { return tr("Synchronize"); }
+};
+
+void
+mgSync::Execute()
+{
+	// selection()->Sync(".");
+}
 
 //! \brief sets the default collection selection
 class mgSetDefaultCollection:public mgCommand
@@ -1198,6 +1228,7 @@ mgAction::Type()
 	if (t == typeid(mgCreateOrder)) return actCreateOrder;
 	if (t == typeid(mgDeleteOrder)) return actDeleteOrder;
 	if (t == typeid(mgEditOrder)) return actEditOrder;
+	if (t == typeid(mgSync)) return actSync;
 	if (t == typeid(mgExternal0)) return actExternal0;
 	if (t == typeid(mgExternal1)) return actExternal1;
 	if (t == typeid(mgExternal2)) return actExternal2;
@@ -1228,6 +1259,12 @@ actGenerateKeyItem(const char *Name, int *Value, int NumStrings, const char * co
 }
 
 mgAction*
+actGenerateBoolItem(const char *Name, int *Value)
+{
+	return new mgBoolItem(Name,Value);
+}
+
+mgAction*
 actGenerate(const mgActions action)
 {
 	mgAction * result = NULL;
@@ -1253,7 +1290,7 @@ actGenerate(const mgActions action)
 		case actSetButton: result = new mgSetButton;break;
 		case actShowList: 		result = new mgShowList;break;
 		case actShowCommands: 		result = new mgShowCommands;break;
-		case actUnused5: break;
+		case actSync: 			result = new mgSync;break;
 		case actSetDefaultCollection:	result = new mgSetDefaultCollection;break;
 		case actOrder: result = new mgActOrder;break;
 		case actUnused6: break;
@@ -1321,5 +1358,31 @@ mgKeyItem::Process(eKeys key)
 		if (menu->ChangeOrder(key))
 			return osContinue;
 	return cMenuEditStraItem::ProcessKey(key);
+}
+
+
+eOSState
+mgBoolItem::Process(eKeys key)
+{
+	mgMenuOrder *menu = dynamic_cast<mgMenuOrder*>(m);
+	if (key==kOk)
+	{
+		if (menu->ChangeOrder(key))
+			return osContinue;
+		else
+		{
+			menu->SaveOrder();
+    			osd ()->newmenu = NULL;
+    			return osContinue;
+		}
+	} else if (key==kBack)
+	{
+    		osd ()->newmenu = NULL;
+    		return osContinue;
+	}
+	if (key==kUp || key==kDown)
+		if (menu->ChangeOrder(key))
+			return osContinue;
+	return cMenuEditBoolItem::ProcessKey(key);
 }
 

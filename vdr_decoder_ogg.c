@@ -21,7 +21,7 @@
 
 #include "vdr_setup.h"
 
-#include "mg_db.h"
+#include "mg_content.h"
 
 // --- mgOggFile ----------------------------------------------------------------
 
@@ -248,8 +248,8 @@ mgOggDecoder::mgOggDecoder (mgContentItem * item):mgDecoder (item)
 
 mgOggDecoder::~mgOggDecoder ()
 {
-    delete m_file;
     clean ();
+    delete m_file;
 }
 
 

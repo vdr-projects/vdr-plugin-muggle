@@ -224,6 +224,11 @@ CREATE TABLE tracks (
   channels   tinyint(3) unsigned default NULL,
 
   id int(11) NOT NULL auto_increment,
+  folder1 varchar(255),
+  folder2 varchar(255),
+  folder3 varchar(255),
+  folder4 varchar(255),
+
   PRIMARY KEY  (id),
   KEY title (title(10)),
   KEY mp3file (mp3file(10)),
