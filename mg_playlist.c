@@ -160,9 +160,15 @@ void mgPlaylist::setListname(std::string name)
 }
 
 // returns the count of items in the list
-int mgPlaylist::count()
+int mgPlaylist::getCount()
 { 
   return m_list.size();
+}
+
+// returns current index in the playlist
+int mgPlaylist::getIndex() const
+{ 
+  return m_current_idx;
 }
 
 // returns the current item of the list
