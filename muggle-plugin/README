@@ -6,12 +6,11 @@ Written by:                  Andi Kellner
                              Lars von Wedel <vonwedel@web.de>
                              Ralf Klueber <r@lf-klueber.de>, 
 
-Project's homepage:          URL
+Project's homepage:          http://www.htpc-tech.de/htpc/muggle.htm
 
-Latest version available at: URL
+Latest version available at: http://www.htpc-tech.de/htpc/muggle_archive/vdr-muggle-0.0.8-BETA.tgz
 
 See the file COPYING for license information.
-
 
 \section foreword PLEASE!
 
@@ -27,7 +26,7 @@ or useless in any other sense.
 
 \section ack Acknowledgements
 
-Thanks to all who have supported the development of this plugin. Special thanks go to
+Thanks to all who have supported the development of this plugin. Special thanks (order does not mean importance :-) go to
 - Muempf for the mp3 plugin. All code related to audio replay is largely taken over from this plugin.
 - LordJaxom for constant support in the chat of VDR portal regarding OSD programming in VDR
 - eloy (member of vdrportal.de) for alpha testing
@@ -44,7 +43,7 @@ parameters are descibed in Section 5.
 
 \section prereq PREREQUISITES
 
-The plugin is written for VDR 1.2.6. In addition, the following pieces of 
+The plugin has been tested with VDR versions up to 1.3.12. In addition, the following pieces of 
 software are required:
 
  - mySQL server (tested with 4.0.18) (Debian packages mysql-server, mysql-client)
@@ -64,7 +63,8 @@ software are required:
 The developer versions are needed because their headers are required for compilation.
 The server need not be on the same machine as the VDR. Also, music tracks can reside somewhere else,
 if they are available through a remote filesystem (NFS, Samba). However, in this case you should
-know what you are doing in terms of networking and security issues.
+know what you are doing in terms of networking and security issues. In my personal setup, the mySQL
+database runs on a server where also all music files are stored. Muggle accesses them via Samba.
 
 \section install INSTALLING 
 
@@ -82,7 +82,7 @@ Establish a symlink as you would for other plugins:
    ln -s muggle-0.1.7 muggle
 \endverbatim
 
-Within the VDR main directory (e.g. /usr/local/src/VDR) issue a 
+Note that the actual directory names may vary, e.g. the version number will changes. Within the VDR main directory (e.g. /usr/local/src/VDR) issue a 
 
 \verbatim
    make plugins
@@ -93,14 +93,13 @@ in the library directories stated in the muggle Makefile.
 
 \section import IMPORT
 
-The import is done in two steps: First, a database is created and initialized with proper data structures (so-called schema).
-Then, these data structures are filled from the ID3 tags of your music tracks.
+The import is done in two steps: First, a database is created and initialized with proper data structures (so-called schema). Then, these data structures are filled from the ID3 tags of your music tracks.
 
 \subsection dbsetup Setup Database
 
 This step can be done on the database server or on some other client machine.
 Within the directory scripts there are a few helpful files to support setting
-up the database. Change into that directory:#
+up the database. Change into that directory:
 
 \verbatim
    cd scripts
@@ -243,7 +242,18 @@ Thats all you have to know about this view. Please keep in mind that red adds al
 
 \subsection playlistview PLAYLIST VIEW
 
-In this view you see the active playlist. All songs currently added to the playlist are shown here. With the blue colour key you can reach the context sensitive menu. Here you can find some actions to modify the playlist, clear it totaly and many others.
+In this view you see the active playlist. All songs currently added to the playlist are shown here. With the blue colour key you can reach the context sensitive menu. Here you can find some actions to modify, load, or save the playlist, clear all entries and many others. In detail the commands are
+- Red: start playing the list from the beginning or at the last played song (cf. section Replay)
+- Green: Move the current entry to reorder the playlist
+
+In the submenu the following commands can be selected:
+- Rename playlist: change the playlist name using the up/down cursor keys
+- Load playlist: show playlists in the database and load one (using Ok)
+- Save playlist: Store the current playlist status into the database
+- Clear playlist: Remove all entries from the playlist
+- Delete current entry: Remove the currently selected entry from the playlist
+- Export playlist: export the playlist in m3u (version 2) into the muggle config directory as <listname>.m3u
+- Playlist commands: similar to commands.conf or reccmds.conf for VDR a file containing commands to execute on a playlist can be specified in a file playlist_commands.conf which must reside in the muggle config directory. The commands listed in that file will be called with one argument which is the path of the playlist file in m3u (version 2).
 
 \subsection searchview SEARCH VIEW
 
@@ -276,5 +286,21 @@ Example: Yesterday during your birthday party you played a song from Tina Turner
 
  Playlist Title: Birthday Party 2004
  Artist:         Tina Turner
+
+\subsection useplayer DURING PLAYBACK
+
+The functions available furing playback mostly relate to navigation in the playlist
+and displaying information about the current track or playlist.
+
+- Up: Skip to the next title
+- Down: Skip to the previous title
+- Ok: toggle display (progress or information view)
+
+- Red: When display shown: toggle between progress and information view
+- Green: When display shown: toggle between track and playlist view
+- Yellow: Play/Pause
+- Blue: stop replay but remind resume index (so Play from browser view starts with the track played last)
+
+- Back: stop replay (Play from browser will start from the beginning)
 
 */

@@ -10,6 +10,7 @@
   \section urgent Urgent/Short-term issues
 
     \subsection bugs Bugs and testing needed
+        - Check whether track/progress view settings are saved
         - Crashes in filter selections?
         - Keep this? Test mgPCMPlayer::getSourceFile() for GD case (find)
 
