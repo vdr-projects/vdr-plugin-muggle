@@ -468,6 +468,7 @@ class  mgSelectionTreeNode
    *
    * The restriction returned is part of a SQL query string which will restrict
    * results to nodes that belong to the set of items grouped by this node
+   */
   virtual std::string getRestrictions();
 
   //@}
