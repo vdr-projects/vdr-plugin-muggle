@@ -62,7 +62,6 @@ class mgmySql
   bool Connected() const;
   bool HasFolderFields() const { return m_hasfolderfields;}
   void Connect();
-  void Use();
   //! \brief create database and tables
   void Create();
   void FillTables();

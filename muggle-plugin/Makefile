@@ -14,10 +14,10 @@ PLUGIN = muggle
 # HAVE_VORBISFILE=1
 # HAVE_FLAC=1
 
-#if you want to use a dedicated Mysql server instead of the embedded code,
+#if you do not want to compile in code for embedded sql,
 #define this in $VDRDIR/Make.config:
-# HAVE_SERVER=1
-#
+# HAVE_ONLY_SERVER=1
+
 ### The version number of this plugin (taken from the main source file):
 
 VERSION = $(shell grep 'static const char \*VERSION *=' $(PLUGIN).c | awk '{ print $$6 }' | sed -e 's/[";]//g')
@@ -53,7 +53,7 @@ PACKAGE = vdr-$(ARCHIVE)
 INCLUDES += -I$(VDRDIR) -I$(VDRDIR)/include -I$(DVBDIR)/include \
 	`mysql_config --cflags` `taglib-config --cflags`
 
-DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
+DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DMYSQLCLIENTVERSION=`mysql_config --version`
 
 ### The object files (add further files here):
 
@@ -64,9 +64,9 @@ OBJS = $(PLUGIN).o i18n.o mg_valmap.o mg_mysql.o mg_sync.o mg_order.o mg_content
 LIBS = -lmad `taglib-config --libs`
 MILIBS =  `taglib-config --libs`
 
-ifdef HAVE_SERVER
+ifdef HAVE_ONLY_SERVER
 SQLLIBS =  `mysql_config --libs`
-DEFINES += -DHAVE_SERVER
+DEFINES += -DHAVE_ONLY_SERVER
 else
 SQLLIBS = `mysql_config --libmysqld-libs` -L/lib
 endif

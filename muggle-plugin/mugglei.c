@@ -71,7 +71,11 @@ int main( int argc, char *argv[] )
       std::cout << "Only files ending in .flac, .mp3, .ogg (ignoring case) will be imported" << std::endl;
       std::cout << "" << std::endl;
       std::cout << "Options:" << std::endl;
+#ifdef HAVE_ONLY_SERVER
       std::cout << "  -h <hostname>       - specify host of mySql database server (default is 'localhost')" << std::endl;
+#else
+      std::cout << "  -h <hostname>       - specify host of mySql database server (default is mysql embedded')" << std::endl;
+#endif
       std::cout << "  -s <socket>         - specify a socket for mySQL communication (default is TCP)" << std::endl;
       std::cout << "  -n <database>       - specify database name (default is 'GiantDisc')" << std::endl;
       std::cout << "  -u <username>       - specify user of mySql database (default is empty)" << std::endl;
@@ -80,10 +84,13 @@ int main( int argc, char *argv[] )
       std::cout << "  -z                  - scan all database entries and delete entries for files not found" << std::endl;
       std::cout << "                        -z is not yet implemented" << std::endl;
       std::cout << "  -c                  - delete the entire database and recreate a new empty one" << std::endl;
-#ifndef HAVE_SERVER
+#ifndef HAVE_ONLY_SERVER
       std::cout << "  -d <datadir>        - the data directory for the embedded mysql server. Defaults to ./.muggle" << std::endl;
 #endif
       std::cout << "  -v                  - the wanted log level, the higher the more. Default is 1" << std::endl;
+      std::cout << std::endl << std::endl;
+      std::cout << "if the specified host is localhost, sockets will be used if possible." << std::endl;
+      std::cout << "Otherwise the -s parameter will be ignored" << std::endl;
 
       exit( 1 );
     }
@@ -92,7 +99,7 @@ int main( int argc, char *argv[] )
   import_assorted = false;
   delete_mode = false;
   create_mode = false;
-#ifndef HAVE_SERVER
+#ifndef HAVE_ONLY_SERVER
   char *buf;
   asprintf(&buf,"%s/.muggle",getenv("HOME"));
   set_datadir(buf);
@@ -102,7 +109,7 @@ int main( int argc, char *argv[] )
   // parse command line options
   while( 1 )
     {
-#ifndef HAVE_SERVER
+#ifndef HAVE_ONLY_SERVER
       int c = getopt(argc, argv, "h:s:n:u:p:t:zcv:d:");
 #else
       int c = getopt(argc, argv, "h:s:n:u:p:t:zcv:");
@@ -153,7 +160,7 @@ int main( int argc, char *argv[] )
           {
 	    mgSetDebugLevel(atol(optarg));
           } break;
-#ifndef HAVE_SERVER
+#ifndef HAVE_ONLY_SERVER
         case 'd':
           {
 	    set_datadir(optarg);

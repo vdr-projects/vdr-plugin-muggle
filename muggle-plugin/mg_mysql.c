@@ -29,7 +29,7 @@ class mysqlhandle_t {
 		~mysqlhandle_t();
 };
 
-#ifndef HAVE_SERVER
+#ifndef HAVE_ONLY_SERVER
 static char *datadir;
 
 static char *server_args[] =
@@ -64,7 +64,7 @@ set_datadir(char *dir)
 
 mysqlhandle_t::mysqlhandle_t()
 {
-#ifndef HAVE_SERVER
+#ifndef HAVE_ONLY_SERVER
 	mgDebug(1,"calling mysql_server_init");
 	if (mysql_server_init(sizeof(server_args) / sizeof(char *),
                       server_args, server_groups))
@@ -74,7 +74,7 @@ mysqlhandle_t::mysqlhandle_t()
 
 mysqlhandle_t::~mysqlhandle_t()
 {
-#ifndef HAVE_SERVER
+#ifndef HAVE_ONLY_SERVER
   mgDebug(3,"calling mysql_server_end");
   	mysql_server_end();
 #endif
@@ -388,12 +388,13 @@ void mgmySql::Create()
   	mgWarning("Cannot create database:%s",mysql_error (m_db));
 	return;
   }
-#ifdef HAVE_SERVER
+#ifdef HAVE_ONLY_SERVER
   mysql_query(m_db,"grant all privileges on GiantDisc.* to vdr@localhost;");
   // ignore error. If we can create the data base, we can do everything
   // with it anyway.
 #endif
-  mysql_query(m_db,"use GiantDisc;");
+  if (mysql_select_db(m_db,the_setup.DbName))
+	  mgError("mysql_select_db(%s) failed with %s",mysql_error(m_db));
   int len = sizeof( db_cmds ) / sizeof( char* );
   for( int i=0; i < len; i ++ )
     {
@@ -405,7 +406,6 @@ void mgmySql::Create()
 	}
     }
   m_database_found=true;
-  Use();
   FillTables();
 }
 
@@ -465,42 +465,34 @@ void
 mgmySql::Connect ()
 {
     assert(!m_db);
-#ifdef HAVE_SERVER
+#ifdef HAVE_ONLY_SERVER
     if (the_setup.DbHost == "") return;
 #endif
     m_db = mysql_init (0);
     if (!m_db)
         return;
-#ifdef HAVE_SERVER
+#ifdef HAVE_ONLY_SERVER
     bool success;
-    if (the_setup.DbSocket != NULL)
+    if (!the_setup.DbHost || !strcmp(the_setup.DbHost,"localhost"))
     {
-      mgDebug(1,"Using socket %s for connecting to server as user %s.",
+      mgDebug(1,"Using socket %s for connecting to local system as user %s.",
 		      the_setup.DbSocket,
 		      the_setup.DbUser);
-      mgDebug(3,"DbPassword is: '%s'",the_setup.DbPass);
-      success = (mysql_real_connect( m_db,
-			      "",
-			      the_setup.DbUser,       
-			      the_setup.DbPass, 
-			      0,
-			      0,
-			      the_setup.DbSocket, 0 ) != 0 );
     }
     else
     {
       mgDebug(1,"Using TCP for connecting to server %s as user %s.",
 		      the_setup.DbHost,
 		      the_setup.DbUser);
-      mgDebug(3,"DbPassword is: '%s'",the_setup.DbPass);
-      success = ( mysql_real_connect( m_db,
-			      the_setup.DbHost, 
-			      the_setup.DbUser,       
-			      the_setup.DbPass, 
-			      0,
-			      the_setup.DbPort,
-			      0, 0 ) != 0 );
     }
+    mgDebug(3,"DbPassword is: '%s'",the_setup.DbPass);
+    success = ( mysql_real_connect( m_db,
+		      the_setup.DbHost, 
+		      the_setup.DbUser,       
+		      the_setup.DbPass, 
+		      0,
+		      the_setup.DbPort,
+		      the_setup.DbSocket, 0 ) != 0 );
     if (!success)
     {
 	mgWarning("Failed to connect to server '%s' as User '%s', Password '%s': %s",
@@ -516,24 +508,13 @@ mgmySql::Connect ()
 #endif
     if (m_db)
     {
-	    mysql_query(m_db,"SHOW DATABASES");
-	    MYSQL_RES * rows = mysql_store_result(m_db);
-	    if (rows)
+	    m_database_found = mysql_select_db(m_db,the_setup.DbName)==0;
 	    {
-		MYSQL_ROW row;
-                while ((row = mysql_fetch_row (rows)) != 0)
-			if (!strcmp(row[0],the_setup.DbName))
-			{
-				m_database_found=true;
-				break;
-			}
-		mysql_free_result(rows);
+		    if (!Connected())
+		    	if (!createtime)
+			    mgWarning("Database %s not found:%s",
+					    the_setup.DbName,mysql_error(m_db));
 	    }
-	    if (m_database_found)
-		    Use();
-	    else
-		    if (!createtime)
-			    mgWarning("Database %s does not exist",the_setup.DbName);
     }
     if (!needGenre2_set && Connected())
     {
@@ -543,14 +524,6 @@ mgmySql::Connect ()
     return;
 }
 
-void
-mgmySql::Use()
-{
-	char b[100];
-	sprintf(b,"USE %s;",the_setup.DbName);
-	mysql_query(m_db,b);
-	mgDebug(1,"found database %s",the_setup.DbName);
-}
 
 void
 mgmySql::CreateFolderFields()
