@@ -827,18 +827,18 @@ mgPCMPlayer::Play (void)
 {
     MGLOG ("mgPCMPlayer::Play");
 
-    Lock ();
 
     if (m_playmode != pmPlay && m_current)
     {
+    	Lock ();
         if (m_playmode == pmStopped)
         {
             m_state = msStart;
         }
 //    DevicePlay(); // TODO? Commented out in original code, too
         SetPlayMode (pmPlay);
+    	Unlock ();
     }
-    Unlock ();
 }
 
 
