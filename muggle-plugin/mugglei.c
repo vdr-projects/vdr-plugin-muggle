@@ -181,6 +181,8 @@ void evaluate_file( string filename )
       long uid = find_file_in_database( filename );
       if( uid >= 0 )
 	{	  
+	  // currently only update database, do not consider writing changes from the db back
+	  /*
 	  // determine modification times in database and on filesystem
 	  time_t db_time = get_db_modification_time( uid );
 	  time_t fs_time = get_fs_modification_time( filename );
@@ -195,6 +197,9 @@ void evaluate_file( string filename )
 	      // file is newer: update db from id3 tags
 	      update_db( uid, filename );
 	    }
+	  */
+	      
+	  update_db( uid, filename );
 	}
       else
 	{
