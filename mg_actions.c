@@ -737,6 +737,7 @@ mgCreateCollection::Execute ()
         if (created)
 	{
   	    mgDebug(1,"created collection %s",name.c_str());
+	    osd()->default_collection = name;
 	    selection ()->clearCache();
 	    osd()->forcerefresh = true;
 	}
