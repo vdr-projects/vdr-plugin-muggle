@@ -59,6 +59,11 @@ mgMuggle::mgMuggle(void)
 mgMuggle::~mgMuggle()
 {
   // Clean up after yourself!
+  // save current playlist as "current" and it will be retrieved at the next startup
+  if( m_playlist )
+    {
+      m_playlist->storeAs( "current" );
+    }  
 }
 
 const char *mgMuggle::CommandLineHelp(void)
