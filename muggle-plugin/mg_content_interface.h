@@ -3,10 +3,10 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.1 $
- * \date    $Date: 2004/02/01 18:22:53 $
+ * \version $Revision: 1.2 $
+ * \date    $Date: 2004/02/02 22:48:04 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: MountainMan $
  * 
  * Declares main classes of for content items and interfaces to SQL databases
  *
@@ -239,6 +239,15 @@ public:
    virtual std::vector<mgContentItem*>* getTracks()=0;
 
 };
+
+/* -------------------- begin CVS log ---------------------------------
+ * $Log: mg_content_interface.h,v $
+ * Revision 1.2  2004/02/02 22:48:04  MountainMan
+ *  added CVS $Log
+ *
+ *
+ * --------------------- end CVS log ----------------------------------
+ */
 
 #endif  /* END  _CONTENT_INTERFACE_H */
 

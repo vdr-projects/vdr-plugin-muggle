@@ -3,8 +3,8 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.5 $
- * \date    $Date: 2004/02/02 02:01:11 $
+ * \version $Revision: 1.6 $
+ * \date    $Date: 2004/02/02 22:48:04 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: MountainMan $
  *
@@ -1196,3 +1196,12 @@ mgContentItem* GdTreeNode::getSingleTrack()
     }
     return  track;
 }
+
+/* -------------------- begin CVS log ---------------------------------
+ * $Log: gd_content_interface.c,v $
+ * Revision 1.6  2004/02/02 22:48:04  MountainMan
+ *  added CVS $Log
+ *
+ *
+ * --------------------- end CVS log ----------------------------------
+ */

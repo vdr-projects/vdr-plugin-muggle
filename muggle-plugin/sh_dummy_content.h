@@ -2,8 +2,8 @@
 /*! \file  dummy_content.h
  * \brief  Dummy Data Objects for testing Muggle
  ******************************************************************** 
- * \version $Revision: 1.2 $
- * \date    $Date: 2004/02/02 02:01:11 $
+ * \version $Revision: 1.3 $
+ * \date    $Date: 2004/02/02 22:48:04 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: MountainMan $
  * 
@@ -157,6 +157,15 @@ public:
     virtual vector<mgContentItem*>* getTracks();
     virtual mgContentItem* getSingleTrack();
 };
+
+/* -------------------- begin CVS log ---------------------------------
+ * $Log: sh_dummy_content.h,v $
+ * Revision 1.3  2004/02/02 22:48:04  MountainMan
+ *  added CVS $Log
+ *
+ *
+ * --------------------- end CVS log ----------------------------------
+ */
 
 #endif  /* END  _CONTENT_INTERFACE_H */
 
