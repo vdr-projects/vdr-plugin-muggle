@@ -65,10 +65,10 @@ vector<string> *GdGetStoredPlaylists(MYSQL db)
 
     result = mgSqlReadQuery(&db, "SELECT title FROM playlist");
 
-    while((row = mysql_fetch_row(result)) != NULL)
-    {
+    while( (row = mysql_fetch_row(result) ) != NULL )
+      {
 	list->push_back(row[0]);
-    }
+      }
     return list;
 }
 
@@ -311,24 +311,24 @@ bool mgGdTrack::readData()
     nfields = mysql_num_fields(result);
 
     if( nrows == 0 )
-    {
-      mgWarning( "No entries found \n" );
-      return false;
-    }
+      {
+	mgWarning( "No entries found \n" );
+	return false;
+      }
     else 
-    {
-  		if( nrows > 1 )
-		{
-			mgWarning("mgGdTrack::readData: More than one entry found. Using first entry.");
-		}
+      {
+	if( nrows > 1 )
+	  {
+	    mgWarning("mgGdTrack::readData: More than one entry found. Using first entry.");
+	  }
 	MYSQL_ROW row = mysql_fetch_row(result);
-
+	
 	m_artist  = row[0];
 	m_album   = row[1];
 	m_title   = row[2];
 	m_mp3file = string( the_setup.ToplevelDir ) + row[3];
 	m_genre   = row[4];
-
+	
 	if( sscanf( row[5], "%d", &m_year) != 1 )
 	{
 	  mgError("Invalid year '%s' in database", row [5]);
@@ -542,22 +542,23 @@ GdTracklist::GdTracklist(MYSQL db_handle, string restrictions)
     MYSQL_ROW	row;
     int trackid;
     
-    result = mgSqlReadQuery(&db_handle,
-			    "SELECT  tracks.id "
-			    " FROM tracks, album, genre WHERE %s"
-			    " AND album.cddbid=tracks.sourceid "
-			    " AND genre.id=tracks.genre1", 
-			    restrictions.c_str());
+    result = mgSqlReadQuery( &db_handle,
+			     "SELECT  tracks.id "
+			     " FROM tracks, album, genre WHERE %s"
+			     " AND album.cddbid=tracks.sourceid "
+			     " AND genre.id=tracks.genre1", 
+			     restrictions.c_str() );
+
     while((row = mysql_fetch_row(result)) != NULL)
-    { 
-      // row[0] is the trackid
-      if(sscanf(row[0], "%d", &trackid) != 1)
-	{
-	  mgError("Can not extract integer track id from '%s'",
-		  row[0]);
-	}
-      m_list.push_back(new mgGdTrack(trackid, db_handle));
-    }
+      { 
+	// row[0] is the trackid
+	if(sscanf(row[0], "%d", &trackid) != 1)
+	  {
+	    mgError("Can not extract integer track id from '%s'",
+		    row[0]);
+	  }
+	m_list.push_back( new mgGdTrack(trackid, db_handle) );
+      }
 }
     
 GdPlaylist::GdPlaylist(string listname, MYSQL db_handle)
@@ -602,8 +603,8 @@ GdPlaylist::GdPlaylist(string listname, MYSQL db_handle)
 	  }
 	  
       }
-    else // playlist exists, read data
-      {
+    else 
+      { // playlist exists, read data
 	row = mysql_fetch_row(result);
 	
 	if(sscanf(row [0], "%d", & m_sqlId) !=1)
@@ -612,10 +613,12 @@ GdPlaylist::GdPlaylist(string listname, MYSQL db_handle)
 	  }
 	m_author = row[1];
 	m_listname = listname;
+
 	// now read allentries of the playlist and 
 	// write them into the tracklist
  	insertDataFromSQL();
-      }// end 'else (playlist exists)
+
+      } // end 'else (playlist exists)
     
     m_listtype = GD_PLAYLIST_TYPE; // GiantDB list type for playlists 
 }
@@ -643,20 +646,21 @@ int GdPlaylist::insertDataFromSQL()
 			    "SELECT tracknumber, trackid FROM playlistitem "
 			    "WHERE playlist = %d ORDER BY tracknumber",
 			    m_sqlId);
+
     nrows   = mysql_num_rows(result);
-    while((row = mysql_fetch_row(result)) != NULL)
-    {
+    while( (row = mysql_fetch_row(result) ) != NULL )
+      {
 	// add antry to tracklist
 	if(sscanf(row[1], "%d", &id) !=1)
-	{
+	  {
 	    mgWarning("Track id '%s' is not an integer. Ignoring \n", row[1]);
-	}
+	  }
 	else
-	{
+	  {
 	    trackptr = new mgGdTrack(id, m_db);
 	    m_list.push_back(trackptr);
-	}
-    }
+	  }
+      }
     return nrows;
 }
 
@@ -670,44 +674,44 @@ bool GdPlaylist::storePlaylist()
 
 
     if(m_listname ==" ")
-    {
+      {
 	mgWarning("Can not store Tracklist without name");
 	return false;
-    }
-    if(m_sqlId >= 0)
-    {
-      // playlist alreay exists in SQL database
-      // remove old items first
-      cout << " GdPlaylist::storePlaylist: removing items from " << m_sqlId << flush;
-      // remove old playlist items from db
-      mgSqlWriteQuery(&m_db, 
-		      "DELETE FROM playlistitem WHERE playlist = %d",
-		      m_sqlId);
-    }
-    else
-    {
-      // create new database entry
-      mgSqlWriteQuery(&m_db, "INSERT into playlist "
-		      "SET title=\"%s\", author=\"%s\"",
-		      m_listname.c_str(), 
-		      "VDR", // default author
-		      "");  // creates current time as timestamp
-      m_author = "VDR";
-	
-      // now read thenew list to get the id
-      result=mgSqlReadQuery(&m_db, 
-			  "SELECT id,author FROM playlist where title=\"%s\"",
-			    m_listname.c_str());
-      nrows   = mysql_num_rows(result);
-      row = mysql_fetch_row(result);
-	
-      if(sscanf(row [0], "%d", & m_sqlId) !=1)
-      {
-	mgError("Invalid id '%s' in database", row [5]);
       }
-    }
+    if(m_sqlId >= 0)
+      {
+	// playlist alreay exists in SQL database
+	// remove old items first
+	cout << " GdPlaylist::storePlaylist: removing items from " << m_sqlId << flush;
+	// remove old playlist items from db
+	mgSqlWriteQuery(&m_db, 
+			"DELETE FROM playlistitem WHERE playlist = %d",
+			m_sqlId);
+      }
+    else
+      {
+	// create new database entry
+	mgSqlWriteQuery(&m_db, "INSERT into playlist "
+			"SET title=\"%s\", author=\"%s\"",
+			m_listname.c_str(), 
+			"VDR", // default author
+			"");  // creates current time as timestamp
+	m_author = "VDR";
+	
+	// now read thenew list to get the id
+	result=mgSqlReadQuery(&m_db, 
+			      "SELECT id,author FROM playlist where title=\"%s\"",
+			      m_listname.c_str());
+	nrows   = mysql_num_rows(result);
+	row = mysql_fetch_row(result);
+	
+	if(sscanf(row [0], "%d", & m_sqlId) !=1)
+	  {
+	    mgError("Invalid id '%s' in database", row [5]);
+	  }
+      }
     // add new playlist items to db
-   
+    
     for( iter=m_list.begin(), num=0; 
 	 iter != m_list.end(); 
 	 iter++, num++)
@@ -719,11 +723,10 @@ bool GdPlaylist::storePlaylist()
       }
     return true;
 }
+
 /*!
- *****************************************************************************
  * \brief returns the total duration of all songs in the list in seconds 
- *
- ****************************************************************************/
+ */
 int GdPlaylist::getPlayTime()
 {
     //DUMMY
@@ -733,10 +736,8 @@ int GdPlaylist::getPlayTime()
 }
 
 /*!
- *****************************************************************************
  * \brief returns the duration of all remaining songs in the list in seconds
- *
- ****************************************************************************/
+ */
 int GdPlaylist::getPlayTimeRemaining()
 {
   //DUMMY
@@ -746,19 +747,9 @@ int GdPlaylist::getPlayTimeRemaining()
   return 0; // dummy 
 }
 
-//------------------------------------------------------------------
-//------------------------------------------------------------------
-//                
-//         class GdTreeNode   
-//                
-//------------------------------------------------------------------
-//------------------------------------------------------------------
-
 /*!
- *****************************************************************************
  * \brief constructor
- *
- ****************************************************************************/
+ */
 GdTreeNode::GdTreeNode(MYSQL db, int view, string filters)
   :  mgSelectionTreeNode(db, view)
 {
@@ -777,10 +768,8 @@ GdTreeNode::GdTreeNode(mgSelectionTreeNode* parent,
 }
 
 /*!
- *****************************************************************************
  * \brief destructor
- *
- ****************************************************************************/
+ */
 GdTreeNode::~GdTreeNode()
 {
     // _children.clear();
@@ -789,11 +778,9 @@ GdTreeNode::~GdTreeNode()
 
 
 /*!
- *****************************************************************************
  * \brief checks if this node can be further expandded or not
  * \true, if node ia leaf node, false if node can be expanded
- *
- ****************************************************************************/
+ */
 bool GdTreeNode::isLeafNode()
 {
     if( m_level == 0 )
@@ -887,12 +874,12 @@ bool GdTreeNode::expand()
     string tables;  // stores the db tables used
     
 #define  FROMJOIN " FROM tracks, genre as genre1, genre as genre2, album WHERE tracks.sourceid=album.cddbid AND genre1.id=tracks.genre1 AND genre2.id=tracks.genre2 AND %s "
-
+    
     if( m_expanded )
-    {
-      mgWarning("Node already expanded\n");
-      return true;
-    }
+      {
+	mgWarning("Node already expanded\n");
+	return true;
+      }
     
     if( m_level == 1 && m_view < 100 ) 
       {
@@ -1091,7 +1078,7 @@ bool GdTreeNode::expand()
 	      } 
 	    else 
 	      {
-		mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
+		mgWarning( "View #%d level %d' not yet implemented", m_view, m_level );
 		m_expanded = false;
 		return false;
 	      }
@@ -1167,22 +1154,22 @@ bool GdTreeNode::expand()
 	    }
 	  }
 	
-	// now get all childrean ofthe current node fromthe database
-	result = mgSqlReadQuery(&m_db, sqlbuff);
-	nrows   = mysql_num_rows(result);
+	// now get all childrean of the current node fromthe database
+	result = mgSqlReadQuery( &m_db, sqlbuff );
+	nrows   = mysql_num_rows( result );
 	nfields = mysql_num_fields(result);
 	
-	numchild=1;
-	while((row = mysql_fetch_row(result)) != NULL)
+	numchild = 1;
+	while( (row = mysql_fetch_row(result) ) != NULL )
 	  { 
 	    // row[0] is the printable label for the new child
 	    // row[1] is the unique id for the new child
-	    sprintf(idbuf, "%s_%03d",  m_id.c_str(), numchild);
+	    sprintf( idbuf, "%s_%03d",  m_id.c_str(), numchild );
 	    
 	    // Zweite ebene zeigt alle Tracks des Albums und nicht nur 
 	    // diese die den Filterkriterien entsprechen.
 	    // das betrifft nur die Search Views!
-	    if(m_view < 100) 
+	    if( m_view < 100 ) 
 	      {
 		new_restriction = m_restriction + " AND " 
 		  + idfield + "='" + row[1] + "'";

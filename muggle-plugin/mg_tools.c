@@ -1,10 +1,11 @@
-/*! \file  mg_tools.c
- *  \brief  A few util functions for standalone and plugin messaging for the vdr muggle plugindatabase
+/*! 
+ * \file  mg_tools.c
+ * \brief  A few util functions for standalone and plugin messaging for the vdr muggle plugindatabase
  *
  * \version $Revision: 1.4 $
- * \date    $Date: 2004/08/29 14:39:33 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: lvw $
+ * \author  file owner: $Author$
  */
 
 #include "mg_tools.h"
@@ -109,7 +110,7 @@ MYSQL_RES* mgSqlReadQuery(MYSQL *db, const char *fmt, ...)
   va_list ap;
   va_start( ap, fmt );  
   vsnprintf( querybuf, MAX_QUERY_BUFLEN-1, fmt, ap );
-
+  
   if( mysql_query(db, querybuf) )
     {
       mgError( "SQL error in MUGGLE:\n%s\n", querybuf );
@@ -134,18 +135,3 @@ void mgSqlWriteQuery(MYSQL *db, const char *fmt, ...)
   
   va_end(ap);
 }
-
-/* -------------------- begin CVS log ---------------------------------
- * $Log: mg_tools.c,v $
- * Revision 1.4  2004/08/29 14:39:33  lvw
- * Import running in basic version
- *
- * Revision 1.3  2004/07/25 21:33:35  lvw
- * Removed bugs in finding track files and playlist indexing.
- *
- * Revision 1.2  2004/02/02 22:48:04  MountainMan
- *  added CVS $Log
- *
- *
- * --------------------- end CVS log ----------------------------------
- */

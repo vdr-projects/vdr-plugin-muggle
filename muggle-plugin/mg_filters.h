@@ -1,14 +1,12 @@
-/*******************************************************************/
 /*! \file   mg_filters.h
  *  \brief  Top level access to media in vdr plugin muggle
  *          for the vdr muggle plugindatabase
- ******************************************************************** 
+ *
  * \version $Revision: 1.2 $
- * \date    $Date: 2004/05/28 15:29:18 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: lvw $
+ * \author  file owner: $Author$
  */
-/*******************************************************************/
 
 #ifndef _MG_FILTERS_H
 #define _MG_FILTERS_H
@@ -17,40 +15,52 @@
 #include <vector>
 
 /*! 
- *******************************************************************
- * \class mgFilter
- *
- * Abstract base class for representation of filter values with boundaries
- ********************************************************************/
+ * \brief abstract base class for representation of filter values with boundaries
+ */
 class mgFilter
 {
  public:
+  
   typedef enum filterType 
     { 
-      UNDEF=0, INT, STRING, BOOL, CHOICE 
+      UNDEF = 0, 
+      INT, 
+      STRING, 
+      BOOL, 
+      CHOICE 
     } filterType;
-
+  
  protected:
   filterType m_type;
   char* m_name;
   
  public:
+  
   mgFilter(const char* name);
+  
   virtual ~mgFilter();
+
   filterType getType();
+
   const char* getName();
-  virtual std::string getStrVal()=0;
-  virtual int getIntVal(){return 0;}
-  virtual void store()=0;
-  virtual void restore()=0;
-  virtual void clear()=0;
-  virtual bool isSet()=0;
+
+  virtual std::string getStrVal() = 0;
+
+  virtual int getIntVal()
+    { return 0; }
+
+  virtual void store() = 0;
+
+  virtual void restore() = 0;
+
+  virtual void clear() = 0;
+
+  virtual bool isSet() = 0;
 };
  
 /*! 
- *******************************************************************
  * \class mgFilterInt
- ********************************************************************/
+ */
 class mgFilterInt : public mgFilter
 {
  private:
@@ -77,9 +87,8 @@ class mgFilterInt : public mgFilter
 };  
   
 /*! 
- *******************************************************************
  * \class mgFilterString
- ********************************************************************/
+ */
 class mgFilterString : public mgFilter
 {
  private:
@@ -106,9 +115,8 @@ class mgFilterString : public mgFilter
 };  
 
 /*! 
- *******************************************************************
  * \class mgFilterBool
- ********************************************************************/
+ */
 class mgFilterBool : public mgFilter
 {
  private:
@@ -136,9 +144,8 @@ class mgFilterBool : public mgFilter
 };  
 
 /*! 
- *******************************************************************
  * \class mgFilterChoice
- ********************************************************************/
+ */
 class mgFilterChoice : public mgFilter
 {
  private:
