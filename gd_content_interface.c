@@ -1069,7 +1069,8 @@ bool GdTreeNode::expand()
 			  "    CONCAT(tracks.artist,' - ',tracks.title) AS title"
 			  "          ,tracks.id"
 			  FROMJOIN
-			  "  ORDER BY tracks.title",
+			  "  ORDER BY title",
+			  //"  ORDER BY tracks.title",
 			  m_restriction.c_str());
 		  idfield = "tracks.id";
 		} 
