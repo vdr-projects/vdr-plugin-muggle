@@ -839,7 +839,7 @@ mgSelection::tracks ()
         	MYSQL_ROW row;
            	while ((row = mysql_fetch_row (rows)) != NULL)
            	{
-               		m_tracks.push_back (mgContentItem (row, m_ToplevelDir));
+		  m_tracks.push_back (mgContentItem (row, m_ToplevelDir));
             	}
             	mysql_free_result (rows);
 	}
@@ -878,7 +878,8 @@ mgContentItem::mgContentItem (const MYSQL_ROW row, const string ToplevelDir)
     else
 	m_title = "NULL";
     if (row[2])
-    	m_mp3file = ToplevelDir + row[2];
+      // m_mp3file = ToplevelDir + row[2];
+      m_mp3file = row[2];
     else
     	m_mp3file = "NULL";
     if (row[3])

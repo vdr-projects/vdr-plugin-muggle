@@ -14,12 +14,18 @@
  * (C) 2001,2002 Stefan Huelswitt <huels@iname.com>
  */
 
-#include <string.h>
+#include <iostream>
+#include <stdlib.h>
+#include <stdio.h>
+#include <cstring>
 
 #include "vdr_setup.h"
 #include "i18n.h"
 
 mgSetup the_setup;
+
+char *readline(FILE *f);
+std::string GdFindFile( std::string mp3file, std::string ToplevelDir );
 
 // --- mgMenuSetup -----------------------------------------------------------
 
@@ -85,4 +91,56 @@ mgSetup::mgSetup ()
     LimiterLevel = DEFAULT_LIMITER_LEVEL;
     Only48kHz = 0;
     ToplevelDir = "/mnt/music/";
+}
+
+std::string
+mgSetup::getFilename( std::string basename )
+{
+  if( GdCompatibility )
+    {
+      return GdFindFile( basename, std::string( ToplevelDir ) );
+    }
+  else
+    {
+      return string( ToplevelDir ) + basename;
+    }
+}
+
+#define MAXPARSEBUFFER 1024
+
+char *readline(FILE *f)
+{
+  static char buffer[MAXPARSEBUFFER];
+  if (fgets(buffer, sizeof(buffer), f) > 0) 
+    {
+      int l = strlen(buffer) - 1;
+      if (l >= 0 && buffer[l] == '\n')
+        buffer[l] = 0;
+      return buffer;
+    }
+  return NULL;
+}
+
+#define FINDCMD      "cd '%s' && find -follow -name '%s' 2> /dev/null"
+
+std::string GdFindFile( std::string mp3file, std::string tld )
+{
+  std::string fullname = "";
+  char *cmd = NULL;
+  asprintf( &cmd, FINDCMD, ToplevelDir.c_str(), mp3file.c_str() );
+  FILE *p = popen( cmd, "r" );
+  if (p) 
+    {
+      char *s;
+      while( (s = readline(p) ) != NULL) 
+	{
+	  // printf( "Found: %s", s );
+	  fullname = std::string( tld ) + std::string( s );
+	}
+      pclose(p);
+    }
+
+  free( cmd );
+
+  return fullname;
 }
