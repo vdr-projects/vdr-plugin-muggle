@@ -3,11 +3,11 @@
  * \brief An mp3 decoder for a VDR media plugin (muggle)
  *
  * \version $Revision: 1.2 $
- * \date    $Date: 2004/05/28 15:29:19 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  *
- * $Id: vdr_decoder_mp3.c,v 1.2 2004/05/28 15:29:19 lvw Exp $
+ * $Id$
  *
  * Adapted from 
  * MP3/MPlayer plugin to VDR (C++)
@@ -27,6 +27,7 @@
 #include "vdr_decoder_mp3.h"
 #include "vdr_stream.h"
 
+#include "mg_content_interface.h"
 #include "mg_tools.h"
 
 #define d(x) x
@@ -52,17 +53,16 @@ int mgMadStream(struct mad_stream *stream, mgStream *str)
 
 // --- mgMP3Decoder -------------------------------------------------------------
 
-mgMP3Decoder::mgMP3Decoder(string filename, bool preinit)
-  : mgDecoder(filename)
+mgMP3Decoder::mgMP3Decoder( mgContentItem *item, bool preinit)
+  : mgDecoder(item)
 {
-  MGLOG( "mgMP3Decoder::mgMP3Decoder" );
-
   m_stream = 0; 
   m_isStream = false;
+  m_filename = item->getSourceFile();
 
   if( preinit )
     {
-      m_stream = new mgStream( filename );
+      m_stream = new mgStream( m_filename );
     }
   m_madframe = 0; 
   m_madsynth = 0;
@@ -181,8 +181,6 @@ mgPlayInfo *mgMP3Decoder::playInfo()
 
 bool mgMP3Decoder::start()
 {
-  MGLOG( "mgMP3Decoder::start" );
-
   lock(true);
   init(); 
   m_playing = true;
@@ -219,8 +217,6 @@ bool mgMP3Decoder::start()
 
 bool mgMP3Decoder::stop(void)
 {
-  MGLOG( "mgMP3Decoder::stop" );
-
   lock();
 
   if( m_playing )
@@ -234,8 +230,6 @@ bool mgMP3Decoder::stop(void)
 
 struct mgDecode *mgMP3Decoder::done(eDecodeStatus status)
 {
-  //  MGLOG( "mgMP3Decoder::done" );
-
   m_ds.status = status;
   m_ds.index  = mad_timer_count( m_playtime, MAD_UNITS_MILLISECONDS );
   m_ds.pcm    = &m_madsynth->pcm;

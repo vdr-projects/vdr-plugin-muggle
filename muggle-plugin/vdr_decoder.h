@@ -1,13 +1,14 @@
 /*!
  * \file vdr_decoder.h
  * \brief A generic decoder for a VDR media plugin (muggle)
+ * \ingroup vdr
  *
  * \version $Revision: 1.2 $
- * \date    $Date: 2004/05/28 15:29:18 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  *
- * $Id: vdr_decoder.h,v 1.2 2004/05/28 15:29:18 lvw Exp $
+ * $Id$
  *
  * Adapted from 
  * MP3/MPlayer plugin to VDR (C++)
@@ -24,10 +25,13 @@
 
 #define DEC_ID(a,b,c,d) (((a)<<24)+((b)<<16)+((c)<<8)+(d))
 
+class mgContentItem;
+
 // --------From decoder_core.h ------------------------------------
 
 /*! 
  * \brief The current status of the decoder
+ * \ingroup vdr
  */
 enum eDecodeStatus
   { 
@@ -38,6 +42,7 @@ enum eDecodeStatus
 
 /*! 
  * \brief A data structure to put decoded PCM data
+ * \ingroup vdr
  */
 struct mgDecode
 {
@@ -50,6 +55,7 @@ struct mgDecode
 
 /*! 
  * \brief Information about ???
+ * \ingroup vdr
  */
 class mgPlayInfo
 {
@@ -61,18 +67,23 @@ public:
 
 /*! 
  * \brief Media types
+ * \ingroup vdr
  */
 enum mgMediaType
 {
-	MT_MP3, MT_MP3_STREAM, MT_OGG, MT_FLAC
+  MT_MP3, MT_MP3_STREAM, MT_OGG, MT_FLAC, MT_UNKNOWN
 };
 
 /*! 
  * \brief A generic decoder class to handle conversion into PCM format
+ * \ingroup vdr
  */
 class mgDecoder
 {
 protected:
+
+  /*! \brief database handle to the track being decoded */
+  mgContentItem *m_item;
 
   /*! \brief The currently playing file */
   std::string m_filename;
@@ -99,11 +110,13 @@ protected:
 
 public:
 
+  //@{
   /*! \brief The constructor */
-  mgDecoder( std::string filename );
+  mgDecoder( mgContentItem *item );
 
   /*! \brief The destructor */
   virtual ~mgDecoder();
+  //@}
 
   /*! \brief Whether a decoder instance is able to play the given file */
   virtual bool valid() = 0;
@@ -147,7 +160,7 @@ public:
   
   /*! \brief Try to find a valid decoder for a file 
    */
-  static mgDecoder *findDecoder( std::string filename );
+  static mgDecoder *findDecoder( mgContentItem *item );
 
   /*! \brief determine the media type for a given source
    */

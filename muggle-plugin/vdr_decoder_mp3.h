@@ -3,11 +3,11 @@
  * \brief An mp3 decoder for a VDR media plugin (muggle)
  *
  * \version $Revision: 1.2 $
- * \date    $Date: 2004/05/28 15:29:19 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  *
- * $Id: vdr_decoder_mp3.h,v 1.2 2004/05/28 15:29:19 lvw Exp $
+ * $Id$
  *
  * Adapted from 
  * MP3/MPlayer plugin to VDR (C++)
@@ -30,6 +30,7 @@
 #endif
 
 class mgStream;
+class mgContentItem;
 
 // ----------------------------------------------------------------
 
@@ -55,7 +56,7 @@ private:
   } *m_frameinfo;
 
   int m_framenum, m_framemax, m_errcount, m_mute;
-  //
+
   void init();
 
   void clean();
@@ -65,7 +66,7 @@ private:
   virtual mgPlayInfo *playInfo();
 
   eDecodeStatus decodeError(bool hdr);
-
+  
   void makeSkipTime(mad_timer_t *skiptime, mad_timer_t playtime,
 		    int secs, int avail, int dvbrate);
 
@@ -78,7 +79,7 @@ public:
   /*! 
    * \brief construct a decoder from a filename
    */
-  mgMP3Decoder( std::string filename, bool preinit = true );
+  mgMP3Decoder( mgContentItem *item, bool preinit = true );
 
   /*!
    * \brief the destructor
