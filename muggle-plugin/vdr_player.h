@@ -64,8 +64,9 @@ public:
   /*! \brief construct a control with a playlist
    *
    *  \param plist - the playlist to be played
+   *  \param first - the index where to start the playlist
    */
-  mgPlayerControl(mgPlaylist *plist);
+  mgPlayerControl(mgPlaylist *plist, int first);
 
   /*! \brief destructor
    */
@@ -113,8 +114,9 @@ public:
    *  The caller has to take care of deallocating the previous list
    *
    *  \param plist - the new playlist to be played
+   *  \param first - the index where to start the playlist
    */
-  void NewPlaylist( mgPlaylist *plist );
+  void NewPlaylist( mgPlaylist *plist, int start );
 
   //! \brief a progress display
   void ShowProgress();

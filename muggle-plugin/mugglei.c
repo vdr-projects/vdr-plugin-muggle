@@ -21,7 +21,7 @@
 
 MYSQL *db;
 
-std::string host, user, pass, dbname, socket;
+std::string host, user, pass, dbname, sock;
 bool import_assorted;
 
 int init_database()
@@ -35,10 +35,10 @@ int init_database()
     }
 
   // check for use of sockets
-  if( socket != "" )
+  if( sock != "" )
     {
       if( mysql_real_connect( db, NULL, user.c_str(), pass.c_str(), dbname.c_str(),
-			      0, socket.c_str(), 0 ) == NULL )
+			      0, sock.c_str(), 0 ) == NULL )
 
 	{
 	  std::cout << "mysql_real_connect using sockets failed." << std::endl;
@@ -316,7 +316,7 @@ int main( int argc, char *argv[] )
   dbname = "GiantDisc";
   user   = "";
   pass   = "";
-  socket = "";
+  sock = "";
   import_assorted = false;
 
   // parse command line options
@@ -359,7 +359,7 @@ int main( int argc, char *argv[] )
 	  } break;
         case 's':
           {
-            socket = optarg;
+            sock = optarg;
           } break;
 	}
     }

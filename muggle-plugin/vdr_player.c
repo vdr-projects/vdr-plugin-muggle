@@ -142,6 +142,9 @@ private:
   //! \brief the decoder responsible for the currently playing item
   mgDecoder *m_decoder;
 
+  //! \brief the index where to start the playlist at
+  int m_first;
+
   cFrame *m_rframe, *m_pframe;
 
   enum ePlayMode 
@@ -181,7 +184,7 @@ protected:
   virtual void Action(void);
 
 public:
-  mgPCMPlayer(mgPlaylist *plist);
+  mgPCMPlayer(mgPlaylist *plist, int first);
   virtual ~mgPCMPlayer();
 
   bool Active() { return m_active; }
@@ -199,13 +202,14 @@ public:
   virtual bool GetIndex(int &Current, int &Total, bool SnapToIFrame=false);
   //  bool GetPlayInfo(cMP3PlayInfo *rm); // LVW
 
-  void NewPlaylist(mgPlaylist *plist);
+  void NewPlaylist( mgPlaylist *plist, int first );
   mgContentItem *GetCurrent () { return m_current; }  
   mgPlaylist *GetPlaylist () { return m_playlist; }  
 };
 
-mgPCMPlayer::mgPCMPlayer(mgPlaylist *plist)
-  : cPlayer( the_setup.BackgrMode? pmAudioOnly: pmAudioOnlyBlack )
+mgPCMPlayer::mgPCMPlayer(mgPlaylist *plist, int first)
+  : cPlayer( the_setup.BackgrMode? pmAudioOnly: pmAudioOnlyBlack ),
+     m_first( first )
 {
   m_playlist = plist;
 
@@ -221,7 +225,7 @@ mgPCMPlayer::mgPCMPlayer(mgPlaylist *plist)
   m_playmode = pmStartup; 
   m_state = msStop;
 
-  m_index = 0; 
+  m_index   = 0; 
   m_playing = 0; 
   m_current = 0; 
 }
@@ -252,7 +256,11 @@ void mgPCMPlayer::Activate(bool on)
 
 	  Lock();
 
-	  m_playlist->initialize();
+	  m_playlist->initialize( );
+	  if( m_first > 0 )
+	    {
+	      m_playlist->gotoPosition( m_first );
+	    }
 	  m_current = m_playlist->getCurrent();
 	  Play();
 
@@ -272,7 +280,7 @@ void mgPCMPlayer::Activate(bool on)
     }
 }
 
-void mgPCMPlayer::NewPlaylist( mgPlaylist *plist )
+void mgPCMPlayer::NewPlaylist( mgPlaylist *plist, int start )
 {
   MGLOG( "mgPCMPlayer::NewPlaylist" );
 
@@ -283,8 +291,14 @@ void mgPCMPlayer::NewPlaylist( mgPlaylist *plist )
   // memory management of playlists should happen elsewhere (menu, content)
   m_playlist = plist;
   m_current = 0;
-  
-  if( NextFile() ) 
+
+  if( start > 0 )
+    {
+      m_playlist->gotoPosition( (unsigned) start );
+      m_current = m_playlist->getCurrent();
+      Play();
+    }  
+  else if( NextFile() ) 
     {
       Play();
     }
@@ -866,8 +880,8 @@ bool mgPCMPlayer::GetIndex( int &current, int &total, bool snaptoiframe )
 
 // --- mgPlayerControl -------------------------------------------------------
 
-mgPlayerControl::mgPlayerControl( mgPlaylist *plist )
-  : cControl( m_player = new mgPCMPlayer(plist) )
+mgPlayerControl::mgPlayerControl( mgPlaylist *plist, int start )
+  : cControl( m_player = new mgPCMPlayer( plist, start ) )
 {
   MGLOG( "mgPlayerControl::mgPlayerControl" );
 
@@ -878,7 +892,8 @@ mgPlayerControl::mgPlayerControl( mgPlaylist *plist )
   m_has_osd = false;
 
   m_szLastShowStatusMsg = NULL;
-  // Notity all cStatusMonitor
+
+  // Notify all cStatusMonitor
   StatusMsgReplaying();
 }
 
@@ -976,11 +991,11 @@ void mgPlayerControl::ToggleLoop(void)
     }
 }
 
-void mgPlayerControl::NewPlaylist(mgPlaylist *plist)
+void mgPlayerControl::NewPlaylist(mgPlaylist *plist, int start)
 {
   if( m_player ) 
     {
-      m_player->NewPlaylist(plist);
+      m_player->NewPlaylist(plist, start);
     }
 }
 

@@ -287,7 +287,9 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	    {
 	    case kOk:
 	      {
-		// show some more information?
+		// start replay at selected index
+		int idx = Current();
+		Play( m_current_playlist, idx );
 		state = osContinue;
 	      } break;
 	    case kRed:
@@ -948,17 +950,17 @@ void mgMainMenu::DisplayFilterSelector()
   // show available filters, load on OK?
 }
 
-void mgMainMenu::Play(mgPlaylist *plist)
+void mgMainMenu::Play( mgPlaylist *plist, int first )
 {
   MGLOG( "mgMainMenu::Play" );
   cControl *control = cControl::Control();
 
   if( control && typeid(*control) == typeid(mgPlayerControl) ) 
     { // is there a running MP3 player?
-      static_cast<mgPlayerControl*>(control)->NewPlaylist(plist); // signal the running player to load the new playlist
+      static_cast<mgPlayerControl*>(control)->NewPlaylist(plist, first); // signal the running player to load the new playlist
     }
   else
     {
-      cControl::Launch( new mgPlayerControl(plist) );
+      cControl::Launch( new mgPlayerControl(plist, first) );
     }
 }

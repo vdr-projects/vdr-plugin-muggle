@@ -98,7 +98,8 @@ class mgMainMenu : public cOsdMenu
   void DisplayFilterSelector();
 
  private:
-  void Play(mgPlaylist *plist);
+  //! \brief launch the actual player
+  void Play( mgPlaylist *plist, int first = -1 );
 
   // content stuff
   mgMedia *m_media;
