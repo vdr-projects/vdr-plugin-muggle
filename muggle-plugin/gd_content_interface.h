@@ -229,6 +229,10 @@ class mgGdTrack : public mgContentItem
    */
   virtual std::string getBitrate();
 
+  /*! \brief obtain the bitrate of the track
+   */
+  virtual int getLength();
+
   /*!
    * \brief obtain the complete track information
    */
