@@ -37,6 +37,7 @@
 #include <recording.h>
 #include <status.h>
 
+#include "muggle.h"
 #include "vdr_player.h"
 #include "vdr_decoder.h"
 #include "vdr_config.h"
@@ -185,7 +186,7 @@ protected:
   virtual void Action(void);
 
 public:
-  mgPCMPlayer(mgPlaylist *plist, int first);
+  mgPCMPlayer(mgPlaylist *plist, unsigned first);
   virtual ~mgPCMPlayer();
 
   bool Active() { return m_active; }
@@ -208,7 +209,7 @@ public:
   mgPlaylist *getPlaylist () { return m_playlist; }  
 };
 
-mgPCMPlayer::mgPCMPlayer(mgPlaylist *plist, int first)
+mgPCMPlayer::mgPCMPlayer(mgPlaylist *plist, unsigned first)
   : cPlayer( the_setup.BackgrMode? pmAudioOnly: pmAudioOnlyBlack ),
      m_first( first )
 {
@@ -281,7 +282,7 @@ void mgPCMPlayer::Activate(bool on)
     }
 }
 
-void mgPCMPlayer::NewPlaylist( mgPlaylist *plist, int start )
+void mgPCMPlayer::NewPlaylist( mgPlaylist *plist, unsigned start )
 {
   MGLOG( "mgPCMPlayer::NewPlaylist" );
 

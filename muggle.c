@@ -217,12 +217,12 @@ bool mgMuggle::SetupParse(const char *Name, const char *Value)
 }
 
 
-static void mgMuggle::setResumeIndex( unsigned index )
+void mgMuggle::setResumeIndex( unsigned index )
 {
   s_resume_idx = index;
 }
 
-static unsigned mgMuggle::getResumeIndex( )
+unsigned mgMuggle::getResumeIndex( )
 {
   return s_resume_idx;
 }

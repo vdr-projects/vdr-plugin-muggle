@@ -25,6 +25,7 @@
 #include <vdr/skins.h>
 #endif
 
+#include "muggle.h"
 #include "vdr_menu.h"
 #include "vdr_player.h"
 #include "i18n.h"
