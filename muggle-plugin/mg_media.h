@@ -3,8 +3,8 @@
  * \brief  Top level access to media in vdr plugin muggle
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.7 $
- * \date    $Date: 2004/02/02 23:33:41 $
+ * \version $Revision: 1.8 $
+ * \date    $Date: 2004/02/09 19:27:52 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: MountainMan $
  * 
@@ -28,7 +28,7 @@ class mgSelectionTreeNode;
  *******************************************************************
  * \class mgFilter
  *
- * represents a filter value with boundaries or choices
+ * Abstract base class for representation of filter values with boundaries
  ********************************************************************/
 class mgFilter
 {
@@ -44,6 +44,11 @@ class mgFilter
    filterType getType();
    const char* getName();
    virtual std::string getStrVal()=0;
+   virtual int getIntVal(){return 0;}
+   virtual void store()=0;
+   virtual void restore()=0;
+   virtual void clear()=0;
+   virtual bool isSet()=0;
 };
  
 /*! 
@@ -55,17 +60,24 @@ class mgFilterInt : public mgFilter
  private:
   int m_min;
   int m_max; 
+  int m_stored_val;
+  int m_default_val;
   
  public:
   int m_intval;
 
-  mgFilterInt(const char *name, int value, int min = 0, int max = INT_MAX);
+  mgFilterInt(const char *name, int value, int min = 0, int max = 9999);
   virtual ~mgFilterInt();
 
   int getVal();
   int getMin();
   int getMax();
   virtual std::string getStrVal();
+  virtual int getIntVal();
+  virtual void store();
+  virtual void restore();
+  virtual void clear();
+   virtual bool isSet();
 };  
   
 /*! 
@@ -77,6 +89,9 @@ class mgFilterString : public mgFilter
  private:
   std::string m_allowedchar;
   int m_maxlen;
+  char* m_stored_val;
+  char* m_default_val;
+
  public:
   char* m_strval;
 
@@ -88,6 +103,10 @@ class mgFilterString : public mgFilter
   int getMaxLength(); 
   std::string getAllowedChars();
   virtual std::string getStrVal();
+  virtual void store();
+  virtual void restore();
+  virtual void clear();
+  virtual bool isSet();
 };  
 
 /*! 
@@ -99,6 +118,8 @@ class mgFilterBool : public mgFilter
  private:
   std::string m_truestr;
   std::string m_falsestr;
+  bool m_stored_val;
+  bool m_default_val;
 
  public:
   int m_bval;
@@ -108,9 +129,14 @@ class mgFilterBool : public mgFilter
   virtual ~mgFilterBool();
 
   virtual std::string getStrVal();
+  virtual int getIntVal();
   std::string getTrueString();
   std::string getFalseString();
   bool getVal();
+  virtual void store();
+  virtual void restore();
+  virtual void clear();
+  virtual bool isSet();
 };  
 
 /*! 
@@ -121,7 +147,9 @@ class mgFilterChoice : public mgFilter
 {
  private:
   std::vector<std::string> m_choices;
-  
+  int m_stored_val; 
+  int m_default_val;
+ 
  public:
   int m_selval; // index of the currently selected item
 
@@ -130,30 +158,68 @@ class mgFilterChoice : public mgFilter
 
   virtual std::string getStrVal();
   virtual std::vector<std::string> &getChoices();
-
+  virtual void store();
+  virtual void restore();
+  virtual void clear();
+  virtual bool isSet();
 };  
+
 
 /*! 
  *******************************************************************
- * \class mgrackFilters
+ * \class mgFilterSets
  *
- * Represents a set of filters to set and memorize the search 
- * constraint for a specific track
+ * Represents one or several sets of filters to set and memorize
+ * search constraint 
  ********************************************************************/
-class mgTrackFilters
-{
+class mgFilterSets {
  protected:
-  std::vector<mgFilter*> m_filters;
- public:
-  mgTrackFilters();
-  virtual ~mgTrackFilters();
+  int m_activeSetId;
+   std::vector<mgFilter*> *m_activeSet;   // pointer to the active filter set
+  
+   std::vector< std::vector<mgFilter*>*> m_sets;
+  // stores name-value pairs, even if a different set is active
 
-  std::vector<mgFilter*> *getFilters();
-  
-  virtual std::string CreateSQL()=0;
-  virtual void clear()=0;
-  
+   std::vector<std::string>             m_titles;
+  // stores the titles for all filters
+
+ public:
+  mgFilterSets();
+  // constructor, constracts a number >=1 of filter sets
+  // the first set (index 0 ) is active by default
+
+  virtual ~mgFilterSets();
+  // destructor
+
+  int numSets(); 
+  // returns the number of available sets
+
+  void nextSet();
+  // proceeds to the next one in a circular fashion
+
+  void select(int n);
+  // activates a specific set by index
+
+  virtual void clear();
+  // restores the default values for all filter values in the active set
+  // normally, the default values represent 'no restrictions'
+
+  void accept();
+  // stores the current filter values
+
+   std::vector<mgFilter*> *getFilters();
+  // returns the active set to the application
+  // the application may temporarily modify the filter values 
+  // accept() needs to be called to memorize the changed values
+
+  virtual  std::string computeRestriction(int *viewPrt)=0;
+  // computes the (e.g. sql-) restrictions specified by the active filter set
+  // and returns the index of the appropriate defualt view in viewPrt
+
+  std::string getTitle();
+  // returns title of active filter set
 };
+
 /*! 
  *******************************************************************
  * \class mgMedia
@@ -170,16 +236,15 @@ class mgMedia
  
  public: 
   typedef enum contentType{
-    DUMMY =0,
-    GD_MP3
+     GD_MP3
   } contentType;
 
  private:
     MYSQL m_db;
     contentType m_mediatype;
-    std::string m_sql_trackfilter;
+    std::string m_sql_filter;
     int m_defaultView;
-    mgTrackFilters *m_trackfilter;
+     mgFilterSets *m_filters;
 
  public:
    mgMedia(contentType mediatype);
@@ -189,10 +254,6 @@ class mgMedia
 
   mgSelectionTreeNode* getSelectionRoot();
 
-  // filter management
-  std::vector<mgFilter*> *getTrackFilters();
-  void applyTrackFilters(std::vector<mgFilter*> *filters);
-
   // playlist management
   mgPlaylist* createTemporaryPlaylist();
   mgPlaylist* loadPlaylist( std::string name );
@@ -200,10 +261,38 @@ class mgMedia
 
   std::vector<int> getDefaultCols();
   mgTracklist* getTracks();
+
+  // filter management
+
+  void initFilterSet(int num=0);
+  // creates FiliterSetObject for the selected media type 
+  // and activates set n (if available)
+
+
+  std::vector<mgFilter*> *getActiveFilters();
+  // returns pointer to the activen filter set to be modified by the osd
+  // Note: Modifications become only active by calling applyActiveFilter()
+
+  std::string getActiveFilterTitle();
+
+  void nextFilterSet();
+  // proceeds to the next filter set in a cirlucar fashion
+  
+  void clearActiveFilter();
+  // clears the current filter values and restores defaults
+
+
+  mgSelectionTreeNode *applyActiveFilter();
+  // Applies the active filter set and returns a root node for the 
+  // selection in the default view for this filter set
+
 };
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: mg_media.h,v $
+ * Revision 1.8  2004/02/09 19:27:52  MountainMan
+ * filter set implemented
+ *
  * Revision 1.7  2004/02/02 23:33:41  MountainMan
  * impementation of gdTrackFilters
  *
@@ -213,5 +302,5 @@ class mgMedia
  *
  * --------------------- end CVS log ----------------------------------
  */
-#endif  /* END  _CONTENT_INTERFACE_H */
+#endif  /* END  _MG_MEDIA_H */
 

@@ -2,12 +2,12 @@
 /*! \file   vdr_menu.c
  *  \brief  Implements menu handling for broswing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.12 $
- * \date    $Date: 2004/02/08 10:48:44 $
+ * \version $Revision: 1.13 $
+ * \date    $Date: 2004/02/09 19:27:52 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: MountainMan $
  *
- * $Id: vdr_menu.c,v 1.12 2004/02/08 10:48:44 LarsAC Exp $
+ * $Id: vdr_menu.c,v 1.13 2004/02/09 19:27:52 MountainMan Exp $
  */
 /*******************************************************************/
 
@@ -344,17 +344,22 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 		// OK: Create filter and selection tree and display
 		mgDebug( 1,  "mgMainMenu: create and apply filter" );
 		// m_media->applyFilters();
+		state = osContinue;
 	      } break;
-	    case kRed: // ???
+	    case kRed: // 
 	      {
-		state = osContinue;	    
 		mgDebug( 1,  "mgMainMenu: query and display results" );
+		if(m_root) delete m_root;
+		m_root = m_media->applyActiveFilter();
+		DisplayTree( m_root );
+		state = osContinue;
 	      } break;
 	    case kGreen:
 	      {
 		// cycle FILTER -> TREE
-		mgDebug( 1,  "mgMainMenu: clear filters (todo)" );
-		DisplayFilterSelector();
+		mgDebug( 1,  "mgMainMenu: next filters " );
+		m_media->nextFilterSet();
+		DisplayFilter();
 		state = osContinue;
 	      } break;
 	    case kYellow:
@@ -536,19 +541,27 @@ void mgMainMenu::DisplayFilter()
   mgDebug( 1, "Creating Muggle filter view" );
   SetButtons();
 
-  SetTitle( "Muggle Filter View" );
+  SetTitle( m_media->getActiveFilterTitle().c_str() );
+  mgDebug( 1, "filter view2" );
 
-  vector<mgFilter*> *filter_list = m_media->getTrackFilters();
+  vector<mgFilter*> *filter_list = m_media->getActiveFilters();
   
+  mgDebug( 1, "filter view3" );
+  int i=0;
   for( vector<mgFilter*>::iterator iter = filter_list->begin();
        iter != filter_list->end();
        iter ++ )
     {
+	  mgDebug( 1, "Filter %d/%dint filter %s='%s'",
+		   i, filter_list->size(),
+		   (*iter)->getName(), 
+		   (*iter)->getStrVal().c_str());
       switch( (*iter)->getType() )
 	{
 	case mgFilter::INT:
 	  {
 	    mgFilterInt *fi = (mgFilterInt *) (*iter);
+	    
 	    Add( new cMenuEditIntItem(  fi->getName(), 
 					&(fi->m_intval), 
 					fi->getMin(), fi->getMax() ) );
@@ -573,6 +586,7 @@ void mgMainMenu::DisplayFilter()
 	  {
 	  } break;
 	}
+      i++;
     }
 
   Display();
@@ -586,6 +600,9 @@ void mgMainMenu::DisplayFilterSelector()
 /************************************************************
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.13  2004/02/09 19:27:52  MountainMan
+ * filter set implemented
+ *
  * Revision 1.12  2004/02/08 10:48:44  LarsAC
  * Made major revisions in OSD behavior
  *

@@ -3,10 +3,10 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.7 $
- * \date    $Date: 2004/02/03 00:13:24 $
+ * \version $Revision: 1.8 $
+ * \date    $Date: 2004/02/09 19:27:52 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: MountainMan $
  *
  * DUMMY
  * Implements main classes of for content items and interfaces to SQL databases
@@ -62,82 +62,122 @@ vector<string> *GdGetStoredPlaylists(MYSQL db)
     return list;
 }
 
-/*******************************************************************/
-/* class class gdTrackFilters                                      */
-/********************************************************************/
-gdTrackFilters::gdTrackFilters()
+//------------------------------------------------------------------
+//------------------------------------------------------------------
+//                
+//            class gdTrackFilters                 
+//                
+//------------------------------------------------------------------
+//------------------------------------------------------------------
+
+/*! 
+ *******************************************************************
+ * \brief constructor, constracts a number >=1 of filter sets
+ *
+ * the first set (index 0 ) is active by default
+ ********************************************************************/
+gdFilterSets::gdFilterSets()
 {
-  clear();
-}
-gdTrackFilters::~gdTrackFilters()
-{
-}
-void gdTrackFilters::clear()
-{
-  mgFilter* filter ;
-  // remove old filters 
-  for(vector<mgFilter*>::iterator iter = m_filters.begin();
-      iter != m_filters.end(); iter++)
-    {
-      delete (*iter);
-    }
-  m_filters.clear();
+  mgFilter* filter;
   
+  m_titles.push_back("Trackfilter");
+
   // create an initial set of filters with empty values
- // title
+  vector<mgFilter*>* set = new vector<mgFilter*>();
+ 
+  // title
   filter = new mgFilterString("title", "");
-  m_filters.push_back(filter);
+  set->push_back(filter);
   // artist
   filter = new mgFilterString("artist", "");
-  m_filters.push_back(filter);
+  set->push_back(filter);
   // genre
   filter = new mgFilterString("genre", "");
-  m_filters.push_back(filter);
-  // year
-  filter = new mgFilterInt("year", -1);
-  m_filters.push_back(filter);
+  set->push_back(filter);
+  // year-from
+  filter = new mgFilterInt("year (from)", 0);
+  set->push_back(filter);
+  // year-to
+  filter = new mgFilterInt("year (to)", 9999);
+  set->push_back(filter);
  // rating
-  filter = new mgFilterInt("rating", -1);
-  m_filters.push_back(filter);
+  filter = new mgFilterInt("rating", 0);
+  set->push_back(filter);
+
+  m_sets.push_back(set);
+  m_activeSetId = 0;
+  m_activeSet = set;
 }
 
-string gdTrackFilters::CreateSQL()
+/*! 
+ *******************************************************************
+ * \briefdestructor
+ ********************************************************************/
+gdFilterSets::~gdFilterSets()
+{
+  // everything is done in the destructor of the base class
+}
+
+/*! 
+ *******************************************************************
+ * \brief  computes the restrictions specified by the active filter set
+ * \param  viewPrt index of the appropriate defualt view 
+ * \return  sql string representing the restrictions
+ ********************************************************************/
+string gdFilterSets::computeRestriction(int *viewPrt)
 {
   string sql_str = "1";
 
-  for(vector<mgFilter*>::iterator iter = m_filters.begin();
-      iter != m_filters.end(); iter++)
+  for(vector<mgFilter*>::iterator iter = m_activeSet->begin();
+      iter != m_activeSet->end(); iter++)
   {
-    if(strcmp((*iter)->getName(), "title") == 0 )
+    if((*iter)->isSet())
+    {
+      if(strcmp((*iter)->getName(), "title") == 0 )
       {
-	sql_str = "AND tracks.title like '" 
-	  + (*iter)->getStrVal() + "%'";
+	sql_str = sql_str + " AND tracks.title like ' " 
+	  + (*iter)->getStrVal() + "'";
       }
-    else if(strcmp((*iter)->getName(), "artist") == 0 )
+      else if(strcmp((*iter)->getName(), "artist") == 0 )
+      { 
+	sql_str = sql_str + " AND tracks.artist like ''" 
+	  + (*iter)->getStrVal() + "'";
+      }
+      else if(strcmp((*iter)->getName(), "genre") == 0 )
+      { 
+	sql_str = sql_str + " AND genre.name like ''" 
+	  + (*iter)->getStrVal() + "'";
+      }
+      else if(strcmp((*iter)->getName(), "year (from)") == 0 )
+      { 
+	sql_str = sql_str + " AND tracks.year >= " + (*iter)->getStrVal();
+      }
+      else if(strcmp((*iter)->getName(), "year (to)") == 0 )
+      { 
+	sql_str = sql_str + " AND tracks.year <= " + (*iter)->getStrVal();
+      }
+      else if(strcmp((*iter)->getName(), "rating") == 0 )
+      { 
+	sql_str = sql_str + " AND tracks.rating >= " + (*iter)->getStrVal();
+      }
+      else
       {
-	sql_str = "AND tracks.artist like '" 
-	  + (*iter)->getStrVal() + "%'";
-      }
-    else if(strcmp((*iter)->getName(), "genre") == 0 )
-      {
-	sql_str = "AND genre.name like '" 
-	  + (*iter)->getStrVal() + "%'";
-      }
-    else if(strcmp((*iter)->getName(), "year") == 0 )
-      {
-	sql_str = "AND tracks.year = " + (*iter)->getStrVal();
-      }
-    else if(strcmp((*iter)->getName(), "rating") == 0 )
-      {
-	sql_str = "AND tracks.rating >= " + (*iter)->getStrVal();
-      }
+	mgWarning("Ignoring unknown filter %s", (*iter)->getName());
+      }  
+    }
   }
+  *viewPrt =  1; // artist -> album -> title
+  mgDebug(1, "Applying sql string %s (view=%d)",sql_str.c_str(), *viewPrt); 
   return sql_str;
 }
 
-/*******************************************************************/
-/* class mgTack                                                    */
-/********************************************************************/
+//------------------------------------------------------------------
+//------------------------------------------------------------------
+//                
+//          class mgTack      
+//                
+//------------------------------------------------------------------
+//------------------------------------------------------------------
 mgGdTrack mgGdTrack::UNDEFINED =  mgGdTrack();
 
 /*!
@@ -328,14 +368,13 @@ string mgGdTrack::getLabel(int col)
     }
 }
 
-string mgGdTrack::getDescription()
+vector<mgFilter*> *mgGdTrack::getTrackInfo()
 {
-    if(!m_retrieved)
-    {
-	readData();
-    }
-    return m_artist + " - " +  m_title;
-    
+  return new vector<mgFilter*>();
+}
+bool mgGdTrack::setTrackInfo(vector<mgFilter*> *info)
+{
+  return false;
 }
 
 /*!
@@ -505,6 +544,13 @@ bool mgGdTrack::writeData()
     return true;
 }
 
+//------------------------------------------------------------------
+//------------------------------------------------------------------
+//                
+//          class  GdTracklist 
+//                
+//------------------------------------------------------------------
+//------------------------------------------------------------------
 GdTracklist::GdTracklist(MYSQL db_handle, string restrictions)
 {
     MYSQL_RES	*result;
@@ -531,9 +577,13 @@ GdTracklist::GdTracklist(MYSQL db_handle, string restrictions)
 }
     
 
-/*******************************************************************/
-/* class GdPlaylist                                                */
-/********************************************************************/
+//------------------------------------------------------------------
+//------------------------------------------------------------------
+//                
+//         class GdPlaylist   
+//                
+//------------------------------------------------------------------
+//------------------------------------------------------------------
 
 /*!
  *****************************************************************************
@@ -734,9 +784,13 @@ int GdPlaylist::getPlayTimeRemaining()
   return 0; // dummy 
 }
 
-/*******************************************************************/
-/* class GdTreeNode                                       */
-/*******************************************************************/
+//------------------------------------------------------------------
+//------------------------------------------------------------------
+//                
+//         class GdTreeNode   
+//                
+//------------------------------------------------------------------
+//------------------------------------------------------------------
 
 /*!
  *****************************************************************************
@@ -1078,27 +1132,27 @@ bool GdTreeNode::expand()
 	new_child = new GdTreeNode(this, // parent
 				   "1" , // id
 				   "Artist -> Album -> Title", // label,
-				   "1");
+				   m_restriction);
 	m_children.push_back(new_child);
 	new_child = new GdTreeNode(this, // parent
 				   "2" , // id
 				   "Genre -> Artist -> Album -> Track" , // label,
-				   "1");
+				   m_restriction);
 	m_children.push_back(new_child);
 	new_child = new GdTreeNode(this, // parent
 				   "3" , // id
 				   "Artist -> Track" , // label,
-				   "1");
+				   m_restriction);
 	m_children.push_back(new_child);
 	new_child = new GdTreeNode(this, // parent
 				   "4" , // id
 				   "Genre -> Year -> Track" , // label,
-				   "1");
+				   m_restriction);
 	m_children.push_back(new_child);
 	new_child = new GdTreeNode(this, // parent
 				   "5" , // id
 				   "Album -> Track" , // label,
-				   "1");
+				   m_restriction);
 	m_children.push_back(new_child);
     } else {
         new_child = new GdTreeNode(this, // parent
@@ -1199,6 +1253,9 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.8  2004/02/09 19:27:52  MountainMan
+ * filter set implemented
+ *
  * Revision 1.7  2004/02/03 00:13:24  LarsAC
  * Improved OSD handling of collapse/back
  *
