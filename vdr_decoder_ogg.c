@@ -188,10 +188,11 @@ int mgOggFile::stream( short *buffer, int samples )
 
 // --- mgOggDecoder -------------------------------------------------------------
 
-mgOggDecoder::mgOggDecoder( string filename ) 
-  : mgDecoder( filename )
+mgOggDecoder::mgOggDecoder( mgContentItem *item ) 
+  : mgDecoder( item )
 {
-  m_file = new mgOggFile( filename );
+  m_filename = item->getSourceFile;
+  m_file = new mgOggFile( m_filename );
   m_pcm = 0;
   init();
 }
@@ -260,7 +261,7 @@ bool mgOggDecoder::start()
       /* d(printf("ogg: open rate=%d channels=%d seek=%d\n",
 	       info.SampleFreq,info.Channels,file.CanSeek()))
       */
-      if( info.channels <= 2 )
+      if( m_item->channels() <= 2 )
 	{
 	  unlock();
 	  return true;
@@ -320,8 +321,8 @@ struct Decode *mgOggDecoder::Decode(void)
       }
 
     // TODO
-    pcm->samplerate = info.SampleFreq;  // from database
-    pcm->channels   = info.Channels;    // from database
+    pcm->samplerate = m_item->getSampleRate();  // from database
+    pcm->channels   = m_item->getChannels();    // from database
 
     n /= pcm->channels;
     pcm->length = n;

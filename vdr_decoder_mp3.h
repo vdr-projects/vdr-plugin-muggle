@@ -55,7 +55,7 @@ private:
   } *m_frameinfo;
 
   int m_framenum, m_framemax, m_errcount, m_mute;
-  //
+
   void init();
 
   void clean();
@@ -78,7 +78,7 @@ public:
   /*! 
    * \brief construct a decoder from a filename
    */
-  mgMP3Decoder( std::string filename, bool preinit = true );
+  mgMP3Decoder( mgContentItem *item, bool preinit = true );
 
   /*!
    * \brief the destructor

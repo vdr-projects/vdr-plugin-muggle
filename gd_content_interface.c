@@ -321,7 +321,7 @@ bool mgGdTrack::readData()
 	m_artist  = row[0];
 	m_album   = row[1];
 	m_title   = row[2];
-	m_mp3file = row[3];
+	m_mp3file = string( the_setup.ToplevelDir ) + row[3];
 	m_genre   = row[4];
 
 	if( sscanf( row[5], "%d", &m_year) != 1 )

@@ -2,15 +2,12 @@ TODO File for Muggle
 ====================
 
 Ogg/Vorbis decoder integration
-==============================
-- mgPCMPlayer::getSourceFile to be moved to mgContentItem class (abstract)
-  and made concrete in subclasses
-- in mgPCMPlayer/vdr_player.c:
-  - pass m_playing to mp3/ogg decoder (instead of filename)
-- mgOggDecoder: obtain audio properties from DB (via mgContentItem)
+------------------------------
+- mgDecoders::findDecoder: extend decoder detection
+- Think, whether type (mp3, ogg, flac) should be stored in database
 
 Deployment
-==========
+----------
 - Script to publish a version
    - Checkout
    - make dist
@@ -22,13 +19,13 @@ Deployment
 - How to track bugs and feature requests?
 
 Testing/bugs
-============
+------------
 - Test execution of playlist commands
 - Keep this? Test mgPCMPlayer::getSourceFile() for GD case (find)
 - Test saving/loading playlists to database
 
 Import
-======
+------
 - Album
   - Cover text
   - Cover images (based on filename or tag)
@@ -45,7 +42,12 @@ Import
 - Playlist from m3u
 
 Code polishing
-==============
+--------------
+- Check for unnecessary log commands
+- Generate HTML documentation using doxygen,
+   - use dotty/gv for state machines of player
+   - make available online
+- Clean up mugglei
 - Check for memory leaks
     - Why do filters use pointers?
 - Check for (reasonably) consistent usage of char*/string
@@ -56,17 +58,10 @@ Code polishing
 - mgPlayer used what for?
    - Could save IP/host name and associate last playlist loaded
 
-- Check for unnecessary log commands
-- Generate HTML documentation using doxygen,
-   - use dotty/gv for state machines of player
-   - make available online
-
 - Check compatibility for 1.3.12
 
 Short term items
 ================
-- Import existing m3u playlists (in import)
-- Import genres
 
 OSD in general
 --------------
@@ -168,6 +163,11 @@ Already Done
     (most notably samplerate, no. channels)
   - Extended mgContentItem with audio properties
   - Extended mgGdTrack with audio properties (bitrate, samplerate, channels)
+  - in mgPCMPlayer/vdr_player.c:
+    - pass m_playing to mp3/ogg decoder (instead of filename)
+  - mgOggDecoder: obtain audio properties from DB (channels, sampling rate via mgContentItem)
+  - mgPCMPlayer::getSourceFile moved to abstract data layer (mgContentItem)
+    and made concrete in subclasses (mgGdTrack)
 
 ************************************************************
 *

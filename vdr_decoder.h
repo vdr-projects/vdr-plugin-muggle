@@ -3,11 +3,11 @@
  * \brief A generic decoder for a VDR media plugin (muggle)
  *
  * \version $Revision: 1.2 $
- * \date    $Date: 2004/05/28 15:29:18 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  *
- * $Id: vdr_decoder.h,v 1.2 2004/05/28 15:29:18 lvw Exp $
+ * $Id$
  *
  * Adapted from 
  * MP3/MPlayer plugin to VDR (C++)
@@ -23,6 +23,8 @@
 #include <string>
 
 #define DEC_ID(a,b,c,d) (((a)<<24)+((b)<<16)+((c)<<8)+(d))
+
+class mgContentItem;
 
 // --------From decoder_core.h ------------------------------------
 
@@ -74,6 +76,9 @@ class mgDecoder
 {
 protected:
 
+  /*! \brief database handle to the track being decoded */
+  mgContentItem *m_item;
+
   /*! \brief The currently playing file */
   std::string m_filename;
 
@@ -99,11 +104,13 @@ protected:
 
 public:
 
+  //@{
   /*! \brief The constructor */
-  mgDecoder( std::string filename );
+  mgDecoder( mgContentItem *item );
 
   /*! \brief The destructor */
   virtual ~mgDecoder();
+  //@}
 
   /*! \brief Whether a decoder instance is able to play the given file */
   virtual bool valid() = 0;

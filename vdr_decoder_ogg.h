@@ -38,7 +38,7 @@ class mgOggDecoder : public mgDecoder
 
  public:
 
-  mgOggDecoder( std::string filename );
+  mgOggDecoder( mgContentItem *item );
   ~mgOggDecoder();
 
   virtual mgPlayInfo *playInfo();

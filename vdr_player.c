@@ -3,11 +3,11 @@
  * \brief A generic PCM player for a VDR media plugin (muggle)
  *
  * \version $Revision: 1.7 $
- * \date    $Date: 2004/07/27 20:50:54 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  *
- * $Id: vdr_player.c,v 1.7 2004/07/27 20:50:54 lvw Exp $
+ * $Id$
  *
  * Adapted from 
  * MP3/MPlayer plugin to VDR (C++)
@@ -176,7 +176,6 @@ private:
   void SetPlayMode(ePlayMode mode);
   void WaitPlayMode(ePlayMode mode, bool inv);
 
-  string getSourceFile();
 protected:
   virtual void Activate(bool On);
   virtual void Action(void);
@@ -363,10 +362,10 @@ void mgPCMPlayer::Action(void)
 		m_index = 0; 
 		m_playing = m_current;
 
-		string filename = getSourceFile();
+		string filename = m_playing->getSourceFile();
 		mgDebug( 1, "mgPCMPlayer::Action: music file is %s", filename.c_str() );
 
-		if( ( m_decoder = mgDecoders::findDecoder( filename ) ) && m_decoder->start() )
+		if( ( m_decoder = mgDecoders::findDecoder( m_playing ) ) && m_decoder->start() )
 		  {
 		    levelgood = true; 
 		    haslevel = false;
@@ -669,38 +668,6 @@ void mgPCMPlayer::StopPlay()
 
       Lock();
     }
-}
-
-string mgPCMPlayer::getSourceFile()
-{
-  string filename;
-
-  if( !the_setup.GdCompatibility )
-    { // use filename itself
-      filename = string( the_setup.ToplevelDir ) + m_playing->getSourceFile();      
-    }
-  else
-    { // find the unique name within any directory, but what is top? video?
-      char *cmd = NULL;
-      asprintf( &cmd, "find %s -follow -type f -name '%s'|sort ", 
-		the_setup.ToplevelDir, m_playing->getSourceFile().c_str() );
-
-      FILE *p = popen(cmd, "r");
-      if (p) 
-	{
-	  char *s;
-	  if( (s = readline(p) ) != NULL ) 
-	    {
-	      filename = string( s );
-	    }
-	}
-      pclose( p );
-      delete cmd;
-    }
-
-  cout << "mgPCMPlayer::getSourceFile: found filename " << filename << endl << flush;
-  return filename;
-  //  return "/test.mp3";
 }
 
 bool mgPCMPlayer::NextFile()
