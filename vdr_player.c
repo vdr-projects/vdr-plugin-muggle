@@ -1549,7 +1549,7 @@ eOSState mgPlayerControl::ProcessKey (eKeys key)
         {
             case kUp:
             {
-                if (m_visible)
+                if (m_visible && !m_progress_view && !m_track_view)
 			Backward();
 		else
 			Forward ();
@@ -1557,7 +1557,7 @@ eOSState mgPlayerControl::ProcessKey (eKeys key)
             break;
             case kDown:
             {
-                if (m_visible)
+                if (m_visible && !m_progress_view && !m_track_view)
 			Forward ();
 		else
 			Backward();
