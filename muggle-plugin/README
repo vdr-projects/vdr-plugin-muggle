@@ -1,8 +1,8 @@
 This is a "plugin" for the Video Disk Recorder (VDR).
 
-Written by:                  Andi Kellner, 
+Written by:                  Andi Kellner
                              Lars von Wedel <vonwedel@web.de>
-                             Ralf Klüber <r@lf-klueber.de>, 
+                             Ralf Klueber <r@lf-klueber.de>, 
 
 Project's homepage:          URL
 
@@ -10,4 +10,166 @@ Latest version available at: URL
 
 See the file COPYING for license information.
 
-Description:
+
+PLEASE!
+
+This is a difficult plugin. It's nice but difficult.
+With difficult I mean, that due to the underlying
+database, many more sources of error can occur as
+opposed to other plugins.
+
+Take some time to carefully read these instructions.
+Please provide feedback to the authors whenever you
+think, these instructions are not appropriate, wrong,
+or useless in any other sense.
+
+1 DESCRIPTION
+
+The muggle plugin provides a database link for VDR so that selection of media becomes more flexible.
+Prerequisites are describedin Section 2, Notes on Compilation are in Section 3. Before using the plugin, 
+you need to import your media into the database (cf. Section 4). The configuration of VDR and startup
+parameters are descibed in Section 5.
+
+2 PREREQUISITES
+
+The plugin is written for VDR 1.2.6. In addition, the following pieces of 
+software are required:
+
+- mySQL server (tested with 4.0.18) (Debian packages mysql-server, mysql-client)
+- mySQL client libraries (Debian package libmysqlclient-dev)
+- libmad (for mp3 decoding) (Debian package libmad0-dev)
+- libtag (for ID3 tag reading/writing) (Debian package libtag1-dev)
+
+The server need not be on the same machine as the VDR. Also, music tracks can reside somewhere else,
+if they are available through a remote filesystem (NFS, Samba). However, in this case you should
+know what you are doing in terms of networking and security issues.
+
+
+3 INSTALLING 
+
+Unpack the sources in PLUGINS/src below your VDR directory (i.e. where all your other plugins are.
+For example (paths and version numbers may vary)
+
+   cd /usr/local/src/VDR/PLUGINS/src
+   tar xvjf muggle-0.1.7.tar.bz2
+
+Establish a symlink as you would for other plugins:
+
+   ln -s muggle-0.1.7 muggle
+
+Within the VDR main directory (e.g. /usr/local/src/VDR) issue a 
+
+   make plugins
+
+This should build all relevant stuff. If you have difficulties, check that required libraries are 
+in the library directories stated in the muggle Makefile.
+
+
+4 IMPORT
+
+The import is done in two steps: First, a database is created and initialized with proper data structures (so-called schema).
+Then, these data structures are filled from the ID3 tags of your music tracks.
+
+4.1 Setup Database
+
+This step can be done on the database server or on some other client machine.
+Within the directory scripts there are a few helpful files to support setting
+up the database. Change into that directory:#
+
+   cd scripts
+
+The first step is to essentially create the database:
+
+   mysql -u root -p < createdb.mysql
+
+You will need to enter your root password that you choose during mySQL installation.
+Next, we generate the database tables (schema):
+
+   mysql -u root -p < createtables.mysql 
+
+Further, initial data about known languages, genres, sources and musictypes is fed into the database:
+Execute these commands on a single line, the \ for the linebreak ist just for presentation purposes here.
+
+   echo " use GiantDisc; load data local infile 'genres.txt' into table genre;" | \
+      mysql -u root -p  --local-infile=1
+
+   echo "use GiantDisc; load data local infile 'languages.txt' into table language;" | \
+      mysql -u root --local-infile=1
+
+   echo "use GiantDisc; load data local infile 'musictypes.txt' into table language;" | \
+      mysql -u root --local-infile=1
+
+   echo "use GiantDisc; load data local infile '$SCRIPTDIR/sources.txt' into table language;" | \
+      mysql -u root --local-infile=1
+
+You can find the sequence of commands in the file scripts/make-empty-db. Use it at your own luck.
+
+Please note, that the scripts and commands above are quite basic in terms of security (e.g. no
+password set for the vdr user, no proper selection of privileges). You may want to spend some
+time reading the mySQL documentation in order to set up a proper configuration. Especially when
+VDR and mySQL will run on different machines you'll have to invest some time into mySQL
+networking and access rights.
+
+If you want your database name to be different than 'GiantDisc' you will need to adapt the name
+in the files createdb.mysql and createtables.mysql and in the commands above. Now your database
+is ready for import.
+
+4.2 Import Music
+
+The next step is to feed all music information into the database. There is a small tool called 'mugglei'
+in the muggle main directory. It connects to the database, evaluates ID3 tags from a file, and writes
+the tags into the database. It runs on just one file, so you need some more effort using the Unix command
+'find' to take all files into consideration. 
+
+For this step, it is helpful, that all music files are somehow gathered under a toplevel directory.
+It does not matter whether there are further subdirectories which organize files into genres, artists,
+album or whatever. If this is not the case, you may want to take some time to do this. Read on before
+you start
+
+You probably do not want to import all files in one go: albums on which tracks of various artists are found
+(samplers) require different treatment than files of just one artist. What I did: all samplers are collected
+below a special subdirectory "Assorted". Import is then run separately for those tracks.
+
+For now, let's assume your music tracks are located in /home/music and samplers are in /home/music/Assorted.
+
+First, import the files in Assorted. This requires the flag -a to mugglei. Further flags -h, -n, -u, and -p
+specify database host, name, user and password, respectively. The filename to import is given using the -f
+directive. Using 'find' you can import all files for assorted albums with a command like:
+
+   find Assorted -name '*' -type f -exec mugglei -a -f {} \;
+
+For reasons of simplicity, the arguments -h, -n, -u and -p are not shown. You will need them if the default
+values do not apply or modify the source code accordingly (beginning of function main). Also, make sure 
+that either mugglei is on your path or specify an absolute or relative path in the above command line.
+
+For "regular" albums, the following command may be helpful:
+
+   find * -path 'Assorted' -prune -o -type f -exec mugglei -f {} \;
+
+It is important that you perform all these steps from the same location so the filenames are relative to
+exactly the same directory (e.g. /home/music in the example case).
+
+Speed should not be an issue: on my machine, it takes about 10 secs to run the import of 60 assorted
+albums with more than 600 tracks. Further 1200 tracks or so require 20 more secs. This depends on machine
+configuration, of course.
+
+5 MUGGLE CONFIGURATION
+
+Muggle uses a small set of command line parameters in order to control the interaction with the mySQL server.
+Let's look at an example:
+
+  -P'muggle -h localhost -u vdr -n GiantDisc -t/home/music'
+
+The -h parameter specifies the database host, -u specifies the user, -n is the database name. The scripts mentioned
+above do not make use of passwords, but restrict database acccess on a server basis. 
+
+The -t argument specifies the top level directory of the music files. On a local installation, this is the
+directory in which you executed the import steps (Chapter 4.2).
+
+6 USING MUGGLE
+
+Quick version: select Muggle on the OSD, browse titles (using up/down and Ok), add them using the red button.
+Then turn to the playlist view using yellow and start play using again the red function key.
+
+
+
