@@ -8,7 +8,7 @@
 -- Current Database: GiantDisc
 --
 
--- CREATE DATABASE /*!32312 IF NOT EXISTS*/ GiantDisc;
+--CREATE DATABASE /*!32312 IF NOT EXISTS*/ GiantDisc;
 
 USE GiantDisc;
 

@@ -10,7 +10,6 @@
 #include "mg_database.h"
 #include "mg_tools.h"
 
-#include <stdio.h>
 #include <stdarg.h>
 
 static const int MAX_QUERY_BUFLEN = 2048;

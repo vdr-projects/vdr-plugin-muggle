@@ -1,13 +1,13 @@
-/*! 
+/*!
  * \file   vdr_menu.c
  * \brief  Implements menu handling for browsing media libraries within VDR
  *
  * \version $Revision: 1.2 $
- * \date    $Date: 2004/05/28 15:29:18 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  *
- * $Id: vdr_config.h,v 1.2 2004/05/28 15:29:18 lvw Exp $
+ * $Id$
  *
  * Adapted from
  * MP3/MPlayer plugin to VDR (C++)
@@ -115,5 +115,4 @@
 // "/tmp/limiter". The generated file will be about 3MB in size. This option shouldn't
 // be enabled for day-by-day operation.
 //#define ACC_DUMP
-
-#endif //___CONFIG_H
+#endif                                            //___CONFIG_H

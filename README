@@ -2,13 +2,14 @@
 
 This is a "plugin" for the Video Disk Recorder (VDR).
 
-Written by:                  Andi Kellner
-                             Lars von Wedel <vonwedel@web.de>
+Written by:                  Andi Kellner,
+                             Lars von Wedel <vonwedel@web.de>,
                              Ralf Klueber <r@lf-klueber.de>, 
+                             Wolfgang Rohdewald <wolfgang@rohdewald.de>
 
 Project's homepage:          http://www.htpc-tech.de/htpc/muggle.htm
 
-Latest version available at: http://www.htpc-tech.de/htpc/muggle_archive/vdr-muggle-0.0.8-BETA.tgz
+Latest version available at: http://www.htpc-tech.de/htpc/muggle-dev.htm
 
 See the file COPYING for license information.
 
@@ -24,16 +25,6 @@ Please provide feedback to the authors whenever you
 think, these instructions are not appropriate, wrong,
 or useless in any other sense.
 
-\section ack Acknowledgements
-
-Thanks to all who have supported the development of this plugin. Special thanks (order does not mean importance :-) go to
-- Muempf for the mp3 plugin. All code related to audio replay is largely taken over from this plugin.
-- LordJaxom for constant support in the chat of VDR portal regarding OSD programming in VDR
-- eloy (member of vdrportal.de) for alpha testing
-- All beta testers at vdrportal.de and on the VDR mailing list
-- decembersoul (member of vdrportal.de) for finding out how to run muggle on LinVDR
-- Hulk (member of vdrportal.de) for submitting several patches (especially for gLCD display)
-
 \section desc DESCRIPTION
 
 The muggle plugin provides a database link for VDR so that selection of media becomes more flexible.
@@ -43,7 +34,7 @@ parameters are descibed in Section 5.
 
 \section prereq PREREQUISITES
 
-The plugin has been tested with VDR versions up to 1.3.12. In addition, the following pieces of 
+The plugin is written for VDR 1.2.6. In addition, the following pieces of 
 software are required:
 
  - mySQL server (tested with 4.0.18) (Debian packages mysql-server, mysql-client)
@@ -63,8 +54,7 @@ software are required:
 The developer versions are needed because their headers are required for compilation.
 The server need not be on the same machine as the VDR. Also, music tracks can reside somewhere else,
 if they are available through a remote filesystem (NFS, Samba). However, in this case you should
-know what you are doing in terms of networking and security issues. In my personal setup, the mySQL
-database runs on a server where also all music files are stored. Muggle accesses them via Samba.
+know what you are doing in terms of networking and security issues.
 
 \section install INSTALLING 
 
@@ -82,7 +72,7 @@ Establish a symlink as you would for other plugins:
    ln -s muggle-0.1.7 muggle
 \endverbatim
 
-Note that the actual directory names may vary, e.g. the version number will changes. Within the VDR main directory (e.g. /usr/local/src/VDR) issue a 
+Within the VDR main directory (e.g. /usr/local/src/VDR) issue
 
 \verbatim
    make plugins
@@ -93,13 +83,14 @@ in the library directories stated in the muggle Makefile.
 
 \section import IMPORT
 
-The import is done in two steps: First, a database is created and initialized with proper data structures (so-called schema). Then, these data structures are filled from the ID3 tags of your music tracks.
+The import is done in two steps: First, a database is created and initialized with proper data structures (so-called schema).
+Then, these data structures are filled from the ID3 tags of your music tracks.
 
 \subsection dbsetup Setup Database
 
 This step can be done on the database server or on some other client machine.
 Within the directory scripts there are a few helpful files to support setting
-up the database. Change into that directory:
+up the database. Change into that directory:#
 
 \verbatim
    cd scripts
@@ -135,7 +126,7 @@ Execute these commands on a single line, the \ for the linebreak ist just for pr
       mysql -u root --local-infile=1
 \endverbatim
 
-You can find the sequence of commands in the file scripts/make-empty-db. Use it at your own luck.
+You can find the sequence of commands in the file scripts/make-empty-db. Use it at your own luck after making necessary modification (program paths, database names, servers, users, etc.).
 
 Please note, that the scripts and commands above are quite basic in terms of security (e.g. no
 password set for the vdr user, no proper selection of privileges). You may want to spend some
@@ -159,14 +150,14 @@ It does not matter whether there are further subdirectories which organize files
 album or whatever. If this is not the case, you may want to take some time to do this. Read on before
 you start
 
-You probably do not want to import all files in one go: albums on which tracks of various artists are
-found (samplers) require different treatment than albums containing files of just one artist. What I did:
-all samplers are collected below a special subdirectory "Assorted". Import is then run separately for those
-tracks.
+You probably do not want to import all files in one go: albums on which tracks of various artists are found
+(samplers) require different treatment than files of just one artist. What I did: all samplers are collected
+below a special subdirectory "Assorted". Import is then run separately for those tracks. There has been discussion
+about this and ideas for better solutions are welcome.
 
 For now, let's assume your music tracks are located in /home/music and samplers are in /home/music/Assorted.
 
-First, let's import the files in Assorted. This requires the flag -a to mugglei. Further flags -h, -n, -u, and -p
+First, import the files in Assorted. This requires the flag -a to mugglei. Further flags -h, -n, -u, and -p
 specify database host, name, user and password, respectively. The filename to import is given using the -f
 directive. Using 'find' you can import all files for assorted albums with a command like:
 
@@ -197,7 +188,7 @@ Muggle uses a small set of command line parameters in order to control the inter
 Let's look at an example:
 
 \verbatim
-  vdr -P'muggle -h localhost -u vdr -n GiantDisc -t/home/music'
+  -P'muggle -h localhost -u vdr -n GiantDisc -t/home/music'
 \endverbatim
 
 The -h parameter specifies the database host, -u specifies the user, -n is the database name. The scripts mentioned
@@ -206,116 +197,95 @@ above do not make use of passwords, but restrict database acccess on a server ba
 The -t argument specifies the top level directory of the music files. On a local installation, this is the
 directory in which you executed the import steps (Chapter 4.2).
 
-\section use USING MUGGLE - QUICK OVERVIEW
+\section quickuse QUICK INTRO
 
 Quick version: select Muggle on the OSD, browse titles (using up/down and Ok), add them using the red button.
-Then turn to the playlist view using yellow and start play using again the red function key.
+Music will start instantly while you can continue to browse and add tracks.
 
 During playback, Up/Down jumps forth and back in the current playlist. Yellow toggles play/pause mode and Ok
-brings up a progress display. For VDR 1.3.6- the progress display is "quite simple".
+toggles a display of the replay process. Using Green, the display can be switched between playlist and single display mode, red toggles info and progress view. For VDR 1.3.6- the progress display is "quite simple", unfortunately.
 
-\section use-detail USING MUGGLE
+\section use DETAILED USER'S GUIDE
 
-The idea behind muggle and the concept of the GUI was driven by the requirement, that almost all funtionalities must be possible with only using the cursor keys, the colour keys and menu, ok and back. 
+The core concept of the Muggle user interface is called a *selection*. That is, as the name suggests, a selection of music tracks. Note, that a selection can be as small as a single track (a very simple selection, indeed) or as large as the whole music library.
 
-Muggle consist of three main views. The different views could always be switched with the yellow key. In every view there is a context sensitive menu with certain commands suitable for the current view. This menu could be reached from every view with the blue key. The two most common commands for a view could be reached with the remaining two colour keys red and green.
+Selections are used to structure all tracks (the music library) into sets (e.g. a selection of all tracks by an author) and subsets (e.g. the tracks of an author on a certain album). Such selections are built by means of keys (e.g. author or album) defined in the database and are displayed in the *music browser*. The current selection in the *music browser* contains all tracks defined by the line the cursor is on. So if you place the cursor on the line "Pop", all tracks with Genre Pop are selected. If you then enter Pop and go to the line "Beatles", you narrow your selection to pop songs from the beatles.
 
-In all views the cursor keys are used like in every VDR menu.
+A collection is a special selection. Collections can be defined by the user, and he can add or remove any selection to / from a collection. A collection has only ony order: a number which is incremented for every added track. Otherwise, since a collection is also a selection, everything that is valid for selections also holds for collections.
 
-That is all you have to know to get full access to all functions of muggle. So now lets look in more detail in the three different views.
+Collections can be defined by the user in the sense of a playlist. This is done by adding/removing selections to/from the *default collection*.
 
-\subsection browserview BROWSER VIEW
+Changing the contents of a collection changes them directly in the data base. Saving or loading collections is not needed.
 
-The Browser view will be the most used view within muggle. It presents all stored media within the database in a sort of tree view. A tree consist of nodes wich have child nodes which are also nodes. A leaf of such a tree consist of one single media file. Just to make it clear beneath a node there are on the bottom line at least on, but in the higher regions of the tree several media files.
+A very important term while working with Muggle is the *default collection*. This is a special collection which is the target of commands working on collections. Whenever you add selections to somewhere, they will be added to the default collection. The same happens when you remove selections.
 
-At present there are 5 different main trees:
-- artist -> album -> title
-- genre -> artist -> album -> tilte
-- artist -> title
-- genre -> year -> title
-- album -> title
+Another important collection is the 'play' collection. This is a temporary collection. Whatever is added to it will be played in that order. If you add something while muggle is not playing anything, this collection will first be emptied.
+However 'temporary' does not mean that its content is not saved to the data base. 
 
-To add all songs from Abba to the active playlist just use the "artist -> title" tree and look for Abba in the resulting list. Press OK and here you are. All songs from Abba which are stored in the database are shown on the screen and the higlighted one could be added with the red key (you remember: most common commands are on red/green) to the active playlist. If you want to add all songs from Abba to the active playlist just go up one level, Abba is highlighted and then press red and ready you are.
+\subsection general General remarks
 
-With the green colour key you could easily reach the main trees (this is not implemented yet).
+There are two main views in Muggle, the *Music browser* view and the *Collection browser* view. You can toggle between them using the yellow key.
 
-Thats all you have to know about this view. Please keep in mind that red adds always _ALL_ songs beneath the current node to the active playlist. So pressing red on one of the main trees leads to adding _ALL_ media files within the database (this could be thousands) to the active playlist. 
+Each of the two views has associated commands. To show a summary of the commands available for the current view press the blue key. Note, that the red, green and yellow keys do not have a fixed meaning. Rather, while the commands for a certain view are displayed, you can press red/green/yellow to make the respective key execute the command currently selected (highlighted) by the cursor. The commands you choose for red/green/yellow will be saved for the next time you start muggle. You can define different commands in both view *Music browser* and *Collection browser*.
 
-\subsection playlistview PLAYLIST VIEW
+\subsection browse Music browser
 
-In this view you see the active playlist. All songs currently added to the playlist are shown here. With the blue colour key you can reach the context sensitive menu. Here you can find some actions to modify, load, or save the playlist, clear all entries and many others. In detail the commands are
-- Red: start playing the list from the beginning or at the last played song (cf. section Replay)
-- Green: Move the current entry to reorder the playlist
+By default, Muggle starts in the *Music browser* display at the place where you left it last time. This browser displays the music library according to a search order, e.g. according to artists / albums / tracks or genre / year / track. These search orders are currently fixed in the code, but the objective is to make them editable by the user on the OSD. Browsing these search orders is done using Up/Down/Left/Right keys. To display the contents of a currently selected selection, press Ok. To return to the parent selection press Back.
 
-In the submenu the following commands can be selected:
-- Rename playlist: change the playlist name using the up/down cursor keys
-- Load playlist: show playlists in the database and load one (using Ok)
-- Save playlist: Store the current playlist status into the database
-- Clear playlist: Remove all entries from the playlist
-- Delete current entry: Remove the currently selected entry from the playlist
-- Export playlist: export the playlist in m3u (version 2) into the muggle config directory as <listname>.m3u
-- Playlist commands: similar to commands.conf or reccmds.conf for VDR a file containing commands to execute on a playlist can be specified in a file playlist_commands.conf which must reside in the muggle config directory. The commands listed in that file will be called with one argument which is the path of the playlist file in m3u (version 2).
+A set of commands can be displayed with the Blue key on the remote control. A new menu will open and show the commands explained below. Remember that pressing Red, Green or Yellow will make these keys execute the command currently highlighted by the cursor from now on.
 
-\subsection searchview SEARCH VIEW
+Those commands are currently available in the *music browser*:
 
-The search view is a more advanced method to look into the content of your database. If you search for all songs from Abba which are rated "++" this is your tool. You could find three different search methods which are descripte later. You switch betweeen this search methods with the green colour key.
+- Instant Play: instantly play the current selection. This does not enter any collection.
 
-\subsubsection titlesearch TITLE SEARCH
+- Add to 'play': add the current selection to the default collection. After the first start of muggle, the default collection is 'play'
 
-If you want to search for a single media file, this is for you. You could insert some search criteria and after pressing the red button you see all media files which fullfill the restrictions.
+- Remove from 'play': remove the current selection from the default collection. If there are more than one instances of a specific track in the collection, they are all removed.
 
-Example: Search for all songs from Abba which have "water" in the title an are publisched befor 2000.
+- Collections: switch to the collection view
 
- Artist:     Abba
- Title:      water
- Year(till): 2000
+- Select search order: select another search order
 
-\subsubsection albumsearch ALBUM SEARCH
+- Export tracklist: generate a file X.m3u containing all tracks from the current selection
 
-If you want to search for a certain album and are interested in all songs of that album even if the songs not fullfill the search criteria, than this search is for you.
+- External commands: whatever you define
 
-Example: Search for all songs on an album from "U2" with "tree" in the album title.
+By default, the red key adds the currently selected collection to the default collection. The green key instantly plays the currently selected collection. The yellow key toggles between the *Music browser* and the *Collection browser*. Thus, if you want to play an album, browse to it and press green. Remember that you can redefine commands executed by red, green and yellow by pressing them while displaying the command list.
 
- Album Title: tree
- Album Artist: U2
+\subsection collections Collection browser
 
-\subsubsection playlistsearch PLAYLIST SEARCH
+The *Collection browser* displays a list of available collections. Browse the list with Up/Down and display the collection contents with Ok. Returning to the collection list is done by pressing Back. One of the collections (the one called "play" when you start up muggle for the first time) is marked with a "->" in front of the name, meaning that it is the default collection. Whenever you add or remove selections, this default collection is the current target, meaning that selections will be added/removed to/from this collection.
 
-If you want to search for a playlist wích contains songs which fullfill the criteria.
+At the bottom of the list, the entry "Create collection" is displayed. Entering it with the right key will make the editor appear on the second half of the line and using the keys Up/Down/Left/Right you can enter the name of the new collection. Pressing Ok will terminate the editing process and add the new collection to the list. 
 
-Example: Yesterday during your birthday party you played a song from Tina Turner during your party, your best friend is interested in the song which was played just behind that Tina Turner song. The search presents all titles of that playlist. You could easily browser the list, find Tinas song and you have the one behind.
+Just like with the *music browser*, a set of commands can be displayed with the Blue key on the remote control. 
 
- Playlist Title: Birthday Party 2004
- Artist:         Tina Turner
+Those commands are currently available in the list of collections. Depending on the current selection, not all of them are available:
 
-\subsection useplayer DURING PLAYBACK
+- Instant play: See *music browser*
 
-The functions available furing playback mostly relate to navigation in the playlist
-and displaying information about the current track or playlist.
+- Add to 'play': See *music browser*
 
-- Up: Skip to the next title
-- Down: Skip to the previous title
-- Ok: toggle display (progress or information view)
+- Remove from 'play': See *music browser*. Not available when the cursor is on the default collection.
 
-- Red: When display shown: toggle between progress and information view, otherwise toggle loop mode (not yet functional)
-- Green: When display shown: toggle between track and playlist view, otherwise toggle shuffle mode (not yet functional)
-- Yellow: Play/Pause
-- Blue: stop replay but remind resume index (so Play from browser view starts with the track played last)
+- Remove all entries from 'play': Only available when the cursor is on the default collection.
 
-- Back: stop replay (Play from browser will start from the beginning)
+- Search: switch to the *music browser*
 
-Alternativ Key Settings:
+- Set default collection to 'X': as it says.
 
-- Down: Pause
-- Up: Play
-- Right: Fast Forward
-- Left: Rewind
+- Delete collection: Not available for the default collection and for the 'play' collection.
 
-- Ok: toggle Display (Progress View -> Information -> View -> Playlist View -> Off)
+- Export track list: See *music browser*
 
-- Red
-- Green: Skip to previous song.
-- Yellow: Skip to next song.
-- Blue: stop replay but remind resume index (so Play from browser view starts with the track played last)
+- External commands: whatever you define
+
+Note that you cannot only add to/remove from collections in the *music browser*. Rather, also collections can be added/removed. The reason is that - as explained above - a collection is also a selection. So everything that can be done with selections can also be done with collections. An example: if you want to give a party, you could create a new collection "Party". Now, steer your cursor to the collection entitled "Lounge music" and select add. Then go to "Pop 80s" and add again. Finally, go to "Dance classics" and add. Now you have created a collection "Party" from three already existing collections. To continue this example, let us assume that one of your guests has a personal dislike against "Modern Talking". Switch to the browser view, go to the artist selection of "Modern Talking" and select "Remove". Now all tracks written by Modern Talking will be removed from your "Party" collection.
+
+Please note that "Remove" means removing from the default collection. "Delete" will delete a collection.
+
+It is possible that a collection holds the same track several times if you add it several times. However when you remove that track, all of its occurrences will be removed.
+
+The remote buttons Play, Pause, Stop are also supported while muggle displays its OSD. If Stop is pressed, muggle first stops playing what was started by Instant Play. Muggle will then continue playing the 'play' collection. A second Stop will stop playing the 'play' collection.
 
 */

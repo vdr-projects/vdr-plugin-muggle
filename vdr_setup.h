@@ -9,7 +9,7 @@
  *
  * $Id$
  *
- * Adapted from 
+ * Adapted from
  * MP3/MPlayer plugin to VDR (C++)
  * (C) 2001,2002 Stefan Huelswitt <huels@iname.com>
  */
@@ -32,34 +32,30 @@
  */
 class mgSetup
 {
-public:
-  int InitLoopMode;
-  int InitShuffleMode;
-  int AudioMode;
-  int DisplayMode;
-  int BackgrMode;
-  int MenuMode;
-  int TargetLevel;
-  int LimiterLevel;
-  int Only48kHz;
+    public:
+        int InitLoopMode;
+        int InitShuffleMode;
+        int AudioMode;
+        int DisplayMode;
+        int BackgrMode;
+        int MenuMode;
+        int TargetLevel;
+        int LimiterLevel;
+        int Only48kHz;
 
-  char *DbHost;
-  char *DbSocket;
-  char *DbName;
-  char *DbUser;
-  char *DbPass;
-  int  DbPort;
-  bool GdCompatibility;
-  char *ToplevelDir;
+        char *DbHost;
+        char *DbSocket;
+        char *DbName;
+        char *DbUser;
+        char *DbPass;
+        int DbPort;
+        bool GdCompatibility;
+        char *ToplevelDir;
 
-  int visible;
-  int trackview;
-  int progressview;
+        char PathPrefix[MAX_STRING_LEN];
 
-  char PathPrefix[MAX_STRING_LEN];
-
- public:
-  mgSetup(void);
+    public:
+        mgSetup (void);
 };
 
 extern mgSetup the_setup;
@@ -67,15 +63,13 @@ extern mgSetup the_setup;
 /*!
  * \brief allow user to modify setup on OSD
  */
-class mgMenuSetup : public cMenuSetupPage 
+class mgMenuSetup:public cMenuSetupPage
 {
-private:
-  mgSetup m_data;
-protected:
-  virtual void Store();
-public:
-  mgMenuSetup();
+    private:
+        mgSetup m_data;
+    protected:
+        virtual void Store ();
+    public:
+        mgMenuSetup ();
 };
-
-
-#endif //___SETUP_MP3_H
+#endif                                            //___SETUP_MP3_H

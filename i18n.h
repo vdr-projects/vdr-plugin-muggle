@@ -13,5 +13,4 @@
 #include <i18n.h>
 
 extern const tI18nPhrase Phrases[];
-
-#endif //_I18N__H
+#endif                                            //_I18N__H

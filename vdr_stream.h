@@ -3,11 +3,11 @@
  * \brief Definitions of media streams
  *
  * \version $Revision: 1.2 $
- * \date    $Date: 2004/05/28 15:29:19 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  *
- * $Id: vdr_stream.h,v 1.2 2004/05/28 15:29:19 lvw Exp $
+ * $Id$
  *
  * Adapted from
  * MP3/MPlayer plugin to VDR (C++)
@@ -25,33 +25,36 @@ class cNet;
 
 // ----------------------------------------------------------------
 
-class mgStream // : public mgFileInfo
+class mgStream                                    // : public mgFileInfo
 {
-private:
-  int m_fd;
-  bool m_ismmap;
+    private:
+        int m_fd;
+        bool m_ismmap;
 
-  // from cFileInfo
-  std::string m_filename, m_fsID;
-  unsigned long long m_filesize;
-  time_t m_ctime;
-  long m_fsType;
+// from cFileInfo
+        std::string m_filename, m_fsID;
+        unsigned long long m_filesize;
+        time_t m_ctime;
+        long m_fsType;
 
-  bool fileinfo( bool log );
-  bool removable();
+        bool fileinfo (bool log);
+        bool removable ();
 
-protected:
-  unsigned char *m_buffer;
-  unsigned long long m_readpos, m_buffpos;
-  unsigned long m_fill;
-public:
-  mgStream( std::string filename );
-  virtual ~mgStream();
-  virtual bool open(bool log = true);
-  virtual void close();
-  virtual bool stream( unsigned char *&data, unsigned long &len, const unsigned char *rest=NULL );
-  virtual bool seek( unsigned long long pos = 0 );
-  virtual unsigned long long bufferPos() { return m_buffpos; }
+    protected:
+        unsigned char *m_buffer;
+        unsigned long long m_readpos, m_buffpos;
+        unsigned long m_fill;
+    public:
+        mgStream (std::string filename);
+        virtual ~ mgStream ();
+        virtual bool open (bool log = true);
+        virtual void close ();
+        virtual bool stream (unsigned char *&data, unsigned long &len,
+            const unsigned char *rest = NULL);
+        virtual bool seek (unsigned long long pos = 0);
+        virtual unsigned long long bufferPos ()
+        {
+            return m_buffpos;
+        }
 };
-
-#endif //___STREAM_H
+#endif                                            //___STREAM_H
