@@ -3,10 +3,10 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.14 $
- * \date    $Date: 2004/02/12 07:56:46 $
+ * \version $Revision: 1.15 $
+ * \date    $Date: 2004/02/12 09:15:07 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: RaK $
+ * \author  file owner: $Author: LarsAC $
  *
  * DUMMY
  * Implements main classes of for content items and interfaces to SQL databases
@@ -40,7 +40,7 @@ int GdInitDatabase(MYSQL *db)
     }
     
     if(mysql_real_connect(db,"localhost","root","",
-			  "GiantDisc",0,NULL,0) == NULL)
+			  "GiantDisc2",0,NULL,0) == NULL)
     {
 	return -2;
     }
@@ -1438,6 +1438,9 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.15  2004/02/12 09:15:07  LarsAC
+ * Moved filter classes into separate files
+ *
  * Revision 1.14  2004/02/12 07:56:46  RaK
  * - SQL Fehler bei der Playlist Search korrigiert
  *
