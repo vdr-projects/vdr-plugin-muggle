@@ -248,6 +248,10 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 		
 		state = osContinue;
 	      } break;
+	    case kRed:
+	      {
+		state = TreeSubmenuAction( 0 );
+	      } break;
 	    case kBlue:
 	      {
 		m_state = TREE;

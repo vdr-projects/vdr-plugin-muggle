@@ -40,8 +40,8 @@ class mgPlayerControl : public cControl
 {
 private:
 
-  //! \brief the reference to the player , don't rename it see cControl  
-  mgPCMPlayer *m_player;
+  //! \brief the reference to the player 
+  mgPCMPlayer *player;
 
   //! \brief indicates, whether the osd should be visible
   bool m_visible;

@@ -76,6 +76,11 @@ public:
   //! \brief toggle the shuffle mode.
   ShuffleMode toggleShuffleMode( );
 
+  //! \brief report the loop mode.
+  LoopMode getLoopMode( ) const { return m_loop_mode; }
+
+  //! \brief report the shuffle mode.
+  ShuffleMode getShuffleMode( ) const { return m_shuffle_mode; }
   //@}
   
   //! \brief modify playlist items
