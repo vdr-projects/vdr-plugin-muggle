@@ -689,13 +689,18 @@ mgRemoveThisFromCollection::MenuName (const unsigned int idx,const string value)
     return b;
 }
 
+bool
+mgCreateCollection::Editing()
+{
+	return (strchr(cOsdItem::Text(),'[') && strchr(cOsdItem::Text(),']'));
+}
+
 
 void
 mgCreateCollection::Notify()
 {
-	if (!strchr(Text(),'['))
-		if (!strchr(Text(),']'))
-			osd()->SetHelpKeys(NULL,NULL,NULL,NULL);
+	if (!Editing())
+		osd()->SetHelpKeys(NULL,NULL,NULL,NULL);
 }
 
 const char*
@@ -717,7 +722,10 @@ mgCreateCollection::ProcessKey(eKeys key)
 			Execute();
 		else
 			return cMenuEditStrItem::ProcessKey(kRight);
-	return cMenuEditStrItem::ProcessKey(key);
+	if (key != kYellow || Editing()) 
+		return cMenuEditStrItem::ProcessKey(key);
+	else
+		return osUnknown;
 }
 
 bool
