@@ -4,8 +4,8 @@
 
 #include "myosd.h"
 #include "muggle.h"
-#include "mgmedia.h"
-#include "muggle_tools.h"
+#include "mg_media.h"
+#include "mg_tools.h"
 #include <unistd.h>
 
 eKeys waitForKey()

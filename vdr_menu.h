@@ -2,17 +2,24 @@
 /*! \file   vdr_menu.h
  *  \brief  Implements menu handling for broswing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.1 $
- * \date    $Date: 2004/02/01 18:22:53 $
+ * \version $Revision: 1.2 $
+ * \date    $Date: 2004/02/01 22:12:56 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: RaK $
  */
 /*******************************************************************/
 
 #ifndef _VDR_MENU_H
 #define _VDR_MENU_H
 
-#include <vdr/osd.h>
+#undef SHELL_TEST
+
+#ifdef SHELL_TEST
+  #include "myosd.h"
+  #include "mymenuitems.h"
+#else
+  #include <vdr/osd.h>
+#endif
 
 class mgMedia;
 class mgSelectionTreeNode;

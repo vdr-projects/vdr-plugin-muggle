@@ -1,7 +1,7 @@
 #
 # Makefile for a Video Disk Recorder plugin
 #
-# $Id: Makefile,v 1.1 2004/02/01 18:22:53 LarsAC Exp $
+# $Id: Makefile,v 1.2 2004/02/01 22:12:56 RaK Exp $
 
 # The official name of this plugin.
 # This name will be used in the '-P...' option of VDR to load the plugin.
@@ -48,7 +48,8 @@ DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
 
 OBJS = $(PLUGIN).o vdr_menu.o mg_database.o mg_content_interface.o sh_dummy_content.o gd_content_interface.o mg_tools.o mg_media.o
 
-BINOBJS = sh_shell_osd_plugin.o sh_shell_osd.o sh_shell_osd_menuitems.o muggle.o vdr_menu.o content_interface.o dummy_content.o gd_contentinterface.o muggle_tools.o mgmedia.o
+#BINOBJS = sh_shell_osd_plugin.o sh_shell_osd.o sh_shell_osd_menuitems.o muggle.o vdr_menu.o content_interface.o dummy_content.o gd_contentinterface.o muggle_tools.o mgmedia.o
+BINOBJS = muggle.o vdr_menu.o mg_content_interface.o gd_content_interface.o mg_tools.o mg_media.o
 
 ### Implicit rules:
 
@@ -89,3 +90,4 @@ dist: clean
 clean:
 	@-rm -f $(OBJS) $(BINOBJS) $(DEPFILE) *.so *.tgz core* *~
 	@-rm -f sh_muggle sh_muggle2
+
