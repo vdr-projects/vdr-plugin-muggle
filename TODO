@@ -1,243 +1,211 @@
-TODO File for Muggle
-====================
+/*! \page issues Muggle Issue List
 
-Ogg/Vorbis decoder integration
-------------------------------
-- Think, whether type (mp3, ogg, flac) should be stored in database
+  The page lists a number of open issues and possible ideas for improvement.
+  It can be seen as a notepad for the developers or as an entry point for
+  volunteers. There is no real order among those things and even the occurrence
+  of an issue does not mean that it will be implemented/resolved at some time.
 
-Deployment
-----------
-- Script to publish a version
-   - make dist
-   - copy .tgz, README, CHANGES, HISTORY into web directory
-   - generate documentation
-   - copy into web directory
-   - sync with web
+  If you feel, something is really urgent, go ahead. We'll help you.
 
------------------ publish_muggle.sh -----------------
-# $1: version name (e.g. 0.0.5-BETA)
+  \section urgent Urgent issues
 
-# how to determine current path?
-svn copy ... http://.../svn/muggle/tags/$1
+    \subsection bugs Bugs and testing needed
+    
+    - Test execution of playlist commands
+    - Keep this? Test mgPCMPlayer::getSourceFile() for GD case (find)
+    - Test saving/loading playlists to database
 
-make dist
-# obtain name from output? or copy commands and make correctly
-mv vdr-muggle-0.0.1.tgz ~/Web/current/htpc/muggle/vdr-muggle-$1.tgz
+    \subsection urgentosd OSD-related Issues
 
-cp README ...
-cp TODO ...
-cp CHANGES ...
+	- Add play indicators
+	  - Toggle display with Ok (off -> track info -> album info -> playlist info -> off)
+	  - Display track info
+	    - Song title
+	    - Artist
+	    - Genre
+	    - Album
+	    - Bitrate, channels, samplerate, format, ...
+	    - Progress display
+	  - Display album info
+	    - Album name
+	    - Artist
+	    - Year
+	    - No. Tracks
+	    - Track names?
+	  - Display playlist info
+	    - Overall progress
+	    - Next track(s)
+    
+    \subsection urgentcode Code polishing
+    
+	- Check for unnecessary log commands
+	- Generate HTML documentation using doxygen,
+		- use dotty/gv for state machines of player
+		- make available online
+	- Clean up mugglei (abstract code where possible)
+	- Check for memory leaks
+	    - Why do filters use pointers?
+	- Check for (reasonably) consistent usage of char pointers and strings
 
-doxygen muggle.doxygen
-cp -R doc ~/Web/current/htpc/muggle/
+	- mgDatabase is not used? 
+		- should handle a static object with a MySQL connection
+		- execute queries?
+	- mgPlayer used what for?
+		- Could save IP/host name and associate last playlist loaded
 
-sitecopy --update htpctech
+    \subsection urgentcontent Content handling
+    
+	- Think, whether type (mp3, ogg, flac) should be stored in database
+	- Handle loop mode in mgPlaylist (already done?)
+	- Handle shuffle mode in mgPlaylist
+    - Party mode (see iTunes)
+    
+	\subsection urgentplayer Player extensions
+	
+	- Determine max. framecount (needed for rewinding)?
+	- Init scale/level/normalize?
+	  - The max. level should be recognized during play
+	  - Store max. level in the database
 
------------------------------------------------------
+    \subsection deploy Deployment
 
-- How to track bugs and feature requests?
+	- Script to publish a version
+		- make dist
+		- copy .tgz, README, CHANGES, HISTORY into web directory
+		- generate documentation
+		- copy into web directory
+		- sync with web
+		- How to track bugs and feature requests?
 
-Testing/bugs
-------------
-- Test execution of playlist commands
-- Keep this? Test mgPCMPlayer::getSourceFile() for GD case (find)
-- Test saving/loading playlists to database
+		\verbatim
+		# $1: version name (e.g. 0.0.5-BETA)
 
-Import
-------
-- Album
-  - Cover text
-  - Cover images (based on filename or tag)
-  - Genre
-  - Modified
+		# how to determine current path?
+		svn copy ... http://.../svn/muggle/tags/$1
 
-- Tracks
-  - Language (?)
-  - Genre1, 2
-  - Rating?
-  - Modified, created
-  - Lyrics
+		make dist
+		# obtain name from output? or copy commands and make correctly
+		mv vdr-muggle-0.0.1.tgz ~/Web/current/htpc/muggle/vdr-muggle-$1.tgz
 
-- Playlist from m3u
+		cp README ...
+		cp TODO ...
+		cp CHANGES ...
 
-Code polishing
---------------
-- Check for unnecessary log commands
-- Generate HTML documentation using doxygen,
-   - use dotty/gv for state machines of player
-   - make available online
-- Clean up mugglei
-- Check for memory leaks
-    - Why do filters use pointers?
-- Check for (reasonably) consistent usage of char*/string
+		doxygen muggle.doxygen
+		cp -R doc ~/Web/current/htpc/muggle/
 
-- mgDatabase is not used? 
-   - should handle a static object with a MySQL connection
-   - execute queries?
-- mgPlayer used what for?
-   - Could save IP/host name and associate last playlist loaded
+		sitecopy --update htpctech
+		\endverbatim
+      
+  \section mid ToDo items of moderate importance
+  
+    \subsection midimport Import stuff
+    
+	- Album
+		- Genre
+		- Modified
+		- Cover text
+		- Cover images (based on filename or tag)
 
-- Check compatibility for 1.3.12
+	- Tracks
+		- Language (?)
+		- Genre1, 2
+		- Rating?
+		- Modified, created
+		- Lyrics
 
-Short term items
-================
+	- Import playlist from m3u
+	- Run import/update from within OSD?
+    - Handle updates in both directions
+        - Check modification date in DB/fstat
+        - if file is newer: update tags into db
+        - if DB is newer: update db into tags
+    
+    \subsection midcode Code issues
+    
+	- really abstract from specific queries etc.
+	- mgDatabase should completely abstract database (mySQL) stuff!?
+		- read/write queries
+		- return results (needs a homogeneous representation of results?)
+		
+	\subsection midosd OSD-related issues
+	
+	- Incremental search 
+		- Type numbers to enter characters and jump to first title accordingly
+	- Check whether submenus (as implemented in VDR) are more suitable
+	    - do not permit jumping to arbitrary menus though
 
-OSD in general
---------------
+	\subsection midcontent Content issues
+	
+	- Save/load filter sets
+	- Apply filter set as dynamic playlist (i.e. show filters when loading playlists)
+	- Handle ratings (increase/decrease during replay)
+	    - Keys to directly increase
+	    - handle a playcounter
+	        - when playfrequency reaches lower level x from above: decrease rating
+	        - when playfrequency reaches lower level x from below: increase rating
+	        - when playfrequency reaches upper level y from above: decrease rating
+	        - when playfrequency reaches upper level y from below: increase rating
 
-Content
--------
-- Handle loop mode in mgPlaylist
-- Handle shuffle mode in mgPlaylist
+	\subsection midplayer Player issues
+	
+	- Display covers
+	- Add flac decoder
+    
+	\section vision Long term ideas and visions
 
-Player
-------
-- Determine max. framecount (needed for rewinding)?
-- Init scale/level/normalize?
-- Add ogg decoder
+	- daapd integration?
+	- netjuke integration?
+	- Display arbitrary images while playing music
 
-- Add a simple progress display (song title, artist, ...)
-- DisplayTrackInfo (part of the player!)
-- DisplayAlbumInfo (part of the player!)
+	- handle off-line media (CDs, DVDs, recordings)
+	- handle streams (live TV with channel list, MP3 radio,..., EPG)
+	
+	- handle images (possibly in sync with music/radio)
+	- muggle content syndication (e.g. via DAAPD)
+	  - access media on someone elses computer
+	- provide a stream (e.g. icecast) of the currently played music?
+      - allow remote stations to attach to this
 
-Medium term items
-=================
-- really abstract from specific queries etc.
-- mgDatabase should completely abstract database (mySQL) stuff!?
-  - read/write queries
-  - return results (needs a homogeneous representation of results?)
-
-- Run import/update from within OSD?
-
-OSD
----
-- Type numbers to enter characters and jump to first title accordingly
-- Check whether hierarchical menus are more suitable
-
-Content
--------
-- Save/load filter sets
-- Apply filter set as dynamic playlist (i.e. show filters when loading playlists)
-- Handle ratings (increase/decrease during replay)
-
-Player
-------
-- Shuffle: toggle and loop keys. Shuffle only songs not already played, not easy though
-- Display covers as still pictures
-- Add flac decoder
-- Set ratings
-
-Import
-------
-- Handle updates
-
-Web interface
--------------
-- Look at PHP stuff from c't 11/04 and adapt to schema?
-
-Long term ideas
-===============
-- daapd integration?
-- netjuke integration?
-- Display arbitrary images while playing music
-
-Visions
-=======
-- handle off-line films (CDs, DVDs, recordings)
-- handle streams (live TV with channel list, MP3 radio,..., EPG)
-- handle images (possibly in sync with music/radio)
-- muggle content syndication (e.g. via DAAPD)
-- provide a stream (e.g. icecast) of the currently played music?
-
-Already Done
-============
-- Check play speed (probably XINE related)
-- Playlists starts with 2nd song (DONE)
-- Export playlists
-- Delete selected item
-- Add command line option for top level directory
-   - prepended to filename in non-GD-mode
-   - searched in GD-mode
-- Edit playlist (move tracks like channels in VDR channel list)
-  (OK in playlist view)
-- Instant play = empty current playlist, append tracks of current node and play
-  (easy, in submenu of browser)
-- Clear playlist (submenu action)
-- Find files from database entry based on GD compatibility flag
-- Handle Next/PrevFile in mgPlaylist (vdr_player.c)
-- Add plugin parameters for database name/host/user/pass
-- Add plugin parameter for GD filename compatibility
-- handle filters:
-    - create tracklist from filter
-    - create tree from filter
-- i18n (english and german)
-- Album import
-  - Various artists
-- Ogg/Vorbis decoder integration
-  - cOggFile kept
-  - cOggInfo dismissed in favor of obtaining info from DB
-  - coding conventions adapted
-  - Schema extended to keep audio properties
-  - Import (mugglei) extended to store audio properties in DB 
-    (most notably samplerate, no. channels)
-  - Extended mgContentItem with audio properties
-  - Extended mgGdTrack with audio properties (bitrate, samplerate, channels)
-  - in mgPCMPlayer/vdr_player.c:
-    - pass m_playing to mp3/ogg decoder (instead of filename)
-  - mgOggDecoder: obtain audio properties from DB (channels, sampling rate via mgContentItem)
-  - mgPCMPlayer::getSourceFile moved to abstract data layer (mgContentItem)
-    and made concrete in subclasses (mgGdTrack)
-  - mgDecoders::findDecoder: extend decoder detection
-
-************************************************************
-*
-* $Log: TODO,v $
-* Revision 1.14  2004/08/30 14:31:43  LarsAC
-* Documentation added
-*
-* Revision 1.13  2004/08/27 15:20:33  LarsAC
-* Updated open issues w.r.t. import
-*
-* Revision 1.12  2004/08/26 11:11:42  LarsAC
-* Import changed to use taglib
-*
-* Revision 1.11  2004/07/29 06:18:07  lvw
-* Added todo entries
-*
-* Revision 1.10  2004/07/29 05:58:14  lvw
-* TODO list changed
-*
-* Revision 1.9  2004/07/27 07:06:00  LarsAC
-* Added file for doxygen documentation generation
-*
-* Revision 1.8  2004/07/09 13:47:07  LarsAC
-* Updated next steps
-*
-* Revision 1.7  2004/05/28 15:29:18  lvw
-* Merged player branch back on HEAD branch.
-*
-* Revision 1.1.2.12  2004/05/27 07:58:38  lvw
-* Removed bugs in moving and removing tracks from playlists
-*
-* Revision 1.1.2.11  2004/05/25 21:57:58  lvw
-* Updated TODO list
-*
-* Revision 1.1.2.10  2004/05/25 00:10:45  lvw
-* Code cleanup and added use of real database source files
-*
-* Revision 1.1.2.9  2004/05/24 11:48:35  lvw
-* Extended TODO list
-*
-* Revision 1.1.2.8  2004/05/13 06:48:00  lvw
-* Updated TODO list
-*
-* Revision 1.1.2.7  2004/05/12 22:38:37  lvw
-* Some cleanup
-*
-* Revision 1.1.2.6  2004/05/11 06:35:16  lvw
-* Added debugging while hunting stop bug.
-*
-* Revision 1.1.2.5  2004/05/07 06:46:41  lvw
-* Removed a bug in playlist deallocation. Added infrastructure to display information while playing.
-*
-***********************************************************/
+  \section done Done
+  
+	- Check play speed (was XINE related)
+	- Playlists starts with 2nd song (DONE)
+	- Export playlists
+	- Delete selected item
+	- Add command line option for top level directory
+	- prepended to filename in non-GD-mode
+	- searched in GD-mode
+	- Edit playlist (move tracks like channels in VDR channel list)
+		(OK in playlist view)
+	- Instant play = empty current playlist, append tracks of current node and play
+		(easy, in submenu of browser)
+	- Clear playlist (submenu action)
+	- Find files from database entry based on GD compatibility flag
+	- Handle Next/PrevFile in mgPlaylist (vdr_player.c)
+	- Add plugin parameters for database name/host/user/pass
+	- Add plugin parameter for GD filename compatibility
+	- handle filters:
+		- create tracklist from filter
+		- create tree from filter
+	- i18n (english and german)
+	- Album import
+	- Various artists
+	- Ogg/Vorbis decoder integration
+		- cOggFile kept
+		- cOggInfo dismissed in favor of obtaining info from DB
+		- coding conventions adapted
+		- Schema extended to keep audio properties
+		- Import (mugglei) extended to store audio properties in DB 
+			(most notably samplerate, no. channels)
+		- Extended mgContentItem with audio properties
+		- Extended mgGdTrack with audio properties (bitrate, samplerate, channels)
+		- in mgPCMPlayer/vdr_player.c:
+			- pass m_playing to mp3/ogg decoder (instead of filename)
+		- mgOggDecoder: obtain audio properties from DB (channels, sampling rate via mgContentItem)
+		- mgPCMPlayer::getSourceFile moved to abstract data layer (mgContentItem)
+			and made concrete in subclasses (mgGdTrack)
+		- mgDecoders::findDecoder: extend decoder detection
+		- Check compatibility for 1.3.12 (DONE)
+      
+*/

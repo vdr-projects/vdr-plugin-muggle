@@ -24,7 +24,7 @@
 
 #include "i18n.h"
 
-static const char *VERSION        = "0.0.1";
+static const char *VERSION        = "0.0.4";
 static const char *DESCRIPTION    = "Media juggle plugin for VDR";
 static const char *MAINMENUENTRY  = "Muggle";
 

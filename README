@@ -39,7 +39,7 @@ software are required:
 
  - mySQL server (tested with 4.0.18) (Debian packages mysql-server, mysql-client)
  - mySQL client libraries
-   (Debian package libmysqlclient-devi or 
+   (Debian package libmysqlclient-dev or 
     http://www.mysql.org)
  - libmad (for mp3 decoding)
    (Debian package libmad0-dev or 
@@ -80,7 +80,6 @@ Within the VDR main directory (e.g. /usr/local/src/VDR) issue a
 
 This should build all relevant stuff. If you have difficulties, check that required libraries are 
 in the library directories stated in the muggle Makefile.
-
 
 \section import IMPORT
 
