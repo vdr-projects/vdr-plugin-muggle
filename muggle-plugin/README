@@ -25,6 +25,15 @@ Please provide feedback to the authors whenever you
 think, these instructions are not appropriate, wrong,
 or useless in any other sense.
 
+\section ack Acknowledgements
+
+Thanks to all who have supported the development of this plugin. Special thanks go to
+- Muempf for the mp3 plugin. All code related to audio replay is largely taken over from this plugin.
+- LordJaxom for constant support in the chat of VDR portal regarding OSD programming in VDR
+- eloy (member of vdrportal.de) for alpha testing
+- All beta testers at vdrportal.de and on the VDR mailing list
+- decembersoul (member of vdrportal.de) for finding out how to run muggle on LinVDR
+
 \section desc DESCRIPTION
 
 The muggle plugin provides a database link for VDR so that selection of media becomes more flexible.
