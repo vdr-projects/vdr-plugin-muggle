@@ -1,14 +1,11 @@
-/*******************************************************************/
-/*! \file  content_interface.c
- * \brief  Data Objects for content (e.g. mp3 files, movies)
- * for the vdr muggle plugindatabase
- ******************************************************************** 
- * \version $Revision: 1.4 $
- * \date    $Date: 2004/02/23 15:41:21 $
- * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: RaK $
+/*! \file  mg_content_interface.c
+ *  \brief  Data Objects for content (e.g. mp3 files, movies) for the vdr muggle plugin
  *
- * DUMMY
+ * \version $Revision: 1.5 $
+ * \date    $Date: 2004/05/28 15:29:18 $
+ * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
+ * \author  Responsible author: $Author: lvw $
+ *
  * Implements main classes of for content items and interfaces to SQL databases
  *
  * This file implements the following classes 
@@ -17,7 +14,6 @@
  * - mgSelection   a set of tracks (e.g. a database subset matching certain criteria)
  *
  */
-/*******************************************************************/
 #define DEBUG
 
 #include "mg_content_interface.h"
@@ -31,22 +27,20 @@ mgContentItem mgContentItem::UNDEFINED =  mgContentItem();
 using namespace std;
 
 /*!
- *****************************************************************************
- * \brief construcor
+ * \brief constructor
  *
- * creates empty tracklist
- ****************************************************************************/
+ * create an empty tracklist
+ */
 mgTracklist::mgTracklist()
 {
  
 }
 
 /*!
- *****************************************************************************
  * \brief destrucor
  *
  *  Deletes all items in the tracklist and removes the list itself
- ****************************************************************************/
+ */
 mgTracklist::~mgTracklist()
 {
   mgContentItem* ptr;
@@ -183,11 +177,15 @@ mgContentItem* mgTracklist::getItem(unsigned int position)
  ****************************************************************************/
 bool mgTracklist::remove(unsigned int position)       
 {
-    if(position >= m_list.size()) return false;
+    if( position >= m_list.size() ) 
+      {
+	return false;
+      }
     vector<mgContentItem*>::iterator iter;
     
     iter = m_list.begin()+ position;
     m_list.erase(iter);
+
     return true;
 }
 
@@ -212,104 +210,6 @@ int mgTracklist::remove(mgContentItem* item)
     return retval;
 }
 
-
-/*=================================================================*/
-/*                                                                 */
-/*  class mgPlaylist                                               */
-/*                                                                 */
-/*=================================================================*/
-mgPlaylist::mgPlaylist()
-{
-}
-mgPlaylist::mgPlaylist(string listname)
-{
-    m_listname = listname;
-}
-     
-     /*==== destructor ====*/
-mgPlaylist::~mgPlaylist()
-{
-
-}
-/*==== add/ remove tracks ====*/
-
-/* adds a song at the end of the playlist */
-void mgPlaylist::append(mgContentItem* item)
-{
-    m_list.push_back(item);
-}
-
-void mgPlaylist::appendList(vector<mgContentItem*> *tracks)
-{
-    vector<mgContentItem*>::iterator iter;
-    mgDebug(3, "Adding %d tracks to the playlist",tracks->size()); 
-    for(iter = tracks->begin(); iter != tracks->end(); iter++)
-    {
-	m_list.push_back(*iter);
-    }
-    tracks->clear();
-}
-
-
-/* adds a song after 'position' */
-void mgPlaylist::insert(mgContentItem* item, unsigned int position)
-{
-    if(position >= m_list.size())
-	m_list.push_back(item);
-    else
-	m_list.insert(m_list.begin()+position, item);
-}
-
-
-
-/*====  access tracks ====*/
-string mgPlaylist::getListname() { return m_listname; }
-void mgPlaylist::setListname(string name){ m_listname = name;}
-
-
-
-// returns the first item of the list
-mgContentItem* mgPlaylist::getFirst()
-{
-    m_current = m_list.begin();
-    return *m_current;
-}
-
-// returns the  nth track from the playlist
-mgContentItem* mgPlaylist::getPosition(unsigned int position)
-{
-    if(position >= m_list.size())
-	return &(mgContentItem::UNDEFINED); //invalid
-    m_current = m_list.begin()+position;
-    return *m_current;
-}
-
-// proceeds to the next item
-mgContentItem*  mgPlaylist::skipFwd()
-{
-    if(m_current+1 == m_list.end())
-	return &(mgContentItem::UNDEFINED); //invalid
-    else
-	return * (++m_current);
-}
-
-// goes back to the previous item
-mgContentItem*  mgPlaylist::skipBack()
-{
-    if(m_current == m_list.begin())
-	return &(mgContentItem::UNDEFINED); //invalid
-    else
-	return * (--m_current);
-}
-
-// get next track, do not update data structures
-mgContentItem* mgPlaylist::sneakNext()
-{
-    if(m_current+1 == m_list.end())
-	return &(mgContentItem::UNDEFINED); //invalid
-    else
-	return * (m_current+1);
-}
 
 
 /*=================================================================*/
@@ -402,6 +302,31 @@ string mgSelectionTreeNode::getRestrictions()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: mg_content_interface.c,v $
+ * Revision 1.5  2004/05/28 15:29:18  lvw
+ * Merged player branch back on HEAD branch.
+ *
+ *
+ * Revision 1.4  2004/02/23 15:41:21  RaK
+ * - first i18n attempt
+ *
+ * Revision 1.3.2.6  2004/05/27 07:58:38  lvw
+ * Removed bugs in moving and removing tracks from playlists
+ *
+ * Revision 1.3.2.5  2004/05/25 00:10:45  lvw
+ * Code cleanup and added use of real database source files
+ *
+ * Revision 1.3.2.4  2004/05/04 16:51:53  lvw
+ * Debugging aids added.
+ *
+ * Revision 1.3.2.3  2004/03/08 21:42:22  lvw
+ * Added count method. Some comments for further todos added.
+ *
+ * Revision 1.3.2.2  2004/03/08 07:14:27  lvw
+ * Preliminary changes to muggle player
+ *
+ * Revision 1.3.2.1  2004/03/02 07:08:12  lvw
+ * 118 additions
+ *
  * Revision 1.4  2004/02/23 15:41:21  RaK
  * - first i18n attempt
  *

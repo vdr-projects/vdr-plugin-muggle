@@ -3,45 +3,126 @@ TODO File for Muggle
 
 Code polishing
 ==============
-- check for memory leaks
-- check for (reasonably) consistent usage of char*/string
-- mg_database is not used
+- Check for memory leaks
+- Check for (reasonably) consistent usage of char*/string
+- mgDatabase is not used? mgPlayer used what for?
+- Check for unnecessary log commands
+- Add logs, documentation (generate in HTML)
+- Generate HTML documentation using doxygen, dotty/gv for state machines
 
 Short term items
 ================
+- Adapt scripts
+  - use working directory by default or argument
+  - how to install into correct path
 
 OSD
 ---
-- DisplayTrackInfo
-- DisplayAlbumInfo
-- Edit playlist (means moving tracks around?)
 
 Content
 -------
+- Handle loop mode in mgPlaylist
+- Handle shuffle mode in mgPlaylist
+- Save/load playlists to database
+
+Player
+------
+- Determine max. framecount (needed for rewinding) ?
+- Init scale/level/normalize?
+- Check play speed
+- Add ogg decoder
+
+- Add a simple progress display (song title, artist, ...)
+- DisplayTrackInfo (part of the player!)
+- DisplayAlbumInfo (part of the player!)
 
 Medium term items
 =================
 
-- Add a player for various formats
-    - from mp3 plugin
-    - use mplayer in slave mode
-    - check mpg123 (used in GD)
+- really abstract from specific queries etc.
+- mgDatabase should abstract database stuff!?
 
-Long term items
-===============
+OSD
+---
+- Type numbers to enter characters and jump to first title accordingly
+- Add separators for first letter (A, B, C, ...) that can be skipped using left/right
 
+Content
+-------
+- Save/load filter sets
+- Apply filter set as dynamic playlist
+
+Player
+------
+- Shuffle: toggle and loop keys. Shuffle only songs not already played, not easy though
 - Display covers as still pictures
+- Add flac decoder
+
+Web interface
+-------------
+- Look at PHP stuff from c't 11/04 and adapt to schema
+
+Long term ideas
+===============
+- daapd integration?
+- Display arbitrary images while playing music
 
 Visions
 =======
-
-- handle films
-- handle off-line media (CDs, DVDs)
-- handle EPG
+- handle off-line films (CDs, DVDs, recordings)
+- handle streams (live TV with channel list, MP3 radio,..., EPG)
+- handle images (possibly in sync with music/radio)
+- muggle content syndication (e.g. via DAAPD)
+- provide a stream (e.g. icecast) of the currently played music?
 
 Already Done
 ============
+- Delete selected item
+- Add command line option for top level directory
+   - prepended to filename in non-GD-mode
+   - searched in GD-mode
+- Edit playlist (move tracks like channels in VDR channel list)
+  (OK in playlist view)
+- Instant play = empty current playlist, append tracks of current node and play
+  (easy, in submenu of browser)
+- Clear playlist (submenu action)
+- Find files from database entry based on GD compatibility flag
+- Handle Next/PrevFile in mgPlaylist (vdr_player.c)
+- Add plugin parameters for database name/host/user/pass
+- Add plugin parameter for GD filename compatibility
 - handle filters:
     - create tracklist from filter
     - create tree from filter
 - i18n (english and german)
+
+************************************************************
+*
+* $Log: TODO,v $
+* Revision 1.7  2004/05/28 15:29:18  lvw
+* Merged player branch back on HEAD branch.
+*
+* Revision 1.1.2.12  2004/05/27 07:58:38  lvw
+* Removed bugs in moving and removing tracks from playlists
+*
+* Revision 1.1.2.11  2004/05/25 21:57:58  lvw
+* Updated TODO list
+*
+* Revision 1.1.2.10  2004/05/25 00:10:45  lvw
+* Code cleanup and added use of real database source files
+*
+* Revision 1.1.2.9  2004/05/24 11:48:35  lvw
+* Extended TODO list
+*
+* Revision 1.1.2.8  2004/05/13 06:48:00  lvw
+* Updated TODO list
+*
+* Revision 1.1.2.7  2004/05/12 22:38:37  lvw
+* Some cleanup
+*
+* Revision 1.1.2.6  2004/05/11 06:35:16  lvw
+* Added debugging while hunting stop bug.
+*
+* Revision 1.1.2.5  2004/05/07 06:46:41  lvw
+* Removed a bug in playlist deallocation. Added infrastructure to display information while playing.
+*
+***********************************************************/

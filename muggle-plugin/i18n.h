@@ -3,7 +3,7 @@
  *
  * See the README file for copyright information and how to reach the author.
  *
- * $Id: i18n.h,v 1.1 2004/02/23 15:41:21 RaK Exp $
+ * $Id: i18n.h,v 1.2 2004/05/28 15:29:18 lvw Exp $
  */
 
 #ifndef _I18N__H

@@ -1,19 +1,21 @@
 /*******************************************************************/
-/*! \file  content_interface.h
- * \brief  Data Objects for content (e.g. mp3 files, movies)
- * for the vdr muggle plugindatabase
- ******************************************************************** 
- * \version $Revision: 1.3 $
- * \date    $Date: 2004/02/09 19:27:52 $
- * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: MountainMan $
- * 
- * Declares main classes of for content items and interfaces to SQL databases
+/*! \file  mg_content_interface.h
+ *  \brief data Objects for content (e.g. mp3 files, movies) for the vdr muggle plugin
  *
- * This file defines the following classes 
- * - mgPlaylist    a playlist
- * - mgTrack       a single track (content item). e.g. an mp3 file
- * - mgSelection   a set of tracks (e.g. a database subset matching certain criteria)
+ ******************************************************************** 
+ *
+ *  \version $Revision: 1.4 $
+ *  \date    $Date: 2004/05/28 15:29:18 $
+ *  \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
+ *  \author  file owner: $Author: lvw $
+ * 
+ *  Declares generic classes of for content items and interfaces to SQL databases
+ *
+ *  This file defines the following classes 
+ *   - mgMediaMplayer
+ *   - mgContentItem
+ *   - mgTracklist
+ *   - mgSelectionTreeNode
  *
  */
 /*******************************************************************/
@@ -28,82 +30,150 @@
 #include <mysql/mysql.h>
 
 #define ILLEGAL_ID -1
+
 class mgFilter;
+class mgPlaylist;
 
 /*! 
- *******************************************************************
  * \class mgMediaPlayer
- *
  * \brief dummy player class
- ********************************************************************/
+ */
 class mgMediaPlayer
 {
-  public: 
-  mgMediaPlayer(){;}
-  ~mgMediaPlayer(){;}
-  
+ public: 
+
+  mgMediaPlayer()
+    { }
+
+  ~mgMediaPlayer()
+    { }
 };
 
 /*! 
- *******************************************************************
- * \class mgContentItem
- *
  * \brief Generic class that represents a single content item.
+ *
  * This is the parent class from which classes like mgGdTrack are derived
- ********************************************************************/
+ *
+ */
 class mgContentItem
 {
+ public:
+  typedef enum contentType
+    {
+      ABSTRACT =0,
+      GD_AUDIO,
+      EPG
+    };
 
-  public:
-  typedef enum contentType{
-    ABSTRACT =0,
-    GD_AUDIO,
-    EPG
-  }contentType;
-
-  protected:
+ protected:
   int m_uniqID;  // internal identifier to uniquely identify a content item;
   
-  public:
-  /* constructor */
-  mgContentItem(){ m_uniqID = -1;}
-  mgContentItem(int id){m_uniqID = id;}
-  mgContentItem(const mgContentItem& org){m_uniqID = org.m_uniqID;}
-  /* destructor */
-  virtual ~mgContentItem(){};
+ public:
+
+  /*! \brief default constructor 
+   */
+  mgContentItem()
+    : m_uniqID( -1 )
+    { }
+
+  /*! \brief constructor with explicit id
+   */
+  mgContentItem( int id )
+    : m_uniqID( id )
+    { }
+
+  /*! \brief copy constructor 
+   */
+  mgContentItem( const mgContentItem& org )
+    : m_uniqID( org.m_uniqID )
+    { }
+
+  /*! \brief destructor 
+   */
+  virtual ~mgContentItem()
+    { };
   
-  /* data acess */
-  int getId(){ return  m_uniqID;}
+  /*! \brief acess unique id 
+   */
+  int getId()
+    { 
+      return  m_uniqID;
+    }
 
-  // what type of content are we looking at (e.g. audio, video, epg)
-  virtual contentType getContentType(){return ABSTRACT;}
+  /*! \brief determine what type of content are we looking at (e.g. audio, video, epg)
+   */
+  virtual contentType getContentType()
+    {
+      return ABSTRACT;
+    }
 
-  // return (global?) object that is used to play the content items
-  virtual mgMediaPlayer getPlayer(){return mgMediaPlayer();}
+  /*! \brief return a (global?) object that is used to play content items
+   *  \todo What for? Interesting properties? Last state, play info, ...?
+   */
+  virtual mgMediaPlayer getPlayer()
+    {
+      return mgMediaPlayer();
+    }
 
-
-  // get the "file" (or URL) that is passed to the player
-  virtual std::string getSourceFile(){return "";}
+  /*! \brief get the "file" (or URL) that is passed to the player
+   */
+  virtual std::string getSourceFile()
+    {
+      return "";
+    }
 
   // ============ data access =================
-  virtual std::string getTitle(){return "";}     // return the title
-  virtual std::string getLabel(int col){return "";}     // return the title
-  
-  virtual std::string getDescription()// return a short textual description
-      {return "";}
-  virtual std::vector<mgFilter*> *getTrackInfo(){return NULL;}
-  virtual bool updateTrackInfo(std::vector<mgFilter*>*){return false;}
+  /*! \brief return the title
+   */
+  virtual std::string getTitle()
+    {
+      return "";
+    }
 
-  virtual std::string getGenre(){return "";}
+  /*! \brief return a specific label
+   */
+  virtual std::string getLabel(int col = 0)
+    {
+      return "";
+    }
+
+  /*! \brief return a short textual description
+   */
+  virtual std::string getDescription()
+    {
+      return "";
+    }
+
+  virtual std::vector<mgFilter*> *getTrackInfo()
+    {
+      return NULL;
+    }
+
+  virtual bool updateTrackInfo(std::vector<mgFilter*>*)
+    {
+      return false;
+    }
+
+  virtual std::string getGenre()
+    {
+      return "";
+    }
+
   virtual int getRating()
     {
       return 0;
     }
 
-  virtual bool operator == (mgContentItem o){return  m_uniqID == o.m_uniqID;}
+  virtual bool operator == (mgContentItem o)
+    {
+      return  m_uniqID == o.m_uniqID;
+    }
 
   // check, if usable
-  virtual bool isValid() {return (m_uniqID >=0);}
+  virtual bool isValid() 
+    {
+      return ( m_uniqID >= 0 );
+    }
   static  mgContentItem UNDEFINED;
 };
 
@@ -136,54 +206,6 @@ class mgTracklist
   virtual bool remove(unsigned int position);    // remove item at position
 };
 
-/*! 
- *******************************************************************
- * \class mgPlaylist
- *
- * Represents a generic playlist, i.e. an ordered collection of tracks
- * The derived classes take care of specifics of certain media types
- ********************************************************************/
-class  mgPlaylist : public mgTracklist
-{	  
-  protected:
-     std::string m_listname;
-     std::vector<mgContentItem*>::iterator m_current;
-  public:
-     
-     /*==== constructors ====*/
-     mgPlaylist();
-     mgPlaylist(std::string listname);
-     
-     /*==== destructor ====*/
-     virtual ~mgPlaylist();
-     
-     /*==== add/ remove tracks ====*/
-
-     /* adds a song at the end of the playlist */
-     virtual void append(mgContentItem* item);
-     virtual void appendList(std::vector<mgContentItem*> *tracks);
-     /* adds a song after 'position' */
-     virtual void insert(mgContentItem* item, unsigned int position);
-
-     /*====  access tracks ====*/
-     std::string getListname() ;
-     void setListname(std::string name);
-
-     // returns the first item of the list
-     virtual mgContentItem* getFirst();
-
-     // returns the  nth track from the playlist
-     virtual mgContentItem* getPosition(unsigned int position);
-
-     // proceeds to the next item
-     virtual mgContentItem*  skipFwd();
-
-     // goes back to the previous item
-     virtual mgContentItem*  skipBack();
-
-     virtual mgContentItem* sneakNext();
-     
-};
 
 class  mgSelectionTreeNode
 {
@@ -247,6 +269,21 @@ public:
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: mg_content_interface.h,v $
+ * Revision 1.4  2004/05/28 15:29:18  lvw
+ * Merged player branch back on HEAD branch.
+ *
+ * Revision 1.3.2.4  2004/05/25 00:10:45  lvw
+ * Code cleanup and added use of real database source files
+ *
+ * Revision 1.3.2.3  2004/04/01 21:35:32  lvw
+ * Minor corrections, some debugging aid.
+ *
+ * Revision 1.3.2.2  2004/03/08 21:42:22  lvw
+ * Added count method. Some comments for further todos added.
+ *
+ * Revision 1.3.2.1  2004/03/08 07:14:28  lvw
+ * Preliminary changes to muggle player
+ *
  * Revision 1.3  2004/02/09 19:27:52  MountainMan
  * filter set implemented
  *

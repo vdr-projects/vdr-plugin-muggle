@@ -1,30 +1,23 @@
-/*******************************************************************/
-/*! \file   vdr_menu.h
- *  \brief  Implements menu handling for broswing media libraries within VDR
- ******************************************************************** 
- * \version $Revision: 1.9 $
- * \date    $Date: 2004/02/23 15:41:21 $
+/*! 
+ * \file   vdr_menu.h
+ * \brief  Implements menu handling for broswing media libraries within VDR
+ *
+ * \version $Revision: 1.10 $
+ * \date    $Date: 2004/05/28 15:29:19 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: RaK $
+ * \author  Responsible author: $Author: lvw $
  *
- * $Id: vdr_menu.h,v 1.9 2004/02/23 15:41:21 RaK Exp $
- *
+ *  $Id: vdr_menu.h,v 1.10 2004/05/28 15:29:19 lvw Exp $
  */
-/*******************************************************************/
 
 #ifndef _VDR_MENU_H
 #define _VDR_MENU_H
 
-#undef SHELL_TEST
-
-#ifdef SHELL_TEST
-  #include "myosd.h"
-  #include "mymenuitems.h"
-#else
-  #include <osd.h>
-#endif
-
 #include <list>
+
+#include <osd.h>
+
+#include "i18n.h"
 
 #include "i18n.h"
 
@@ -33,6 +26,9 @@ class mgSelectionTreeNode;
 class mgPlaylist;
 class mgTracklist;
 
+/*!
+ * \brief a special menu item
+ */
 class mgMenuTreeItem : public cOsdItem
 {
  public:
@@ -49,6 +45,9 @@ class mgMenuTreeItem : public cOsdItem
 
 };
 
+/*!
+ * \brief the muggle main OSD
+ */
 class mgMainMenu : public cOsdMenu
 {
  public:
@@ -59,50 +58,51 @@ class mgMainMenu : public cOsdMenu
   mgMenuTreeItem *CurrentItem();
   
   eOSState ProcessKey(eKeys Key);
-  void Move( int from, int to);
 
  protected:
 
   enum MuggleStatus
     { 
       TREE, TREE_SUBMENU,
-      PLAYLIST, PLAYLIST_TRACKINFO, PLAYLIST_ALBUMINFO, 
-      FILTER
+      PLAYLIST, PLAYLIST_SUBMENU,
+      FILTER, FILTER_SUBMENU
     };
 
   void SetButtons();
+  void Move( int from, int to );
 
   // Tree view handling
   void DisplayTree( mgSelectionTreeNode *node, int select = 0 );
   void DisplayTreeViewSelector();
+
   void DisplayTreeSubmenu();
-  void TreeSubmenuAction( int n );
+  eOSState TreeSubmenuAction( int n );
+
+  // Playlist view handling
+  void DisplayPlaylist( int index_current = -1 );
+  void DisplayTrackInfo();
+  void DisplayAlbumInfo();  
+
+  void DisplayPlaylistSubmenu();
+  eOSState PlaylistSubmenuAction( int n );
 
   // Filter view handling
   void DisplayFilter();
   void DisplayFilterSelector();
 
-  // Playlist view handling
-  void DisplayPlaylist();
-  void DisplayTrackInfo();
-  void DisplayAlbumInfo();  
-
  private:
+  void Play(mgPlaylist *plist);
 
   // content stuff
   mgMedia *m_media;
   mgSelectionTreeNode *m_root;
   mgSelectionTreeNode *m_node;
   mgPlaylist          *m_current_playlist;
-  mgTracklist         *m_tracklist;
- 
-  // filter items
-  char *m_title, *m_interpret, *m_album, *m_playlist, *m_filtername;
-  int   m_year_min, m_year_max, m_filter;
 
   MuggleStatus m_state;
-
   std::list<int> m_history;
+
+  int      m_last_osd_index;
 };
 
 #endif
@@ -110,8 +110,32 @@ class mgMainMenu : public cOsdMenu
 /************************************************************
  *
  * $Log: vdr_menu.h,v $
+ * Revision 1.10  2004/05/28 15:29:19  lvw
+ * Merged player branch back on HEAD branch.
+ *
  * Revision 1.9  2004/02/23 15:41:21  RaK
  * - first i18n attempt
+ *
+ * Revision 1.8.2.7  2004/05/27 07:58:38  lvw
+ * Removed bugs in moving and removing tracks from playlists
+ *
+ * Revision 1.8.2.6  2004/05/26 14:31:04  lvw
+ * Added submenu for playlist view
+ *
+ * Revision 1.8.2.5  2004/05/25 21:58:54  lvw
+ * Handle submenus for views
+ *
+ * Revision 1.8.2.4  2004/03/14 12:30:56  lvw
+ * Menu now calls player
+ *
+ * Revision 1.8.2.3  2004/03/11 07:22:32  lvw
+ * Added setup menu
+ *
+ * Revision 1.8.2.2  2004/03/08 22:28:40  lvw
+ * Added documentation headers.
+ *
+ * Revision 1.8.2.1  2004/03/02 07:07:27  lvw
+ * Initial adaptations from MP3 plugin added (untested)
  *
  * Revision 1.8  2004/02/08 10:48:44  LarsAC
  * Made major revisions in OSD behavior
@@ -125,6 +149,4 @@ class mgMainMenu : public cOsdMenu
  * Revision 1.5  2004/02/03 00:13:24  LarsAC
  * Improved OSD handling of collapse/back
  *
- *
- ************************************************************
  */
