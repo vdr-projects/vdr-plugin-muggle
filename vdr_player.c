@@ -203,7 +203,7 @@ public:
   virtual bool GetIndex(int &Current, int &Total, bool SnapToIFrame=false);
   //  bool GetPlayInfo(cMP3PlayInfo *rm); // LVW
 
-  void NewPlaylist( mgPlaylist *plist, int first );
+  void NewPlaylist( mgPlaylist *plist, unsigned first );
   mgContentItem *getCurrent () { return m_current; }  
   mgPlaylist *getPlaylist () { return m_playlist; }  
 };
@@ -699,51 +699,20 @@ bool mgPCMPlayer::NextFile( )
   mgContentItem *newcurr;
 
   bool res = false;
-  bool m_partymode = false;
-  bool m_shufflemode = false;
 
-  if( m_partymode )
+  if( m_playlist->skipFwd() )
     {
-      /*
-      - Party mode (see iTunes)
-        - initialization
-          - find 15 titles according to the scheme below
-        - playing 
-          - before entering next title perform track selection
-        - track selection
-  	  - generate a random uid
-	  - if file exists:
-	    - determine maximum playcount of all tracks
-	    - generate a random number n
-	      - if n < playcount / max. playcount
-	        - add the file to the end of the list
-      */
-    }
-  else if( m_shufflemode )
-    {
-      /*
-	- Handle shuffle mode in mgPlaylist
- 	  - for next file:
-	    - generate a random number 0..n-1
-	    - move corresponding playlist item to front
-	    - continue
-      */
+      newcurr = m_playlist->getCurrent();
     }
   else
     {
-      if( m_playlist->skipFwd() )
-	{
-	  newcurr = m_playlist->getCurrent();
-	}
-      else
-	{
-	  newcurr = &(mgContentItem::UNDEFINED);
-	}
+      newcurr = &(mgContentItem::UNDEFINED);
     }
   
   if( newcurr && newcurr != &(mgContentItem::UNDEFINED) ) 
     {
       m_current = newcurr; 
+      mgMuggle::setResumeIndex( m_playlist->getIndex() );
       res = true;
     }
   
@@ -760,7 +729,8 @@ bool mgPCMPlayer::PrevFile(void)
 
       if( newcurr && newcurr != &(mgContentItem::UNDEFINED) ) 
 	{
-	  m_current = newcurr; 
+	  m_current = newcurr;
+	  mgMuggle::setResumeIndex( m_playlist->getIndex() );
 	  res = true;
 	}
     }
@@ -1105,7 +1075,7 @@ void mgPCMPlayer::send_pes_packet(unsigned char *data, int len, int timestamp)
 
 // --- mgPlayerControl -------------------------------------------------------
 
-mgPlayerControl::mgPlayerControl( mgPlaylist *plist, int start )
+mgPlayerControl::mgPlayerControl( mgPlaylist *plist, unsigned start )
   : cControl( player = new mgPCMPlayer( plist, start ) )
 {
   MGLOG( "mgPlayerControl::mgPlayerControl" );
@@ -1217,7 +1187,7 @@ void mgPlayerControl::ToggleLoop(void)
     }
 }
 
-void mgPlayerControl::NewPlaylist(mgPlaylist *plist, int start)
+void mgPlayerControl::NewPlaylist(mgPlaylist *plist, unsigned start)
 {
   if( player ) 
     {
@@ -1586,6 +1556,7 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 	  {
 	    InternalHide();
 	    Stop();
+	    mgMuggle::setResumeIndex( 0 );
 
 	    return osEnd;
 	  } break;

@@ -99,7 +99,7 @@ class mgMainMenu : public cOsdMenu
 
  private:
   //! \brief launch the actual player
-  void Play( mgPlaylist *plist, int first = -1 );
+  void Play( mgPlaylist *plist, unsigned first );
 
   // content stuff
   mgMedia *m_media;

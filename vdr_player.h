@@ -121,7 +121,7 @@ public:
    *  \param plist - the new playlist to be played
    *  \param first - the index where to start the playlist
    */
-  void NewPlaylist( mgPlaylist *plist, int start );
+  void NewPlaylist( mgPlaylist *plist, unsigned start );
 
   //! \brief a progress display
   void ShowProgress();
