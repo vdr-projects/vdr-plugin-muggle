@@ -3,8 +3,8 @@
  *  \brief  Top level access to media in vdr plugin muggle
  *          for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.3 $
- * \date    $Date: 2004/02/02 17:57:53 $
+ * \version $Revision: 1.4 $
+ * \date    $Date: 2004/02/02 18:34:34 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: MountainMan $
  * 
@@ -22,6 +22,9 @@
 
 using namespace std;
 
+//-------------------------------------------------------------------
+//                         mgFilter
+//-------------------------------------------------------------------
 mgFilter::mgFilter(const char* name)
 {
   m_name = strdup(name);
@@ -36,6 +39,9 @@ const char* mgFilter::getName()
   return m_name;
 }
 
+//-------------------------------------------------------------------
+//        mgFilterInt
+//-------------------------------------------------------------------
 mgFilterInt::mgFilterInt(const char *name, int value, int min, int max)
   : mgFilter(name)
 {
@@ -64,6 +70,9 @@ int mgFilterInt::getMax()
   return m_max;
 }
 
+//-------------------------------------------------------------------
+//       mgFilterString
+//-------------------------------------------------------------------
 mgFilterString::mgFilterString(const char *name, const char* value)
   : mgFilter(name)
 {
@@ -84,6 +93,9 @@ string mgFilterString::getStrVal()
   return (string) m_strval;
 }
 
+//-------------------------------------------------------------------
+//        mgFilterBool
+//-------------------------------------------------------------------
 mgFilterBool::mgFilterBool(const char *name, bool value)
   : mgFilter(name)
 {
@@ -102,6 +114,39 @@ string mgFilterBool::getStrVal()
     return "false";
 }
 
+//-------------------------------------------------------------------
+//        mgFilterChoice
+//-------------------------------------------------------------------
+mgFilterChoice::mgFilterChoice(const char *name, int val, vector<char*> *choices)
+  : mgFilter(name)
+{
+  m_choices = *choices;
+  m_selval = val;
+  if( m_selval < 0 || m_selval >= (int) m_choices.size() )
+  {
+    mgError("mgFilterChoice::mgFilterChoice(..): Illegal index %d", m_selval);
+  }
+}
+mgFilterChoice::~mgFilterChoice()
+{
+  m_choices.clear();
+}
+
+string mgFilterChoice::getStrVal()
+{
+  if( m_selval < 0 || m_selval >= (int) m_choices.size() )
+  {
+    mgError("mgFilterChoice::getStrVal(): Illegal index %d", m_selval);
+  }
+  return m_choices[m_selval];
+}
+vector<char*> &mgFilterChoice::getChoices()
+{
+  return m_choices;
+}
+//-------------------------------------------------------------------
+//        mgTrackFilters
+//-------------------------------------------------------------------
 mgTrackFilters::mgTrackFilters()
 {
 }
@@ -216,7 +261,7 @@ vector<mgFilter*> *mgMedia::getTrackFilters()
     return NULL;
 }
 
-void mgMedia::setTrackFilters(vector<mgFilter*> *filters)
+void mgMedia::applyTrackFilters(vector<mgFilter*> *filters)
 {
 }
 
