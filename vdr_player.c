@@ -185,19 +185,23 @@ public:
   virtual ~mgPCMPlayer();
 
   bool Active() { return m_active; }
+
   void Pause();
   void Play();
   void Forward();
   void Backward();
+
   void Goto(int Index, bool Still=false);
   void SkipSeconds(int secs);
   void ToggleShuffle(void);
   void ToggleLoop(void);
+
   virtual bool GetIndex(int &Current, int &Total, bool SnapToIFrame=false);
   //  bool GetPlayInfo(cMP3PlayInfo *rm); // LVW
+
   void NewPlaylist(mgPlaylist *plist);
-  mgContentItem *GetCurrent () { return m_current; }
-  };
+  mgContentItem *GetCurrent () { return m_current; }  
+};
 
 mgPCMPlayer::mgPCMPlayer(mgPlaylist *plist)
   : cPlayer( the_setup.BackgrMode? pmAudioOnly: pmAudioOnlyBlack )
@@ -851,7 +855,7 @@ void mgPCMPlayer::SkipSeconds(int secs)
 bool mgPCMPlayer::GetIndex( int &current, int &total, bool snaptoiframe )
 {
   bool res = false;
-  current = SecondsToFrames(m_index); 
+  current = SecondsToFrames( m_index ); 
   total = -1;
 
   return res;
@@ -970,10 +974,12 @@ void mgPlayerControl::ShowProgress()
 	{
 	  // open the osd if its not already there...
 #if VDRVERSNUM >= 10307
-    osd = cOsdProvider::NewOsd (Setup.OSDLeft, Setup.OSDTop);
-    tArea Areas[] = { { 0, 0, Setup.OSDWidth, Setup.OSDHeight, 2 } };
-    osd->SetAreas(Areas,sizeof(Areas)/sizeof(tArea));
-    font = cFont::GetFont (fontOsd);
+	  /*
+	    osd = cOsdProvider::NewOsd (Setup.OSDLeft, Setup.OSDTop);
+	    tArea Areas[] = { { 0, 0, Setup.OSDWidth, Setup.OSDHeight, 2 } };
+	    osd->SetAreas(Areas,sizeof(Areas)/sizeof(tArea));
+	    font = cFont::GetFont (fontOsd);
+	  */
 #else
 	  Interface->Open();
 #endif
@@ -983,14 +989,27 @@ void mgPlayerControl::ShowProgress()
       // now an osd is open, go on
       
 #if VDRVERSNUM >= 10307
-      int w = Setup.OSDWidth;
-      int h = Setup.OSDHeight;
-      osd->DrawRectangle (0, 0, w - 1, h - 1, clrGray50);
-      mgContentItem *item = m_player->GetCurrent ();
-      string msg = item->getGenre () + " " + item->getTitle ();
-      osd->DrawText (0, h - font->Height () - 2, msg.c_str (), clrBlack, clrCyan,
-                     cFont::GetFont (fontOsd), w, font->Height () + 2, taCenter);
-      osd->Flush();
+      cSkinDisplayReplay *m_display;
+
+      m_display = Skins.Current()->DisplayReplay(false);
+      if( m_player && m_display ) 
+	{
+	  int current_frame, total_frames;
+	  m_player->GetIndex( current_frame, total_frames ); 
+	  
+	  m_display->SetProgress( current_frame, total_frames );
+	  m_display->SetCurrent( IndexToHMSF( current_frame ) );
+	  m_display->SetTotal( IndexToHMSF( total_frames ) );
+	  
+	  char *buf;
+	  asprintf( &buf, "%s", m_player->GetCurrent()->getTitle().c_str() );
+	  m_display->SetTitle( buf );
+	  free( buf );
+
+	  bool play = true, forward = true;
+	  int speed = -1;	  
+	  m_display->SetMode( play, forward, speed );
+	}
 #else
       int w = Interface->Width();
       int h = Interface->Height();
