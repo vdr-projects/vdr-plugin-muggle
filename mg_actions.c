@@ -644,7 +644,7 @@ const char *
 mgToggleSelection::ButtonName ()
 {
     if (osd ()->UsingCollection)
-        return tr ("Search");
+        return tr ("Browse");
     else
         return tr ("Collections");
 }

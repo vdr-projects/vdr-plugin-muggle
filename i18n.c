@@ -47,13 +47,13 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {
-        "Search",
-        "Suchen",
+        "Browse",
+        "Navigieren",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "Rechercher",           // TODO
+        "Naviguer",           // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -241,23 +241,6 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
         "Commandes:%s",                    // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-    },
-    {
-        "Search Result",
-        "Suchergebnis",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "Résultat de recherche",                  // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
