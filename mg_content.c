@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include "i18n.h"
 #include "mg_selection.h"
-#include "vdr_setup.h"
+#include "mg_setup.h"
 #include "mg_tools.h"
 
 
@@ -129,7 +129,7 @@ mgContentItem::mgContentItem (const mgContentItem* c)
 
 static char *mg_readline(FILE *f)
 {
-  static char buffer[MAXPARSEBUFFER];
+  static char buffer[10000];
   if (fgets(buffer, sizeof(buffer), f) > 0) {
      int l = strlen(buffer) - 1;
      if (l >= 0 && buffer[l] == '\n')
