@@ -183,37 +183,47 @@ mgContentItem* mgPlaylist::getCurrent()
 }
 
 // returns the nth track from the playlist
-void mgPlaylist::gotoPosition(unsigned int position)
+bool mgPlaylist::gotoPosition(unsigned int position)
 {
-    if( position >= m_list.size() )
-      {
-	// go to end -- a safe bet
-	m_current_idx = m_list.size() - 1;
-      }
-    else
-      {
-	m_current_idx = position;
-      }
+  bool result = false;
+
+  if( position < m_list.size() )
+    {
+      m_current_idx = position;
+      result = true;
+    }
+
+  return result;
 }
 
 // proceeds to the next item
-void mgPlaylist::skipFwd()
+bool mgPlaylist::skipFwd()
 {
+  bool result = false;
+
   if( m_current_idx + 1 < m_list.size() ) // unless loop mode
     {
       m_current_idx ++;
+      result = true;
     }
+
   // if we are already at the end -- just do nothing unless in loop mode
+  return result;
 }
 
 // goes back to the previous item
-void mgPlaylist::skipBack()
+bool mgPlaylist::skipBack()
 {
+  bool result = false;
+
   if( m_current_idx > 0 )
     {
       m_current_idx --;
+      result = true;
     }
+
   // if we are at the beginning -- just do nothing unless in loop mode
+  return result;
 }
 
 // get next track, do not update data structures
