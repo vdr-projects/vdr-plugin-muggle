@@ -3,8 +3,8 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.3 $
- * \date    $Date: 2004/02/01 22:35:23 $
+ * \version $Revision: 1.4 $
+ * \date    $Date: 2004/02/01 23:13:33 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: RaK $
  *
@@ -40,7 +40,7 @@ int GdInitDatabase(MYSQL *db)
     }
     
     if(mysql_real_connect(db,"localhost","root","",
-			  "GiantDisc2",0,NULL,0) == NULL)
+			  "GiantDisc",0,NULL,0) == NULL)
     {
 	return -2;
     }
@@ -910,7 +910,8 @@ bool GdTreeNode::expand()
                 m_expanded = false;
                 return false;
 	      }
-         case 100:
+	   break;
+         case 100: // Albumsearch result
            if (m_level == 1) {
              sprintf(sqlbuff,
                          "SELECT DISTINCT"
@@ -938,7 +939,7 @@ bool GdTreeNode::expand()
                  return false;
            }
            break;
-default:
+	default:
 	     mgError("View '%d' not yet implemented", m_view);
      }
      
@@ -992,7 +993,7 @@ default:
 	m_children.push_back(new_child);
     } else {
         new_child = new GdTreeNode(this, // parent
-                                   "100" , // id
+                                   "" , // id
                                    "Search Result", // label,
                                    m_restriction);
         m_children.push_back(new_child);
