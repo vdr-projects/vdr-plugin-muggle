@@ -92,6 +92,9 @@ $(DEPFILE): Makefile
 %.o: %.c %.h
 	$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDES) -c $<
 
+mg_tables.h:	scripts/genres.txt scripts/languages.txt scripts/musictypes.txt scripts/sources.txt
+	scripts/gentables
+
 libvdr-$(PLUGIN).so: $(OBJS)
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LIBS) -o $@
 	@cp $@ $(LIBDIR)/$@.$(VDRVERSION)

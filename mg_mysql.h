@@ -61,6 +61,7 @@ class mgmySql
   void Use();
   //! \brief create database and tables
   void Create();
+  void FillTables();
   void CreateFolderFields();
 
  private:

@@ -95,7 +95,6 @@ crh	Crimean Turkish; Crimean Tatar
 crp	Creoles and pidgins (Other)
 csb	Kashubian
 cus	Cushitic (Other)
-cus	Portuguese-based (Other)
 cze	Czech
 dak	Dakota
 dan	Danish
@@ -262,7 +261,6 @@ mao	Maori
 map	Austronesian (Other)
 mar	Marathi
 mas	Masai
-mal	Malay
 mdf	Moksha
 mdr	Mandar
 men	Mende

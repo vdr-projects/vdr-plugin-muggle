@@ -246,6 +246,67 @@ mgmySql::exec_count( const string query)
 	return atol (get_col0 ( query).c_str ());
 }
 
+struct genres_t {
+	char *id;
+	int id3genre;
+	char *name;
+};
+
+struct lang_t {
+	char *id;
+	char *name;
+};
+
+struct musictypes_t {
+	char *name;
+};
+
+struct sources_t {
+	char *name;
+};
+
+#include "mg_tables.h"
+void mgmySql::FillTables()
+{
+  int len = sizeof( genres ) / sizeof( genres_t );
+  for( int i=0; i < len; i ++ )
+  {
+	  char b[600];
+	  char id3genre[5];
+	  if (genres[i].id3genre>=0)
+	  	sprintf(id3genre,"%d",genres[i].id3genre);
+	  else
+		strcpy(id3genre,"NULL");
+	  string genre = sql_string(genres[i].name);
+	  sprintf(b,"INSERT INTO genre SET id='%s', id3genre=%s, genre=%s",
+			  genres[i].id,id3genre,genre.c_str());
+	  exec_sql(b);
+  }
+  len = sizeof( languages ) / sizeof( lang_t );
+  for( int i=0; i < len; i ++ )
+  {
+	  char b[600];
+	  sprintf(b,"INSERT INTO language SET id='%s', language='%s'",
+			  languages[i].id,languages[i].name);
+	  exec_sql(b);
+  }
+  len = sizeof( musictypes ) / sizeof( musictypes_t );
+  for( int i=0; i < len; i ++ )
+  {
+	  char b[600];
+	  sprintf(b,"INSERT INTO musictype SET musictype='%s'",
+			  musictypes[i].name);
+	  exec_sql(b);
+  }
+  len = sizeof( sources ) / sizeof( sources_t );
+  for( int i=0; i < len; i ++ )
+  {
+	  char b[600];
+	  sprintf(b,"INSERT INTO source SET source='%s'",
+			  sources[i].name);
+	  exec_sql(b);
+  }
+}
 
 void mgmySql::Create()
 {
@@ -258,6 +319,7 @@ void mgmySql::Create()
     }
   m_database_found=true;
   Use();
+  FillTables();
 }
 
 string
