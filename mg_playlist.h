@@ -128,9 +128,6 @@ public:
    */
   virtual void setListname(std::string name);
  
-  //! \brief returns the count of items in the list
-  int getCount();
-
   //! \brief access playlist items
   //@{
 
@@ -139,6 +136,9 @@ public:
 
   //! \brief make playlist persistent
   virtual bool storePlaylist() = 0;
+
+  //! \brief obtain length of content already played
+  unsigned long getCompletedLength();
 
   //! \brief export the playlist in m3u format
   virtual bool exportM3U( std::string m3u_file );

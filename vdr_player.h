@@ -48,9 +48,14 @@ private:
 
   //! \brief indicates, whether an osd is currently displayed
   bool m_has_osd;
+
+  bool m_track_view;
+  bool m_progress_view;
+
 #if VDRVERSNUM >= 10307
   //! \brief a replay display to show the progress during playback
   cSkinDisplayReplay *m_display;
+  cSkinDisplayMenu   *m_menu;
 
   cOsd *osd;
   const cFont *font;
@@ -120,6 +125,10 @@ public:
 
   //! \brief a progress display
   void ShowProgress();
+
+  void Display();
+
+  void ShowContents();
 
   //! \brief hide the osd, if present
   void Hide();

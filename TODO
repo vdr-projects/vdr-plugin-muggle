@@ -7,13 +7,11 @@
 
   If you feel, something is really urgent, go ahead. We'll help you.
 
-  \section urgent Urgent issues
+  \section urgent Urgent/Short-term issues
 
     \subsection bugs Bugs and testing needed
 
-        - Test execution of playlist commands
-        - Playlist view: start at selected on Ok
-    
+        - Test execution of playlist commands    
         - Crashes in filter selections?
         - Keep this? Test mgPCMPlayer::getSourceFile() for GD case (find)
 
@@ -47,7 +45,7 @@
     \subsection urgentcontent Content handling    
 	- Think, whether type (mp3, ogg, flac) should be stored in database
           - could be used in searching/structuring as well
-	- Handle loop mode in mgPlaylist (already done?)
+	- Handle loop mode in mgPlaylist
 	- Handle shuffle mode in mgPlaylist
 	  - shuffle mode on
 	    - for next file:
@@ -69,12 +67,6 @@
 
 	\subsection urgentplayer Player extensions
 
-        - Toggle Track view/playlist view (red)
-          - For playlist view show playlist name, total time
-          - For track view show name, artist, time
-        - Toggle detail/progress view (green)
-          - Track view: all metadata
-          - Playlist view: all tracks, skip/jump
 	- Determine max. framecount (needed for rewinding)?
 	- Init scale/level/normalize?
 	  - The max. level should be recognized during play
@@ -139,8 +131,8 @@
     
 	- really abstract from specific queries etc.
 	- mgDatabase should completely abstract database (mySQL) stuff!?
-		- read/write queries
-		- return results (needs a homogeneous representation of results?)
+          - read/write queries
+          - return results (needs a homogeneous representation of results?)
 		
 	\subsection midosd OSD-related issues
 	
@@ -149,7 +141,6 @@
 	- Check whether submenus (as implemented in VDR) are more suitable
 	    - do not permit jumping to arbitrary menus though
 	- Add play indicators
-	  - mgPCMPlayer::GetIndex: obtain total length from database (DONE)
 	  - Toggle display with Ok (off -> track info -> album info -> playlist info -> off)
 	  - Display track info (use vdr 1.3.12 progress display)
 	    - Song title
@@ -204,60 +195,67 @@
 
   \section done Done
   
-	- Check play speed (was XINE related)
-	- Playlists starts with 2nd song (DONE)
-	- Export playlists
-	- Delete selected item
-	- Add command line option for top level directory
-	- prepended to filename in non-GD-mode
-	- searched in GD-mode
-	- Edit playlist (move tracks like channels in VDR channel list)
+  - BUG: Check play speed (was XINE related)
+  - BUG: Playlists starts with 2nd song (DONE)
+  - Export playlists
+  - Delete selected item
+  - Add command line option for top level directory
+  - Prepend top level dir to filename in non-GD-mode
+  - Edit playlist (move tracks like channels in VDR channel list)
 		(OK in playlist view)
-	- Instant play = empty current playlist, append tracks of current node and play
+  - Instant play = empty current playlist, append tracks of current node and play
 		(easy, in submenu of browser)
-	- Clear playlist (submenu action)
-	- Find files from database entry based on GD compatibility flag
-	- Handle Next/PrevFile in mgPlaylist (vdr_player.c)
-	- Add plugin parameters for database name/host/user/pass
-	- Add plugin parameter for GD filename compatibility
-	- handle filters:
-		- create tracklist from filter
-		- create tree from filter
-	- i18n (english and german)
-	- Album import
-	- Various artists
-	- Ogg/Vorbis decoder integration
-		- cOggFile kept
-		- cOggInfo dismissed in favor of obtaining info from DB
-		- coding conventions adapted
-		- Schema extended to keep audio properties
-		- Import (mugglei) extended to store audio properties in DB 
-			(most notably samplerate, no. channels)
-		- Extended mgContentItem with audio properties
-		- Extended mgGdTrack with audio properties (bitrate, samplerate, channels)
-		- in mgPCMPlayer/vdr_player.c:
-			- pass m_playing to mp3/ogg decoder (instead of filename)
-		- mgOggDecoder: obtain audio properties from DB (channels, sampling rate via mgContentItem)
-		- mgPCMPlayer::getSourceFile moved to abstract data layer (mgContentItem)
-			and made concrete in subclasses (mgGdTrack)
-		- mgDecoders::findDecoder: extend decoder detection
-	- Check compatibility for 1.3.12 (DONE)
-        - Test Save/Rename/Load of playlist (DONE)
-        - Plugin crashes when deleting playlist while playing
-          - should stop playing immediately
-        - Check deletion of entries while playing
-          - only allowed, if item is not currently played
-          - adapt index in playlist
-        - Playlist indexing not correct    
-          - Player jumps e.g. from track 1 to track 3
-          - Make sure jumping beyond the end of the list is not permitted 
-        - Plugin crashes when selecting entries with special characters
-          - Escape query strings correctly
-          - should go into gd_content_interface.c (row[] in lines 1175,1179,1882)?
-        - Simple progress indicator for 1.3.12      
-        - Attach to graphlcd plugin via replay string
-        - Test Instant play from browser view
-        - Menu while progress display is active
-        - Check int/unsigned stuff in mg_playlist
+  - Clear playlist (submenu action)
+  - Find files from database entry based on GD compatibility flag
+  - Handle Next/PrevFile in mgPlaylist (vdr_player.c)
+  - Add plugin parameters for database name/host/user/pass
+  - Add plugin parameter for GD filename compatibility
+  - handle filters:
+    - create tracklist from filter
+    - create tree from filter
+  - i18n (english and german)
+  - Album import
+  - Various artists import (assorted)
+  - Ogg/Vorbis decoder integration
+    - cOggFile kept
+    - cOggInfo dismissed in favor of obtaining info from DB
+    - coding conventions adapted
+    - Schema extended to keep audio properties
+    - Import (mugglei) extended to store audio properties in DB 
+      (most notably samplerate, no. channels)
+    - Extended mgContentItem with audio properties
+    - Extended mgGdTrack with audio properties (bitrate, samplerate, channels)
+    - in mgPCMPlayer/vdr_player.c:
+      - pass m_playing to mp3/ogg decoder (instead of filename)
+    - mgOggDecoder: obtain audio properties from DB (channels, sampling rate via mgContentItem)
+    - mgPCMPlayer::getSourceFile moved to abstract data layer (mgContentItem)
+      and made concrete in subclasses (mgGdTrack)
+    - mgDecoders::findDecoder: extend decoder detection
+    - BUG: Check compatibility for 1.3.12 (DONE)
+    - BUG: Plugin crashes when deleting playlist while playing
+      - should stop playing immediately or not permit this
+    - BUG: Check deletion of entries while playing
+      - only allowed, if item is not currently played
+      - adapt index in playlist
+    - BUG: Playlist indexing not correct    
+      - Player jumps e.g. from track 1 to track 3
+      - Make sure jumping beyond the end of the list is not permitted 
+    - BUG: Plugin crashes when selecting entries with special characters
+      - Escape query strings correctly
+      - should go into gd_content_interface.c (row[] in lines 1175,1179,1882)?
+    - Simple progress indicator for 1.3.12      
+      - Attach to graphlcd plugin via replay string
+      - Test Instant play from browser view
+    - Displaying the menu while progress display is shown makes VDR crash (DONE)
+    - Check int/unsigned stuff in mg_playlist
+    - mgPCMPlayer::GetIndex: obtain track length from database (DONE)
+    - Import (mugglei) now checks for duplicate entries based on filenames
+    - Playlist view: start at selected on Ok
+    - Toggle Track view/playlist view (red)
+      - For playlist view show playlist name, total time
+      - For track view show name, artist, time
+    - Toggle detail/progress view (green)
+      - Track view: all metadata
+      - Playlist view: all tracks (past three, upcoming ones)
 
 */

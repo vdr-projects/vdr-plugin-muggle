@@ -73,16 +73,12 @@ mgMP3Decoder::mgMP3Decoder( mgContentItem *item, bool preinit)
 
 mgMP3Decoder::~mgMP3Decoder()
 {
-  MGLOG( "mgMP3Decoder::~mgMP3Decoder" );
-
   clean();
   delete m_stream;
 }
 
 void mgMP3Decoder::init()
 {
-  MGLOG( "mgMP3Decoder::init" );
-
   clean();
   mad_stream_init( &m_madstream );
 
@@ -102,8 +98,6 @@ void mgMP3Decoder::init()
 
 void mgMP3Decoder::clean()
 {
-  MGLOG( "mgMP3Decoder::clean" );
-
   m_playing = false;
   if( m_madsynth ) 
     {
@@ -119,22 +113,10 @@ void mgMP3Decoder::clean()
       m_madframe = 0; 
     }
   mad_stream_finish( &m_madstream );
-
-  /*
-  if( m_frameinfo )
-    {
-      cout << "mgMP3Decoder::clean: m_frameinfo deleted." << endl << flush;
-      delete m_frameinfo;
-      cout << "mgMP3Decoder::clean: m_frameinfo deleted." << endl << flush;
-      m_frameinfo = 0;
-    }
-  */
 }
 
 bool mgMP3Decoder::valid(void)
 {
-  MGLOG( "mgMP3Decoder::valid" );
-
   bool res = false;
   if( tryLock() )
     {
@@ -167,11 +149,9 @@ bool mgMP3Decoder::valid(void)
 
 mgPlayInfo *mgMP3Decoder::playInfo()
 {
-  MGLOG( "mgMP3Decoder::playInfo" );
   if( m_playing )
     {
       m_playinfo.m_index = mad_timer_count( m_playtime, MAD_UNITS_SECONDS );
-      // m_playinfo.Total = m_scan->Total; // TODO
 
       return &m_playinfo;
     }
@@ -239,8 +219,6 @@ struct mgDecode *mgMP3Decoder::done(eDecodeStatus status)
 
 eDecodeStatus mgMP3Decoder::decodeError(bool hdr)
 {
-  MGLOG( "mgMP3Decoder::decodeError" );
-
   if( m_madstream.error == MAD_ERROR_BUFLEN || m_madstream.error == MAD_ERROR_BUFPTR )
     {
       int s = mgMadStream( &m_madstream, m_stream );
@@ -274,8 +252,6 @@ eDecodeStatus mgMP3Decoder::decodeError(bool hdr)
 
 struct mgDecode *mgMP3Decoder::decode()
 {
-  //  MGLOG( "mgMP3Decoder::decode" );
-
   lock(); // this is released in Done()
   eDecodeStatus r;
 
