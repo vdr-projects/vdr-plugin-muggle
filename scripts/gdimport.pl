@@ -16,7 +16,8 @@
 # inclusion of mp3 tracks and a proper update of the database.
 
 
-use lib '/home/andi/muggle/import';
+use lib '/home/lvw/Development/muggle-plugin/scripts';
+#use lib '/home/andi/muggle/import';
 use gdparams;
 use gdgentools;
 use gddb;

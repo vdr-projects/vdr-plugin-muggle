@@ -12,7 +12,7 @@ package gdgentools;
 
 ### General tool routines
 
-use lib '/home/andi/muggle/import';
+use lib '/home/lvw/Development/muggle-import/scripts';
 use gdparams;
 use IO::Socket;
 
