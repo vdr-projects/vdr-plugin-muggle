@@ -10,6 +10,7 @@
  */
 
 #include <stdio.h>
+#include "i18n.h"
 #include "mg_selection.h"
 #include "vdr_setup.h"
 #include "mg_tools.h"

@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <fts.h>
 
+#include "i18n.h"
 #include "mg_selection.h"
 #include "vdr_setup.h"
 #include "mg_tools.h"
@@ -1181,24 +1182,56 @@ mgSelection::getlanguage(const char *filename)
 }
 
 char *
-mgSelection::getAlbum(const char *c_album,const char *c_artist,const char *c_title)
+mgSelection::getAlbum(const char *c_album,const char *c_artist,const char *c_directory)
 {
 	char * result;
 	char *b;
 	asprintf(&b,"SELECT cddbid FROM album"
-			" WHERE title=%s AND artist=%s",c_title,c_artist);
+			" WHERE title=%s AND artist=%s",c_album,c_artist);
 	result=m_db.sql_Cstring(m_db.get_col0(b));
 	free(b);
 	if (!strcmp(result,"'NULL'"))
 	{
-		asprintf(&result,"'%ld-%9s",random(),c_artist+1);
-		char *p=strchr(result,0)-1;
-		if (*p!='\'')
-			*p='\'';
-		asprintf(&b,"INSERT INTO album SET artist=%s,title=%s,cddbid=%s",
-				c_artist,c_album,result);
-		m_db.exec_sql(b);
+		const char *directory="substring(tracks.mp3file,1,length(tracks.mp3file)"
+			"-instr(reverse(tracks.mp3file),'/'))";
+		char *where;
+		asprintf(&where,"WHERE tracks.sourceid=album.cddbid "
+			"AND %s=%s "
+			"AND album.title=%s",
+			directory,c_directory,
+			c_album);
+
+		// how many artists will the album have after adding this one?
+		asprintf(&b,"SELECT distinct album.artist FROM tracks, album %s "
+				" union select %s",where,c_artist);
+        	//MYSQL_RES *rows = m_db.exec_sql (b);
+        	m_db.exec_sql (b);
 		free(b);
+		long new_album_artists = m_db.affected_rows();
+		if (new_album_artists>1)	// is the album multi artist?
+		{
+			asprintf(&b,"SELECT album.cddbid FROM tracks, album %s",where);
+			result=m_db.sql_Cstring(m_db.get_col0(b));
+			free(b);
+			asprintf(&b,"UPDATE album SET artist='Various Artists' WHERE cddbid=%s",result);
+			m_db.exec_sql(b);
+			// here we could change all tracks.sourceid to result and delete
+			// the other album entries for this album, but that should only 
+			// be needed if a pre 0.1.4 import has been done incorrectly, so we
+			// don't bother
+		}
+		else
+		{				// no usable album found
+			asprintf(&result,"'%ld-%9s",random(),c_artist+1);
+			char *p=strchr(result,0)-1;
+			if (*p!='\'')
+				*p='\'';
+			asprintf(&b,"INSERT INTO album SET title=%s,artist=%s,cddbid=%s",
+				c_album,c_artist,result);
+			m_db.exec_sql(b);
+			free(b);
+		}
+		free(where);
 	}
 	return result;
 }
@@ -1206,8 +1239,6 @@ mgSelection::getAlbum(const char *c_album,const char *c_artist,const char *c_tit
 void
 mgSelection::AddTrack(const char *filename)
 {
-//	mgDebug(1,"%s:AddTrack(%s)",get_current_dir_name(),filename);
-
 	TagLib::FileRef f( filename) ;
 	if (f.isNull())
 		return;
@@ -1221,7 +1252,14 @@ mgSelection::AddTrack(const char *filename)
 		c_album=sql_Cstring(tag->album());
         char *c_artist=sql_Cstring(tag->artist());
 	char *c_title=sql_Cstring(tag->title());
-	char *c_cddbid=getAlbum(c_album,c_artist,c_title);
+	char *c_directory=sql_Cstring(filename);
+	char *slash=strrchr(c_directory,'/');
+	if (slash)
+	{
+		*slash='\'';
+		*(slash+1)=0;
+	}
+	char *c_cddbid=getAlbum(c_album,c_artist,c_directory);
 	char *c_mp3file=sql_Cstring(filename);
 	char *c_genre1=sql_Cstring(id(keyGenres,tag->genre().to8Bit()));
 	char *c_lang=sql_Cstring(getlanguage(filename));
@@ -1289,6 +1327,7 @@ mgSelection::AddTrack(const char *filename)
 			c_artist,c_title,year,c_cddbid,
 			trackno,c_mp3file,len,bitrate,sample,
 			channels,c_genre1,c_lang,folderstring);
+	free(c_directory);
 	free(c_album);
 	free(c_artist);
 	free(c_title);

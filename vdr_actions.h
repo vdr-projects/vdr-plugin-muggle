@@ -1,5 +1,5 @@
 /*!
- * \file   mg_actions.h
+ * \file   vdr_actions.h
  * \brief  Implements all actions for broswing media libraries within VDR
  *
  * \version $Revision: 1.13 $
@@ -7,17 +7,16 @@
  * \author  Wolfgang Rohdewald
  * \author  Responsible author: $Author: wr61 $
  *
- *  $Id: mg_actions.h 276 2004-12-25 15:52:35Z wr61 $
+ *  $Id: vdr_actions.h 276 2004-12-25 15:52:35Z wr61 $
  */
 
-#ifndef _MG_ACTIONS_H
-#define _MG_ACTIONS_H
+#ifndef _VDR_ACTIONS_H
+#define _VDR_ACTIONS_H
 
 #include <string>
 
 #include <osd.h>
 #include <plugin.h>
-#include "i18n.h"
 
 using namespace std;
 

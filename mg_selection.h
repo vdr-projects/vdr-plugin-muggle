@@ -16,7 +16,6 @@
 #include <list>
 #include <vector>
 #include <map>
-#include <i18n.h>
 using namespace std;
 
 #include "mg_tools.h"
@@ -471,7 +470,7 @@ class mgSelection
 	char *sql_Cstring(TagLib::String s);
 	char *lower(char *s);
 	TagLib::String getlanguage(const char *filename);
-	char * getAlbum(const char *c_album,const char *c_artist,const char *c_title);
+	char * getAlbum(const char *c_album,const char *c_artist,const char *c_directory);
 	void AddTrack(const char *filename);
 	void SyncFile(const char *filename);
 

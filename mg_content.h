@@ -17,7 +17,6 @@
 #include <list>
 #include <vector>
 #include <map>
-#include <i18n.h>
 using namespace std;
 
 #include "mg_tools.h"

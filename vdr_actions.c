@@ -1,12 +1,12 @@
 /*!
- * \file   mg_actions.c
+ * \file   vdr_actions.c
  * \brief  Implements all actions for browsing media libraries within VDR
  *
  * \version $Revision: 1.27 $ * \date    $Date: 2004-12-25 16:52:35 +0100 (Sat, 25 Dec 2004) $
  * \author  Wolfgang Rohdewald
  * \author  Responsible author: $Author: wr61 $
  *
- * $Id: mg_actions.c 276 2004-12-25 15:52:35Z wr61 $
+ * $Id: vdr_actions.c 276 2004-12-25 15:52:35Z wr61 $
  */
 
 #include <stdio.h>
@@ -21,7 +21,7 @@
 #include <plugin.h>
 
 #include "vdr_setup.h"
-#include "mg_actions.h"
+#include "vdr_actions.h"
 #include "vdr_menu.h"
 #include "i18n.h"
 #include <vdr/interface.h>

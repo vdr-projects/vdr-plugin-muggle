@@ -20,8 +20,7 @@
 #include <osd.h>
 #include <plugin.h>
 #include <status.h>
-#include "i18n.h"
-#include "mg_actions.h"
+#include "vdr_actions.h"
 
 #include "vdr_player.h"
 
