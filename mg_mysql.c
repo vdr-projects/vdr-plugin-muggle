@@ -10,19 +10,85 @@
 #include "mg_mysql.h"
 #include "mg_tools.h"
 
+#include <assert.h>
 #include <stdarg.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "vdr_setup.h"
 
 bool needGenre2;
 static bool needGenre2_set;
 
+class mysqlhandle_t {
+	public:
+		mysqlhandle_t();
+		~mysqlhandle_t();
+	private:
+		char *m_datadir;
+};
 
-char *db_cmds[] = 
+char *server_args[] =
+{
+	"muggle",	
+	"--key_buffer_size=32M"
+};
+char *server_groups[] =
+{
+	"embedded",
+	"server",
+	"muggle_SERVER",
+	0
+};
+
+mysqlhandle_t::mysqlhandle_t()
+{
+#ifndef HAVE_SERVER
+	mgDebug(1,"calling mysql_server_init");
+	if (mysql_server_init(sizeof(server_args) / sizeof(char *),
+                      server_args, server_groups))
+		mgDebug(3,"mysql_server_init failed");
+#endif
+}
+
+mysqlhandle_t::~mysqlhandle_t()
+{
+#ifndef HAVE_SERVER
+  mgDebug(3,"calling mysql_server_end");
+  	mysql_server_end();
+	free(m_datadir);
+#endif
+}
+
+static mysqlhandle_t* mysqlhandle;
+
+mgmySql::mgmySql() 
+{
+	m_database_found=false;
+	m_hasfolderfields=false;
+	if (!mysqlhandle)
+		mysqlhandle = new mysqlhandle_t;
+	m_db = 0;
+	Connect();
+}
+
+mgmySql::~mgmySql()
+{
+    if (m_db) 
+    {
+	    mgDebug(3,"%X: closing DB connection",this);
+       mysql_close (m_db);
+       m_db = 0;
+    }
+}
+
+static char *db_cmds[] = 
 {
   "DROP DATABASE IF EXISTS GiantDisc",
   "CREATE DATABASE GiantDisc",
+#ifdef HAVE_SERVER
   "grant all privileges on GiantDisc.* to vdr@localhost;",
+#endif
   "use GiantDisc;",
   "drop table if exists album;",
   "CREATE TABLE album ( "
@@ -189,24 +255,6 @@ char *db_cmds[] =
 };
 
 
-mgmySql::mgmySql() 
-{
-	m_db = 0;
-	m_database_found=false;
-	m_hasfolderfields=false;
-	Connect();
-}
-
-mgmySql::~mgmySql()
-{
-    if (m_db) 
-    {
-       mysql_close (m_db);
-       m_db = 0;
-    }
-}
-
-
 MYSQL_RES*
 mgmySql::exec_sql( string query)
 {
@@ -363,6 +411,12 @@ mgmySql::sql_Cstring( const char *s, char *buf)
 }
 
 bool
+mgmySql::ServerConnected () const
+{
+	return m_db;
+}
+
+bool
 mgmySql::Connected () const
 {
 	return m_database_found;
@@ -371,12 +425,10 @@ mgmySql::Connected () const
 void
 mgmySql::Connect ()
 {
-    if (m_db) 
-    {
-       mysql_close (m_db);
-       m_db = 0;
-    }
+    assert(!m_db);
+#ifdef HAVE_SERVER
     if (the_setup.DbHost == "") return;
+#endif
     m_db = mysql_init (0);
     if (!m_db)
         return;
@@ -429,6 +481,7 @@ mgmySql::Connect ()
 				m_database_found=true;
 				break;
 			}
+		mysql_free_result(rows);
 	    }
 	    if (m_database_found)
 		    Use();
@@ -477,3 +530,9 @@ mgmySql::CreateFolderFields()
     }
 }
 
+void
+database_end()
+{
+	delete mysqlhandle;
+	mysqlhandle=0;
+}

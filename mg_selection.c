@@ -14,17 +14,23 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <fts.h>
+#include <assert.h>
 
 #include "i18n.h"
 #include "mg_selection.h"
 #include "vdr_setup.h"
 #include "mg_tools.h"
+#include "mg_sync.h"
 
 #include <mpegfile.h>
 #include <flacfile.h>
 #include <id3v2tag.h>
 #include <fileref.h>
 
+#if VDRVERSNUM >= 10307
+#include <vdr/interface.h>
+#include <vdr/skins.h>
+#endif
 
 //! \brief adds string n to string s, using a comma to separate them
 static string comma (string & s, string n);
@@ -568,6 +574,22 @@ mgSelection::setOrder(mgOrder* o)
 void
 mgSelection::InitFrom(mgValmap& nv)
 {
+	if (m_db.ServerConnected() && !m_db.Connected())
+	{
+	    char *b;
+	    asprintf(&b,tr("Create database %s?"),the_setup.DbName);
+	    if (Interface->Confirm(b))
+	    {
+		    char *argv[2];
+		    argv[0]=".";
+		    argv[1]=0;
+		    m_db.Create();
+		    mgSync *s = new mgSync;
+		    s->Sync(argv);
+		    delete s;
+	    }
+	    free(b);
+	}
 	InitSelection();
 	m_fall_through = nv.getbool("FallThrough");
     	m_Directory = nv.getstr("Directory");

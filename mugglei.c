@@ -39,22 +39,6 @@ using namespace std;
 
 int SysLogLevel = 1;
 
-static char *server_args[] = 
-{
-  "this_program",       /* this string is not used */
-  "--datadir=.",
-  "--key_buffer_size=32M"
-};
-
-static char *server_groups[] = 
-{
-  "embedded",
-  "server",
-  "this_program_SERVER",
-  (char *)NULL
-};
-
-string host, user, pass, dbname, sck;
 bool import_assorted, delete_mode, create_mode;
 
 void showmessage(const char *msg)
@@ -69,11 +53,6 @@ const char *I18nTranslate(const char *s,const char *Plugin)
 int main( int argc, char *argv[] )
 {
 	mgSetDebugLevel(1);
-  if( mysql_server_init(sizeof(server_args) / sizeof(char *),
-                        server_args, server_groups) )
-    {
-      exit(1);
-    }
       
   if( argc < 2 )
     { // we need at least a filename!
@@ -159,12 +138,13 @@ int main( int argc, char *argv[] )
           } break;
 	}
     }
-
-  mgSync sync;
+  mgSync *sync = new mgSync; // because we want to delete it before database_end
   if (create_mode)
-	  sync.Create();
+	  sync->Create();
   if (optind<argc)
-	  sync.Sync(argv+optind,delete_mode);
+	  sync->Sync(argv+optind,delete_mode);
+  delete sync;
+  database_end();
   return 0;
 }
 

@@ -2,7 +2,7 @@
 #include "mg_tools.h"
 #include "i18n.h"
 #include <stdio.h>
-
+#include <assert.h>
 
 const char * EMPTY = "XNICHTGESETZTX";
 

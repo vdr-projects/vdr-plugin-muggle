@@ -86,12 +86,14 @@ mgMuggle::CommandLineHelp (void)
         "  -u UUUU,  --user=UUUU     specify database user (default is )\n"
         "  -w WWWW,  --password=WWWW specify database password (default is empty)\n"
         "  -t TTTT,  --toplevel=TTTT specify toplevel directory for music (default is /mnt/music)\n"
-        "  -g,       --giantdisc     enable full Giantdisc compatibility mode\n";
+        "  -g,       --giantdisc     enable full Giantdisc compatibility mode\n"
+        "  -v,       --verbose       specify debug level. The higher the more. Default is 1\n";
 }
 
 
 bool mgMuggle::ProcessArgs (int argc, char *argv[])
 {
+    mgSetDebugLevel (1);
     mgDebug (1, "mgMuggle::ProcessArgs");
 
 // Implement command line argument processing here if applicable.
@@ -113,7 +115,7 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
         c,
         option_index = 0;
     while ((c =
-        getopt_long (argc, argv, "gh:s:n:p:t:u:w:", long_options,
+        getopt_long (argc, argv, "gh:s:n:p:t:u:w:v:", long_options,
         &option_index)) != -1)
     {
         switch (c)
@@ -146,6 +148,11 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
             case 'w':
             {
                 the_setup.DbPass = strcpyrealloc (the_setup.DbPass, optarg);
+            }
+            break;
+            case 'v':
+            {
+    		mgSetDebugLevel (atol(optarg));
             }
             break;
             case 't':
@@ -187,7 +194,6 @@ bool mgMuggle::Initialize (void)
 bool mgMuggle::Start (void)
 {
 // Start any background activities the plugin shall perform.
-    mgSetDebugLevel (99);
     RegisterI18n (Phrases);
     return true;
 }

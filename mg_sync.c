@@ -99,12 +99,14 @@ mgSync::getAlbum(const char *c_album,const char *c_artist,const char *c_director
 		// how many artists will the album have after adding this one?
 		asprintf(&b,"SELECT distinct album.artist FROM tracks, album %s "
 				" union select %s",where,c_artist);
-        	m_db.exec_sql (b);
+        	MYSQL_RES *rows = m_db.exec_sql (b);
 		free(b);
 		long new_album_artists = m_db.affected_rows();
+		mysql_free_result(rows);	
 		if (new_album_artists>1)	// is the album multi artist?
 		{
 			asprintf(&b,"SELECT album.cddbid FROM tracks, album %s",where);
+			free(result);
 			result=m_db.sql_Cstring(m_db.get_col0(b));
 			free(b);
 			asprintf(&b,"UPDATE album SET artist='Various Artists' WHERE cddbid=%s",result);
@@ -116,6 +118,7 @@ mgSync::getAlbum(const char *c_album,const char *c_artist,const char *c_director
 		}
 		else
 		{				// no usable album found
+			free(result);
 			asprintf(&result,"'%ld-%9s",random(),c_artist+1);
 			char *p=strchr(result,0)-1;
 			if (*p!='\'')
@@ -132,7 +135,8 @@ mgSync::getAlbum(const char *c_album,const char *c_artist,const char *c_director
 
 mgSync::mgSync()
 {
-      	if (!m_db.Connected())
+      	m_genre_rows=0;
+	if (!m_db.Connected())
 		return;
 	m_genre_rows = m_db.exec_sql ("SELECT id,genre from genre");
  	MYSQL_ROW rx;
@@ -142,7 +146,7 @@ mgSync::mgSync()
 
 mgSync::~mgSync()
 {
-	mysql_free_result(m_genre_rows);
+	if (m_genre_rows) mysql_free_result(m_genre_rows);
 }
 
 void

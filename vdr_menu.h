@@ -63,9 +63,9 @@ class mgStatus : public cStatus
 class mgMainMenu:public cOsdMenu
 {
     private:
-        mgSelection m_treesel;
-        mgSelection m_playsel;
-        mgSelection m_collectionsel;
+        mgSelection *m_treesel;
+        mgSelection *m_playsel;
+        mgSelection *m_collectionsel;
 	char *m_message;
 	void showMessage();
 	void LoadExternalCommands();
@@ -202,21 +202,21 @@ class mgMainMenu:public cOsdMenu
         mgSelection* selection ()
         {
             if (UsingCollection) 
-		   return &m_collectionsel;
+		   return m_collectionsel;
 	    else
-		   return &m_treesel;
+		   return m_treesel;
         }
 
 	//! \brief the collection selection
 	mgSelection* collselection()
 	{
-	    return &m_collectionsel;
+	    return m_collectionsel;
 	}
 
 //! \brief the "now playing" selection
         mgSelection* playselection ()
         {
-            return &m_playsel;
+            return m_playsel;
         }
 
 //! \brief true if the cursor is placed in the collection list

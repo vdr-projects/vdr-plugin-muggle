@@ -14,6 +14,10 @@ PLUGIN = muggle
 #  HAVE_VORBISFILE=1
 #  HAVE_FLAC=1
 
+#if you want to use a dedicated Mysql server instead of the embedded code,
+#define this in $VDRDIR/Make.config:
+# HAVE_SERVER
+#
 ### The version number of this plugin (taken from the main source file):
 
 VERSION = $(shell grep 'static const char \*VERSION *=' $(PLUGIN).c | awk '{ print $$6 }' | sed -e 's/[";]//g')
@@ -51,17 +55,21 @@ INCLUDES += -I$(VDRDIR) -I$(VDRDIR)/include -I$(DVBDIR)/include \
 
 DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
 
-MIFLAGS += -I/usr/include/taglib -lmysqlclient
-
 ### The object files (add further files here):
 
 OBJS = $(PLUGIN).o i18n.o mg_valmap.o mg_mysql.o mg_sync.o mg_order.o mg_content.o mg_selection.o vdr_actions.o vdr_menu.o mg_tools.o \
 	vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o \
 	vdr_setup.o mg_setup.o
 
-LIBS = -lmad -lmysqlclient -ltag
-MILIBS = -lmysqlclient -ltag
-# MILIBS = -lmysqld -lpthread -lz -lcrypt -lnsl -lm -lpthread -lrt -lwrap -ltag
+LIBS = -lmad -ltag
+MILIBS =  -ltag
+
+ifdef HAVE_SERVER
+SQLLIBS =  `mysql_config --libs`
+DEFINES += -DHAVE_SERVER
+else
+SQLLIBS = `mysql_config --libmysqld-libs`
+endif
 
 ifdef HAVE_VORBISFILE
 DEFINES += -DHAVE_VORBISFILE
@@ -96,11 +104,11 @@ mg_tables.h:	scripts/genres.txt scripts/languages.txt scripts/musictypes.txt scr
 	scripts/gentables
 
 libvdr-$(PLUGIN).so: $(OBJS)
-	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LIBS) -o $@
+	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LIBS) $(SQLLIBS) -o $@
 	@cp $@ $(LIBDIR)/$@.$(VDRVERSION)
 
 mugglei: mg_tools.o mugglei.o mg_sync.o mg_mysql.o mg_setup.o 
-	$(CXX) $(CXXFLAGS) $^ $(MILIBS) -o $@
+	$(CXX) $(CXXFLAGS) $^ $(MILIBS) $(SQLLIBS) -o $@
 
 install:
 	@cp ../../lib/libvdr-muggle*.so.* /usr/lib/vdr/

@@ -16,6 +16,8 @@
 
 using namespace std;
 
+void database_end();		// must be done explicitly
+
 /*!
  * \brief an abstract database class
  * 
@@ -55,6 +57,7 @@ class mgmySql
 
   long thread_id() { return mysql_thread_id(m_db);}
   long affected_rows() { return mysql_affected_rows(m_db);}
+  bool ServerConnected() const;
   bool Connected() const;
   bool HasFolderFields() const { return m_hasfolderfields;}
   void Connect();

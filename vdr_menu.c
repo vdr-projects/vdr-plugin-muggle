@@ -10,6 +10,7 @@
  */
 
 #include <stdio.h>
+#include <assert.h>
 
 #include <typeinfo>
 #include <string>
@@ -258,9 +259,9 @@ mgMainMenu::SaveState()
     nmain.put("CurrentOrder",m_current_order);
     DumpOrders(nmain);
     mgValmap nsel("tree");
-    m_treesel.DumpState(nsel);
+    m_treesel->DumpState(nsel);
     mgValmap ncol("collection");
-    m_collectionsel.DumpState(ncol);
+    m_collectionsel->DumpState(ncol);
     nmain.Write(f);
     nsel.Write(f);
     ncol.Write(f);
@@ -311,25 +312,28 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
     UsingCollection = nmain.getbool("UsingCollection");
     InitMapFromSetup(nsel);
     InitMapFromSetup(ncol);
-    m_treesel.setOrder(getOrder(m_current_order));
-    m_treesel.InitFrom (nsel);
-    m_treesel.CreateCollection(default_collection);
+    m_treesel = new mgSelection;
+    m_treesel->setOrder(getOrder(m_current_order));
+    m_treesel->InitFrom (nsel);
+    m_treesel->CreateCollection(default_collection);
     if (default_collection!=play_collection)
-	    m_treesel.CreateCollection(play_collection);
+	    m_treesel->CreateCollection(play_collection);
     vector<mgKeyTypes> kt;
     kt.push_back(keyCollection);
     mgOrder o;
     o.setKeys(kt);
-    m_collectionsel.setOrder(&o);
-    m_collectionsel.InitFrom (ncol);
-    m_playsel.setOrder(&o);
-    m_playsel.InitFrom(ncol);
+    m_collectionsel = new mgSelection;
+    m_collectionsel->setOrder(&o);
+    m_collectionsel->InitFrom (ncol);
+    m_playsel = new mgSelection;
+    m_playsel->setOrder(&o);
+    m_playsel->InitFrom(ncol);
 
     // initialize
-    if (m_playsel.level()!=1)
+    if (m_playsel->level()!=1)
     {
-    	m_playsel.leave_all();
-    	m_playsel.enter(play_collection);
+    	m_playsel->leave_all();
+    	m_playsel->enter(play_collection);
     }
     UseNormalSelection ();
     unsigned int posi = selection()->gotoPosition();
@@ -429,6 +433,9 @@ mgMainMenu::LoadExternalCommands()
 
 mgMainMenu::~mgMainMenu()
 {
+	delete m_treesel;
+	delete m_collectionsel;
+	delete m_playsel;
 	delete m_Status;
 	delete moveselection;
 	delete m_root;
@@ -799,9 +806,9 @@ otherkeys:
         AddMenu (newmenu,newposition);
 
     if (UsingCollection)
-    	forcerefresh |= m_collectionsel.cacheIsEmpty();
+    	forcerefresh |= m_collectionsel->cacheIsEmpty();
     else
-    	forcerefresh |= m_treesel.cacheIsEmpty();
+    	forcerefresh |= m_treesel->cacheIsEmpty();
 
     forcerefresh |= (newposition>=0);
 
