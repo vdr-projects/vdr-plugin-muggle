@@ -571,10 +571,13 @@ mgSelection::setOrder(mgOrder* o)
 		mgWarning("mgSelection::setOrder(0)");
 }
 
+
 void
 mgSelection::InitFrom(mgValmap& nv)
 {
-	if (m_db.ServerConnected() && !m_db.Connected())
+	extern time_t createtime;
+	if (m_db.ServerConnected() && !m_db.Connected() 
+		&& (time(0)>createtime+10))
 	{
 	    char *b;
 	    asprintf(&b,tr("Create database %s?"),the_setup.DbName);
@@ -584,9 +587,12 @@ mgSelection::InitFrom(mgValmap& nv)
 		    argv[0]=".";
 		    argv[1]=0;
 		    m_db.Create();
-		    mgSync *s = new mgSync;
-		    s->Sync(argv);
-		    delete s;
+	            if (Interface->Confirm(tr("Import tracks?")))
+		    {
+		        mgSync *s = new mgSync;
+		        s->Sync(argv);
+		        delete s;
+		    }
 	    }
 	    free(b);
 	}

@@ -3,7 +3,7 @@
  *
  * \version $Revision: 1.2 $
  * \date    $Date: 2005-02-10 17:42:54 +0100 (Thu, 10 Feb 2005) $
- * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
+ * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner, Wolfgang Rohdewald
  * \author  file owner: $Author: LarsAC $
  */
 
@@ -14,6 +14,7 @@
 #include <stdarg.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <time.h>
 
 #include "vdr_setup.h"
 
@@ -357,14 +358,23 @@ void mgmySql::FillTables()
   }
 }
 
+time_t createtime;
+
 void mgmySql::Create()
 {
+  createtime=time(0);
   // create database and tables
   mgDebug(1,"Dropping and recreating database %s",the_setup.DbName);
   int len = sizeof( db_cmds ) / sizeof( char* );
   for( int i=0; i < len; i ++ )
     {
-      exec_sql( string( db_cmds[i] ) );
+  	if (mysql_query (m_db, db_cmds[i]))
+  	{
+    		mgWarning("SQL Error in %s: %s",db_cmds[i],mysql_error (m_db));
+    		std::cout<<"ERROR in " << db_cmds[i] <<std::endl;
+  		mysql_query(m_db, "DROP DATABASE IF EXISTS GiantDisc;");	// clean up
+		return;
+	}
     }
   m_database_found=true;
   Use();
@@ -487,7 +497,8 @@ mgmySql::Connect ()
 	    if (m_database_found)
 		    Use();
 	    else
-		    mgWarning("Database %s does not exist",the_setup.DbName);
+		    if (!createtime)
+			    mgWarning("Database %s does not exist",the_setup.DbName);
     }
     if (!needGenre2_set && Connected())
     {

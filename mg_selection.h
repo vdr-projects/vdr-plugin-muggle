@@ -417,6 +417,7 @@ class mgSelection
 	unsigned int keycount(mgKeyTypes kt);
 	vector <const char *> choices(mgOrder *o,unsigned int level, unsigned int *current);
 	unsigned int valcount (string val);
+	bool Connected() { return m_db.Connected(); }
 
     private:
 	mutable map <mgKeyTypes, map<string,string> > map_values;

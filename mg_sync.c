@@ -295,9 +295,7 @@ void
 mgSync::Sync(char * const * path_argv, bool delete_missing)
 {
 	if (!m_db.Connected())
-	{
-		mgError("Cannot connect to data base");
-	}
+		return;
 	unsigned int count=0;
 	m_db.CreateFolderFields();
 	chdir(the_setup.ToplevelDir);
