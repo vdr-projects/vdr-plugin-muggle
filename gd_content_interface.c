@@ -26,7 +26,6 @@
 
 #include "i18n.h"
 
-
 #define GD_PLAYLIST_TYPE 0 //< listtype for giant disc db
 
 // some dummies to keep the compiler happy
@@ -706,63 +705,115 @@ int GdPlaylist::insertDataFromSQL()
 
 bool GdPlaylist::storePlaylist()
 {
-    std::vector<mgContentItem*>::iterator iter;
-    int num;
-    MYSQL_RES	*result;
-    MYSQL_ROW	row;
-    int	nrows;
-
-    if( m_listname == " " )
-      {
-	mgWarning("Can not store Tracklist without name");
-	return false;
-      }
-
-    if(m_sqlId >= 0)
-      {
-	// playlist alreay exists in SQL database
-	// remove old items first
-	// cout << " GdPlaylist::storePlaylist: removing items from " << m_sqlId << flush;
-
-	// remove old playlist items from db
-	mgSqlWriteQuery(&m_db, 
-			"DELETE FROM playlistitem WHERE playlist = %d",
+  std::vector<mgContentItem*>::iterator iter;
+  int num;
+  MYSQL_RES	*result;
+  MYSQL_ROW	row;
+  int	nrows;
+  
+  if( m_listname == " " )
+    {
+      mgWarning("Can not store Tracklist without name");
+      return false;
+    }
+  
+  if( m_sqlId >= 0 )
+    {
+      // playlist alreay exists in SQL database
+      // remove old items first
+      // cout << " GdPlaylist::storePlaylist: removing items from " << m_sqlId << flush;
+      
+      // remove old playlist items from db
+      mgSqlWriteQuery(&m_db, 
+		      "DELETE FROM playlistitem WHERE playlist = %d",
 			m_sqlId);
-      }
-    else
-      {
-	// create new database entry
-	mgSqlWriteQuery(&m_db, "INSERT into playlist "
-			"SET title=\"%s\", author=\"%s\"",
-			m_listname.c_str(), 
-			"VDR", // default author
-			"");  // creates current time as timestamp
-	m_author = "VDR";
-	
-	// now read thenew list to get the id
-	result=mgSqlReadQuery(&m_db, 
-			      "SELECT id,author FROM playlist where title=\"%s\"",
-			      m_listname.c_str());
-	nrows   = mysql_num_rows(result);
-	row = mysql_fetch_row(result);
-	
-	if( sscanf( row [0], "%d", & m_sqlId ) !=1 )
-	  {
-	    mgError("Invalid id '%s' in database", row [5]);
-	  }
-      }
-    // add new playlist items to db
-    
-    for( iter=m_list.begin(), num=0; 
-	 iter != m_list.end(); 
-	 iter++, num++)
-      {
-	mgSqlWriteQuery(&m_db, 
-			"INSERT into playlistitem  "
-			"SET tracknumber=\"%d\", trackid=\"%d\", playlist=%d",
-			num, (*iter)->getId(), m_sqlId);
-      }
-    return true;
+    }
+  else
+    {
+      // create new database entry
+      mgSqlWriteQuery(&m_db, "INSERT into playlist "
+		      "SET title=\"%s\", author=\"%s\"",
+		      m_listname.c_str(), 
+		      "VDR", // default author
+		      "");  // creates current time as timestamp
+      m_author = "VDR";
+      
+      // now read the new list to get the id
+      result = mgSqlReadQuery( &m_db, 
+			       "SELECT id,author FROM playlist where title=\"%s\"",
+			       m_listname.c_str());
+      nrows   = mysql_num_rows(result);
+      row = mysql_fetch_row(result);
+      
+      if( sscanf( row [0], "%d", & m_sqlId ) !=1 )
+	{
+	  mgError("Invalid id '%s' in database", row [5]);
+	}
+    }
+
+  // add new playlist items to db
+  for( iter=m_list.begin(), num=0; 
+       iter != m_list.end(); 
+       iter++, num++)
+    {
+      mgSqlWriteQuery(&m_db, 
+		      "INSERT into playlistitem  "
+		      "SET tracknumber=\"%d\", trackid=\"%d\", playlist=%d",
+		      num, (*iter)->getId(), m_sqlId);
+    }
+  return true;
+}
+
+bool  GdPlaylist::storeAs( std::string name )
+{
+  int id;
+
+  result = mgSqlReadQuery( &m_db, 
+			   "SELECT id FROM playlist WHERE title=\"current\"" );
+  
+  if( mysql_num_rows(result) )
+    {
+      MYSQL row = mysql_fetch_row( result );      
+    }
+  else
+    {
+      // otherwise create a new database entry
+      mgSqlWriteQuery( &m_db, "INSERT into playlist SET "
+		       "title=\"%s\", author=\"VDR\"", 
+		       name.c_str() )
+      
+      // now read the new list to get the id
+      result = mgSqlReadQuery( &m_db, 
+			       "SELECT id,author FROM playlist where title=\"current\"");
+
+      nrows   = mysql_num_rows(result);
+      row = mysql_fetch_row(result);
+    }
+
+  if( sscanf( row [0], "%d", &id ) !=1 )
+    {
+      mgError("Invalid id '%s' in database", row [5]);
+    }
+  else
+    {
+      // now we know that the playlist 'name' has identifier id 
+
+      // remove old playlist items from db
+      mgSqlWriteQuery( &m_db, 
+		       "DELETE FROM playlistitem WHERE playlist = %d",
+			id );
+
+      // add new playlist items to db
+      for( iter=m_list.begin(), num=0; 
+	   iter != m_list.end(); 
+	   iter++, num++)
+	{
+	  mgSqlWriteQuery(&m_db, 
+			  "INSERT into playlistitem  "
+			  "SET tracknumber=\"%d\", trackid=\"%d\", playlist=%d",
+			  num, (*iter)->getId(), m_sqlId);
+	}
+    }  
 }
 
 /*!
