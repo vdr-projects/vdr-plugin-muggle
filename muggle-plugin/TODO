@@ -3,12 +3,9 @@ TODO File for Muggle
 
 Testing/bugs
 ============
-- Save/load playlists to database
-- Export playlists
-- Execute playlist commands
-- Check play speed
-- Playlists starts with 2nd song
-- Check for getSourceFile
+- Test execution of playlist commands
+- Test mgPCMPlayer::getSourceFile() for GD case (find)
+- Test saving/loading playlists to database
 
 Code polishing
 ==============
@@ -16,7 +13,13 @@ Code polishing
     - Why do filters use pointers?
 - Check for (reasonably) consistent usage of char*/string
 - mgDatabase is not used? 
+   - should handle a static object with a MySQL connection
+   - execute queries?
+   -
+
 - mgPlayer used what for?
+   - Could save IP/host name and associate last playlist loaded
+
 - Check for unnecessary log commands
 - Generate HTML documentation using doxygen,
   use dotty/gv for state machines of player
@@ -25,6 +28,7 @@ Code polishing
 Short term items
 ================
 - Import existing m3u playlists (in import)
+- Import genres
 
 OSD in general
 --------------
@@ -47,7 +51,11 @@ Player
 Medium term items
 =================
 - really abstract from specific queries etc.
-- mgDatabase should abstract database (mySQL) stuff!?
+- mgDatabase should completely abstract database (mySQL) stuff!?
+  - read/write queries
+  - return results (needs a homogeneous representation of results?)
+
+- Run import/update from within OSD?
 
 OSD
 ---
@@ -57,13 +65,19 @@ OSD
 Content
 -------
 - Save/load filter sets
-- Apply filter set as dynamic playlist
+- Apply filter set as dynamic playlist (i.e. show filters when loading playlists)
+- Handle ratings (increase/decrease during replay)
 
 Player
 ------
 - Shuffle: toggle and loop keys. Shuffle only songs not already played, not easy though
 - Display covers as still pictures
 - Add flac decoder
+- Set ratings
+
+Import
+------
+- Handle updates
 
 Web interface
 -------------
@@ -85,6 +99,9 @@ Visions
 
 Already Done
 ============
+- Check play speed (probably XINE related)
+- Playlists starts with 2nd song (DONE)
+- Export playlists
 - Delete selected item
 - Add command line option for top level directory
    - prepended to filename in non-GD-mode
@@ -106,6 +123,9 @@ Already Done
 ************************************************************
 *
 * $Log: TODO,v $
+* Revision 1.12  2004/08/26 11:11:42  LarsAC
+* Import changed to use taglib
+*
 * Revision 1.11  2004/07/29 06:18:07  lvw
 * Added todo entries
 *

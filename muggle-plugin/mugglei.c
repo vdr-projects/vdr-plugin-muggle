@@ -1,11 +1,15 @@
+
 #include <string>
 using namespace std;
 
 #include <stdlib.h>
-
+#include <stdio.h>
 #include <sys/stat.h>
-#include <id3/tag.h>
+
 #include <mysql/mysql.h>
+
+#include <taglib/tag.h>
+#include <taglib/fileref.h>
 
 #include "mg_tools.h"
 
@@ -47,7 +51,7 @@ time_t get_db_modification_time( long uid )
 {
   time_t mt;
 
-  MYSQL_RES *result = mgSqlReadQuery( db, "SELECT modification_time FROM tracks WHERE id='%d'", uid );
+  MYSQL_RES *result = mgSqlReadQuery( db, "SELECT modification_time FROM tracks WHERE id=\"%d\"", uid );
   MYSQL_ROW row     = mysql_fetch_row( result );
   
   string mod_time = row[0];
@@ -58,7 +62,7 @@ time_t get_db_modification_time( long uid )
 
 long find_file_in_database( string filename )
 {
-  MYSQL_RES *result = mgSqlReadQuery( db, "SELECT id FROM tracks WHERE mp3file='%s'", filename.c_str() );
+  MYSQL_RES *result = mgSqlReadQuery( db, "SELECT id FROM tracks WHERE mp3file=\"%s\"", filename.c_str() );
   MYSQL_ROW row = mysql_fetch_row( result );
 
   // obtain ID and return
@@ -68,129 +72,93 @@ long find_file_in_database( string filename )
 // read tags from the mp3 file and store them into the corresponding database entry
 void update_db( long uid, string filename )
 {
-  char title[1024], album[1024], year[5], artist[1024], cddbid[20], trackno[5];
-  ID3_Tag filetag( filename.c_str() );
+  // char title[1024], album[1024], year[5], artist[1024], cddbid[20], trackno[5];
+  TagLib::String title, album, artist, genre;
+  uint trackno, year;
+  string cddbid;
 
-  printf( "ID3 tag created.\n" );  
+  //  ID3_Tag filetag( filename.c_str() );
+  TagLib::FileRef f( filename.c_str() );
 
-  // obtain album value
-  ID3_Frame* album_frame = filetag.Find( ID3FID_ALBUM );
-  printf( "Album frame obtained.\n" );  
-  if( NULL != album_frame )
-    {      
-      album_frame->Field( ID3FN_TEXT ).Get( album, 1024 );
-      printf( "Field obtained: %s\n", album );  
-    }
-  else
+  if( !f.isNull() && f.tag() ) 
     {
-      printf( "No album info found.\n" );  
-      strncpy( album, "Unassigned", 1023 );
-    }
+      cout << "Evaluating " << filename << endl;
+      TagLib::Tag *tag = f.tag();
 
-  printf( "Album frame evaluated.\n" );  
+      // obtain tag information
+      title   = tag->title();
+      album   = tag->album();
+      year    = tag->year();
+      artist  = tag->artist();
+      trackno = tag->track();
+      genre   = tag->genre();
+            
+      // TODO: CD identifier (?), playcounter, popularimeter?, volume adjustment
+      
+      // finally update the database
 
-  // obtain title value
-  ID3_Frame* title_frame = filetag.Find( ID3FID_TITLE );
-  if( NULL != title_frame )
-    {      
-      title_frame->Field ( ID3FN_TEXT ).Get ( title, 1024 ); 
-      printf( "Field obtained: %s\n", title);  
-    }
-  else
-    {
-      printf( "No title info found.\n" );  
-      strncpy( title, "Unknown title", 1023);
-    }
-
-  printf( "Title frame evaluated.\n" );  
-
-  // obtain year value (ID3FID_YEAR)
-  ID3_Frame* year_frame = filetag.Find( ID3FID_YEAR );
-  if( NULL != year_frame )
-    {      
-      year_frame->Field ( ID3FN_TEXT ).Get ( year, 5 ); 
-      printf( "Field obtained: %s\n", year );  
-    }
-  else
-    {
-      printf( "No year info found.\n" );  
-      strncpy( title, "0", 1023);
-    }
-
-  printf( "Year frame evaluated.\n" );  
-
-  // obtain artist value (ID3FID_LEADARTIST)
-  ID3_Frame* artist_frame = filetag.Find( ID3FID_LEADARTIST );
-  if( NULL != artist_frame )
-    {      
-      artist_frame->Field ( ID3FN_TEXT ).Get ( artist, 1023 ); 
-      printf( "Field obtained: \n" );  
-    }
-  else
-    {
-      printf( "No artist info found.\n" );  
-      strncpy( artist, "Unknown artist", 1023);
-    }
-
-  printf( "Artist frame evaluated.\n" );  
-
-  // obtain track number ID3FID_TRACKNUM
-  ID3_Frame* trackno_frame = filetag.Find( ID3FID_TRACKNUM );
-  if( NULL != trackno_frame )
-    {      
-      trackno_frame->Field ( ID3FN_TEXT ).Get ( trackno, 5 ); 
-      printf( "Field obtained: %s\n", trackno );  
-    }
-  else
-    {
-      strncpy( trackno, "0", 5);
-    }
-
-  printf( "Trackno frame evaluated.\n" );  
-
-  printf( "ID3 frames/fields read.\n" );  
-
-  // obtain associated album or create
-  if( NULL == album_frame )
-    { // no album found, associate with default album
-      strcpy( cddbid, "0000unknown0000" );
-    }
-  else
-    { // album tag found, associate or create
-      MYSQL_RES *result = mgSqlReadQuery( db, "SELECT cddbid FROM album WHERE title='%s' AND artist='%s'", 
-					  album, artist );
-      MYSQL_ROW row = mysql_fetch_row( result );
-      printf( "\nAlbum query set.\n" );  
-
-      // num rows == 0 ?
-      int nrows   = mysql_num_rows(result);
-      if( nrows == 0 )
-	{
-	  // create new album entry 
-	  long id = random();
-	  snprintf( cddbid, 19, "%d-%s", id, album );      
-	  
-	  mgSqlWriteQuery( db, "INSERT INTO album (artist,title,cddbid) VALUES ('%s', '%s', '%s')", artist, title, cddbid );
+      // obtain associated album or create
+      if( album == "" )
+	{ // no album found, associate with default album
+	  cddbid = "0000unknown0000";
 	}
       else
-	{ // use first album found as source id for the track
-	  strncpy( cddbid, row[0], 19 );
+	{ // album tag found, associate or create
+	  MYSQL_RES *result = mgSqlReadQuery( db, "SELECT cddbid FROM album WHERE title=\"%s\" AND artist=\"%s\"", 
+					      album.toCString(), artist.toCString() );
+	  MYSQL_ROW row = mysql_fetch_row( result );
+
+	  // num rows == 0 ?
+	  int nrows   = mysql_num_rows(result);
+	  if( nrows == 0 )
+	    {
+	      // create new album entry 
+	      long id = random();
+	      char *buf;
+	      asprintf( &buf, "%d-%s", id, album.toCString() );
+	      cddbid = buf;
+	      free( buf );
+	  
+	      mgSqlWriteQuery( db, "INSERT INTO album (artist,title,cddbid) VALUES (\"%s\", \"%s\", \"%s\")", artist.toCString(), album.toCString(), cddbid.c_str() );
+	    }
+	  else
+	    { // use first album found as source id for the track
+	      cddbid = row[0];
+	    }
 	}
-    }
-  
-  // TODO: genre(s), CD identifier (?), playcounter, popularimeter?, volume adjustment
-
-  // finally update the database
-
-  // update tracks table
-  if( uid > 0 )
-    { // the entry is known to exist already, hence update it
-      mgSqlWriteQuery( db, "UPDATE tracks SET artist='%s', title='%s', year='%s', sourceid='%s'"
-		       "WHERE id=%d", artist, title, year, cddbid, uid );
-    }
-  else
-    { // the entry does not exist, create it
-      mgSqlWriteQuery( db, "INSERT INTO tracks (artist,title,year,sourceid,tracknb,mp3file) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')", artist, title, year, cddbid, trackno, filename.c_str() );
+      
+      // update tracks table
+      if( uid > 0 )
+	{ // the entry is known to exist already, hence update it
+	  mgSqlWriteQuery( db, "UPDATE tracks SET artist=\"%s\", title=\"%s\", year=\"%s\", sourceid=\"%s\", mp3file=\"%s\""
+			   "WHERE id=%d", artist.toCString(), title.toCString(), year, cddbid.c_str(), filename.c_str(), uid );
+	}
+      else
+	{ // the entry does not exist, create it
+	  // int t = title.find( "'" );
+	  // int a = artist.find( "'" );
+	      mgSqlWriteQuery( db, 
+			       "INSERT INTO tracks (artist,title,year,sourceid,tracknb,mp3file)"
+			       " VALUES (\"%s\", \"%s\", %d, \"%s\", %d, \"%s\")",
+			       artist.toCString(), title.toCString(), year, cddbid.c_str(), trackno, filename.c_str() );
+	      /*
+      	  if( !( t > 0 || a > 0 ) )
+	    {
+	    }
+	  else
+	    {
+	      cout << filename << " skipped." << endl;
+	      cout << "-- TAG --" << endl;
+	      cout << "title   - \"" << tag->title()   << "\"" << endl;
+	      cout << "artist  - \"" << tag->artist()  << "\"" << endl;
+	      cout << "album   - \"" << tag->album()   << "\"" << endl;
+	      cout << "year    - \"" << tag->year()    << "\"" << endl;
+	      cout << "comment - \"" << tag->comment() << "\"" << endl;
+	      cout << "track   - \"" << tag->track()   << "\"" << endl;
+	      cout << "genre   - \"" << tag->genre()   << "\"" << endl;
+	    }
+	      */
+	}
     }
 }
 
@@ -237,24 +205,21 @@ void evaluate_file( string filename )
 
 int main( int argc, char *argv[] )
 {
-  /*
   host   = "134.130.124.222";
   user   = "root";
   dbname = "giantdisc";
   pass   = NULL;
-  */
+  /*
   host   = "localhost";
   user   = "vdr";
   dbname = "GiantDisc";
   pass   = NULL;
+  */
 
   int res = init_database();
 
-  printf( "Database initialized.\n" );
-
   if( !res )
     {
-      printf( "Evaluating %s\n", argv[1] );
       update_db( 0, string( argv[1] ) );
     }
   else
