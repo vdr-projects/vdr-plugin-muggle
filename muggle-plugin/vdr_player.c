@@ -1118,6 +1118,84 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 	  {
 	    Backward();
 	  } break;
+	case kRed:
+	  {
+	    if( !m_visible && m_player )
+	      {
+		mgPlaylist *pl = m_player->GetPlaylist();
+
+		std::string s;
+		switch( pl->toggleLoopMode() )
+		  {
+		  case mgPlaylist::LM_NONE:
+		    {
+		      s = tr( "Loop mode off" );
+		    } break;
+		  case mgPlaylist::LM_SINGLE:
+		    {
+		      s = tr( "Loop mode single" );
+		    } break;
+		  case mgPlaylist::LM_FULL:
+		    {
+		      s = tr( "Loop mode full" );
+		    } break;
+		  default:
+		    {
+		      s = tr( "Unknown loop mode" );
+		    }
+#if VDRVERSNUM >= 10307
+			Skins.Message(mtInfo, s.c_str() );
+			Skins.Flush();
+#else
+			Interface->Status( s.c_str() );
+			Interface->Flush();
+#endif
+		  }
+	      }
+	    else
+	      {
+		// toggle progress display between simple and detail
+	      }
+	  } break;
+	case kGreen:
+	  {
+	    if( !m_visible && m_player )
+	      {
+		mgPlaylist *pl = m_player->GetPlaylist();
+
+		std::string s;
+		switch( pl->toggleShuffleMode() )
+		  {
+		  case mgPlaylist::SM_NONE:
+		    {
+		      s = tr( "Shuffle mode off" );
+		    } break;
+		  case mgPlaylist::SM_NORMAL:
+		    {
+		      s = tr( "Shuffle mode normal" );
+		    } break;
+		  case mgPlaylist::SM_PARTY:
+		    {
+		      s = tr( "Shuffle mode party" );
+		    } break;
+		  default:
+		    {
+		      s = tr( "Unknown shuffle mode" );
+		    }
+#if VDRVERSNUM >= 10307
+			Skins.Message(mtInfo, s.c_str() );
+			Skins.Flush();
+#else
+			Interface->Status( s.c_str() );
+			Interface->Flush();
+#endif
+		  }
+	      }
+	    else
+	      {
+		// toggle progress display between playlist and single track
+	      }
+	  } break;
 	case kPause:
 	case kYellow:
 	  {
