@@ -34,8 +34,7 @@ class mgContentItem
     public:
         mgContentItem ();
 
-	string getKeyValue(mgKeyTypes kt);
-	string getKeyId(mgKeyTypes kt);
+	mgSelItem* getKeyItem(mgKeyTypes kt);
 
 	//! \brief copy constructor
         mgContentItem(const mgContentItem* c);
@@ -43,9 +42,9 @@ class mgContentItem
 	//! \brief construct an item from an SQL row
         mgContentItem (const mgSelection* sel, const MYSQL_ROW row);
 //! \brief returns track id
-        long getId () const
+        long getTrackid () const
         {
-            return m_id;
+            return m_trackid;
         }
 
 //! \brief returns title
@@ -91,7 +90,7 @@ class mgContentItem
         int getChannels () const;
         
     private:
-        long m_id;
+        long m_trackid;
         string m_title;
         string m_mp3file;
         string m_artist;

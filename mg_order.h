@@ -15,8 +15,6 @@ typedef list<string> strlist;
 
 strlist& operator+=(strlist&a, strlist b);
 
-extern const char * EMPTY;
-
 //! \brief adds string n to string s, using string sep to separate them
 string& addsep (string & s, string sep, string n);
 
@@ -77,14 +75,36 @@ private:
 	mgParts ConnectToTracks(string table) const;
 };
 
+class mgSelItem
+{
+	public:
+		mgSelItem();
+		mgSelItem(string v,string i,unsigned int c=0);
+		void set(string v,string i,unsigned int c=0);
+		void operator=(const mgSelItem& from);
+		void operator=(const mgSelItem* from);
+		bool operator==(const mgSelItem& other) const;
+		string value() const { return m_value; } 
+		string id() const { return m_id; } 
+		unsigned int count() const { return m_count; } 
+		bool valid() const { return m_valid; }
+	private:
+		bool m_valid;
+		string m_value;
+		string m_id;
+		unsigned int m_count;
+};
+
 class mgKey {
 	public:
 		virtual ~mgKey() {};
 		virtual mgParts Parts(mgmySql &db,bool orderby=false) const = 0;
 		virtual string id() const = 0;
+		virtual bool valid() const = 0;
 		virtual string value () const = 0;
 		//!\brief translate field into user friendly string
-		virtual void set(string value, string id) = 0;
+		virtual void set(mgSelItem& item) = 0;
+		virtual mgSelItem& get() = 0;
 		virtual mgKeyTypes Type() const = 0;
 		virtual string map_idfield() const { return ""; }
 		virtual string map_valuefield() const { return ""; }
@@ -152,8 +172,7 @@ public:
 	void clear();
 	mgKey* Key(unsigned int idx) const;
 	mgKeyTypes getKeyType(unsigned int idx) const;
-	string getKeyValue(unsigned int idx) const;
-	string getKeyId(unsigned int idx) const;
+	mgSelItem& getKeyItem(unsigned int idx) const;
 	void setKeys(vector<mgKeyTypes> kt);
 	string Name();
 	void setOrderByCount(bool orderbycount) { m_orderByCount = orderbycount;}
@@ -167,5 +186,7 @@ private:
 };
 
 bool operator==(const mgOrder& a,const mgOrder&b); //! \brief compares only the order, not the current key values
+
+extern mgSelItem zeroitem;
 
 #endif               // _MG_SQL_H

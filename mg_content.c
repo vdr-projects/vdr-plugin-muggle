@@ -16,38 +16,28 @@
 #include "mg_tools.h"
 
 
-string
-mgContentItem::getKeyId(mgKeyTypes kt)
+mgSelItem*
+mgContentItem::getKeyItem(mgKeyTypes kt)
 {
-	if (m_id<0) 
-		return "";
-	switch (kt) {
-		case keyGenres:
-		case keyGenre1:
-		case keyGenre2:
-		case keyGenre3: return m_genre1_id;
-		default: return getKeyValue(kt);
+	string val;
+	string id;
+	if (m_trackid>=0) 
+	{
+		switch (kt) {
+			case keyGenres:
+			case keyGenre1:
+			case keyGenre2:
+			case keyGenre3: val = getGenre();id=m_genre1_id;break;
+			case keyArtist: val = id = getArtist();break;
+			case keyAlbum: val = id = getAlbum();break;
+			case keyYear: val = id = string(ltos(getYear()));break;
+			case keyDecade: val = id = string(ltos(int((getYear() % 100) / 10) * 10));break;
+			case keyTitle: val = id = getTitle();break;
+			case keyTrack: val = id = getTitle();break;
+			default: return new mgSelItem;
+		}
 	}
-}
-
-string
-mgContentItem::getKeyValue(mgKeyTypes kt)
-{
-	if (m_id<0) 
-		return "";
-	switch (kt) {
-		case keyGenres:
-		case keyGenre1:
-		case keyGenre2:
-		case keyGenre3: return getGenre();
-		case keyArtist: return getArtist();
-		case keyAlbum: return getAlbum();
-		case keyYear: return string(ltos(getYear()));
-		case keyDecade: return string(ltos(int((getYear() % 100) / 10) * 10));
-		case keyTitle: return getTitle();
-		case keyTrack: return getTitle();
-		default: return "";
-	}
+	return new mgSelItem(val,id);
 }
 
 
@@ -115,12 +105,12 @@ int mgContentItem::getChannels () const
 
 mgContentItem::mgContentItem ()
 {
-    m_id = -1;
+    m_trackid = -1;
 }
 
 mgContentItem::mgContentItem (const mgContentItem* c)
 {
-    m_id = c->m_id;
+    m_trackid = c->m_trackid;
     m_title = c->m_title;
     m_mp3file = c->m_mp3file;
     m_artist = c->m_artist;
@@ -186,7 +176,7 @@ mgContentItem::getSourceFile(bool AbsolutePath) const
 
 mgContentItem::mgContentItem (const mgSelection* sel,const MYSQL_ROW row)
 {
-    m_id = atol (row[0]);
+    m_trackid = atol (row[0]);
     if (row[1])
 	m_title = row[1];
     else

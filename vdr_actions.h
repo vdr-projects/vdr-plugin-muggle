@@ -18,6 +18,8 @@
 #include <osd.h>
 #include <plugin.h>
 
+#include "mg_order.h"
+
 using namespace std;
 
 class mgSelection;
@@ -107,7 +109,7 @@ class mgAction
  * to execute this. The returned C string must be freeable at any time.
  * \param value a string that can be used for building the menu name.
  */
-        virtual const char *MenuName (const unsigned int idx=0,const string value="")
+        virtual const char *MenuName (const unsigned int idx=0,const mgSelItem& item=zeroitem)
 	{
 	    return strdup(ButtonName());
 	}

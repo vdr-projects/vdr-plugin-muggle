@@ -25,7 +25,6 @@ using namespace std;
 
 typedef vector<string> strvector;
 
-
 /*!
  * \brief the only interface to the database.
  * Some member functions are declared const although they can modify the inner state of mgSelection.
@@ -35,18 +34,24 @@ typedef vector<string> strvector;
  */
 class mgSelection
 {
-    private:
-	class mgSelStrings 
+	class mgSelItems 
 	{
-		friend class mgSelection;
-		private:
-			strvector strings;
-			mgSelection* m_sel;
-			void setOwner(mgSelection* sel);
 		public:
-			string& operator[](unsigned int idx);
-			bool operator==(const mgSelStrings&x) const;
+			mgSelItems() { m_sel=0; }
+			void setOwner(mgSelection* sel);
+			mgSelItem& operator[](unsigned int idx);
+			string& id(unsigned int);
+			unsigned int count(unsigned int);
+			bool operator==(const mgSelItems&x) const;
 			size_t size() const;
+        		unsigned int valindex (const string v) const;
+        		unsigned int idindex (const string i) const;
+			void clear();
+			void push_back(mgSelItem& item) { m_items.push_back(item); }
+		private:
+        		unsigned int index (const string s,bool val,bool second_try=false) const;
+			vector<mgSelItem> m_items;
+			mgSelection* m_sel;
 	};
     public:
 //! \brief defines an order to be used 
@@ -99,20 +104,19 @@ class mgSelection
 //! \brief the normal destructor
         ~mgSelection ();
 
-/*! \brief represents all values for the current level. The result
- * is cached in values, subsequent accesses to values only incur a
- * small overhead for building the SQL WHERE command. The values will
+/*! \brief represents all items for the current level. The result
+ * is cached, subsequent accesses to values only incur a
+ * small overhead for building the SQL WHERE command. The items will
  * be reloaded when the SQL command changes
  */
-        mutable mgSelStrings values;
+        mutable mgSelItems items;
 
 /*! \brief returns the name of a key
  */
         mgKeyTypes getKeyType (const unsigned int level) const;
 
 //! \brief return the current value of this key
-        string getKeyValue (const unsigned int level) const;
-	unsigned int getKeyIndex(const unsigned int level) const;
+        mgSelItem& getKeyItem (const unsigned int level) const;
 	
 /*! \brief returns the current item from the value() list
  */
@@ -177,7 +181,7 @@ class mgSelection
  */
         bool enter (const string value)
         {
-            return enter (valindex (value));
+            return enter (items.valindex (value));
         }
 
 	/*! \brief like enter but if we are at the leaf level simply select
@@ -185,12 +189,12 @@ class mgSelection
 	 */
         bool select (const string value)
         {
-            return select (valindex(value));
+            return select (items.valindex(value));
         }
 
-	bool selectid (const string id)
+	bool selectid (const string i)
 	{
-	    return select(idindex(id));
+	    return select(items.idindex(i));
 	}
 
 	void selectfrom(mgOrder& oldorder,mgContentItem* o);
@@ -317,7 +321,7 @@ class mgSelection
  */
         void setPosition (const string value)
         {
-            setPosition (valindex (value));
+            setPosition (items.valindex (value));
         }
 
 /*! \brief go to a position in the track list
@@ -408,8 +412,8 @@ class mgSelection
 	{
 		return (m_current_values=="" && m_current_tracks=="");
 	}
-	string value(mgKeyTypes kt, string id) const;
-	string value(mgKey* k, string id) const;
+	string value(mgKeyTypes kt, string idstr) const;
+	string value(mgKey* k, string idstr) const;
 	string value(mgKey* k) const;
 	string id(mgKeyTypes kt, string val) const;
 	string id(mgKey* k, string val) const;
@@ -426,8 +430,6 @@ class mgSelection
         mutable string m_current_tracks;
 //! \brief be careful when accessing this, see mgSelection::tracks()
         mutable vector < mgContentItem > m_tracks;
-        mutable strvector m_ids;
-	mutable vector < unsigned int > m_counts;
 	//! \brief initializes maps for id/value mapping in both direction
 	bool loadvalues (mgKeyTypes kt) const;
         bool m_fall_through;
@@ -451,8 +453,6 @@ class mgSelection
 	 * entries and the wrong tracks might be played.
 	 */
         string sql_values ();
-        unsigned int valindex (const string val,const bool second_try=false) const;
-        unsigned int idindex (const string val,const bool second_try=false) const;
         string ListFilename ();
         string m_Directory;
         void loadgenres ();
