@@ -166,7 +166,7 @@ void update_db( long uid, string filename )
 	  long id = random();
 	  snprintf( cddbid, 19, "%d-%s", id, album );      
 	  
-	  mgSqlWriteQuery( db, "INSERT INTO album VALUES ('%s', '%s', '%s')", artist, title, cddbid );
+	  mgSqlWriteQuery( db, "INSERT INTO album (artist,title,cddbid) VALUES ('%s', '%s', '%s')", artist, title, cddbid );
 	}
       else
 	{ // use first album found as source id for the track
@@ -186,7 +186,7 @@ void update_db( long uid, string filename )
     }
   else
     { // the entry does not exist, create it
-      mgSqlWriteQuery( db, "INSERT INTO tracks VALUES ('%s', '%s', NULL, NULL, '%s', NULL, NULL, NULL, NULL, NULL, '%s', '%s', '%s'", artist, title, year, cddbid, trackno, filename.c_str() );
+      mgSqlWriteQuery( db, "INSERT INTO tracks (artist,title,year,sourceid,tracknb,mp3file) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')", artist, title, year, cddbid, trackno, filename.c_str() );
     }
 }
 
@@ -233,9 +233,9 @@ void evaluate_file( string filename )
 
 int main( int argc, char *argv[] )
 {
-  host   = "127.0.0.1";
-  user   = "music";
-  dbname = "GiantDisc";
+  host   = "134.130.124.222";
+  user   = "root";
+  dbname = "giantdisc";
   pass   = NULL;
 
   int res = init_database();
