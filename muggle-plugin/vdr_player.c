@@ -168,12 +168,14 @@ class mgPCMPlayer:public cPlayer, cThread
         int m_index;
 
         void Empty ();
-        bool SkipFile (int step=1);
+        bool SkipFile (int step=0);
 	void PlayTrack();
         void StopPlay ();
 
         void SetPlayMode (ePlayMode mode);
         void WaitPlayMode (ePlayMode mode, bool inv);
+
+	int skip_direction;
 
     protected:
         virtual void Activate (bool On);
@@ -234,6 +236,7 @@ pmAudioOnlyBlack)
     m_index = 0;
     m_playing = 0;
     m_current = 0;
+    skip_direction = 1;
 }
 
 
@@ -320,10 +323,10 @@ mgPCMPlayer::SetPlayMode (ePlayMode mode)
 {
     m_playmode_mutex.Lock ();
     if (mode != m_playmode)
-    {
+      {
         m_playmode = mode;
         m_playmode_cond.Broadcast ();
-    }
+      }
     m_playmode_mutex.Unlock ();
 }
 
@@ -333,10 +336,10 @@ mgPCMPlayer::WaitPlayMode (ePlayMode mode, bool inv)
 {
 // must be called with m_playmode_mutex LOCKED !!!
 
-    while (m_active
-        && ((!inv && mode != m_playmode) || (inv && mode == m_playmode)))
+  while( m_active
+	 && ((!inv && mode != m_playmode) || (inv && mode == m_playmode)) )
     {
-        m_playmode_cond.Wait (m_playmode_mutex);
+      m_playmode_cond.Wait (m_playmode_mutex);
     }
 }
 
@@ -411,7 +414,6 @@ mgPCMPlayer::Action (void)
                     {
 		      std::string filename = the_setup.getFilename( m_playing->getSourceFile () );
 		      mgDebug( 1, "mgPCMPlayer::Action: music file is %s", filename.c_str() );
-			
                         if ((m_decoder = mgDecoders::findDecoder (m_playing))
                             && m_decoder->start ())
                         {
@@ -422,6 +424,7 @@ mgPCMPlayer::Action (void)
                             level.Init ();
 
                             m_state = msDecode;
+			    mgDebug(1,"found a decoder for %s",filename.c_str());
 
                             break;
                         }
@@ -761,8 +764,11 @@ mgPCMPlayer::StopPlay ()
 bool mgPCMPlayer::SkipFile (int step)
 {
     MGLOG("mgPCMPlayer::SkipFile");
+    mgDebug(1,"SkipFile:step=%d, skip_direction=%d",step,skip_direction);
     mgContentItem * newcurr = NULL;
-    if (m_playlist->skipTracks (step)) 
+    if (step!=0)
+	    skip_direction=step;
+    if (m_playlist->skipTracks (skip_direction)) 
     {
         newcurr = m_playlist->getCurrentTrack ();
         if (newcurr) {
@@ -831,7 +837,7 @@ mgPCMPlayer::Forward ()
     MGLOG ("mgPCMPlayer::Forward");
 
     Lock ();
-    if (SkipFile ())
+    if (SkipFile (1))
     {
         StopPlay ();
         Play ();
@@ -857,7 +863,7 @@ mgPCMPlayer::Backward (void)
 void
 mgPCMPlayer::Goto (int index, bool still)
 {
-    m_playlist->setTrack (index - 1);
+    m_playlist->setTrackPosition (index - 1);
     mgContentItem *next = m_playlist->getCurrentTrack ();
 
     if (next)
@@ -1409,7 +1415,6 @@ mgPlayerControl::ShowProgress ()
             mgSelection *list = player->getPlaylist ();
             if (list)
             {
-	    	list->clearCache();	// playlist can dynamically grow, force reload
                 total_frames = SecondsToFrames (list->getLength ());
                 current_frame += SecondsToFrames (list->getCompletedLength ());
                 asprintf (&buf, "%s (%d/%d)", list->getListname ().c_str (),
@@ -1530,7 +1535,8 @@ mgPlayerControl::InternalHide ()
 
 eOSState mgPlayerControl::ProcessKey (eKeys key)
 {
-    if (key!=kNone) MGLOG ("mgPlayerControl::ProcessKey(eKeys key)");
+    if (key!=kNone)
+	    mgDebug (1,"mgPlayerControl::ProcessKey(%u)",key);
     if (!Active ())
     {
         return osEnd;

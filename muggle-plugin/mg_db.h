@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef _DB_H
-#define _DB_H
+#ifndef _MG_DB_H
+#define _MG_DB_H
 #include <stdlib.h>
 #include <mysql/mysql.h>
 #include <string>
@@ -25,443 +25,29 @@
 using namespace std;
 
 #include "mg_tools.h"
+#include "mg_valmap.h"
+#include "mg_order.h"
 
 typedef vector<string> strvector;
 
-//! \brief a map for reading / writing configuration data. 
-class mgValmap : public map<string,string> {
-	private:
-		const char *m_key;
-	public:
-		/*! \brief constructor
-		 * \param key all names will be prefixed with key.
-		 */
-		mgValmap(const char *key);
-		//! \brief read from file
-		void Read(FILE *f);
-		//! \brief write to file
-		void Write(FILE *f);
-		//! \brief enter a string value
-		void put(const char*name, string value);
-		//! \brief enter a C string value
-		void put(const char*name, const char* value);
-		//! \brief enter a long value
-		void put(const char*name, long value);
-		//! \brief enter a int value
-		void put(const char*name, int value);
-		//! \brief enter a unsigned int value
-		void put(const char*name, unsigned int value);
-		//! \brief enter a bool value
-		void put(const char*name, bool value);
-	 //! \brief return a string
-	 string getstr(const char* name) {
-		 return (*this)[name];
-	 }
-	 //! \brief return a C string
-	 bool getbool(const char* name) {
-		 return (getstr(name)=="true");
-	 }
-	 //! \brief return a long
-	 long getlong(const char* name) {
-		 return atol(getstr(name).c_str());
-	 }
-	 //! \brief return an unsigned int
-	 unsigned int getuint(const char* name) {
-		 return (unsigned long)getlong(name);
-	 }
-};
-
-static const string EMPTY = "XNICHTGESETZTX";
 
 class mgSelection;
 
-//! \brief a generic keyfield
-class keyfield
-{
-    public:
-        //! \brief set the owning selection. 
-        void setOwner(mgSelection *owner) { selection = owner; }
-
-	//! \brief default constructor
-        keyfield ()
-        {
-        };
-
-	/*! \brief constructs a simple key field which only needs info from
- 	 * the tracks table.
- 	 * \param choice the internationalized name of this key field, e.g. "Jahr"
- 	 */
-        keyfield (const string choice);
-
-	//! \brief default destructor
-        virtual ~ keyfield ()
-        {
-        };
-
-/*! \brief assigns a new id and value to the key field.
- * This also invalidates the cache of the owning mgSelection.
- * \param id used for lookups in the data base
- * \param value used for display
- */
-        void set (const string id, const string value);
-
-//! \brief helper function for streaming debug info
-        void writeAt (ostream &) const;
-
-//! \brief adds lookup data to a WHERE SQL statement
-        string restrict (string & result) const;
-
-//! \brief returns the internationalized name of this key field
-        string choice () const
-        {
-            return m_choice;
-        }
-
-/*! \brief returns the id of this key field. This is the string used
- * for lookups in the data base, not for display
- */
-        string id () const
-        {
-            return m_id;
-        }
-
-/*! \brief returns the filter for this key field.
- * \todo filters are not yet implemented but we already dump them in DumpState
- */
-        string filter () const
-        {
-            return m_filter;
-        }
-
-/*! \brief returns the value of this key field. This is the string used
- * for the display.
- */
-        string value () const
-        {
-            return m_value;
-        }
-
-	virtual string order() const
-	{
-	    return valuefield ();
-	}
-
-//! \brief returns the name of the corresponding field in the tracks table
-        virtual string basefield () const { return ""; }
-
-//! \brief returns the name of the field to be shown in the selection list
-        virtual string valuefield () const
-        {
-            return basefield ();
-        }
-
-//! \brief returns the name of the identification field
-        virtual string idfield () const
-        {
-            return basefield ();
-        }
-
-/*! \brief returns the name of the field needed to count how many
- * different values for this key field exist
- */
-        virtual string countfield () const
-        {
-            return basefield ();
-        }
-
-/*! \brief returns a join clause needed for the composition of
- * a WHERE statement
- */
-        virtual string join () const;
-
-/*! \brief returns a join clause needed for the composition of
- * a WHERE statement especially for counting the number of items
- */
-        virtual string countjoin () const
-        {
-            return join ();
-        }
-
-/*! \brief if true, the WHERE clause should also return values from
- * join tables
- */
-        bool lookup;
-
-//! \brief returns a SQL query command for counting different key
-//values
-        string KeyCountquery ();
-
-    protected:
-//! \brief the owning selection. 
-	mgSelection* selection;
-	//! \brief the english name for this key field
-        string m_choice;
-	//! \brief used for lookup in the data base
-        string m_id;
-	//! \brief used for OSD display
-        string m_value;
-	//! \brief an SQL restriction like 'tracks.year=1982'
-        string m_filter;
-	/*! \brief should be defined as true if we need to join another
-	 * table for getting user friendly values (like the name of a genre)
-	 */
-        virtual bool need_join () const;
-	//! \brief escape the string as needed for calls to mysql
-	string sql_string(const string s) const;
-};
-
-
-//! \brief orders by collection
-class collectionkeyfield:public keyfield
-{
-    public:
-        collectionkeyfield ():keyfield ("Collection")
-        {
-        }
-        string basefield () const
-        {
-            return "playlist.id";
-        }
-        string valuefield () const
-        {
-            return "playlist.title";
-        }
-/* this join() would ensure that empty collections be suppressed. But we
- * want them all. so we don't need the join
- */
-        string join () const
-        {
-            return "";
-        }
-};
-
-//! \brief orders by position in collection
-class collectionitemkeyfield:public keyfield
-{
-    public:
-        collectionitemkeyfield ():keyfield ("Collection item")
-        {
-        }
-        string basefield () const
-        {
-            return "playlistitem.tracknumber";
-        }
-        string valuefield () const
-        {
-            return "tracks.title";
-        }
-	string order () const
-	{
-	    return basefield ();
-	}
-        string join () const
-        {
-            return
-                "tracks.id=playlistitem.trackid and playlist.id=playlistitem.playlist";
-        }
-};
-
-//! \brief orders by album.title
-class albumkeyfield:public keyfield
-{
-    public:
-        albumkeyfield ():keyfield ("Album")
-        {
-        }
-        string basefield () const
-        {
-            return "tracks.sourceid";
-        }
-        string valuefield () const
-        {
-            return "album.title";
-        }
-        string idfield () const
-        {
-            return "album.title";
-        }
-        string countfield () const
-        {
-            return "album.title";
-        }
-        string join () const
-        {
-            return "tracks.sourceid=album.cddbid";
-        }
-    protected:
-        //!brief we always need to join table album
-        bool need_join () const
-        {
-            return true;
-        };
-};
-
-//! \brief orders by genre1
-class genre1keyfield:public keyfield
-{
-    public:
-        genre1keyfield ():keyfield ("Genre 1")
-        {
-        }
-        string basefield () const
-        {
-            return "tracks.genre1";
-        }
-        string valuefield () const
-        {
-            return "genre.genre";
-        }
-        string idfield () const
-        {
-            return "genre.id";
-        }
-};
-
-//! \brief orders by genre2
-class genre2keyfield:public keyfield
-{
-    public:
-        genre2keyfield ():keyfield ("Genre 2")
-        {
-        }
-        string basefield () const
-        {
-            return "tracks.genre2";
-        }
-        string valuefield () const
-        {
-            return "genre.genre";
-        }
-        string idfield () const
-        {
-            return "genre.id";
-        }
-};
-
-//! \brief orders by language
-class langkeyfield:public keyfield
-{
-    public:
-        langkeyfield ():keyfield ("Language")
-        {
-        }
-        string basefield () const
-        {
-            return "tracks.lang";
-        }
-        string valuefield () const
-        {
-            return "language.language";
-        }
-        string idfield () const
-        {
-            return "language.id";
-        }
-};
-
-//! \brief orders by tracks.artist
-class artistkeyfield:public keyfield
-{
-    public:
-        artistkeyfield ():keyfield ("Artist")
-        {
-        }
-        string basefield () const
-        {
-            return "tracks.artist";
-        }
-};
-
-//! \brief orders by tracks.rating
-class ratingkeyfield:public keyfield
-{
-    public:
-        ratingkeyfield ():keyfield ("Rating")
-        {
-        }
-        string basefield () const
-        {
-            return "tracks.rating";
-        }
-};
-
-//! \brief orders by tracks.year
-class yearkeyfield:public keyfield
-{
-    public:
-        yearkeyfield ():keyfield ("Year")
-        {
-        }
-        string basefield () const
-        {
-            return "tracks.year";
-        }
-};
-
-//! \brief orders by tracks.title
-class titlekeyfield:public keyfield
-{
-    public:
-        titlekeyfield ():keyfield ("Title")
-        {
-        }
-        string basefield () const
-        {
-            return "tracks.title";
-        }
-};
-
-//! \brief orders by tracks.tracknb and tracks.title
-class trackkeyfield:public keyfield
-{
-    public:
-        trackkeyfield ():keyfield ("Track")
-        {
-        }
-        string basefield () const
-        {
-            return "tracks.tracknb";
-        }
-        string valuefield () const
-        {
-            return
-                "concat("
-		  "if(tracks.tracknb>0,"
-		    "concat("
-		      "if(tracks.tracknb<10,'  ',''),"
-		      "tracks.tracknb,"
-		      "' '"
-		    "),''"
-		  "),"
-		"tracks.title)";
-        }
-};
-
-//! \brief orders by decade (deduced from tracks.year)
-class decadekeyfield:public keyfield
-{
-    public:
-        decadekeyfield ():keyfield ("Decade")
-        {
-        }
-        string basefield () const
-        {
-            return "substring(convert(10 * floor(tracks.year/10), char),3)";
-        }
-};
-
-//! \brief represents a content item like an mp3 file
+//! \brief represents a content item like an mp3 file.
 class mgContentItem
 {
     public:
         mgContentItem ()
         {
         }
+
+	string getKeyValue(mgKeyTypes kt);
+
 	//! \brief copy constructor
         mgContentItem(const mgContentItem* c);
 
 	//! \brief construct an item from an SQL row
-        mgContentItem (const MYSQL_ROW row, const string ToplevelDir);
+        mgContentItem (const mgSelection* sel, const MYSQL_ROW row);
 //! \brief returns track id
         long getId () const
         {
@@ -487,58 +73,38 @@ class mgContentItem
         }
 
 //! \brief returns the name of the album
-        string getAlbum ();
+        string getAlbum () const;
 
 //! \brief returns the name of genre 1
-        string getGenre1 ();
+        string getGenre1 () const;
 
 //! \brief returns the name of genre 2
-        string getGenre2 ();
+        string getGenre2 () const;
 
 //! \brief returns the name of genre 1
-        string getGenre ()
-        {
-            return getGenre1 ();
-        }
+        string getGenre () const;
 
 //! \brief returns the bitrate
-        string getBitrate () const
-        {
-            return m_bitrate;
-        }
+        string getBitrate () const;
 
 //! \brief returns the file name of the album image
-        string getImageFile ();
+        string getImageFile () const;
 
 //! \brief returns year
-        int getYear () const
-        {
-            return m_year;
-        }
+        int getYear () const;
 
 //! \brief returns rating
-        int getRating () const
-        {
-            return m_rating;
-        }
+        int getRating () const;
 
 //! \brief returns duration
-        int getDuration () const
-        {
-            return m_duration;
-        }
+        int getDuration () const;
 
 //! \brief returns samplerate
-        int getSampleRate () const
-        {
-            return m_samplerate;
-        }
+        int getSampleRate () const;
 
 //! \brief returns # of channels
-        int getChannels () const
-        {
-            return m_channels;
-        }
+        int getChannels () const;
+        
     private:
         long m_id;
         string m_title;
@@ -557,6 +123,10 @@ class mgContentItem
 
 /*!
  * \brief the only interface to the database.
+ * Some member functions are declared const although they can modify the inner state of mgSelection.
+ * But they only modify variables used for caching. With const, we want to express
+ * the logical constness. E.g. the selected tracks can change without breaking constness:
+ * The selection never defines concrete tracks but only how to choose them. 
  */
 class mgSelection
 {
@@ -577,6 +147,13 @@ class mgSelection
 /*! \brief define various ways to play music in random order
  * \todo Party mode is not implemented, does same as SM_NORMAL
  */
+/*! \brief defines a field to be used as key for selection
+ *
+ * \param level 0 is the top level
+ * \param kt type of the key field. For possible values see mg_order.h
+ */
+        void setKey (const unsigned int level, const mgKeyTypes kt);
+
         enum ShuffleMode
         {
             SM_NONE,                              //!< \brief play normal sequence
@@ -636,54 +213,32 @@ class mgSelection
 //! \brief the normal destructor
         ~mgSelection ();
 
-	//! \brief sets the top level directory where content is stored
-	void setToplevelDir(string ToplevelDir) { m_ToplevelDir = ToplevelDir; }
-
 /*! \brief represents all values for the current level. The result
  * is cached in values, subsequent accesses to values only incur a
  * small overhead for building the SQL WHERE command. The values will
  * be reloaded when the SQL command changes
- * \todo we should do more caching. The last 5 result sets should be cached.
  */
-        mgSelStrings values;
-
-/*! \brief defines a field to be used as key for selection
- *
- * \param level 0 is the top level
- * \param name of the key field, internationalized. Possible values
- * are defined by keychoice()
- */
-        void setKey (const unsigned int level, const string name);
+        mutable mgSelStrings values;
 
 /*! \brief returns the name of a key
  */
-        string getKeyChoice (const unsigned int level)
-        {
-            return keys[level]->choice ();
-        }
-	//! \brief return the current value of this key
-        string getKeyValue (const unsigned int level)
-        {
-            return keys[level]->value ();
-        }
+        mgKeyTypes getKeyType (const unsigned int level) const;
+
+//! \brief return the current value of this key
+        string getKeyValue (const unsigned int level) const;
+	
+/*! \brief returns the current item from the value() list
+ */
+	string getCurrentValue();
 
 //! \brief returns a map (new allocated) for all used key fields and their values
-	map<string,string> * UsedKeyValues();
-
-//! \brief helper function for << operator (dumps debug info)
-        void writeAt (ostream &);
-
-/*! \brief returns FROM and WHERE clauses for the current state
- * of the selection.
- * \param want_trackinfo work in progress, should disappear I hope
- */
-        string where (bool want_trackinfo = false);
-
-//! \brief the number of music items currently selected
-        unsigned int count ();
+	map<mgKeyTypes,string> * UsedKeyValues();
 
 //! \brief the number of key fields used for the query
-        unsigned int size ();
+        unsigned int ordersize ();
+
+//! \brief the number of music items currently selected
+        unsigned int count () const;
 
 //! \brief the current position in the current level
         unsigned int gotoPosition () 
@@ -692,11 +247,12 @@ class mgSelection
         }
 
 //! \brief the current position
-        unsigned int getPosition (unsigned int level) const;
+        unsigned int getPosition (unsigned int level)const;
 
 	//! \brief go to the current position. If it does not exist,
 	// go to the nearest.
         unsigned int gotoPosition (unsigned int level);
+
 
 //! \brief the current position in the tracks list
         unsigned int getTrackPosition () const;
@@ -779,28 +335,17 @@ class mgSelection
             return m_level;
         }
 
-/*! \brief the possible choices for a keyfield in this level.
- * keyfields already used in upper levels are no possible
- * choices, neither are most keyfields if their usage would
- * allow less than 2 choices.
- */
-        const strvector &keychoice (const unsigned int level);
-
-/*! \brief returns the current item from the value() list
- */
-	string getCurrentValue();
-
 	//! \brief true if the selection holds no items
 	bool empty();
 
-/*! \brief returns detailled info about all selected tracks.
+/*! \brief returns detailed info about all selected tracks.
  * The ordering is done only by the keyfield of the current level.
  * This might have to be changed - suborder by keyfields of detail
  * levels. This list is cached so several consequent calls mean no
  * loss of performance. See value(), the same warning applies.
  * \todo call this more seldom. See getNumTracks()
  */
-        const vector < mgContentItem > &tracks ();
+        const vector < mgContentItem > &tracks () const;
 
 /*! \brief returns an item from the tracks() list
  * \param position the position in the tracks() list
@@ -899,7 +444,7 @@ class mgSelection
  * last existing position
  * \return only if no position exists, false will be returned
  */
-        void setTrack (unsigned int position);
+        void setTrackPosition (unsigned int position);
 
 /*! \brief skip some tracks in the track list
  * \return false if new position does not exist
@@ -928,7 +473,7 @@ class mgSelection
 /*! \brief returns the sum of the durations of completed tracks
  * those are tracks before the current track position
  */
-        unsigned long getCompletedLength ();
+        unsigned long getCompletedLength () const;
 
 /*! returns the number of tracks in the track list
  *  \todo should not call tracks () which loads all track info.
@@ -949,19 +494,19 @@ class mgSelection
 /*! returns the name of the current play list. If no play list is active,
  * the name is built from the name of the key fields.
  */
-        string getListname ();
+        string getListname () const;
 
 /*! \brief true if this selection currently selects a list of collections
  */
-        bool isCollectionlist ();
+        bool isCollectionlist () const;
 
 	//! \brief true if we have entered a collection
-	bool inCollection(const string Name="");
+	bool inCollection(const string Name="") const;
 
 	/*! \brief dumps the entire state of this selection into a map,
 	 * \param nv the values will be entered into this map
 	 */
-        void DumpState(mgValmap& nv);
+        void DumpState(mgValmap& nv) const;
 
         /*! \brief creates a new selection using saved definitions
 	 * \param nv this map contains the saved definitions
@@ -969,60 +514,49 @@ class mgSelection
 	mgSelection(mgValmap&  nv);
 
 	//! \brief clear the cache, next access will reload from data base
-        void clearCache();
+        void clearCache() const;
 
-	//! \todo soll sql_values() nur noch bei Bedarf bauen, also muessen
-	// alle Aenderungen, die Einfluss darauf haben, clearCache machen
-        void refreshValues();
+        void refreshValues() const;
 
 	//! \brief true if values and tracks need to be reloaded
-	bool cacheIsEmpty()
+	bool cacheIsEmpty() const
 	{
 		return (m_current_values=="" && m_current_tracks=="");
 	}
+	string value(mgKeyTypes kt, string id) const;
+	string value(mgKey* k, string id) const;
+	string value(mgKey* k) const;
+	string id(mgKeyTypes kt, string val) const;
+	string id(mgKey* k, string val) const;
+	string id(mgKey* k) const;
+
     private:
-	void AddOrder(const string sql,list<string>& orderlist, const string item);
-    	list < string > m_fromtables; //!< \brief part result from previous where()
-    	string m_from;	//!< \brief part result from previous where()
-	string m_where;	//!< \brief part result from previous where()
+	mutable map <mgKeyTypes, map<string,string> > map_values;
+	mutable map <mgKeyTypes, map<string,string> > map_ids;
+        mutable string m_current_values;
+        mutable string m_current_tracks;
+//! \brief be careful when accessing this, see mgSelection::tracks()
+        mutable vector < mgContentItem > m_tracks;
+        mutable strvector m_ids;
+	//! \brief initializes maps for id/value mapping in both direction
+	bool loadvalues (mgKeyTypes kt) const;
         bool m_fall_through;
         vector < unsigned int >m_position;
-        unsigned int m_tracks_position;
+        mutable unsigned int m_tracks_position;
         ShuffleMode m_shuffle_mode;
         LoopMode m_loop_mode;
         MYSQL *m_db;
+	void setDB(MYSQL *db);
         string m_Host;
         string m_User;
         string m_Password;
-	string m_ToplevelDir;
         unsigned int m_level;
         long m_trackid;
-        string m_current_values;
-        string m_current_tracks;
 
-//! \brief be careful when accessing this, see mgSelection::tracks()
-        vector < mgContentItem > m_tracks;
-        strvector m_ids;
-        strvector m_keychoice;
-        artistkeyfield kartist;
-        ratingkeyfield krating;
-        yearkeyfield kyear;
-        decadekeyfield kdecade;
-        albumkeyfield kalbum;
-        collectionkeyfield kcollection;
-        collectionitemkeyfield kcollectionitem;
-        genre1keyfield kgenre1;
-        genre2keyfield kgenre2;
-        langkeyfield klanguage;
-        titlekeyfield ktitle;
-        trackkeyfield ktrack;
-        map < string, keyfield * >all_keys;
-        map < string, keyfield * >trall_keys;
-        vector < keyfield * >keys;
-        bool UsedBefore (keyfield const *k, unsigned int level);
+        mgOrder order;
+	bool UsedBefore (const mgKeyTypes kt, unsigned int level) const;
         void InitSelection ();
         void InitDatabase ();
-        void initkey (keyfield & f);
 	/*! \brief returns the SQL command for getting all values. 
 	 * For the leaf level, all values are returned. For upper
 	 * levels, every distinct value is returned only once.
@@ -1031,13 +565,12 @@ class mgSelection
 	 * entries and the wrong tracks might be played.
 	 */
         string sql_values ();
-	//! \todo das nach mgSelStrings verlagern
         unsigned int valindex (const string val,const bool second_try=false);
         string ListFilename ();
         string m_Directory;
         void loadgenres ();
-        MYSQL_RES *exec_sql (string query);
-        string get_col0 (string query);
+	MYSQL_RES * exec_sql(string query) const;
+        string get_col0 (string query) const;
 
 	void InitFrom(const mgSelection* s);
 
@@ -1046,25 +579,12 @@ class mgSelection
  * returning only one row.
  * \param query the SQL query to be executed
  */
-        unsigned long mgSelection::exec_count (string query);
+        unsigned long mgSelection::exec_count (string query) const;
 
-        keyfield* findKey (const string name);
-	map < string, unsigned int > keycounts;
+
 };
 
-//! \brief streams debug info about a selection
-ostream & operator<< (ostream &, mgSelection & s);
 
-//! \brief convert the shuffle mode into a string
-// \return strings "SM_NONE" etc.
-string toString (mgSelection::ShuffleMode);
-
-//! \brief same as toString but returns a C string
-const char *toCString (mgSelection::ShuffleMode);
-
-//string toString(long int l);
-
-string itos (int i);
 unsigned int randrange (const unsigned int high);
 
 

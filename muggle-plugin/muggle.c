@@ -63,7 +63,6 @@ mgMuggle::mgMuggle (void)
 
 mgMuggle::~mgMuggle ()
 {
-// Clean up after yourself!
     if (main) main->SaveState();
 }
 

@@ -17,7 +17,6 @@
 /*!
  * \brief an abstract database class
  * 
- * \todo Currently unused. This class could abstract database connection and query handling, but this will be tedious as an abstract representation of results would be needed.
  */
 class mgDB
 {

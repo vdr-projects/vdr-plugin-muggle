@@ -23,7 +23,14 @@
 
 #include "vdr_decoder.h"
 #include "vdr_decoder_mp3.h"
+
+#ifdef HAVE_VORBISFILE
 #include "vdr_decoder_ogg.h"
+#endif
+
+#ifdef HAVE_FLAC
+#include "vdr_decoder_flac.h"
+#endif
 
 #include "mg_db.h"
 
@@ -34,8 +41,7 @@
 
 mgMediaType mgDecoders::getMediaType (std::string s)
 {
-    mgMediaType
-        mt = MT_UNKNOWN;
+  mgMediaType mt = MT_UNKNOWN;
 
 // TODO: currently handles only mp3. LVW
     char *
@@ -56,6 +62,13 @@ mgMediaType mgDecoders::getMediaType (std::string s)
         {
             mt = MT_OGG;
         }
+	else
+	  {
+	    if (!strcmp (p, ".flac"))
+	      {
+		mt = MT_FLAC;
+	      }	    
+	  }
     }
     return mt;
 }
@@ -76,17 +89,21 @@ mgDecoders::findDecoder (mgContentItem * item)
     }
     switch (getMediaType (filename))
     {
-        case MT_MP3:
-        {
-            decoder = new mgMP3Decoder (item);
-        }
-        break;
+    case MT_MP3:
+      {
+	decoder = new mgMP3Decoder (item);
+      } break;
 #ifdef HAVE_VORBISFILE
-        case MT_OGG:
-        {
-            decoder = new mgOggDecoder (item);
-        }
-        break;
+    case MT_OGG:
+      {
+	decoder = new mgOggDecoder (item);
+      } break;
+#endif
+#ifdef HAVE_FLAC
+    case MT_FLAC:
+      {
+	decoder = new mgFlacDecoder( item );
+      } break;
 #endif
 /*
    case MT_MP3_STREAM: decoder = new mgMP3StreamDecoder(full); break;
@@ -124,11 +141,9 @@ mgDecoder::mgDecoder (mgContentItem * item)
     m_playing = false;
 }
 
-
 mgDecoder::~mgDecoder ()
 {
 }
-
 
 void
 mgDecoder::lock (bool urgent)
@@ -136,11 +151,11 @@ mgDecoder::lock (bool urgent)
     m_locklock.Lock ();
 
     if (urgent && m_locked)
-    {
+      {
         m_urgentLock = true;                      // signal other locks to release quickly
-    }
+      }
     m_locked++;
-
+    
     m_locklock.Unlock ();                         // don't hold the "locklock" when locking "lock", may cause a deadlock
     m_lock.Lock ();
     m_urgentLock = false;

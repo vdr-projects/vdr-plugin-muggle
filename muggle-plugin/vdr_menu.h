@@ -48,14 +48,7 @@ class mgStatus : public cStatus
 		mgMainMenu *main;
 	public:
 		//! \brief default constructor
-		mgStatus(mgMainMenu* m) { main = m;IgnoreNextEventOn=NULL;}
-		/*! \brief vdr calls OsdCurrentItem more often than we
-		 * want. This tells mgStatus to ignore the next call 
-		 * for a specific item.
-		 * \todo is this behaviour intended or a bug in vdr
-		 * or in muggle ?
-		 */
-		cOsdItem* IgnoreNextEventOn;
+		mgStatus(mgMainMenu* m) { main = m;}
 	protected:
 		//! \brief the event we want to know about
 		virtual void OsdCurrentItem(const char *Text);
@@ -74,7 +67,11 @@ class mgMainMenu:public cOsdMenu
         mgSelection m_collectionsel;
 	char *m_message;
 	void showMessage();
+	void LoadExternalCommands();
     public:
+	mgSelection *moveselection;
+	mgActions CurrentType();
+
 	//! \brief syntactic sugar: expose the protected cOsdMenu::SetHelp
 	void SetHelpKeys(const char *Red,const char *Green, const char *Yellow, const char *Blue) { SetHelp(Red,Green,Yellow,Blue); }
 
@@ -112,7 +109,7 @@ class mgMainMenu:public cOsdMenu
         void SaveState();
 
 	//! \brief adds a new mgMenu to the stack
-        void AddMenu (mgMenu * m);
+        void AddMenu (mgMenu * m,unsigned int position=0);
 
 	//! \brief initializes using values from nv
         void InitMapFromSetup (mgValmap& nv);
@@ -171,7 +168,7 @@ class mgMainMenu:public cOsdMenu
 	//! \brief Actions can request a new position. -1 means none wanted
 	int newposition;
 
-	//! \brief clears the screen, sets a title and buttons with text on them
+	//! \brief clears the screen, sets a title and the hotkey flag
         void InitOsd (const char *title,const bool hashotkeys);
 
 #if VDRVERSNUM >= 10307
@@ -216,8 +213,13 @@ class mgMainMenu:public cOsdMenu
 	bool DefaultCollectionSelected();
 
 //! \brief true if the cursor is placed in the default collection
-	bool DefaultCollectionEntered();
+	bool CollectionEntered(string name);
 
+	void AddItem(mgAction *a);
+
+	void CollectionChanged(string name);
+
+	void CloseMenu();
 };
 
 //! \brief a generic muggle menu
@@ -225,10 +227,13 @@ class mgMenu
 {
     private:
         mgMainMenu*  m_osd;
+	const char *HKey(const mgActions act,mgActions on);
     protected:
+	bool m_prevUsingCollection;
+	eOSState ExecuteButton(eKeys key);
 //! \brief adds the wanted action to the OSD menu
 // \param hotkey if true, add this as a hotkey
-	void AddAction(const mgActions action, const bool hotkey=true);
+	void AddAction(const mgActions action, mgActions on = mgActions(0),const bool hotkey=true);
 
 	//! \brief add an external action, always with hotkey
 	void AddExternalAction(const mgActions action, const char *title);
@@ -236,26 +241,23 @@ class mgMenu
 //! \brief adds entries for all selected data base items to the OSD menu.
 // If this is the list of collections, appends a command for collection 
 // creation.
-        void AddSelectionItems ();
+        void AddSelectionItems (mgSelection *sel,mgActions act = actEntry);
 	//! \brief the name of the blue button depends of where we are
-        const char *mgMenu::BlueName ();
+        const char *mgMenu::BlueName (mgActions on);
     public:
 	/*! sets the correct help keys.
 	 * \todo without data from mysql, no key is shown,
 	 * not even yellow or blue
 	 */
-	void SetHelpKeys();
+	void SetHelpKeys(mgActions on = mgActions(0));
 //! \brief generates an object for the wanted action
-	mgOsdItem* GenerateAction(const mgActions action);
+	mgAction* GenerateAction(const mgActions action,mgActions on);
 
 //! \brief executes the wanted action
-        void ExecuteAction (const mgActions action);
+        void ExecuteAction (const mgActions action, const mgActions on);
 
 //! \brief sets the pointer to the owning mgMainMenu
-        void setosd (mgMainMenu* osd)
-        {
-            m_osd = osd;
-        }
+        void setosd (mgMainMenu* osd);
 
 //! \brief the pointer to the owning mgMainMenu
         mgMainMenu* osd ()
@@ -280,7 +282,7 @@ class mgMenu
         {
         }
 
-//! \brief clears the screen, sets a title and buttons with text on them
+//! \brief clears the screen, sets a title and the hotkey flag
         void InitOsd (const char *title,const bool hashotkeys=true);
 
 //! \brief display OSD and go to position
@@ -333,11 +335,39 @@ class mgSubmenu:public mgMenu
         void BuildOsd ();
 };
 
-//! \brief an mgMenu class for selecting a search view
-class mgTreeViewSelector:public mgMenu
+//! \brief an mgMenu class for selecting an order
+class mgMenuOrders:public mgMenu
 {
     protected:
         void BuildOsd ();
+};
+
+//! \brief an mgMenu class for selecting a collection
+class mgTreeCollSelector:public mgMenu
+{
+    public:
+        ~mgTreeCollSelector();
+    protected:
+        void BuildOsd ();
+	virtual mgActions coll_action() = 0;
+	string m_title;
+};
+
+class mgTreeAddToCollSelector:public mgTreeCollSelector
+{
+    public:
+	mgTreeAddToCollSelector(string title);
+    protected:
+	virtual mgActions coll_action() { return actAddCollEntry; }
+};
+
+//! \brief an mgMenu class for selecting a collection
+class mgTreeRemoveFromCollSelector:public mgTreeCollSelector
+{
+    public:
+	mgTreeRemoveFromCollSelector(string title);
+    protected:
+	virtual mgActions coll_action() { return actRemoveCollEntry; }
 };
 
 #endif
