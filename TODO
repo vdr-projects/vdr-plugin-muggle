@@ -7,6 +7,24 @@ Testing/bugs
 - Test mgPCMPlayer::getSourceFile() for GD case (find)
 - Test saving/loading playlists to database
 
+Import
+======
+- Album
+  - Cover text
+  - Cover images (based on filename or tag)
+  - Genre
+  - Modified
+
+- Tracks
+  - Language (?)
+  - Genre1, 2
+  - Rating?
+  - Bitrate
+  - Modified, created
+  - Lyrics
+
+- Playlist from m3u
+
 Code polishing
 ==============
 - Check for memory leaks
@@ -123,6 +141,9 @@ Already Done
 ************************************************************
 *
 * $Log: TODO,v $
+* Revision 1.13  2004/08/27 15:20:33  LarsAC
+* Updated open issues w.r.t. import
+*
 * Revision 1.12  2004/08/26 11:11:42  LarsAC
 * Import changed to use taglib
 *
