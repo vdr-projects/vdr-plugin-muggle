@@ -263,15 +263,20 @@ bool mgPlaylist::skipFwd()
       if( m_current_idx + 1 < m_list.size() ) // unless loop mode
 	{
 	  m_current_idx ++;
+	  result = true;
 	}
       else
 	{
 	  if( m_loop_mode == mgPlaylist::LM_FULL )
 	    {
 	      m_current_idx = 0;
+	      result = true;
+	    }
+	  else
+	    {
+	      result = false;
 	    }
 	}
-      result = true;
     }
 
   // if we are already at the end -- just do nothing unless in loop mode
@@ -292,15 +297,20 @@ bool mgPlaylist::skipBack()
       if( m_current_idx > 0 )
 	{
 	  m_current_idx --;
+	  result = true;
 	}
       else
 	{
 	  if( m_loop_mode == mgPlaylist::LM_FULL )
 	    {
 	      m_current_idx = m_list.size() -1;
+	      result = true;
+	    }
+	  else
+	    {
+	      result = false;
 	    }
 	}
-      result = true;
     }
   // if we are at the beginning -- just do nothing unless in loop mode
   return result;
