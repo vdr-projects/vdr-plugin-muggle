@@ -1,0 +1,73 @@
+TREE
+---------
+OK       Leaf: ==>DisplayTrackInfo( leaf ) // TODO
+         Node: ==> DisplayTree( child ); // expand
+BACK     ==> DisplayTree( parent ); // collapse
+         ==> on root: return to VDR main menu
+
+UP      select previous item (VDR-mechanism)
+DOWN    select next item     (VDR-mechanism)
+LEFT    selection pg-up      (VDR-mechanism)
+RIGHT   selection pg-down    (VDR-mechanism)
+
+RED     add all tracks under currently highlighted node to playlist
+GREEN   ==>Switch to next tree view(TODO?)
+YELLOW  ==>Cycle to playlist view
+BLUE    ==>Enter tree view submenu
+
+PLAYLIST 
+---------
+OK       -- // should start playing in the future
+BACK     -- 
+
+UP       select previous item (VDR-mechanism)
+DOWN     select next item     (VDR-mechanism)
+LEFT     selection pg-up      (VDR-mechanism)
+RIGHT    selection pg-down    (VDR-mechanism)
+
+RED      ==>Edit playlist (mark/move, VDR mechanism) TODO
+GREEN    ==>Playlist -> Track info -> Album info -> Playlist
+YELLOW   ==>Cycle to filter view
+BLUE     ==>Playlist submenu
+
+TRACKINFO (TODO)
+---------
+OK      PlayItem (jump/skip to item? useful choice?)
+BACK	go to previous view (?)
+
+RED     ??
+GREEN	==>Album info (TODO)
+YELLOW	==>Cycle to filter view
+BLUE     ==>Playlist submenu
+
+ALBUMINFO
+---------
+OK      PlayItem (track? album?)
+BACK	==>DisplayPlaylist(); (?)
+
+RED     ??
+GREEN	==>Cycle to playlist view
+YELLOW	==>Cycle to filter view
+BLUE     ==>Playlist submenu
+
+FILTER
+------
+OK	Confirm entry (really? VDR mechanism)
+BACK	?
+
+UP	Previous filter entry (VDR mechanism)
+DOWN	Next filter entry (VDR mechanism)
+
+RED     Perform query, display according to view type entry (TODO)
+GREEN	==>Load other filter
+YELLOW	==>Cycle to tree view
+BLUE    ==>Filter submenu
+
+/************************************************************
+ *
+ * $Log: menu.txt,v $
+ * Revision 1.3  2004/02/08 10:48:44  LarsAC
+ * Made major revisions in OSD behavior
+ *
+ *  
+ ************************************************************/
