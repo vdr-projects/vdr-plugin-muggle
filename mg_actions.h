@@ -163,6 +163,7 @@ class mgCreateCollection:public cMenuEditStrItem, public mgAction
         void Execute ();
         const char *MenuName (const unsigned int idx=0,const string value="");
      private:
+	bool Editing();
 	char value[30];
 };
 #endif
