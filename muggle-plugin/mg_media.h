@@ -3,8 +3,8 @@
  * \brief  Top level access to media in vdr plugin muggle
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.6 $
- * \date    $Date: 2004/02/02 22:48:04 $
+ * \version $Revision: 1.7 $
+ * \date    $Date: 2004/02/02 23:33:41 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: MountainMan $
  * 
@@ -179,6 +179,7 @@ class mgMedia
     contentType m_mediatype;
     std::string m_sql_trackfilter;
     int m_defaultView;
+    mgTrackFilters *m_trackfilter;
 
  public:
    mgMedia(contentType mediatype);
@@ -203,6 +204,9 @@ class mgMedia
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: mg_media.h,v $
+ * Revision 1.7  2004/02/02 23:33:41  MountainMan
+ * impementation of gdTrackFilters
+ *
  * Revision 1.6  2004/02/02 22:48:04  MountainMan
  *  added CVS $Log
  *

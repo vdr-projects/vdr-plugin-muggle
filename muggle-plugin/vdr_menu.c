@@ -2,12 +2,15 @@
 /*! \file   vdr_menu.c
  *  \brief  Implements menu handling for broswing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.4 $
- * \date    $Date: 2004/02/02 22:33:24 $
+ * \version $Revision: 1.5 $
+ * \date    $Date: 2004/02/02 23:33:41 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: MountainMan $
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.5  2004/02/02 23:33:41  MountainMan
+ * impementation of gdTrackFilters
+ *
  * Revision 1.4  2004/02/02 22:33:24  MountainMan
  *  changes in mgFilter classes (and ttheir use in the osd)
  *
@@ -37,7 +40,7 @@
 
 using namespace std;
 
-static const char* alpha_num_keys = "abcdefghijklmnopqrstuvwxyz0123456789-";
+// static const char* alpha_num_keys = "abcdefghijklmnopqrstuvwxyz0123456789-";
 
 // ----------------------- mgMenuTreeItem ------------------
 
