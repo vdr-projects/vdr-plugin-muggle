@@ -19,6 +19,7 @@ Code polishing
 - Check for unnecessary log commands
 - Generate HTML documentation using doxygen,
   use dotty/gv for state machines of player
+- Check compatibility for 1.3.12
 
 Short term items
 ================
@@ -104,6 +105,9 @@ Already Done
 ************************************************************
 *
 * $Log: TODO,v $
+* Revision 1.10  2004/07/29 05:58:14  lvw
+* TODO list changed
+*
 * Revision 1.9  2004/07/27 07:06:00  LarsAC
 * Added file for doxygen documentation generation
 *
