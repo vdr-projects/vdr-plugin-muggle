@@ -40,6 +40,7 @@ enum mgKeyTypes {
 	keyFolder4,
 	keyCreated,
 	keyModified,
+	keyid3Genre,
 	keyCollection,
 	keyCollectionItem,
 };

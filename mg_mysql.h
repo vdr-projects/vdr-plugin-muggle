@@ -41,6 +41,9 @@ class mgmySql
    */
   string sql_string( string s );
 
+  char* sql_Cstring( const string s );
+  char* sql_Cstring( const char *s );
+
   string get_col0( const string query);
   
 /*! \brief executes a query and returns the integer value from
@@ -53,12 +56,15 @@ class mgmySql
   long thread_id() { return mysql_thread_id(m_db);}
   long affected_rows() { return mysql_affected_rows(m_db);}
   bool Connected() const { return m_db;}
+  bool HasFolderFields() const { return m_hasfolderfields;}
   void Connect();
   //! \brief create database and tables
   void Create();
+  void CreateFolderFields();
 
  private:
   MYSQL *m_db;
+  bool m_hasfolderfields;
 };
 
 #endif

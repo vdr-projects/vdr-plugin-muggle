@@ -96,7 +96,7 @@ libvdr-$(PLUGIN).so: $(OBJS)
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LIBS) -o $@
 	@cp $@ $(LIBDIR)/$@.$(VDRVERSION)
 
-mugglei: mg_tools.o mugglei.o
+mugglei: mg_tools.o mugglei.o mg_order.o mg_selection.o mg_mysql.o mg_valmap.o mg_content.o mg_setup.o i18n.o
 	$(CXX) $(CXXFLAGS) $^ $(MILIBS) -o $@
 
 install:

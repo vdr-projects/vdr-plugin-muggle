@@ -228,6 +228,14 @@ class mgKeyGenre3 : public mgKeyGenres
 		unsigned int genrelevel() const { return 3; }
 };
 
+class mgKeyid3Genre : public mgKeyNormal {
+	public:
+		mgKeyid3Genre() : mgKeyNormal(keyid3Genre,"tracks","genre1") {};
+		string map_idfield() const { return "id"; }
+		string map_valuefield() const { return "id3genre"; }
+		string map_valuetable() const { return "genre"; }
+};
+
 string
 mgKeyGenres::GenreClauses(mgmySql &db,bool orderby) const
 {
@@ -994,6 +1002,7 @@ ktGenerate(const mgKeyTypes kt)
 		case keyAlbum: result = new mgKeyAlbum;break;
 		case keyCreated: result = new mgKeyDate(kt,"tracks","created");break;
 		case keyModified: result = new mgKeyDate(kt,"tracks","modified");break;
+		case keyid3Genre: result = new mgKeyid3Genre;break;
 		case keyCollection: result = new mgKeyCollection;break;
 		case keyCollectionItem: result = new mgKeyCollectionItem;break;
 		case keyLanguage: result = new mgKeyLanguage;break;
@@ -1024,6 +1033,7 @@ ktName(const mgKeyTypes kt)
 		case keyAlbum: result = "Album";break;
 		case keyCreated: result = "Created";break;
 		case keyModified: result = "Modified";break;
+		case keyid3Genre: result = "id3Genre";break;
 		case keyCollection: result = "Collection";break;
 		case keyCollectionItem: result = "Collection item";break;
 		case keyLanguage: result = "Language";break;

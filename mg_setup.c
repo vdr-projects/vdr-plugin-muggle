@@ -31,4 +31,6 @@ mgSetup::mgSetup ()
     LimiterLevel = DEFAULT_LIMITER_LEVEL;
     Only48kHz = 0;
     ToplevelDir = "/mnt/music/";
+    DbHost = "localhost";
+    DbName = "GiantDisc";
 }

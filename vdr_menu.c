@@ -600,6 +600,9 @@ mgSubmenu::BuildOsd ()
     AddAction(actClearCollection,on);
     AddAction(actChooseOrder,on);
     AddAction(actExportTracklist,on);
+#if 0
+    AddAction(actSync,on);
+#endif
     cCommand *command;
     if (osd()->external_commands)
     {

@@ -677,6 +677,18 @@ mgToggleSelection::Execute ()
     osd()->newposition = selection ()->gotoPosition ();
 }
 
+class mgSync : public mgCommand
+{
+	public:
+		void Execute();
+		const char *ButtonName() { return tr("Synchronize"); }
+};
+
+void
+mgSync::Execute()
+{
+	selection()->Sync(".");
+}
 
 //! \brief sets the default collection selection
 class mgSetDefaultCollection:public mgCommand
@@ -1216,6 +1228,7 @@ mgAction::Type()
 	if (t == typeid(mgCreateOrder)) return actCreateOrder;
 	if (t == typeid(mgDeleteOrder)) return actDeleteOrder;
 	if (t == typeid(mgEditOrder)) return actEditOrder;
+	if (t == typeid(mgSync)) return actSync;
 	if (t == typeid(mgExternal0)) return actExternal0;
 	if (t == typeid(mgExternal1)) return actExternal1;
 	if (t == typeid(mgExternal2)) return actExternal2;
@@ -1277,7 +1290,7 @@ actGenerate(const mgActions action)
 		case actSetButton: result = new mgSetButton;break;
 		case actShowList: 		result = new mgShowList;break;
 		case actShowCommands: 		result = new mgShowCommands;break;
-		case actUnused5: break;
+		case actSync: 			result = new mgSync;break;
 		case actSetDefaultCollection:	result = new mgSetDefaultCollection;break;
 		case actOrder: result = new mgActOrder;break;
 		case actUnused6: break;

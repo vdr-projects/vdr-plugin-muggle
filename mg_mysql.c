@@ -178,6 +178,7 @@ char *db_cmds[] =
 mgmySql::mgmySql() 
 {
 	m_db = 0;
+	m_hasfolderfields=false;
 	Connect();
 }
 
@@ -244,14 +245,36 @@ void mgmySql::Create()
 string
 mgmySql::sql_string( const string s )
 {
-  if (!this)
-     return "'" + s + "'";
-
-  char *buf = (char *) malloc( 2*s.size() + 1 );
-  mysql_real_escape_string( m_db, buf, s.c_str(), s.size() );
-  string result = "'" + string( buf ) + "'";
-  free( buf );
+  char *b = sql_Cstring(s);
+  string result = string( b);
+  free( b);
   return result;
+}
+
+char*
+mgmySql::sql_Cstring( const string s )
+{
+  return sql_Cstring(s.c_str());
+}
+
+char*
+mgmySql::sql_Cstring( const char *s)
+{
+  char *buf;
+  int buflen;
+  if (!this)
+	  buflen=strlen(s)+2;
+  else
+	  buflen=2*strlen(s)+3;
+  buf = (char *) malloc( buflen);
+  buf[0]='\'';
+  if (!this)
+	strcpy(buf+1,s);
+  else
+  	mysql_real_escape_string( m_db, buf+1, s, strlen(s) );
+  *(strchr(buf,0)+1)=0;
+  *(strchr(buf,0))='\'';
+  return buf;
 }
 
 void
@@ -312,4 +335,28 @@ mgmySql::Connect ()
     return;
 }
 
+void
+mgmySql::CreateFolderFields()
+{
+  if (!Connected())
+	  return;
+  if (HasFolderFields())
+	  return;
+  mysql_query(m_db,"DESCRIBE tracks folder1");
+  MYSQL_RES *rows = mysql_store_result(m_db);
+  if (rows)
+    {
+      m_hasfolderfields = mysql_num_rows(rows)>0;
+      mysql_free_result(rows);
+      if (!m_hasfolderfields)
+      {
+	      m_hasfolderfields = !mysql_query(m_db,
+	              "alter table tracks add column folder1 varchar(255),"
+		      "add column folder2 varchar(255),"
+		      "add column folder3 varchar(255),"
+		      "add column folder4 varchar(255)");
+
+      }
+    }
+}
 

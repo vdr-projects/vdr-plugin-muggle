@@ -50,7 +50,7 @@ enum mgActions {
 	actShowCommands,
 	actCreateOrder,
 	actDeleteOrder,
-	actUnused5,	//!< order by Genre1/Artist/Album/Title
+	actSync,
 	actAddAllToDefaultCollection,
 	actAddThisToDefaultCollection,
 	actSetDefaultCollection,

@@ -24,6 +24,8 @@ using namespace std;
 #include "mg_order.h"
 #include "mg_content.h"
 
+#include <tag.h>
+
 typedef vector<string> strvector;
 
 
@@ -305,13 +307,12 @@ class mgSelection
 
 	/*! import/export tags like
 	 * \par path can be a file or a directory. If directory, 
-	 * sync all files within but by default non recursive
-	 * \par recursive recurse into all directories beneath path
+	 * sync all files within 
 	 * \par assorted see mugglei -h
 	 * \par delete_missing if the file does not exist, delete the
 	 * data base entry. If the file is unreadable, do not delete.
 	 */
-	void Sync(string path, bool recursive=false,bool assorted=false,bool delete_missing=false);
+	void Sync(const char * path, bool assorted=false,bool delete_missing=false);
 
 /*! \brief go to a position in the current level. If we are at the
  * most detailled level this also sets the track position since
@@ -467,6 +468,16 @@ class mgSelection
         void loadgenres ();
 
 	void InitFrom(const mgSelection* s);
+	char *sql_Cstring(TagLib::String s);
+	char *lower(char *s);
+	TagLib::String getlanguage(const char *filename);
+	char * getAlbum(const char *c_album,const char *c_artist,const char *c_title);
+	void AddTrack(const char *filename);
+	void SyncFile(const char *filename);
+
+
+
+
 
 };
 
