@@ -3,11 +3,11 @@
  * \brief A player/control combination to let VDR play music
  *
  * \version $Revision: 1.2 $
- * \date    $Date: 2004/05/28 15:29:19 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  *
- * $Id: vdr_player.h,v 1.2 2004/05/28 15:29:19 lvw Exp $
+ * $Id$
  *
  * Adapted from 
  * MP3/MPlayer plugin to VDR (C++)
@@ -19,6 +19,9 @@
 #define ___DVB_MP3_H
 
 #include <player.h>
+#if VDRVERSNUM >= 10307
+class cOsd;
+#endif
 
 // -------------------------------------------------------------------
 
@@ -45,6 +48,10 @@ private:
 
   //! \brief indicates, whether an osd is currently displayed
   bool m_has_osd;
+#if VDRVERSNUM >= 10307
+  cOsd *osd;
+  const cFont *font;
+#endif
 
 public:
 
