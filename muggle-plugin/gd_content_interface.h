@@ -29,7 +29,6 @@
 
 #include "mg_content_interface.h"
 #include "mg_media.h"
-
 #include "mg_playlist.h"
 #include "mg_filters.h"
 #include "i18n.h"

@@ -63,7 +63,7 @@ time_t get_fs_modification_time( std::string filename )
   struct stat *buf = (struct stat*) malloc( sizeof( struct stat ) );
   
   // yes: obtain modification date for file and db entry
-  int statres = stat( filename.c_str(), buf );
+  // int statres = stat( filename.c_str(), buf );
 
   time_t mod = buf->st_mtime;
   free( buf );
@@ -89,7 +89,7 @@ TagLib::String escape_string( MYSQL *db, TagLib::String s )
   char *buf = strdup( s.toCString() );
   char *escbuf = (char *) malloc( 2*strlen( buf ) + 1 );
 
-  int len = mysql_real_escape_string( db, escbuf, buf, strlen( buf ) );
+  mysql_real_escape_string( db, escbuf, buf, strlen( buf ) );
 
   return TagLib::String( escbuf );
 }
@@ -155,7 +155,7 @@ void update_db( long uid, std::string filename )
 	      // create new album entry "Unassigned" for this artist
 	      long id = random();
 	      char *buf;
-	      asprintf( &buf, "%d-%s", id, tag->artist().toCString() );
+	      asprintf( &buf, "%ld-%s", id, tag->artist().toCString() );
 	      cddbid = TagLib::String( buf ).substr( 0, 20 );
 	      cddbid = escape_string( db, cddbid );
 	      free( buf );
@@ -189,7 +189,7 @@ void update_db( long uid, std::string filename )
 	      // create new album entry 
 	      long id = random();
 	      char *buf;
-	      asprintf( &buf, "%d-%s", id, tag->album().toCString() );
+	      asprintf( &buf, "%ld-%s", id, tag->album().toCString() );
 	      cddbid = TagLib::String( buf ).substr( 0, 20 );
 	      cddbid = escape_string( db, cddbid );
 	      free( buf );
@@ -291,7 +291,6 @@ void evaluate_file( MYSQL *db, std::string filename )
 
 int main( int argc, char *argv[] )
 {
-  int option_index;
   std::string filename;
 
   if( argc < 2 )

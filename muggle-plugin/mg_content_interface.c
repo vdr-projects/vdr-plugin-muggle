@@ -105,11 +105,11 @@ mgContentItem* mgTracklist::getItem(unsigned int position)
   return *( m_list.begin() + position);
 }
 
-bool mgTracklist::remove(unsigned int position)       
+bool mgTracklist::remove(int position)       
 {
   bool result = false;
 
-  if( position < m_list.size() ) 
+  if( position < (int)m_list.size() ) 
     {
       std::vector<mgContentItem*>::iterator iter;
       
@@ -122,7 +122,7 @@ bool mgTracklist::remove(unsigned int position)
   return result;
 }
 
-int mgTracklist::remove(mgContentItem* item) 
+int mgTracklist::removeItem(mgContentItem* item) 
 {
   int retval = 0;
   std::vector<mgContentItem*>::iterator iter;
