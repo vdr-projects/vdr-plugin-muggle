@@ -3,10 +3,10 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.1 $
- * \date    $Date: 2004/02/01 18:22:53 $
+ * \version $Revision: 1.2 $
+ * \date    $Date: 2004/02/02 02:01:11 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: MountainMan $
  *
  * DUMMY
  * 
@@ -34,7 +34,7 @@
 #define NUM_TRACKS_PER_ALBUM 9
 
 int DummyInitDatabase(MYSQL *db){return 0;}
-vector<string> DummyGetStoredPlaylists(MYSQL db){ return vector<string>();}
+vector<string> *DummyGetStoredPlaylists(MYSQL db){ return new vector<string>();}
 
 /*******************************************************************/
 /* class mgTack                                                    */
@@ -423,6 +423,27 @@ DummyTreeNode::~DummyTreeNode()
   m_children.clear();
 }
 
+/*!
+ *****************************************************************************
+ * \brief checks if this node can be further expandded or not
+ * \true, if node ia leaf node, false if node can be expanded
+ *
+ ****************************************************************************/
+bool DummyTreeNode::isLeafNode()
+{
+    switch(m_view)
+     {
+	 case 1: // artist -> album -> title
+	     if( m_level <= 3 )
+	     {
+		 return true;
+	     }
+	     break;
+	 default:
+	     mgError("View '%d' not yet implemented", m_view);
+     }
+    return false;
+}
 
 
 /*!
@@ -548,6 +569,33 @@ vector<mgContentItem*>* DummyTreeNode::getTracks()
 
   return  dummy;
 }
+
+/*!
+ *****************************************************************************
+ * \brief returns the first track matchin the restrictions of this node
+ * assuming we are in a leaf node, this returns the track represented by the
+ * the leaf 
+ ****************************************************************************/
+mgContentItem* DummyTreeNode::getSingleTrack()
+{
+    // get all tracks satisying the restrictions of this node
+    mgDebug(5, "getTracks(): query '%s'", m_restriction.c_str());
+    
+    mgContentItem* track = new DummyTrack(atoi(m_id.c_str()), m_db);
+
+    return  track;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -2,10 +2,10 @@
 /*! \file  dummy_content.h
  * \brief  Dummy Data Objects for testing Muggle
  ******************************************************************** 
- * \version $Revision: 1.1 $
- * \date    $Date: 2004/02/01 18:22:53 $
+ * \version $Revision: 1.2 $
+ * \date    $Date: 2004/02/02 02:01:11 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: MountainMan $
  * 
  * Declares main classes of for content items and interfaces to SQL databases
  *
@@ -22,8 +22,7 @@ using namespace std;
 
 // non-member function
 int DummyInitDatabase(MYSQL *db);
-vector<string> DummyGetStoredPlaylists(MYSQL db);
-
+vector<string> *DummyGetStoredPlaylists(MYSQL db);
 /*! 
  *******************************************************************
  * \class DummyTrack
@@ -152,9 +151,11 @@ public:
     ~DummyTreeNode();
 
     // compute children o^xn the fly 
+    virtual bool isLeafNode();  
     virtual bool expand();  
 
     virtual vector<mgContentItem*>* getTracks();
+    virtual mgContentItem* getSingleTrack();
 };
 
 #endif  /* END  _CONTENT_INTERFACE_H */

@@ -4,10 +4,10 @@
  *  \brief  Data Objects for content (e.g. mp3 files, movies)
  *          for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.1 $
- * \date    $Date: 2004/02/01 18:22:53 $
+ * \version $Revision: 1.2 $
+ * \date    $Date: 2004/02/02 02:01:11 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: MountainMan $
  * 
  * Declares main classes of for content items and interfaces to SQL databases
  *
@@ -29,10 +29,23 @@
 #include <mysql/mysql.h>
 
 #include "mg_content_interface.h"
+#include "mg_media.h"
 
 // non-member function
 int GdInitDatabase(MYSQL *db);
-std::vector<std::string> GdGetStoredPlaylists(MYSQL db);
+std::vector<std::string> *GdGetStoredPlaylists(MYSQL db);
+
+
+class gdTrackFilters: public mgTrackFilters
+{
+ public:
+  gdTrackFilters();
+  ~gdTrackFilters();
+
+  virtual std::string CreateSQL();
+  virtual void clear();
+  
+};
 
 /*! 
  *******************************************************************
@@ -187,10 +200,12 @@ public:
     virtual ~GdTreeNode();
 
     // compute children on the fly 
+    virtual bool isLeafNode();
     virtual bool expand();  
 
     // access data in  current node
     virtual std::vector<mgContentItem*>* getTracks();
+    virtual mgContentItem* getSingleTrack();
 };
 
 #endif  /* END  _GD_CONTENT_INTERFACE_H */

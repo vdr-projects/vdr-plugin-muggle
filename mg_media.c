@@ -3,10 +3,10 @@
  *  \brief  Top level access to media in vdr plugin muggle
  *          for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.1 $
- * \date    $Date: 2004/02/01 18:22:53 $
+ * \version $Revision: 1.2 $
+ * \date    $Date: 2004/02/02 02:01:11 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: MountainMan $
  * 
  *
  */
@@ -22,78 +22,133 @@
 
 using namespace std;
 
-mgFilters::mgFilters()
+mgFilter::mgFilter(const char* name)
+{
+  m_name = strdup(name);
+}
+mgFilter::~mgFilter()
+{
+  free(m_name);
+}
+
+const char* mgFilter::getName()
+{
+  return m_name;
+}
+
+mgFilterInt::mgFilterInt(const char *name, int value, int min, int max)
+  : mgFilter(name)
+{
+  m_type = INT;
+  m_intval = value;
+  m_min = min;
+  m_max = max;
+}
+mgFilterInt::~mgFilterInt()
 {
 }
 
-mgFilters::~mgFilters()
+int mgFilterInt::getVal()
+{
+  return m_intval;
+}
+string mgFilterInt::getStrVal()
+{
+  char buffer[20];
+  sprintf(buffer, "%d", m_intval);
+
+  return (string)buffer;
+}
+int mgFilterInt::getMin()
+{
+  return m_min;
+}
+int mgFilterInt::getMax()
+{
+  return m_max;
+}
+
+void mgFilterInt::setVal(int value)
+{
+  m_intval = value;
+}
+
+mgFilterString::mgFilterString(const char *name, const char* value)
+  : mgFilter(name)
+{
+  m_type = STRING;
+  m_strval = strdup(value);
+}
+mgFilterString::~mgFilterString()
+{
+  if(m_strval)
+    {
+      free(m_strval);
+    }
+}
+
+const char* mgFilterString::getVal()
+{
+  return m_strval;
+}
+string mgFilterString::getStrVal()
+{
+ 
+  return (string) m_strval;
+}
+
+void mgFilterString::setVal(const char* value)
+{
+  if(m_strval)
+    {
+      free(m_strval);
+    }
+   m_strval = strdup(value);
+}
+mgFilterBool::mgFilterBool(const char *name, bool value)
+  : mgFilter(name)
+{
+  m_type = BOOL;
+  m_bval = value;
+}
+mgFilterBool::~mgFilterBool()
 {
 }
 
-int mgFilters::getNumFilters()
+bool mgFilterBool::getVal()
 {
-    return 0;
+  return  m_bval;
 }
 
-string mgFilters::getName(int filter)
+string mgFilterBool::getStrVal()
 {
-    return 0;
+  if(m_bval)
+    return "true";
+  else
+    return "false";
 }
 
-int mgFilters::getValue(int filter)
+void mgFilterBool::setVal(bool value)
 {
-    return 0;
+  m_bval = value;
 }
 
-mgFilters::filterType mgFilters::getType(int filter)
+mgTrackFilters::mgTrackFilters()
 {
-    return NUMBER;
+}
+mgTrackFilters::~mgTrackFilters()
+{
+  for(vector<mgFilter*>::iterator iter = m_filters.begin();
+      iter != m_filters.end(); iter++)
+    {
+      delete (*iter);
+    }
+  m_filters.clear();
 }
 
-// for NUMBER filters
-
-int mgFilters::getMin(int filter)
+vector<mgFilter*> *mgTrackFilters::getFilters()
 {
-    return 0;
-}
-
-int mgFilters::getMax(int filter)
-{
-    return 0;
-}
-
-// for CHOICE
-
-vector<string> mgFilters::getChoices()
-{
-    return vector<string>();
-}
-
-int mgFilters::getCurrent(int filter)
-{
-    return 0;
-}
-
-    // check, if a value is correct
-bool mgFilters::checkValue(int filter, string value)
-{
-    return false;
-}
-
-bool mgFilters::checkValue(int filter, int value)
-{
-    return false;
-}
-    
-// finally set the values
-bool mgFilters::setValue(int filter, string value)
-{
-    return false;
-}
-
-bool mgFilters::setValue(int filter, int value)
-{
-    return false;
+  return &m_filters;
 }
 
 /*! 
@@ -105,9 +160,9 @@ bool mgFilters::setValue(int filter, int value)
 mgMedia::mgMedia(contentType mediatype)
 {
     int errval = 0;
-
+    mgTrackFilters *m_trackfilter;
     m_mediatype = mediatype;
-    m_filter = "1";
+    m_sql_trackfilter = "1";
     m_defaultView = 1;
 
     // now initialize the database
@@ -130,6 +185,20 @@ mgMedia::mgMedia(contentType mediatype)
 	mgError("Error connecting to database\n");
     }
 
+    mgDebug(3, "Initializing track filters");
+    switch(m_mediatype)
+    {
+	case DUMMY:
+	{
+	    errval = DummyInitDatabase(&m_db);
+	    break;
+	}
+	case GD_MP3:
+	{
+	    errval = GdInitDatabase(&m_db);
+	    mgDebug(3, "Successfully conntected to sql database 'GiantDisc'"); 
+	}
+    }
 }
 	
 mgMedia::~mgMedia()
@@ -157,26 +226,28 @@ mgSelectionTreeNode* mgMedia::getSelectionRoot()
 	case DUMMY:
 	    return new DummyTreeNode(m_db, m_defaultView);
 	case GD_MP3:
-	    return new GdTreeNode(m_db, m_defaultView, m_filter);
+	    return new GdTreeNode(m_db, m_defaultView, m_sql_trackfilter);
     }	    
     mgError("implementation Error"); // we should never get here
     return NULL;
 }
 
-mgFilters mgMedia::getActiveFilters()
+vector<mgFilter*> *mgMedia::getTrackFilters()
 {
     switch(m_mediatype)
     {
 	case DUMMY:
-	    return mgFilters();
+	  //return mgFilters();
 	case GD_MP3:
-	    return mgFilters();
+	  // return m_trackfilters;
+        default:
+	  break;
     }	 
     mgError("implementation Error"); // we should never get here
-    return mgFilters();
+    return NULL;
 }
 
-void mgMedia::setFilters(mgFilters filters)
+void mgMedia::setTrackFilters(vector<mgFilter*> *filters)
 {
 }
 
@@ -204,7 +275,7 @@ mgPlaylist* mgMedia::loadPlaylist(string name)
     return NULL;
 }
 
-vector<string> mgMedia::getStoredPlaylists()
+vector<string> *mgMedia::getStoredPlaylists()
 {
     switch(m_mediatype)
     {
@@ -214,7 +285,7 @@ vector<string> mgMedia::getStoredPlaylists()
 	    return GdGetStoredPlaylists(m_db);
     }	 
     mgError("implementation Error"); // we should never get here
-    return vector<string>();
+    return new vector<string>();
 }
 
 vector<int> mgMedia::getDefaultCols()
@@ -243,11 +314,11 @@ mgTracklist* mgMedia::getTracks()
     {
 	case DUMMY:
 	    
-	    tracks = new DummyTracklist(m_db, m_filter);
+	    tracks = new DummyTracklist(m_db, m_sql_trackfilter);
 	    tracks->setDisplayColumns(getDefaultCols());
 	    return tracks;
 	case GD_MP3:
-	    tracks = new GdTracklist(m_db, m_filter);
+	    tracks = new GdTracklist(m_db, m_sql_trackfilter);
 	    tracks->setDisplayColumns(getDefaultCols());
 	    return tracks;
     }	 
