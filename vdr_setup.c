@@ -14,14 +14,15 @@
  * (C) 2001,2002 Stefan Huelswitt <huels@iname.com>
  */
 
+#include "vdr_setup.h"
+#include "vdr_actions.h"
+#include "i18n.h"
+
 #include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
 #include <cstring>
 
-#include "vdr_setup.h"
-#include "vdr_actions.h"
-#include "i18n.h"
 
 
 // --- mgMenuSetup -----------------------------------------------------------

@@ -18,6 +18,7 @@ strlist& operator+=(strlist&a, strlist b);
 //! \brief adds string n to string s, using string sep to separate them
 string& addsep (string & s, string sep, string n);
 
+//! \brief all key types
 enum mgKeyTypes {
 	keyGenre1=1, // the genre types must have exactly this order!
 	keyGenre2,
@@ -46,10 +47,12 @@ const mgKeyTypes mgKeyTypesLow = keyGenre1;
 const mgKeyTypes mgKeyTypesHigh = keyCollectionItem;
 const unsigned int mgKeyTypesNr = keyCollectionItem;
 
+//! \brief returns true if kt is one of the genre key types
 bool iskeyGenre(mgKeyTypes kt);
 
 class mgParts;
 
+//! \brief defines a foreign key
 class mgReference {
 	public:
 		mgReference(string t1,string f1,string t2,string f2);
@@ -64,10 +67,12 @@ class mgReference {
 		string m_f2;
 };
 
+//! \brief a list of all foreign keys
 class mgReferences : public vector<mgReference> {
 public:
-	// \todo memory leak for vector ref?
+	//! \todo memory leak for vector ref?
 	mgReferences();
+	//! \brief returns the code needed to add a foreign key to the SQL statement
 	mgParts Connect(string c1, string c2) const;
 private:
 	bool Equal(unsigned int i,string table1, string table2) const;
@@ -78,15 +83,25 @@ private:
 class mgSelItem
 {
 	public:
+		//! \brief constructs an invalid item
 		mgSelItem();
+		//! \brief constructs a valid item
 		mgSelItem(string v,string i,unsigned int c=0);
+		//! \brief sets the item values making the item valid
 		void set(string v,string i,unsigned int c=0);
+		//! \brief assignment operator
 		void operator=(const mgSelItem& from);
+		//! \brief assignment operator
 		void operator=(const mgSelItem* from);
+		//! \brief equal operator
 		bool operator==(const mgSelItem& other) const;
+		//! \brief the value of the item (user friendly)
 		string value() const { return m_value; } 
+		//! \brief the id of the item (computer friendly)
 		string id() const { return m_id; } 
+		//! \brief the number of tracks associated with this item
 		unsigned int count() const { return m_count; } 
+		//! \brief true if the item is valid/set
 		bool valid() const { return m_valid; }
 	private:
 		bool m_valid;

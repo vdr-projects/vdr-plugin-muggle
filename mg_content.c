@@ -71,6 +71,11 @@ string mgContentItem::getGenre () const
 }
 
 
+long mgContentItem::getTrackid() const
+{
+    return m_trackid;
+}
+
 string mgContentItem::getLanguage() const
 {
     return m_language;
@@ -85,6 +90,18 @@ string mgContentItem::getBitrate () const
 string mgContentItem::getImageFile () const
 {
     return "Name of Imagefile";
+}
+
+
+string mgContentItem::getArtist () const
+{
+    return m_artist;
+}
+
+
+string mgContentItem::getTitle () const
+{
+    return m_title;
 }
 
 

@@ -34,33 +34,26 @@ class mgContentItem
     public:
         mgContentItem ();
 
+//! \brief returns the corresponding mgSelItem
 	mgSelItem* getKeyItem(mgKeyTypes kt);
 
-	//! \brief copy constructor
+//! \brief copy constructor
         mgContentItem(const mgContentItem* c);
 
-	//! \brief construct an item from an SQL row
+//! \brief construct an item from an SQL row
         mgContentItem (const mgSelection* sel, const MYSQL_ROW row);
-//! \brief returns track id
-        long getTrackid () const
-        {
-            return m_trackid;
-        }
 
-//! \brief returns title
-        string getTitle () const
-        {
-            return m_title;
-        }
+//! \brief returns track id
+        long getTrackid () const;
+
+//! \brief returns the track title
+        string getTitle () const;
 
 //! \brief returns filename
         string getSourceFile (bool AbsolutePath=true) const;
 
 //! \brief returns artist
-        string getArtist () const
-        {
-            return m_artist;
-        }
+        string getArtist () const;
 
 //! \brief returns the name of the album
         string getAlbum () const;

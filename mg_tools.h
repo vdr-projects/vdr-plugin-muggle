@@ -84,6 +84,11 @@ class mgLog
 
 std::string trim(std::string const& source, char const* delims = " \t\r\n");
 
+//! \brief extracts folder names from a filename
+// \param filename	the full path
+// \param folders	an array of char * where the single folders will be placed in
+// \param fcount	the maximum number of folders that can be returned
+// \return a buffer hold all folder strings
 char *SeparateFolders(const char *filename, char * folders[],unsigned int fcount);
 
 #endif                                            /*  _MUGGLE_TOOLS_H */
