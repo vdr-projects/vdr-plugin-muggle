@@ -845,15 +845,24 @@ mgMainMenu::showMessage()
 }
 
 void
-showmessage(const char * msg)
+showmessage(const char * msg,int duration)
 {
 #if VDRVERSNUM >= 10307
-    	Skins.Message (mtInfo, msg,2);
+    	Skins.Message (mtInfo, msg,duration);
     	Skins.Flush ();
 #else
     	Interface->Status (msg);
     	Interface->Flush ();
 #endif
+}
+
+void
+showimportcount(unsigned int count)
+{
+	char b[100];
+	sprintf(b,tr("Imported %d tracks..."),count);
+	assert(strlen(b)<100);
+	showmessage(b,1);
 }
 
 void

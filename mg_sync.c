@@ -142,6 +142,11 @@ mgSync::mgSync()
  	MYSQL_ROW rx;
 	while ((rx = mysql_fetch_row (m_genre_rows)) != 0)
 		m_Genres[rx[1]]=rx[0];
+	// init random number generator
+	struct timeval tv;
+	struct timezone tz;
+	gettimeofday( &tv, &tz );
+	srandom( tv.tv_usec );
 }
 
 mgSync::~mgSync()
@@ -293,12 +298,7 @@ mgSync::Sync(char * const * path_argv, bool delete_missing)
 	{
 		mgError("Cannot connect to data base");
 	}
-	// init random number generator
-	struct timeval tv;
-	struct timezone tz;
-	gettimeofday( &tv, &tz );
-	srandom( tv.tv_usec );
-
+	unsigned int count=0;
 	m_db.CreateFolderFields();
 	chdir(the_setup.ToplevelDir);
 	FTS *fts;
@@ -316,7 +316,15 @@ mgSync::Sync(char * const * path_argv, bool delete_missing)
 			strcpy(c_extension,extension+1);
       			lower(c_extension);
 			if (!strcmp(c_extension,"flac") || !strcmp(c_extension,"ogg") || !strcmp(c_extension,"mp3"))
+			{
 				SyncFile(ftsent->fts_path);
+				count++;
+				if (count%1000==0)
+				{
+					extern void showimportcount(unsigned int);
+					showimportcount(count);
+				}
+			}
 		}
 		fts_close(fts);
 	}

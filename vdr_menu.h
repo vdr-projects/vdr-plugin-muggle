@@ -30,7 +30,8 @@ using namespace std;
 //! \param select if true, play only what the current position selects
 void Play(mgSelection *sel,const bool select=false);
 
-void showmessage(const char *msg);
+void showmessage(const char *msg,int duration=2);
+void showimportcount(unsigned int count);
 
 class cCommands;
 

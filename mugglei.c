@@ -41,7 +41,11 @@ int SysLogLevel = 1;
 
 bool import_assorted, delete_mode, create_mode;
 
-void showmessage(const char *msg)
+void showmessage(const char *msg,int duration)
+{
+}
+
+void showimportcount(unsigned int count)
 {
 }
 

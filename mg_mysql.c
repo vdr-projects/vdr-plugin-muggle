@@ -334,8 +334,9 @@ void mgmySql::FillTables()
   for( int i=0; i < len; i ++ )
   {
 	  char b[600];
-	  sprintf(b,"INSERT INTO language SET id='%s', language='%s'",
-			  languages[i].id,languages[i].name);
+	  sprintf(b,"INSERT INTO language SET id='%s', language=",
+			  languages[i].id);
+	  sql_Cstring(languages[i].name,strchr(b,0));
 	  exec_sql(b);
   }
   len = sizeof( musictypes ) / sizeof( musictypes_t );
