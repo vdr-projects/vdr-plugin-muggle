@@ -37,7 +37,7 @@ void mgValmap::Write(FILE *f) {
 }
 
 void mgValmap::put(const char* name, const string value) {
-	if (value.empty() || value==EMPTY) return;
+	if (value.empty()) return;
 	(*this)[string(name)] = value;
 }
 

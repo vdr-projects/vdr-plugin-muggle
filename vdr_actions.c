@@ -74,7 +74,7 @@ class mgEntry : public mgOsdItem
 	public:
 		void Notify();
 		bool Enabled(mgActions on) { return IsEntry(on);}
-        	const char *MenuName (const unsigned int idx,const string value);
+        	const char *MenuName (const unsigned int idx,const mgSelItem& item);
 		eOSState Process(eKeys key);
 		void Execute();
 		eOSState Back();
@@ -243,15 +243,15 @@ class mgCommand : public mgOsdItem
 class mgActOrder : public mgOsdItem
 {
 	public:
-		const char* MenuName(const unsigned int idx,const string value);
+		const char* MenuName(const unsigned int idx,const mgSelItem& item);
 		virtual eOSState Process(eKeys key);
 		void Execute();
 };
 
 const char*
-mgActOrder::MenuName(const unsigned int idx,const string value)
+mgActOrder::MenuName(const unsigned int idx,const mgSelItem& item)
 {
-	return strdup(value.c_str());
+	return strdup(item.value().c_str());
 }
 
 eOSState
@@ -328,28 +328,28 @@ mgEntry::Notify()
 
 
 const char *
-mgEntry::MenuName(const unsigned int idx,const string value)
+mgEntry::MenuName(const unsigned int idx,const mgSelItem& item)
 {
 	char *result;
 	char ct[20];
 	ct[0]=0;
-	unsigned int selcount = selection()->valcount(value);
+	unsigned int selcount = item.count();
 	if (selection()->level()<selection()->ordersize()-1 || selcount>1)
 		sprintf(ct,"  [%u]",selcount);
 	// when changing this, also change mgDoCollEntry::getTarget()
 	if (selection()->isCollectionlist())
 	{
-		if (value == osd()->default_collection)
-			asprintf(&result,"-> %s%s",value.c_str(),ct);
+		if (item.value() == osd()->default_collection)
+			asprintf(&result,"-> %s%s",item.value().c_str(),ct);
         	else
-			asprintf(&result,"     %s%s",value.c_str(),ct);
+			asprintf(&result,"     %s%s",item.value().c_str(),ct);
 	}
 	else if (selection()->inCollection())
-		asprintf(&result,"%4d %s%s",idx,value.c_str(),ct);
+		asprintf(&result,"%4d %s%s",idx,item.value().c_str(),ct);
 	else if (selection()->isLanguagelist())
-		asprintf(&result,"%s%s",dgettext("iso_639",value.c_str()),ct);
+		asprintf(&result,"%s%s",dgettext("iso_639",item.value().c_str()),ct);
 	else
-		asprintf(&result,"%s%s",value.c_str(),ct);
+		asprintf(&result,"%s%s",item.value().c_str(),ct);
 	return result;
 }
 
@@ -541,7 +541,7 @@ class mgChooseOrder : public mgCommand
 	virtual eOSState Process(eKeys key);
         void Execute ();
         const char *ButtonName() { return tr("Order"); }
-        const char *MenuName(const unsigned int idx,const string value)
+        const char *MenuName(const unsigned int idx,const mgSelItem& item)
 	{ return strdup(tr("Select an order")); }
 };
 
@@ -688,7 +688,7 @@ class mgCmdSync : public mgOsdItem
 };
 
 
-static char *sync_args[] =
+char *sync_args[] =
 {
 	".",
 	0
@@ -698,7 +698,7 @@ eOSState
 mgCmdSync::ProcessKey(eKeys key)
 {
 	if (key==kOk)
-		if (Interface->Confirm(tr("Synchronize database with track flles?")))
+		if (Interface->Confirm(tr("Synchronize database with track files?")))
 	{
 		Execute();
 		return osContinue;
@@ -726,10 +726,10 @@ class mgSetDefaultCollection:public mgCommand
         {
             return tr ("Default");
         }
-        const char *MenuName (const unsigned int idx,const string value);
+        const char *MenuName (const unsigned int idx,const mgSelItem& item);
 };
 
-const char * mgSetDefaultCollection::MenuName(const unsigned int idx,const string value)
+const char * mgSetDefaultCollection::MenuName(const unsigned int idx,const mgSelItem& item)
 {
     char *b;
     asprintf (&b, tr("Set default to collection '%s'"),
@@ -788,13 +788,13 @@ class mgAddAllToCollection:public mgCommand {
         {
             return tr ("Add");
         }
-        const char *MenuName (const unsigned int idx,const string value);
+        const char *MenuName (const unsigned int idx,const mgSelItem& item);
     protected:
 	void ExecuteMove();
 };
 
 const char *
-mgAddAllToCollection::MenuName (const unsigned int idx,const string value)
+mgAddAllToCollection::MenuName (const unsigned int idx,const mgSelItem& item)
 {
     return strdup(tr("Add all to a collection"));
 }
@@ -833,11 +833,11 @@ class mgAddAllToDefaultCollection:public mgCommand {
         {
             return tr ("Add");
         }
-        const char *MenuName (const unsigned int idx,const string value);
+        const char *MenuName (const unsigned int idx,const mgSelItem& item);
 };
 
 const char *
-mgAddAllToDefaultCollection::MenuName (const unsigned int idx,const string value)
+mgAddAllToDefaultCollection::MenuName (const unsigned int idx,const mgSelItem& item)
 {
     char *b;
     asprintf (&b, tr ("Add all to '%s'"),
@@ -883,7 +883,7 @@ class mgAddThisToCollection:public mgAddAllToCollection
 	bool Enabled(mgActions on);
         void Execute ();
         const char *ButtonName ();
-        const char *MenuName (const unsigned int idx,const string value);
+        const char *MenuName (const unsigned int idx,const mgSelItem& item);
 };
 
 
@@ -910,7 +910,7 @@ mgAddThisToCollection::Enabled(mgActions on)
 }
 
 const char *
-mgAddThisToCollection::MenuName (const unsigned int idx,const string value)
+mgAddThisToCollection::MenuName (const unsigned int idx,const mgSelItem& item)
 {
     return strdup(tr("Add to a collection"));
 }
@@ -922,7 +922,7 @@ class mgAddThisToDefaultCollection:public mgAddAllToDefaultCollection
 	bool Enabled(mgActions on);
         void Execute ();
         const char *ButtonName ();
-        const char *MenuName (const unsigned int idx,const string value);
+        const char *MenuName (const unsigned int idx,const mgSelItem& item);
 };
 
 
@@ -952,7 +952,7 @@ mgAddThisToDefaultCollection::Enabled(mgActions on)
 }
 
 const char *
-mgAddThisToDefaultCollection::MenuName (const unsigned int idx,const string value)
+mgAddThisToDefaultCollection::MenuName (const unsigned int idx,const mgSelItem& item)
 {
     char *b;
     asprintf (&b, tr ("Add to '%s'"), osd ()->default_collection.c_str ());
@@ -968,7 +968,7 @@ class mgRemoveAllFromCollection:public mgCommand
         {
             return tr ("Remove");
         }
-        const char *MenuName (const unsigned int idx,const string value);
+        const char *MenuName (const unsigned int idx,const mgSelItem& item);
 };
 
 void
@@ -983,7 +983,7 @@ mgRemoveAllFromCollection::Execute ()
 }
 
 const char *
-mgRemoveAllFromCollection::MenuName (const unsigned int idx,const string value)
+mgRemoveAllFromCollection::MenuName (const unsigned int idx,const mgSelItem& item)
 {
     return strdup(tr("Remove all from a collection"));
 }
@@ -997,11 +997,11 @@ class mgClearCollection : public mgCommand
         {
             return tr ("Clear");
         }
-        const char *MenuName (const unsigned int idx,const string value);
+        const char *MenuName (const unsigned int idx,const mgSelItem& item);
 };
 
 const char *
-mgClearCollection::MenuName (const unsigned int idx,const string value)
+mgClearCollection::MenuName (const unsigned int idx,const mgSelItem& item)
 {
 	return strdup(tr("Clear the collection"));
 }
@@ -1032,7 +1032,7 @@ class mgRemoveThisFromCollection:public mgRemoveAllFromCollection
         {
             return tr ("Remove");
         }
-        const char *MenuName (const unsigned int idx,const string value);
+        const char *MenuName (const unsigned int idx,const mgSelItem& item);
 };
 
 
@@ -1048,7 +1048,7 @@ mgRemoveThisFromCollection::Execute ()
 
 
 const char *
-mgRemoveThisFromCollection::MenuName (const unsigned int idx,const string value)
+mgRemoveThisFromCollection::MenuName (const unsigned int idx,const mgSelItem& item)
 {
     return strdup(tr("Remove from a collection"));
 }
@@ -1110,7 +1110,7 @@ class mgCreateCollection : public mgCreate
 	mgCreateCollection();
 	bool Enabled(mgActions on);
         void Execute ();
-        const char *MenuName (const unsigned int idx=0,const string value="");
+        const char *MenuName (const unsigned int idx=0,const mgSelItem& item=zeroitem);
 };
 
 mgCreateCollection::mgCreateCollection() : mgCreate(MenuName())
@@ -1118,7 +1118,7 @@ mgCreateCollection::mgCreateCollection() : mgCreate(MenuName())
 }
 
 const char*
-mgCreateCollection::MenuName(const unsigned int idx,const string value)
+mgCreateCollection::MenuName(const unsigned int idx,const mgSelItem& item)
 {
             return strdup(tr ("Create collection"));
 }
@@ -1162,7 +1162,7 @@ class mgDeleteCollection:public mgCommand
         {
             return tr ("Delete");
         }
-        const char *MenuName (const unsigned int idx,const string value);
+        const char *MenuName (const unsigned int idx,const mgSelItem& item);
 };
 
 bool
@@ -1178,7 +1178,7 @@ mgDeleteCollection::Enabled(mgActions on)
 	return result;
 }
 
-const char* mgDeleteCollection::MenuName(const unsigned int idx,const string value)
+const char* mgDeleteCollection::MenuName(const unsigned int idx,const mgSelItem& item)
 {
     return strdup(tr("Delete the collection"));
 }
@@ -1210,7 +1210,7 @@ class mgExportTracklist:public mgCommand
         {
             return tr ("Export");
         }
-        const char *MenuName (const unsigned int idx,const string value)
+        const char *MenuName (const unsigned int idx,const mgSelItem& item)
         {
             return strdup(tr ("Export track list"));
         }

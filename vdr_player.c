@@ -682,10 +682,11 @@ mgPCMPlayer::Action (void)
                 break;
             }
         }
+        eState curr_m_state=m_state;	// avoid helgrind warning
 
         Unlock ();
 
-        if ((m_rframe || m_state == msWait) && m_pframe)
+        if ((m_rframe || curr_m_state == msWait) && m_pframe)
         {
 // Wait for output to become ready
             DevicePoll (poll, 500);
@@ -826,18 +827,18 @@ mgPCMPlayer::Play (void)
 {
     MGLOG ("mgPCMPlayer::Play");
 
-    Lock ();
 
     if (m_playmode != pmPlay && m_current)
     {
+    	Lock ();
         if (m_playmode == pmStopped)
         {
             m_state = msStart;
         }
 //    DevicePlay(); // TODO? Commented out in original code, too
         SetPlayMode (pmPlay);
+    	Unlock ();
     }
-    Unlock ();
 }
 
 

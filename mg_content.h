@@ -34,8 +34,7 @@ class mgContentItem
     public:
         mgContentItem ();
 
-	string getKeyValue(mgKeyTypes kt);
-	string getKeyId(mgKeyTypes kt);
+	mgSelItem* getKeyItem(mgKeyTypes kt);
 
 	//! \brief copy constructor
         mgContentItem(const mgContentItem* c);
@@ -43,9 +42,9 @@ class mgContentItem
 	//! \brief construct an item from an SQL row
         mgContentItem (const mgSelection* sel, const MYSQL_ROW row);
 //! \brief returns track id
-        long getId () const
+        long getTrackid () const
         {
-            return m_id;
+            return m_trackid;
         }
 
 //! \brief returns title
@@ -69,6 +68,9 @@ class mgContentItem
 //! \brief returns the name of genre
         string getGenre () const;
 
+//! \brief returns the name of the language
+        string getLanguage () const;
+
 //! \brief returns the bitrate
         string getBitrate () const;
 
@@ -91,7 +93,7 @@ class mgContentItem
         int getChannels () const;
         
     private:
-        long m_id;
+        long m_trackid;
         string m_title;
         string m_mp3file;
         string m_artist;
@@ -101,6 +103,8 @@ class mgContentItem
         string m_genre1;
         string m_genre2;
         string m_bitrate;
+        string m_language_id;
+        string m_language;
         int m_year;
         int m_rating;
         int m_duration;

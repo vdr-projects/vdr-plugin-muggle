@@ -69,6 +69,5 @@ class mgMuggle:public cPlugin
 
         virtual bool SetupParse (const char *Name, const char *Value);
 
-	mgMainMenu *main;
 };
 #endif

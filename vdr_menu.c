@@ -144,8 +144,7 @@ mgMainMenu::CollectionEntered(string name)
 {
     if (!UsingCollection) return false;
     if (selection()->level()==0) return false;
-    string collection = trim(selection ()->getKeyValue(0));
-    return (collection == name);
+    return trim(selection ()->getKeyItem(0).value()) == name;
 }
 
 
@@ -496,11 +495,11 @@ mgMainMenu::AddOrderActions(mgMenu* m)
 void
 mgMenu::AddSelectionItems (mgSelection *sel,mgActions act)
 {
-    for (unsigned int i = 0; i < sel->values.size (); i++)
+    for (unsigned int i = 0; i < sel->items.size (); i++)
     {
     	mgAction *a = GenerateAction(act, actEntry);
 	if (!a) continue;
-	const char *name = a->MenuName(i+1,sel->values[i]);
+	const char *name = a->MenuName(i+1,sel->items[i]);
 	// add incremental filter here
 #if 0
 	// example:
@@ -869,12 +868,21 @@ showmessage(const char * msg,int duration)
 }
 
 void
-showimportcount(unsigned int count)
+showimportcount(unsigned int count,bool final=false)
 {
 	char b[100];
-	sprintf(b,tr("Imported %d tracks..."),count);
-	assert(strlen(b)<100);
-	showmessage(b,1);
+	if (final)
+	{
+		sprintf(b,tr("Import done:Imported %d tracks"),count);
+		assert(strlen(b)<100);
+		showmessage(b,1);
+	}
+	else
+	{
+		sprintf(b,tr("Imported %d tracks..."),count);
+		assert(strlen(b)<100);
+		showmessage(b);
+	}
 }
 
 void

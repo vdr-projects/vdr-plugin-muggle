@@ -47,7 +47,6 @@ mgMuggle::MainMenuEntry (void)
 
 mgMuggle::mgMuggle (void)
 {
-    main = NULL;
 // defaults for database arguments
     the_setup.DbHost = 0;
     the_setup.DbSocket = 0;
@@ -65,12 +64,10 @@ mgMuggle::mgMuggle (void)
 #endif
 }
 
-#if VDRVERSNUM >= 0321
 
 void
 mgMuggle::Stop (void)
 {
-    if (main) main->SaveState();
     free(the_setup.DbHost);
     free(the_setup.DbName);
     free(the_setup.DbUser);
@@ -78,7 +75,6 @@ mgMuggle::Stop (void)
     free(the_setup.ToplevelDir);
 }
 
-#endif
 
 const char *
 mgMuggle::CommandLineHelp (void)
@@ -248,8 +244,7 @@ cOsdObject *
 mgMuggle::MainMenuAction (void)
 {
 // Perform the action when selected from the main VDR menu.
-    main = new mgMainMenu (); 
-    return main;
+    return new mgMainMenu (); 
 }
 
 

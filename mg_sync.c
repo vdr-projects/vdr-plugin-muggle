@@ -223,45 +223,13 @@ mgSync::GetFileInfo(const char *filename)
         channels = ap->channels();   //tracks.channels
 	if (m_db.HasFolderFields())
 	{
-	    char *path = strdup(filename);
-	    char *folder1="";
-	    char *folder2="";
-	    char *folder3="";
-	    char *folder4="";
-	    char *p=path;
-	    char *slash;
-	    slash=strchr(p,'/');
-	    if (slash)
-	    {
-	    	folder1=p;
-		*slash=0;
-		p=slash+1;
-	    	slash=strchr(p,'/');
-	    	if (slash)
-	    	{
-	    		folder2=p;
-	    		*slash=0;
-			p=slash+1;
-	    		slash=strchr(p,'/');
-	    		if (slash)
-	    		{
-	    			folder3=p;
-	    			*slash=0;
-				p=slash+1;
-	    			slash=strchr(p,'/');
-	    			if (slash)
-	    			{
-	    				folder4=p;
-	    				*slash=0;
-				}
-			}
-		}
-	    }
-		sql_Cstring(folder1,c_folder1);
-		sql_Cstring(folder2,c_folder2);
-		sql_Cstring(folder3,c_folder3);
-		sql_Cstring(folder4,c_folder4);
-		free(path);
+	    char *folders[4];
+	    char *fbuf=SeparateFolders(filename,folders,4);
+	    sql_Cstring(folders[0],c_folder1);
+	    sql_Cstring(folders[1],c_folder2);
+	    sql_Cstring(folders[2],c_folder3);
+	    sql_Cstring(folders[3],c_folder4);
+	    free(fbuf);
 	}
 	return true;
 }
@@ -296,8 +264,10 @@ mgSync::SyncFile(const char *filename)
 void
 mgSync::Sync(char * const * path_argv, bool delete_missing)
 {
+  extern void showimportcount(unsigned int,bool final=false);
   if (!m_db.Connected())
     return;
+
 	unsigned int count=0;
 	m_db.CreateFolderFields();
 	chdir(the_setup.ToplevelDir);
@@ -320,14 +290,12 @@ mgSync::Sync(char * const * path_argv, bool delete_missing)
 				SyncFile(ftsent->fts_path);
 				count++;
 				if (count%1000==0)
-				{
-					extern void showimportcount(unsigned int);
 					showimportcount(count);
-				}
 			}
 		}
 		fts_close(fts);
 	}
+	showimportcount(count,true);
 }
 
 void

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-const char * EMPTY = "XNICHTGESETZTX";
+mgSelItem zeroitem;
 
 bool iskeyGenre(mgKeyTypes kt)
 {
@@ -100,26 +100,81 @@ ltos (long l)
 	return s.str ();
 }
 
+mgSelItem::mgSelItem()
+{
+	m_valid=false;
+	m_count=0;
+}
+
+mgSelItem::mgSelItem(string v,string i,unsigned int c)
+{
+	set(v,i,c);
+}
+
+void
+mgSelItem::set(string v,string i,unsigned int c)
+{
+	m_valid=true;
+	m_value=v;
+	m_id=i;
+	m_count=c;
+}
+
+void 
+mgSelItem::operator=(const mgSelItem& from)
+{
+	m_valid=from.m_valid;
+	m_value=from.m_value;
+	m_id=from.m_id;
+	m_count=from.m_count;
+}
+
+void
+mgSelItem::operator=(const mgSelItem* from)
+{
+	m_valid=from->m_valid;
+	m_value=from->m_value;
+	m_id=from->m_id;
+	m_count=from->m_count;
+}
+
+bool
+mgSelItem::operator==(const mgSelItem& other) const
+{
+	return m_value == other.m_value
+		&& m_id == other.m_id;
+}
+
 class mgKeyNormal : public mgKey {
 	public:
 		mgKeyNormal(const mgKeyNormal& k);
-			mgKeyNormal(const mgKeyTypes kt, string table, string field);
+		mgKeyNormal(const mgKeyTypes kt, string table, string field);
 		virtual mgParts Parts(mgmySql &db,bool orderby=false) const;
 		string value() const;
 		string id() const;
-		void set(string value,string id);
+		bool valid() const;
+		void set(mgSelItem& item);
+		mgSelItem& get();
 		mgKeyTypes Type() const { return m_kt; }
 		virtual string expr() const { return m_table + "." + m_field; }
 		virtual string table() const { return m_table; }
 	protected:
 		string IdClause(mgmySql &db,string what,string::size_type start=0,string::size_type len=string::npos) const;
 		void AddIdClause(mgmySql &db,mgParts &result,string what) const;
-		string m_id;
+		mgSelItem m_item;
 		string m_field;
 	private:
 		mgKeyTypes m_kt;
 		string m_table;
-		string m_value;
+};
+
+class mgKeyABC : public mgKeyNormal {
+	public:
+		mgKeyABC(const mgKeyNormal& k) : mgKeyNormal(k) {}
+		mgKeyABC(const mgKeyTypes kt, string table, string field) : mgKeyNormal(kt,table,field) {}
+		virtual string expr() const { return "substring("+mgKeyNormal::expr()+",1,1)"; }
+	protected:
+		//void AddIdClause(mgmySql &db,mgParts &result,string what) const;
 };
 
 class mgKeyDate : public mgKeyNormal {
@@ -246,7 +301,7 @@ mgKeyGenres::GenreClauses(mgmySql &db,bool orderby) const
 			g2.push_back("substring(tracks.genre2,1,"+ltos(genrelevel())+")=genre.id");
 		}
 
-	if (id() != EMPTY)
+	if (valid())
 	{
 		unsigned int len=genrelevel();
 		if (len==4) len=0;
@@ -317,13 +372,19 @@ class mgKeyDecade : public mgKeyNormal {
 string
 mgKeyNormal::id() const
 {
-	return m_id;
+	return m_item.id();
+}
+
+bool
+mgKeyNormal::valid() const
+{
+	return m_item.valid();
 }
 
 string
 mgKeyNormal::value() const
 {
-	return m_value;
+	return m_item.value();
 }
 
 
@@ -332,7 +393,7 @@ mgKeyNormal::mgKeyNormal(const mgKeyNormal& k)
 	m_kt = k.m_kt;
 	m_table = k.m_table;
 	m_field = k.m_field;
-	m_id = k.m_id;
+	m_item = k.m_item;
 }
 
 mgKeyNormal::mgKeyNormal(const mgKeyTypes kt, string table, string field)
@@ -340,14 +401,18 @@ mgKeyNormal::mgKeyNormal(const mgKeyTypes kt, string table, string field)
 	m_kt = kt;
 	m_table = table;
 	m_field = field;
-	m_id = EMPTY;
 }
 
 void
-mgKeyNormal::set(string value, string id)
+mgKeyNormal::set(mgSelItem& item)
 {
-	m_value = value;
-	m_id = id;
+	m_item=item;
+}
+
+mgSelItem&
+mgKeyNormal::get()
+{
+	return m_item;
 }
 
 mgParts::mgParts()
@@ -393,7 +458,7 @@ mgKeyNormal::IdClause(mgmySql &db,string what,string::size_type start,string::si
 void
 mgKeyNormal::AddIdClause(mgmySql &db,mgParts &result,string what) const
 {
-	if (id() != EMPTY)
+	if (valid())
        		result.clauses.push_back(IdClause(db,what));
 }
 
@@ -406,7 +471,7 @@ mgKeyTrack::Parts(mgmySql &db,bool orderby) const
 	if (orderby)
 	{
 		// if you change tracks.title, please also
-		// change mgContentItem::getKeyValue()
+		// change mgContentItem::getKeyItem()
 		result.fields.push_back("tracks.title");
        		result.orders.push_back("tracks.tracknb");
 	}
@@ -656,7 +721,7 @@ mgOrder::InitFrom(const mgOrder &from)
     	for (unsigned int i = 0; i < from.size();i++)
     	{
         	mgKey *k = ktGenerate(from.getKeyType(i));
-		k->set(from.getKeyValue(i),from.getKeyId(i));
+		k->set(from.getKeyItem(i));
 		Keys.push_back(k);
     	}
 	m_orderByCount=from.m_orderByCount;
@@ -737,18 +802,11 @@ mgOrder::getKeyType(unsigned int idx) const
 	return Keys[idx]->Type();
 }
 
-string
-mgOrder::getKeyValue(unsigned int idx) const
+mgSelItem&
+mgOrder::getKeyItem(unsigned int idx) const
 {
 	assert(idx<Keys.size());
-	return Keys[idx]->value();
-}
-
-string
-mgOrder::getKeyId(unsigned int idx) const
-{
-	assert(idx<Keys.size());
-	return Keys[idx]->id();
+	return Keys[idx]->get();
 }
 
 void
@@ -861,8 +919,7 @@ mgOrder::Parts(mgmySql &db,unsigned int level,bool orderby) const
 				if (kn)
 				{
 					mgKeyTypes knt = kn->Type();
-					if (iskeyGenre(knt) 
-						&& knt>kt && kn->id()!=EMPTY)
+					if (iskeyGenre(knt) && knt>kt && !kn->id().empty())
 						goto next;
 				}
 			}
@@ -962,7 +1019,9 @@ ktGenerate(const mgKeyTypes kt)
 		case keyFolder3:result = new mgKeyFolder3;break;
 		case keyFolder4:result = new mgKeyFolder4;break;
 		case keyArtist: result = new mgKeyNormal(kt,"tracks","artist");break;
+		case keyArtistABC: result = new mgKeyABC(kt,"tracks","artist");break;
 		case keyTitle: result = new mgKeyNormal(kt,"tracks","title");break;
+		case keyTitleABC: result = new mgKeyABC(kt,"tracks","title");break;
 		case keyTrack: result = new mgKeyTrack;break;
 		case keyDecade: result = new mgKeyDecade;break;
 		case keyAlbum: result = new mgKeyAlbum;break;
@@ -992,7 +1051,9 @@ ktName(const mgKeyTypes kt)
 		case keyFolder3: result = "Folder3";break;
 		case keyFolder4: result = "Folder4";break;
 		case keyArtist: result = "Artist";break;
+		case keyArtistABC: result = "ArtistABC";break;
 		case keyTitle: result = "Title";break;
+		case keyTitleABC: result = "TitleABC";break;
 		case keyTrack: result = "Track";break;
 		case keyDecade: result = "Decade";break;
 		case keyAlbum: result = "Album";break;

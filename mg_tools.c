@@ -126,3 +126,24 @@ std::string trim(std::string const& source, char const* delims ) {
     result.erase();
   return result;
 }
+
+
+char *
+SeparateFolders(const char *filename, char * folders[],unsigned int fcount)
+{
+	for (unsigned int i=0;i<fcount;i++)
+		folders[i]="";
+	char *fbuf=strdup(filename);
+	char *slash=fbuf-1;
+	for (unsigned int i=0;i<fcount;i++)
+	{
+		char *p=slash+1;
+		slash=strchr(p,'/');
+		if (!slash)
+			break;
+		folders[i]=p;
+		*slash=0;
+	}
+	return fbuf;
+}
+

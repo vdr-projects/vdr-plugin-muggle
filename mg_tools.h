@@ -84,4 +84,6 @@ class mgLog
 
 std::string trim(std::string const& source, char const* delims = " \t\r\n");
 
+char *SeparateFolders(const char *filename, char * folders[],unsigned int fcount);
+
 #endif                                            /*  _MUGGLE_TOOLS_H */

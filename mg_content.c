@@ -12,42 +12,47 @@
 #include <stdio.h>
 #include "i18n.h"
 #include "mg_selection.h"
-#include "vdr_setup.h"
+#include "mg_setup.h"
 #include "mg_tools.h"
 
 
-string
-mgContentItem::getKeyId(mgKeyTypes kt)
+mgSelItem*
+mgContentItem::getKeyItem(mgKeyTypes kt)
 {
-	if (m_id<0) 
-		return "";
-	switch (kt) {
-		case keyGenres:
-		case keyGenre1:
-		case keyGenre2:
-		case keyGenre3: return m_genre1_id;
-		default: return getKeyValue(kt);
+	string val;
+	string id;
+	if (m_trackid>=0) 
+	{
+		switch (kt) {
+			case keyGenres:
+			case keyGenre1:
+			case keyGenre2:
+			case keyGenre3: val = getGenre();id=m_genre1_id;break;
+			case keyArtist: val = id = getArtist();break;
+			case keyArtistABC: val = id = getArtist()[0];break;
+			case keyAlbum: val = id = getAlbum();break;
+			case keyYear: val = id = string(ltos(getYear()));break;
+			case keyDecade: val = id = string(ltos(int((getYear() % 100) / 10) * 10));break;
+			case keyTitle: val = id = getTitle();break;
+			case keyTitleABC: val = id = getTitle()[0];break;
+			case keyTrack: val = id = getTitle();break;
+			case keyLanguage: val = getLanguage();id=m_language_id ; break;
+			case keyRating: val = id = getRating();break;
+			case keyFolder1:
+			case keyFolder2:
+			case keyFolder3:
+			case keyFolder4: 
+				{
+				       char *folders[4];
+				       char *fbuf=SeparateFolders(m_mp3file.c_str(),folders,4);
+				       val = id = folders[int(kt)-int(keyFolder1)];
+				       free(fbuf);
+				       break;
+				}
+			default: return new mgSelItem;
+		}
 	}
-}
-
-string
-mgContentItem::getKeyValue(mgKeyTypes kt)
-{
-	if (m_id<0) 
-		return "";
-	switch (kt) {
-		case keyGenres:
-		case keyGenre1:
-		case keyGenre2:
-		case keyGenre3: return getGenre();
-		case keyArtist: return getArtist();
-		case keyAlbum: return getAlbum();
-		case keyYear: return string(ltos(getYear()));
-		case keyDecade: return string(ltos(int((getYear() % 100) / 10) * 10));
-		case keyTitle: return getTitle();
-		case keyTrack: return getTitle();
-		default: return "";
-	}
+	return new mgSelItem(val,id);
 }
 
 
@@ -65,6 +70,11 @@ string mgContentItem::getGenre () const
     return result;
 }
 
+
+string mgContentItem::getLanguage() const
+{
+    return m_language;
+}
 
 string mgContentItem::getBitrate () const
 {
@@ -115,12 +125,12 @@ int mgContentItem::getChannels () const
 
 mgContentItem::mgContentItem ()
 {
-    m_id = -1;
+    m_trackid = -1;
 }
 
 mgContentItem::mgContentItem (const mgContentItem* c)
 {
-    m_id = c->m_id;
+    m_trackid = c->m_trackid;
     m_title = c->m_title;
     m_mp3file = c->m_mp3file;
     m_artist = c->m_artist;
@@ -129,6 +139,8 @@ mgContentItem::mgContentItem (const mgContentItem* c)
     m_genre2_id = c->m_genre2_id;
     m_genre1 = c->m_genre1;
     m_genre2 = c->m_genre2;
+    m_language = c->m_language;
+    m_language_id = c->m_language_id;
     m_bitrate = c->m_bitrate;
     m_year = c->m_year;
     m_rating = c->m_rating;
@@ -139,7 +151,7 @@ mgContentItem::mgContentItem (const mgContentItem* c)
 
 static char *mg_readline(FILE *f)
 {
-  static char buffer[MAXPARSEBUFFER];
+  static char buffer[10000];
   if (fgets(buffer, sizeof(buffer), f) > 0) {
      int l = strlen(buffer) - 1;
      if (l >= 0 && buffer[l] == '\n')
@@ -186,7 +198,7 @@ mgContentItem::getSourceFile(bool AbsolutePath) const
 
 mgContentItem::mgContentItem (const mgSelection* sel,const MYSQL_ROW row)
 {
-    m_id = atol (row[0]);
+    m_trackid = atol (row[0]);
     if (row[1])
 	m_title = row[1];
     else
@@ -241,5 +253,12 @@ mgContentItem::mgContentItem (const mgSelection* sel,const MYSQL_ROW row)
     	m_channels = atol (row[12]);
     else
     	m_channels = 0;
+    if (row[13])
+    {
+    	m_language_id = row[13];
+	m_language = sel->value(keyLanguage,row[13]);
+    }
+    else
+    	m_language_id = "NULL";
 };
 
