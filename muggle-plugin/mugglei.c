@@ -4,7 +4,8 @@
  *
  * \author  Lars von Wedel
  */
-//#define VERBOSE
+
+#define VERBOSE
 #include <string>
 
 #include <stdlib.h>
@@ -22,7 +23,7 @@
 MYSQL *db;
 
 std::string host, user, pass, dbname, sck;
-bool import_assorted;
+bool import_assorted, delete_mode;
 
 int init_database()
 {
@@ -198,7 +199,10 @@ void update_db( long uid, std::string filename )
 	      cddbid = escape_string( db, cddbid );
 	      free( buf );
 	  
-	      mgSqlWriteQuery( db, "INSERT INTO album (artist,title,cddbid) VALUES (\"%s\", \"Unassigned\", \"%s\")", artist.toCString(), cddbid.toCString() );
+	      mgSqlWriteQuery( db,
+			       "INSERT INTO album (artist, title,          cddbid) "
+			       "VALUES            (\"%s\", \"Unassigned\", \"%s\")", 
+			       artist.toCString(), cddbid.toCString() );
 	    }
 	  else
 	    { // use first album found as source id for the track
@@ -287,44 +291,86 @@ void update_db( long uid, std::string filename )
     }
 }
 
-void update_tags( long uid, std::string filename )
+void update_tags( long uid )
 {
-  
+  MYSQL_RES *result;
+  MYSQL_ROW row;
+
+  if( uid >= 0 )
+    {
+      result = mgSqlReadQuery( db, "SELECT artist,title,year,tracknb,mp3file,genre1,id FROM tracks where id=%d", uid );
+    }
+  else
+    {
+      result = mgSqlReadQuery( db, "SELECT artist,title,year,tracknb,mp3file,genre1,id FROM tracks" );
+    }
+
+  // loop all results
+  char* cwd = getcwd( NULL, 0 );
+  std::string wdir = std::string( cwd );
+  free( cwd );
+
+  struct stat *buf = (struct stat*) malloc( sizeof( struct stat ) );
+  while(( row = mysql_fetch_row(result) ) != NULL )
+    {
+
+      std::string file   = wdir + "/" + std::string( row[4] );
+      
+      if( !stat( file.c_str(), buf ) )
+	{
+	  // set tags?
+	  /*
+	  std::string artist = row[0];
+	  std::string title  = row[1];
+	  int year           = atoi( row[2] );
+	  int track          = atoi( row[3] );
+	  std::string genre  = row[5];
+	  */
+        }
+      else
+        {
+          if( delete_mode )
+	    {
+#ifdef VERBOSE
+	      std::cout << "Deleting entry " << row[6] << " from database because the file no longer exists." << std::endl;
+#endif
+	      mgSqlWriteQuery( db, "DELETE FROM tracks where id=%d", row[6] );
+	    }
+        }
+    }
+  free( buf );
 }
 
 void evaluate_file( std::string filename )
 {
-  if( 0 == init_database() )
-    {  
-      // is filename stored in database?
-      long uid = find_file_in_database( db, filename );
-      if( uid >= 0 )
-	{	  
-	  // currently only update database, do not consider writing changes from the db back
-	  /*
-	  // determine modification times in database and on filesystem
-	  time_t db_time = get_db_modification_time( uid );
-	  time_t fs_time = get_fs_modification_time( filename );
-
-	  if( db_time > fs_time )
-	    {
-	      // db is newer: update id3 tags from db
-	      update_tags( uid, filename );
-	    }
-	  else
-	    {
-	      // file is newer: update db from id3 tags
-	      update_db( uid, filename );
-	    }
-	  */
-
-	  update_db( uid, filename );
-	}
+  // is filename stored in database?
+  long uid = find_file_in_database( db, filename );
+  if( uid >= 0 )
+    {	  
+      // currently only update database, do not consider writing changes from the db back
+      /*
+      // determine modification times in database and on filesystem
+      time_t db_time = get_db_modification_time( uid );
+      time_t fs_time = get_fs_modification_time( filename );
+      
+      if( db_time > fs_time )
+      {
+      // db is newer: update id3 tags from db
+      update_tags( uid, filename );
+      }
       else
-	{
-	  // not in db yet: import file
-	  update_db( -1, filename );
-	}
+      {
+      // file is newer: update db from id3 tags
+      update_db( uid, filename );
+      }
+      */
+      
+      update_db( uid, filename );
+    }
+  else
+    {
+      // not in db yet: import file
+      update_db( -1, filename );
     }
 }
 
@@ -344,8 +390,9 @@ int main( int argc, char *argv[] )
       std::cout << "  -n <database>       - specify database name (default is 'GiantDisc')" << std::endl;
       std::cout << "  -u <username>       - specify user of mySql database (default is empty)" << std::endl;
       std::cout << "  -p <password>       - specify password of user (default is empty password)" << std::endl;
-      std::cout << "  -f <filename>       - name of music file to import" << std::endl;
+      std::cout << "  -f <filename>       - name of music file to import or update" << std::endl;
       std::cout << "  -a                  - import track as if it was on an assorted album" << std::endl;
+      std::cout << "  -z                  - scan all database entries and delete entries for files not found" << std::endl;
 
       exit( 1 );
     }
@@ -357,11 +404,13 @@ int main( int argc, char *argv[] )
   pass   = "";
   sck = "";
   import_assorted = false;
+  delete_mode = false;
+  filename = "";
 
   // parse command line options
   while( 1 )
     {
-      int c = getopt(argc, argv, "h:u:p:n:af:s:");
+      int c = getopt(argc, argv, "h:u:p:n:af:s:z");
 
       if (c == -1)
 	break;
@@ -400,6 +449,10 @@ int main( int argc, char *argv[] )
           {
             sck = optarg;
           } break;
+        case 'z':
+          {
+            delete_mode = true;
+          } break;
 	}
     }
 
@@ -409,7 +462,17 @@ int main( int argc, char *argv[] )
   gettimeofday( &tv, &tz );
   srandom( tv.tv_usec );  
 
-  evaluate_file( filename );
+  if( 0 == init_database() )
+    {  
+      if( delete_mode )
+	{
+	  update_tags( -1 );
+	}
+      if( filename.size() )
+	{
+	  evaluate_file( filename );
+	}
+    }
   return 0;
 }
 
