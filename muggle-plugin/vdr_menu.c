@@ -2,12 +2,12 @@
 /*! \file   vdr_menu.c
  *  \brief  Implements menu handling for browsing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.16 $
- * \date    $Date: 2004/02/23 15:41:21 $
+ * \version $Revision: 1.17 $
+ * \date    $Date: 2004/02/23 15:56:19 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: RaK $
  *
- * $Id: vdr_menu.c,v 1.16 2004/02/23 15:41:21 RaK Exp $
+ * $Id: vdr_menu.c,v 1.17 2004/02/23 15:56:19 RaK Exp $
  */
 /*******************************************************************/
 
@@ -112,19 +112,19 @@ void mgMainMenu::SetButtons(  )
     }
   else if( m_state == PLAYLIST )
     {
-      SetHelp( "Edit PL", "Track info", "Filter", "Submenu" );
+      SetHelp( tr("Edit PL"), tr("Track info"), tr("Filter"), tr("Submenu") );
     }
   else if( m_state == PLAYLIST_TRACKINFO )
     {
-      SetHelp( "Edit PL?", "Album info", "Filter", "Submenu" );
+      SetHelp( tr("Edit PL?"), tr("Album info"), tr("Filter"), tr("Submenu") );
     }
   else if( m_state == PLAYLIST_ALBUMINFO )
     {
-      SetHelp( "Edit PL?", "Playlist", "Filter", "Submenu" );
+      SetHelp( tr("Edit PL?"), tr("Playlist"), tr("Filter"), tr("Submenu") );
     }
   else if( m_state == FILTER )
     {
-      SetHelp( "Query", "Load", "Tree", "Submenu" );
+      SetHelp( tr("Query"), tr("Load"), tr("Browser"), tr("Submenu") );
     }
   else
     {
@@ -641,6 +641,9 @@ void mgMainMenu::DisplayFilterSelector()
 /************************************************************
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.17  2004/02/23 15:56:19  RaK
+ * - i18n
+ *
  * Revision 1.16  2004/02/23 15:41:21  RaK
  * - first i18n attempt
  *

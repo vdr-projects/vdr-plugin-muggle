@@ -3,8 +3,8 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.18 $
- * \date    $Date: 2004/02/23 15:17:51 $
+ * \version $Revision: 1.19 $
+ * \date    $Date: 2004/02/23 15:56:19 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: RaK $
  *
@@ -891,6 +891,7 @@ GdTreeNode::GdTreeNode(MYSQL db, int view, string filters)
     // everything is done in the parent class
     m_restriction = filters;
     m_view = view;
+    m_label = tr("Browser");
 }
 GdTreeNode::GdTreeNode(mgSelectionTreeNode* parent,
 			     string id, string label, string restriction)
@@ -1268,33 +1269,33 @@ bool GdTreeNode::expand()
     } else if (m_view <100) {
 	new_child = new GdTreeNode(this, // parent
 				   "1" , // id
-				   "Artist -> Album -> Title", // label,
+				   tr("Artist -> Album -> Track"), // label,
 				   m_restriction);
 	m_children.push_back(new_child);
 	new_child = new GdTreeNode(this, // parent
 				   "2" , // id
-				   "Genre -> Artist -> Album -> Track" , // label,
+				   tr("Genre -> Artist -> Album -> Track") , // label,
 				   m_restriction);
 	m_children.push_back(new_child);
 	new_child = new GdTreeNode(this, // parent
 				   "3" , // id
-				   "Artist -> Track" , // label,
+				   tr("Artist -> Track") , // label,
 				   m_restriction);
 	m_children.push_back(new_child);
 	new_child = new GdTreeNode(this, // parent
 				   "4" , // id
-				   "Genre -> Year -> Track" , // label,
+				   tr("Genre -> Year -> Track") , // label,
 				   m_restriction);
 	m_children.push_back(new_child);
 	new_child = new GdTreeNode(this, // parent
 				   "5" , // id
-				   "Album -> Track" , // label,
+				   tr("Album -> Track") , // label,
 				   m_restriction);
 	m_children.push_back(new_child);
       } else {
         new_child = new GdTreeNode(this, // parent
                                    "" , // id
-                                   "Search Result", // label,
+                                   tr("Search Result"), // label,
                                    m_restriction);
         m_children.push_back(new_child);
     }
@@ -1390,6 +1391,9 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.19  2004/02/23 15:56:19  RaK
+ * - i18n
+ *
  * Revision 1.18  2004/02/23 15:17:51  RaK
  * - i18n
  *
