@@ -3,9 +3,9 @@
  * \brief  defines functions to be executed on playlists for the vdr muggle plugindatabase
  *
  * \version $Revision: 1.6 $
- * \date    $Date: 2004/07/26 22:20:55 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  *
  * This file implements the class mgPlaylist which maintains a playlist
  * and supports editing (e.g. adding or moving tracks), navigating it
@@ -23,7 +23,9 @@
  * \class mgPlaylist
  *
  * \brief Represents a generic playlist, i.e. an ordered collection of tracks
- * Derived classes take care of specifics of certain media types
+ *        Derived classes may take care of specifics of certain media types
+ *
+ * \todo Are loop mode, shuffle mode, and party mode implemented here?
  */
 class mgPlaylist : public mgTracklist
 {	  
@@ -112,7 +114,11 @@ public:
   //! \brief obtain the listname
   std::string getListname() ;
 
-  //! \brief returns the current item of the list
+  /*! 
+   * \brief returns the current item of the list
+   *
+   * \todo Return null in case of an empty list or invalid index
+   */
   virtual mgContentItem* getCurrent();
     
   /*! \brief set the listname
@@ -130,10 +136,18 @@ public:
    */
   virtual void gotoPosition(unsigned int position);
   
-  //! \brief proceeds to the next item
+  /*!
+   * \brief proceeds to the next item
+   * 
+   * \todo Handle loop mode
+   */
   virtual void skipFwd();
 
-  //! \brief goes back to the previous item
+  /*! 
+   * \brief goes back to the previous item
+   *
+   * \todo Handle loop mode
+   */
   virtual void skipBack();
  
   //! \brief obtain the next item without skipping the current position

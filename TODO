@@ -12,12 +12,16 @@
     \subsection bugs Bugs and testing needed
     
     - Test execution of playlist commands
+    - Test Save/Rename/Load of playlist
+    - Plugin crashes when selecting entries with special characters
+      - Escape query strings correctly
+    - Do not allow playlist deletion while playing or stop or similar
     - Keep this? Test mgPCMPlayer::getSourceFile() for GD case (find)
-    - Test saving/loading playlists to database
 
     \subsection urgentosd OSD-related Issues
 
 	- Add play indicators
+	  - mgPCMPlayer::GetIndex: obtain total length from database
 	  - Toggle display with Ok (off -> track info -> album info -> playlist info -> off)
 	  - Display track info
 	    - Song title
