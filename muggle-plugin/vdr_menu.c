@@ -292,14 +292,16 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	    case kOk:
 	      {
 		// start replay at selected index
-		int idx = Current();
+		unsigned idx = Current();
 		Play( m_current_playlist, idx );
 		state = osContinue;
 	      } break;
 	    case kRed:
 	      {
 		// TODO: what happens if the user presses play and the player is already active?
-		Play( m_current_playlist );
+		// TODO: resume?
+		unsigned resume = mgMuggle::getResumeIndex();
+		Play( m_current_playlist, resume );
 		state = osEnd;
 	      } break;
 	    case kGreen:
@@ -571,7 +573,8 @@ eOSState mgMainMenu::TreeSubmenuAction( int n )
 		m_current_playlist->appendList( tracks );
 		
 		// play
-		Play( m_current_playlist );
+		mgMuggle::setResumeIndex( 0 );
+		Play( m_current_playlist, 0 );
 		
 		state = osEnd;
 	      }
@@ -954,7 +957,7 @@ void mgMainMenu::DisplayFilterSelector()
   // show available filters, load on OK?
 }
 
-void mgMainMenu::Play( mgPlaylist *plist, int first )
+void mgMainMenu::Play( mgPlaylist *plist, unsigned first )
 {
   MGLOG( "mgMainMenu::Play" );
   cControl *control = cControl::Control();

@@ -26,6 +26,7 @@ static const char *VERSION        = "0.0.8";
 static const char *DESCRIPTION    = "Media juggle plugin for VDR";
 static const char *MAINMENUENTRY  = "Muggle";
 
+static unsigned s_resume_idx = 0;
 
 const char* mgMuggle::Version(void)
 { 
@@ -213,6 +214,17 @@ bool mgMuggle::SetupParse(const char *Name, const char *Value)
   else return false;
 
   return true;
+}
+
+
+static void mgMuggle::setResumeIndex( unsigned index )
+{
+  s_resume_idx = index;
+}
+
+static unsigned mgMuggle::getResumeIndex( )
+{
+  return s_resume_idx;
 }
 
 VDRPLUGINCREATOR(mgMuggle); // Don't touch this!

@@ -71,6 +71,10 @@ public:
 
   virtual bool SetupParse(const char *Name, const char *Value);
 
+  static void setResumeIndex( unsigned index );
+
+  static unsigned getResumeIndex( );
+
 private:
 
   mgMedia             *m_media;
