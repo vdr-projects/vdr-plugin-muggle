@@ -374,7 +374,7 @@ unsigned int
 mgSelection::RemoveFromCollection (const string Name)
 {
     if (!m_db) return 0;
-    mgParts p = order.Parts(m_level,false);
+    mgParts p = order.Parts(m_db,m_level,false);
     string sql = p.sql_delete_from_collection(id(keyCollection,Name));
     exec_sql (sql);
     unsigned int removed = mysql_affected_rows (m_db);
@@ -601,7 +601,7 @@ mgSelection::tracks () const
 {
     if (!m_db) return m_tracks;
     if (!m_current_tracks.empty()) return m_tracks;
-    mgParts p = order.Parts(m_level);
+    mgParts p = order.Parts(m_db,m_level);
     p.fields.clear();
     p.fields.push_back("tracks.id");
     p.fields.push_back("tracks.title");
@@ -619,7 +619,7 @@ mgSelection::tracks () const
     p.tables.push_back("tracks");
     p.tables.push_back("album");
     for (unsigned int i = m_level; i<order.size(); i++)
-    	p += order.Key(i)->Parts(true);
+    	p += order.Key(i)->Parts(m_db,true);
      m_current_tracks = p.sql_select(false); 
      m_tracks.clear ();
         MYSQL_RES *rows = exec_sql (m_current_tracks);
@@ -812,7 +812,6 @@ void
 mgSelection::setDB(MYSQL *db)
 {
 	m_db = db;
-	order.setDB(db);
 }
 
 void
@@ -821,7 +820,6 @@ mgSelection::setOrder(mgOrder* o)
 	if (o)
  	{
 		order = *o;
-		order.setDB(m_db);
 	}
 	else
 		mgWarning("mgSelection::setOrder(0)");
@@ -864,7 +862,6 @@ void mgSelection::InitFrom(const mgSelection* s)
     map_values = s->map_values;
     map_ids = s->map_ids;
     order = s->order;
-    order.setDB(m_db);
     m_level = s->m_level;
     m_position = s->m_position;
     m_trackid = s->m_trackid;
@@ -932,7 +929,7 @@ mgSelection::refreshValues ()  const
 	return;
     if (m_current_values.empty())
     {
-	mgParts p =  order.Parts(m_level);
+	mgParts p =  order.Parts(m_db,m_level);
         m_current_values = p.sql_select();
         values.strings.clear ();
         m_ids.clear ();
@@ -1337,7 +1334,7 @@ mgSelection::loadvalues (mgKeyTypes kt) const
 	if (map_ids.count(kt)>0) 
 		return true;
 	map<string,string>& idmap = map_ids[kt];
-	mgKey* k = ktGenerate(kt,m_db);
+	mgKey* k = ktGenerate(kt);
 	if (k->map_idfield().empty())
 	{
 		delete k;
@@ -1381,9 +1378,9 @@ mgSelection::keycount(mgKeyTypes kt)
 	int& count = keycounts[int(kt-mgKeyTypesLow)];
 	if (count==-1)
 	{
-		mgKey* k = ktGenerate(kt,m_db);
-		if (k->Enabled())
-			count = exec_count(k->Parts(true).sql_count());
+		mgKey* k = ktGenerate(kt);
+		if (k->Enabled(m_db))
+			count = exec_count(k->Parts(m_db,true).sql_count());
 		else
 			count = 0;
 		delete k;

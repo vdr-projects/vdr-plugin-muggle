@@ -28,7 +28,7 @@ string
 sql_string (MYSQL *db, const string s) 
 {
 	if (!db)
-		return "";
+		return "'" + s + "'";
 	char *buf = (char *) malloc (s.size () * 2 + 1);
 	mysql_real_escape_string (db, buf, s.c_str (), s.size ());
 	string result = "'" + string (buf) + "'";
@@ -158,7 +158,7 @@ class mgKeyNormal : public mgKey {
 	public:
 		mgKeyNormal(const mgKeyNormal& k);
 			mgKeyNormal(const mgKeyTypes kt, string table, string field);
-		virtual mgParts Parts(bool orderby=false) const;
+		virtual mgParts Parts(MYSQL *db,bool orderby=false) const;
 		string value() const;
 		string id() const;
 		void set(string value,string id);
@@ -166,8 +166,8 @@ class mgKeyNormal : public mgKey {
 		virtual string expr() const { return m_table + "." + m_field; }
 		virtual string table() const { return m_table; }
 	protected:
-		string IdClause(string what,string::size_type start=0,string::size_type len=string::npos) const;
-		void AddIdClause(mgParts &result,string what) const;
+		string IdClause(MYSQL *db,string what,string::size_type start=0,string::size_type len=string::npos) const;
+		void AddIdClause(MYSQL *db,mgParts &result,string what) const;
 		string m_id;
 		string m_field;
 	private:
@@ -184,19 +184,19 @@ class mgKeyDate : public mgKeyNormal {
 class mgKeyTrack : public mgKeyNormal {
 	public:
 		mgKeyTrack() : mgKeyNormal(keyTrack,"tracks","tracknb") {};
-		mgParts Parts(bool orderby=false) const;
+		mgParts Parts(MYSQL *db,bool orderby=false) const;
 };
 
 class mgKeyAlbum : public mgKeyNormal {
 	public:
 		mgKeyAlbum() : mgKeyNormal(keyAlbum,"album","title") {};
-		mgParts Parts(bool orderby=false) const;
+		mgParts Parts(MYSQL *db,bool orderby=false) const;
 };
 
 mgParts
-mgKeyAlbum::Parts(bool orderby) const
+mgKeyAlbum::Parts(MYSQL *db,bool orderby) const
 {
-	mgParts result = mgKeyNormal::Parts(orderby);
+	mgParts result = mgKeyNormal::Parts(db,orderby);
 	result.tables.push_back("tracks");
 	return result;
 }
@@ -205,7 +205,7 @@ class mgKeyFolder : public mgKeyNormal {
 	public:
 		mgKeyFolder(mgKeyTypes kt,const char *fname)
 			: mgKeyNormal(kt,"tracks",fname) { m_enabled=-1;};
-		bool Enabled();
+		bool Enabled(MYSQL *db);
 	private:
 		int m_enabled;
 };
@@ -228,15 +228,15 @@ class mgKeyFolder4 : public mgKeyFolder {
 };
 
 bool
-mgKeyFolder::Enabled()
+mgKeyFolder::Enabled(MYSQL *db)
 {
     if (m_enabled<0)
     {
-    	if (!m_db) 
+    	if (!db) 
 		return false;
     	char *b;
     	asprintf(&b,"DESCRIBE tracks %s",m_field.c_str());
-    	MYSQL_RES * rows = exec_sql (m_db, b);
+    	MYSQL_RES * rows = exec_sql (db, b);
     	free(b);
     	if (rows)
 	{
@@ -251,12 +251,14 @@ class mgKeyGenres : public mgKeyNormal {
 	public:
 		mgKeyGenres() : mgKeyNormal(keyGenres,"tracks","genre1") {};
 		mgKeyGenres(mgKeyTypes kt) : mgKeyNormal(kt,"tracks","genre1") {};
-		mgParts Parts(bool orderby=false) const;
+		mgParts Parts(MYSQL *db,bool orderby=false) const;
 		string map_idfield() const { return "id"; }
 		string map_valuefield() const { return "genre"; }
 		string map_valuetable() const { return "genre"; }
-		string GenreClauses(bool orderby) const;
+	protected:
 		virtual unsigned int genrelevel() const { return 4; }
+	private:
+		string GenreClauses(bool orderby) const;
 };
 
 class mgKeyGenre1 : public mgKeyGenres
@@ -302,8 +304,8 @@ mgKeyGenres::GenreClauses(bool orderby) const
 	{
 		unsigned int len=genrelevel();
 		if (len==4) len=0;
-      		g1.push_back(IdClause("tracks.genre1",0,genrelevel()));
-      		g2.push_back(IdClause("tracks.genre2",0,genrelevel()));
+      		g1.push_back(IdClause(0,"tracks.genre1",0,genrelevel()));
+      		g2.push_back(IdClause(0,"tracks.genre2",0,genrelevel()));
 	}
 
 	extern bool needGenre2;
@@ -321,7 +323,7 @@ mgKeyGenres::GenreClauses(bool orderby) const
 
 
 mgParts
-mgKeyGenres::Parts(bool orderby) const
+mgKeyGenres::Parts(MYSQL *db,bool orderby) const
 {
 	mgParts result;
    	result.clauses.push_back(GenreClauses(orderby));
@@ -340,7 +342,7 @@ mgKeyGenres::Parts(bool orderby) const
 class mgKeyLanguage : public mgKeyNormal {
 	public:
 		mgKeyLanguage() : mgKeyNormal(keyLanguage,"tracks","lang") {};
-		mgParts Parts(bool orderby=false) const;
+		mgParts Parts(MYSQL *db,bool orderby=false) const;
 		string map_idfield() const { return "id"; }
 		string map_valuefield() const { return "language"; }
 		string map_valuetable() const { return "language"; }
@@ -349,7 +351,7 @@ class mgKeyLanguage : public mgKeyNormal {
 class mgKeyCollection: public mgKeyNormal {
 	public:
   	  mgKeyCollection() : mgKeyNormal(keyCollection,"playlist","id") {};
-	  mgParts Parts(bool orderby=false) const;
+	  mgParts Parts(MYSQL *db,bool orderby=false) const;
 	 string map_idfield() const { return "id"; }
 	 string map_valuefield() const { return "title"; }
 	 string map_valuetable() const { return "playlist"; }
@@ -357,7 +359,7 @@ class mgKeyCollection: public mgKeyNormal {
 class mgKeyCollectionItem : public mgKeyNormal {
 	public:
 		mgKeyCollectionItem() : mgKeyNormal(keyCollectionItem,"playlistitem","tracknumber") {};
-		mgParts Parts(bool orderby=false) const;
+		mgParts Parts(MYSQL *db,bool orderby=false) const;
 };
 
 class mgKeyDecade : public mgKeyNormal {
@@ -379,28 +381,12 @@ mgKeyNormal::value() const
 }
 
 
-mgKey::mgKey()
-{
-	m_db = 0;
-}
-
-mgKey::~mgKey()
-{
-}
-
-void
-mgKey::setdb(MYSQL *db)
-{
-	m_db = db;
-}
-
 mgKeyNormal::mgKeyNormal(const mgKeyNormal& k)
 {
 	m_kt = k.m_kt;
 	m_table = k.m_table;
 	m_field = k.m_field;
 	m_id = k.m_id;
-	m_db = k.m_db;
 }
 
 mgKeyNormal::mgKeyNormal(const mgKeyTypes kt, string table, string field)
@@ -409,7 +395,6 @@ mgKeyNormal::mgKeyNormal(const mgKeyTypes kt, string table, string field)
 	m_table = table;
 	m_field = field;
 	m_id = EMPTY;
-	m_db = 0;
 }
 
 void
@@ -430,12 +415,11 @@ mgParts::~mgParts()
 }
 
 mgParts
-mgKeyNormal::Parts(bool orderby) const
+mgKeyNormal::Parts(MYSQL *db, bool orderby) const
 {
-	assert(strlen(m_db->host));
 	mgParts result;
 	result.tables.push_back(table());
-	AddIdClause(result,expr());
+	AddIdClause(db,result,expr());
 	if (orderby)
 	{
 		result.fields.push_back(expr());
@@ -445,35 +429,34 @@ mgKeyNormal::Parts(bool orderby) const
 }
 
 string
-mgKeyNormal::IdClause(string what,string::size_type start,string::size_type len) const
+mgKeyNormal::IdClause(MYSQL *db,string what,string::size_type start,string::size_type len) const
 {
-	assert(strlen(m_db->host));
 	if (len==0)
 		len=string::npos;
        	if (id() == "'NULL'")
 		return what + " is NULL";
        	else if (len==string::npos)
-		return what + "=" + sql_string(m_db,id());
+		return what + "=" + sql_string(db,id());
 	else
 	{
 		return "substring("+what + ","+ltos(start+1)+","+ltos(len)+")="
-			+ sql_string(m_db,id().substr(start,len));
+			+ sql_string(db,id().substr(start,len));
 	}
 }
 
 void
-mgKeyNormal::AddIdClause(mgParts &result,string what) const
+mgKeyNormal::AddIdClause(MYSQL *db,mgParts &result,string what) const
 {
 	if (id() != EMPTY)
-       		result.clauses.push_back(IdClause(what));
+       		result.clauses.push_back(IdClause(db,what));
 }
 
 mgParts
-mgKeyTrack::Parts(bool orderby) const
+mgKeyTrack::Parts(MYSQL *db,bool orderby) const
 {
 	mgParts result;
 	result.tables.push_back("tracks");
-	AddIdClause(result,"tracks.title");
+	AddIdClause(db,result,"tracks.title");
 	if (orderby)
 	{
 		// if you change tracks.title, please also
@@ -485,10 +468,10 @@ mgKeyTrack::Parts(bool orderby) const
 }
 
 mgParts
-mgKeyLanguage::Parts(bool orderby) const
+mgKeyLanguage::Parts(MYSQL *db,bool orderby) const
 {
 	mgParts result;
-	AddIdClause(result,"tracks.lang");
+	AddIdClause(db,result,"tracks.lang");
 	result.tables.push_back("tracks");
 	if (orderby)
 	{
@@ -501,13 +484,13 @@ mgKeyLanguage::Parts(bool orderby) const
 }
 
 mgParts
-mgKeyCollection::Parts(bool orderby) const
+mgKeyCollection::Parts(MYSQL *db,bool orderby) const
 {
 	mgParts result;
 	if (orderby)
 	{
 		result.tables.push_back("playlist");
-		AddIdClause(result,"playlist.id");
+		AddIdClause(db,result,"playlist.id");
 		result.fields.push_back("playlist.title");
 		result.fields.push_back("playlist.id");
        		result.orders.push_back("playlist.title");
@@ -515,18 +498,17 @@ mgKeyCollection::Parts(bool orderby) const
 	else
 	{
 		result.tables.push_back("playlistitem");
-		AddIdClause(result,"playlistitem.playlist");
+		AddIdClause(db,result,"playlistitem.playlist");
 	}
 	return result;
 }
 
 mgParts
-mgKeyCollectionItem::Parts(bool orderby) const
+mgKeyCollectionItem::Parts(MYSQL *db,bool orderby) const
 {
-	assert(strlen(m_db->host));
 	mgParts result;
 	result.tables.push_back("playlistitem");
-	AddIdClause(result,"playlistitem.tracknumber");
+	AddIdClause(db,result,"playlistitem.tracknumber");
 	if (orderby)
 	{
 		// tracks nur hier, fuer sql_delete_from_coll wollen wir es nicht
@@ -671,7 +653,6 @@ mgReference::mgReference(string t1,string f1,string t2,string f2)
 
 mgOrder::mgOrder()
 {
-	setDB(0);
        	setKey (0,keyArtist);
        	setKey (1,keyAlbum);
        	setKey (2,keyTrack);
@@ -727,11 +708,10 @@ mgOrder::InitFrom(const mgOrder &from)
 {
     	for (unsigned int i = 0; i < from.size();i++)
     	{
-        	mgKey *k = ktGenerate(from.getKeyType(i),m_db);
+        	mgKey *k = ktGenerate(from.getKeyType(i));
 		k->set(from.getKeyValue(i),from.getKeyId(i));
 		Keys.push_back(k);
     	}
-	if (from.m_db) setDB(from.m_db);
 	m_orderByCount=from.m_orderByCount;
 }
 
@@ -750,12 +730,12 @@ mgOrder::Name()
 void
 mgOrder::setKey (const unsigned int level, const mgKeyTypes kt)
 {
-    mgKey *newkey = ktGenerate(kt,m_db);
+    mgKey *newkey = ktGenerate(kt);
     if (level == 0 && kt == keyCollection)
     {
         clear ();
 	Keys.push_back(newkey);
-	Keys.push_back(ktGenerate(keyCollectionItem,m_db));
+	Keys.push_back(ktGenerate(keyCollectionItem));
         return;
     }
     if (level == size ())
@@ -779,7 +759,6 @@ mgOrder::setKey (const unsigned int level, const mgKeyTypes kt)
 mgOrder::mgOrder(mgValmap& nv,char *prefix)
 {
 	char *idx;
-	setDB(0);
 	asprintf(&idx,"%s.OrderByCount",prefix);
 	m_orderByCount = nv.getbool(idx);
 	free(idx);
@@ -809,7 +788,6 @@ mgOrder::DumpState(mgValmap& nv, char *prefix) const
 mgOrder::mgOrder(vector<mgKeyTypes> kt)
 {
 	m_orderByCount = false;
-	setDB(0);
 	setKeys(kt);
 }
 
@@ -844,16 +822,6 @@ mgOrder::getKeyId(unsigned int idx) const
 	return Keys[idx]->id();
 }
 
-void
-mgOrder::setDB(MYSQL *db)
-{
-	m_db = db;
-	keyvector::iterator i;
-	for (i = Keys.begin () ; i != Keys.end (); ++i)
-	{
-		(*i)->setdb(db);
-	}
-}
 
 mgKey*
 mgOrder::find(const mgKeyTypes kt) 
@@ -935,17 +903,16 @@ cleanagain:
 	if (!IsCollection && !is_unique)
 	{
 		if (!album_found)
-			Keys.push_back(ktGenerate(keyAlbum,m_db));
+			Keys.push_back(ktGenerate(keyAlbum));
 		if (!title_found)
-			Keys.push_back(ktGenerate(keyTitle,m_db));
+			Keys.push_back(ktGenerate(keyTitle));
 	}
 }
 
 
 mgParts
-mgOrder::Parts(unsigned int level,bool orderby) const
+mgOrder::Parts(MYSQL *db,unsigned int level,bool orderby) const
 {
-	assert(strlen(m_db->host));
 	mgParts result;
 	result.orderByCount = m_orderByCount;
 	mgKeyNormal *k0 = dynamic_cast<mgKeyNormal*>(Keys[0]);
@@ -963,7 +930,6 @@ mgOrder::Parts(unsigned int level,bool orderby) const
 	{
 		if (i==Keys.size()) break;
 		mgKeyNormal *k = dynamic_cast<mgKeyNormal*>(Keys[i]);
-		k->setdb(m_db);
 		mgKeyTypes kt = k->Type();
 		if (iskeyGenre(kt))
 		{
@@ -981,7 +947,7 @@ mgOrder::Parts(unsigned int level,bool orderby) const
 				}
 			}
 		}
-		result += k->Parts(orderby && (i==level));
+		result += k->Parts(db,orderby && (i==level));
 next:
 		continue;
 	}
@@ -1062,7 +1028,7 @@ mgReferences::Connect(string table1, string table2) const
 
 
 mgKey*
-ktGenerate(const mgKeyTypes kt,MYSQL* db)
+ktGenerate(const mgKeyTypes kt)
 {
 	mgKey* result = 0;
 	switch (kt)
@@ -1088,7 +1054,6 @@ ktGenerate(const mgKeyTypes kt,MYSQL* db)
 		case keyRating: result = new mgKeyNormal(kt,"tracks","rating");break;
 		case keyYear: result = new mgKeyNormal(kt,"tracks","year");break;
 	}
-	if (result) result->setdb(db);
 	return result;
 }
 

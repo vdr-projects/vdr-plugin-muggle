@@ -78,9 +78,8 @@ private:
 
 class mgKey {
 	public:
-		mgKey();
-		virtual ~mgKey();
-		virtual mgParts Parts(bool orderby=false) const = 0;
+		virtual ~mgKey() {};
+		virtual mgParts Parts(MYSQL *db,bool orderby=false) const = 0;
 		virtual string id() const = 0;
 		virtual string value () const = 0;
 		//!\brief translate field into user friendly string
@@ -90,14 +89,12 @@ class mgKey {
 		virtual string map_valuefield() const { return ""; }
 		virtual string map_valuetable() const { return ""; }
 		void setdb(MYSQL *db);
-		virtual bool Enabled() { return true; }
-	protected:
-		MYSQL *m_db;
+		virtual bool Enabled(MYSQL *db) { return true; }
 };
 
 
 mgKey*
-ktGenerate(const mgKeyTypes kt,MYSQL *db);
+ktGenerate(const mgKeyTypes kt);
 
 const char * const ktName(const mgKeyTypes kt);
 mgKeyTypes ktValue(const char * name);
@@ -153,8 +150,7 @@ public:
 	~mgOrder();
 	void InitFrom(const mgOrder &from);
         void DumpState(mgValmap& nv, char *prefix) const;
-	void setDB(MYSQL *db);
-	mgParts Parts(unsigned int level,bool orderby=true) const;
+	mgParts Parts(MYSQL *db,unsigned int level,bool orderby=true) const;
 	const mgOrder& operator=(const mgOrder& from);
 	mgKey*& operator[](unsigned int idx);
 	unsigned int size() const { return Keys.size(); }
@@ -173,7 +169,6 @@ public:
 	bool getOrderByCount() { return m_orderByCount; }
 private:
 	bool m_orderByCount;
-	MYSQL *m_db;
 	keyvector Keys;
 	void setKey (const unsigned int level, const mgKeyTypes kt);
 };
