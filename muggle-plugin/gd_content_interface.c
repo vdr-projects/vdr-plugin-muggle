@@ -3,10 +3,10 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.10 $
- * \date    $Date: 2004/02/09 23:21:33 $
+ * \version $Revision: 1.11 $
+ * \date    $Date: 2004/02/10 01:23:06 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: MountainMan $
+ * \author  file owner: $Author: RaK $
  *
  * DUMMY
  * Implements main classes of for content items and interfaces to SQL databases
@@ -40,7 +40,7 @@ int GdInitDatabase(MYSQL *db)
     }
     
     if(mysql_real_connect(db,"localhost","root","",
-			  "GiantDisc2",0,NULL,0) == NULL)
+			  "GiantDisc",0,NULL,0) == NULL)
     {
 	return -2;
     }
@@ -1142,10 +1142,9 @@ bool GdTreeNode::expand()
            if (m_level == 1) {
              sprintf(sqlbuff,
                       "SELECT CONCAT(tracks.artist,' - ',tracks.title),tracks.id"
-                      "  FROM tracks,genre as genre1,genre as genre2,album"
-                      "  WHERE (genre1.id=tracks.genre1 OR"
+                      "  FROM tracks,genre as genre1,genre as genre2"
+                      "  WHERE (genre1.id=tracks.genre1 AND"
                       "        genre2.id=tracks.genre2) AND"
-                      "        (album.cddbid=tracks.sourceid) AND"
                       "         %s"
                       "  ORDER BY CONCAT(tracks.artist,' - ',tracks.title)"
                       , m_restriction.c_str());
@@ -1159,7 +1158,7 @@ bool GdTreeNode::expand()
                          "    CONCAT(album.artist,' - ',album.title) as title,"
                          "    album.cddbid"
                          "  FROM tracks,album,genre as genre1, genre as genre2"
-                         "  WHERE (genre1.id=tracks.genre1 OR"
+                         "  WHERE (genre1.id=tracks.genre1 AND"
                          "        genre2.id=tracks.genre2) AND"
                          "         %s"
                          "  ORDER BY CONCAT(album.artist,' - ',album.title)"
@@ -1333,6 +1332,9 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.11  2004/02/10 01:23:06  RaK
+ * Ein fehler beim Tracksearch behoben. geht jetzt, aber nur einmal?!?!
+ *
  * Revision 1.10  2004/02/09 23:21:33  MountainMan
  * partial bug fixes
  *
