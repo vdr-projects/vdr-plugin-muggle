@@ -49,6 +49,9 @@ private:
   //! \brief indicates, whether an osd is currently displayed
   bool m_has_osd;
 #if VDRVERSNUM >= 10307
+  //! \brief a replay display to show the progress during playback
+  cSkinDisplayReplay *m_display;
+
   cOsd *osd;
   const cFont *font;
 #endif
