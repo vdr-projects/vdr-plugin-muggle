@@ -20,7 +20,8 @@
 
     \subsection urgentosd OSD-related Issues
 
-        - Instant play
+        - Test Instant play from browser view
+        - Playlist view: start at selected on Ok
     
     \subsection urgentcode Code polishing
 
@@ -68,7 +69,13 @@
 	          - add the file to the end of the list
 
 	\subsection urgentplayer Player extensions
-	
+
+        - Toggle Track view/Playlist view (red)
+          - For playlist view show playlist name, total time
+          - For track view show name, artist, time
+        - Toggle Detail/progress view (green)
+          - Track view: all metadata
+          - Playlist view: all tracks, skip/jump
 	- Determine max. framecount (needed for rewinding)?
 	- Init scale/level/normalize?
 	  - The max. level should be recognized during play
