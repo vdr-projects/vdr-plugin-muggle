@@ -14,6 +14,7 @@
 #include <sys/time.h>
 #include <mysql/mysql.h>
 #include <getopt.h>
+#include <unistd.h>
 
 #include <tag.h>
 #include <fileref.h>
