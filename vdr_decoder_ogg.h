@@ -30,7 +30,7 @@ class mgOggDecoder : public mgDecoder
   struct mgDecode m_ds;
   struct mad_pcm *m_pcm;
   unsigned long long m_index;
-  
+
   //
   void init(void);
   bool clean(void);

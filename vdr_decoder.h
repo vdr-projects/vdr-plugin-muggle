@@ -71,7 +71,7 @@ public:
  */
 enum mgMediaType
 {
-	MT_MP3, MT_MP3_STREAM, MT_OGG, MT_FLAC
+  MT_MP3, MT_MP3_STREAM, MT_OGG, MT_FLAC, MT_UNKNOWN
 };
 
 /*! 

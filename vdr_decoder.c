@@ -26,6 +26,7 @@
 
 #include "vdr_decoder.h"
 #include "vdr_decoder_mp3.h"
+#include "vdr_decoder_ogg.h"
 
 #include "mg_content_interface.h"
 
@@ -35,6 +36,8 @@ using namespace std;
 
 mgMediaType mgDecoders::getMediaType( string s )
 {
+  mgMediaType mt = MT_UNKNOWN;
+
   // TODO: currently handles only mp3. LVW
   char *f = (char *)s.c_str();
   char *p = f + strlen( f ) - 1; // point to the end
@@ -43,15 +46,16 @@ mgMediaType mgDecoders::getMediaType( string s )
 
   if( !strcmp( p, ".mp3" ) )
     {
-      return MT_MP3;
+      mt = MT_MP3;
     }
   else
     {
       if( !strcmp( p, ".ogg" ) )
 	{
-	  return MT_OGG;
+	  mt = MT_OGG;
 	}
     }
+  return mt;
 }
 
 mgDecoder *mgDecoders::findDecoder( mgContentItem *item )
@@ -64,26 +68,26 @@ mgDecoder *mgDecoders::findDecoder( mgContentItem *item )
     {
     case MT_MP3:  
       {
-		decoder = new mgMP3Decoder( item ); 
+	decoder = new mgMP3Decoder( item ); 
       } break;
-	#ifdef HAVE_VORBISFILE
-	case MT_OGG:  
-	{
-		decoder = new mgOggDecoder( item );
-	}  break;
-	#endif
-      /*
-	case MT_MP3_STREAM: decoder = new mgMP3StreamDecoder(full); break;
-	#ifdef HAVE_SNDFILE
-	case MT_SND:  decoder = new cSndDecoder(full); break;
-	#endif
-      */
+#ifdef HAVE_VORBISFILE
+    case MT_OGG:  
+      {
+	decoder = new mgOggDecoder( item );
+      }  break;
+#endif
+	  /*
+	    case MT_MP3_STREAM: decoder = new mgMP3StreamDecoder(full); break;
+	    #ifdef HAVE_SNDFILE
+	    case MT_SND:  decoder = new cSndDecoder(full); break;
+	    #endif
+	  */
     default:       
       { 
 	esyslog("ERROR: unknown media type" );
       } break;
     }
-
+  
   if( decoder && !decoder->valid() ) 
     {
       // no decoder found or decoder doesn't match

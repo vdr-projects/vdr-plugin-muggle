@@ -20,6 +20,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "mg_content_interface.h"
+
 using namespace std;
 
 // --- mgOggFile ----------------------------------------------------------------
@@ -32,7 +34,7 @@ class mgOggFile // : public mgFileInfo
 
   OggVorbis_File vf;
 
-  void Error( const char *action, const int err );
+  void error( const char *action, const int err );
 
   string m_filename;
 
@@ -48,8 +50,8 @@ class mgOggFile // : public mgFileInfo
   long long seek(long long posMs=0, bool relativ=false);
 
   int stream(short *buffer, int samples);
-
-  bool canSeek(void) { return canSeek; }
+  
+  bool canSeek(); // { return m_canSeek; }
 
   long long indexMs(void);
 };
@@ -63,10 +65,10 @@ mgOggFile::mgOggFile( string filename ) :
 
 mgOggFile::~mgOggFile()
 {
-  m_close();
+  close();
 }
 
-bool mgOggFile::Open(bool log)
+bool mgOggFile::open(bool log)
 {
   if( m_opened )
   {
@@ -77,14 +79,14 @@ bool mgOggFile::Open(bool log)
     return true;
   }
   
-  FILE *f = fopen( filename.c_str(), "r" );
+  FILE *f = fopen( m_filename.c_str(), "r" );
   if( f )
     {
       int r = ov_open( f, &vf, 0, 0 );
       if( !r ) 
 	{
-	  canSeek = ( ov_seekable( &vf ) !=0 );
-	  opened = true;
+	  m_canSeek = ( ov_seekable( &vf ) !=0 );
+	  m_opened = true;
 	}
       else
 	{
@@ -99,7 +101,7 @@ bool mgOggFile::Open(bool log)
     {
       if(log) 
 	{ 
-	  esyslog("ERROR: failed to open file %s: %s", filename.c_str(), strerror(errno) ); 
+	  //	  esyslog("ERROR: failed to open file %s: %s", m_filename.c_str(), strerror(errno) ); 
 	}
     }
   return m_opened;
@@ -135,7 +137,7 @@ void mgOggFile::error( const char *action, const int err )
     case OV_ENOSEEK:    errstr = "stream not seekable"; break;
     default:            errstr = "unspecified error"; break;
   }
-  esyslog( "ERROR: vorbisfile %s failed on %s: %s", action, m_filename.c_str(), errstr );
+  //  esyslog( "ERROR: vorbisfile %s failed on %s: %s", action, m_filename.c_str(), errstr );
 }
 
 long long mgOggFile::indexMs(void)
@@ -191,7 +193,7 @@ int mgOggFile::stream( short *buffer, int samples )
 mgOggDecoder::mgOggDecoder( mgContentItem *item ) 
   : mgDecoder( item )
 {
-  m_filename = item->getSourceFile;
+  m_filename = item->getSourceFile();
   m_file = new mgOggFile( m_filename );
   m_pcm = 0;
   init();
@@ -217,15 +219,16 @@ bool mgOggDecoder::valid()
   return res;
 }
 
-cPlayInfo *mgOggDecoder::playInfo(void)
+mgPlayInfo *mgOggDecoder::playInfo(void)
 {
-  if( playing )
+  if( m_playing )
   {
-    pi.Index = index/1000;
-    pi.Total = info.Total;
+    //    m_playinfo.m_index = index/1000;
+    //    m_playinfo.m_total = info.Total;
 
-    return &pi;
+    return &m_playinfo;
   }
+
   return 0;
 }
 
@@ -247,7 +250,7 @@ bool mgOggDecoder::clean()
   return false;
 }
 
-#define SF_SAMPLES (sizeof(pcm->samples[0])/sizeof(mad_fixed_t))
+#define SF_SAMPLES (sizeof(m_pcm->samples[0])/sizeof(mad_fixed_t))
 
 bool mgOggDecoder::start()
 {
@@ -255,20 +258,20 @@ bool mgOggDecoder::start()
   init(); 
   m_playing = true;
 
-  if( file.open() /*&& info.DoScan(true)*/ ) 
+  if( m_file->open() /*&& info.DoScan(true)*/ ) 
     {
       // obtain from database: rate, channels
       /* d(printf("ogg: open rate=%d channels=%d seek=%d\n",
 	       info.SampleFreq,info.Channels,file.CanSeek()))
       */
-      if( m_item->channels() <= 2 )
+      if( m_item->getChannels() <= 2 )
 	{
 	  unlock();
 	  return true;
 	}
       else 
 	{
-	  esyslog( "ERROR: cannot play ogg file %s: more than 2 channels", m_filename.c_str() );
+	  //	  esyslog( "ERROR: cannot play ogg file %s: more than 2 channels", m_filename.c_str() );
 	}
     }
   
@@ -291,21 +294,22 @@ bool mgOggDecoder::stop(void)
   return true;
 }
 
-struct Decode *mgOggDecoder::done(eDecodeStatus status)
+struct mgDecode *mgOggDecoder::done(eDecodeStatus status)
 {
-  ds.status = status;
-  ds.index  = m_index;
-  ds.pcm    = m_pcm;
+  m_ds.status = status;
+  m_ds.index  = m_index;
+  m_ds.pcm    = m_pcm;
 
-  unlock(); // release the lock from Decode()
+  unlock(); // release the lock from decode()
 
-  return &ds;
+  return &m_ds;
 }
 
-struct Decode *mgOggDecoder::Decode(void)
+struct mgDecode *mgOggDecoder::decode(void)
 {
-  Lock(); // this is released in Done()
-  if(playing)
+  lock(); // this is released in Done()
+
+  if( m_playing )
   {
     short framebuff[2*SF_SAMPLES];
     int n = m_file->stream( framebuff, SF_SAMPLES );
@@ -321,19 +325,19 @@ struct Decode *mgOggDecoder::Decode(void)
       }
 
     // TODO
-    pcm->samplerate = m_item->getSampleRate();  // from database
-    pcm->channels   = m_item->getChannels();    // from database
+    m_pcm->samplerate = m_item->getSampleRate();  // from database
+    m_pcm->channels   = m_item->getChannels();    // from database
 
-    n /= pcm->channels;
-    pcm->length = n;
-    index = m_file->indexMs();
+    n /= m_pcm->channels;
+    m_pcm->length = n;
+    m_index = m_file->indexMs();
 
     short *data = framebuff;
-    mad_fixed_t *sam0 = pcm->samples[0], *sam1 = pcm->samples[1]; 
+    mad_fixed_t *sam0 = m_pcm->samples[0], *sam1 = m_pcm->samples[1]; 
 
     const int s = MAD_F_FRACBITS + 1 - ( sizeof(short)*8 ); // shift value for mad_fixed conversion
 
-    if( pcm->channels>1 ) 
+    if( m_pcm->channels>1 ) 
       {
 	for(; n > 0 ; n-- )
 	  {
@@ -358,7 +362,7 @@ bool mgOggDecoder::skip(int Seconds, int Avail, int Rate)
   lock();
   bool res = false;
 
-  if( playing && m_file->canSeek() ) 
+  if( m_playing && m_file->canSeek() ) 
     {
       float fsecs = (float)Seconds - ( (float)Avail / (float)(Rate * (16/8 * 2) ) );  
       // Byte/s = samplerate * 16 bit * 2 chan
@@ -370,11 +374,11 @@ bool mgOggDecoder::skip(int Seconds, int Avail, int Rate)
 	  newpos=0;
 	}
 
-      newpos = m_file.Seek(newpos,false);
+      newpos = m_file->seek( newpos, false );
       
       if( newpos >= 0 )
 	{
-	  index = m_file->indexMs();
+	  m_index = m_file->indexMs();
 #ifdef DEBUG
 	  int i = index/1000;
 	  printf( "ogg: skipping to %02d:%02d\n", i/60, i%60 );
