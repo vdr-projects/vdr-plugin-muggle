@@ -59,7 +59,7 @@ OBJS = $(PLUGIN).o i18n.o mg_valmap.o mg_mysql.o mg_order.o mg_content.o mg_sele
 	vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o \
 	vdr_setup.o mg_setup.o
 
-LIBS = -lmad -lmysqlclient 
+LIBS = -lmad -lmysqlclient -ltag
 MILIBS = -lmysqlclient -ltag
 # MILIBS = -lmysqld -lpthread -lz -lcrypt -lnsl -lm -lpthread -lrt -lwrap -ltag
 
@@ -96,7 +96,7 @@ libvdr-$(PLUGIN).so: $(OBJS)
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LIBS) -o $@
 	@cp $@ $(LIBDIR)/$@.$(VDRVERSION)
 
-mugglei: mg_tools.o mugglei.o mg_order.o mg_selection.o mg_mysql.o mg_valmap.o mg_content.o mg_setup.o i18n.o
+mugglei: mg_tools.o mugglei.o mg_order.o mg_selection.o mg_mysql.o mg_valmap.o mg_content.o mg_setup.o 
 	$(CXX) $(CXXFLAGS) $^ $(MILIBS) -o $@
 
 install:
