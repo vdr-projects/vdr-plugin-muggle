@@ -133,22 +133,25 @@ public:
   /*! \brief returns the nth track from the playlist
    *
    *  \param position - the position to skip to
+   *  \return true if position was okay and changed, false otherwise
    */
-  virtual void gotoPosition(unsigned int position);
+  virtual bool gotoPosition(unsigned int position);
   
   /*!
    * \brief proceeds to the next item
    * 
-   * \todo Handle loop mode
+   * \return true if position was okay and changed, false otherwise
+   * \todo Handle play modes
    */
-  virtual void skipFwd();
+  virtual bool skipFwd();
 
   /*! 
    * \brief goes back to the previous item
    *
-   * \todo Handle loop mode
+   * \return true if position was okay and changed, false otherwise
+   * \todo Handle play modes
    */
-  virtual void skipBack();
+  virtual bool skipBack();
  
   //! \brief obtain the next item without skipping the current position
   virtual mgContentItem* sneakNext(); 
