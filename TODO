@@ -58,7 +58,18 @@
 	- Think, whether type (mp3, ogg, flac) should be stored in database
 	- Handle loop mode in mgPlaylist (already done?)
 	- Handle shuffle mode in mgPlaylist
+	  - shuffle mode on
+	    - for next file:
+	      - generate a random number 0..n-1
+	      - move corresponding playlist item to front
+	      - continue
     - Party mode (see iTunes)
+      - generate a random uid
+      - if file exists:
+        - determine maximum playcount of all tracks
+        - generate a random number n
+        - if n < playcount / max. playcount
+          - play the file
     
 	\subsection urgentplayer Player extensions
 	
