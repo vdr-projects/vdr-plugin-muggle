@@ -44,8 +44,8 @@ PACKAGE = vdr-$(ARCHIVE)
 INCLUDES += -I$(VDRDIR) -I$(VDRDIR)/include -I$(DVBDIR)/include \
 	-I/usr/include/mysql/ -I/usr/include/taglib
 
-DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DHAVE_VORBISFILE
-#DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
+# DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DHAVE_VORBISFILE
+DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
 DEFINES += -D_GNU_SOURCE
 
 MIFLAGS += -I/usr/include/taglib -lmysqlclient
