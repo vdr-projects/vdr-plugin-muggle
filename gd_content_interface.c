@@ -294,35 +294,35 @@ bool mgGdTrack::readData()
     // note: this does not work with empty album or genre fields
     result = mgSqlReadQuery(&m_db,
 			    "SELECT tracks.artist, album.title, tracks.title, "
-			    " tracks.mp3file, genre.genre, tracks.year, "
-			    " tracks.rating, tracks.length "
-			    "FROM tracks, album,  genre "
+			    "tracks.mp3file, genre.genre, tracks.year, "
+			    "tracks.rating, tracks.length, tracks.samplerate, tracks.channels, tracks.bitrate "
+			    "FROM tracks, album, genre "
 			    "WHERE tracks.id=%d "
 			    "AND album.cddbid=tracks.sourceid AND "
-			    " genre.id=tracks.genre1",
+			    "genre.id=tracks.genre1",
 			    m_uniqID);
 
     nrows   = mysql_num_rows(result);
     nfields = mysql_num_fields(result);
 
-    if(nrows == 0)
+    if( nrows == 0 )
     {
-      mgWarning("No entries found \n");
+      mgWarning( "No entries found \n" );
       return false;
     }
     else 
     {
-	if( nrows > 1 )
-	{
-	  mgWarning("mgGdTrack::readData: More than one entry found. Using first entry.");
-	}
+  		if( nrows > 1 )
+		{
+			mgWarning("mgGdTrack::readData: More than one entry found. Using first entry.");
+		}
 	MYSQL_ROW row = mysql_fetch_row(result);
 
 	m_artist  = row[0];
 	m_album   = row[1];
 	m_title   = row[2];
 	m_mp3file = row[3];
-	m_genre   = row[4]; 
+	m_genre   = row[4];
 
 	if( sscanf( row[5], "%d", &m_year) != 1 )
 	{
@@ -338,6 +338,18 @@ bool mgGdTrack::readData()
 	{
 	  mgError( "Invalid duration '%s' in database", row [7]);
 	}
+
+	if( row[8] && sscanf( row[8], "%d", &m_samplerate ) != 1 )
+	{
+	  mgError( "Invalid samplerate '%s' in database", row [7]);
+	}
+    
+	if( row[9] && sscanf( row[9], "%d", &m_channels ) != 1 )
+	{
+	  mgError( "Invalid channels '%s' in database", row [7]);
+	}
+
+    m_bitrate = row[10];
 
     }
     m_retrieved = true;
@@ -446,6 +458,34 @@ int mgGdTrack::getDuration()
     }
     return m_rating;
 }
+
+int mgGdTrack::getSampleRate()
+{
+    if(!m_retrieved)
+    {
+	readData();
+    }
+    return m_samplerate;
+}
+
+int mgGdTrack::getChannels()
+{
+    if(!m_retrieved)
+    {
+	readData();
+    }
+    return m_channels;
+}
+
+string mgGdTrack::getBitrate()
+{
+    if(!m_retrieved)
+    {
+	readData();
+    }
+    return m_bitrate;
+}
+
 string mgGdTrack::getImageFile()
 {
     return "dummyImg.jpg";

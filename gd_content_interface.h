@@ -217,6 +217,18 @@ class mgGdTrack : public mgContentItem
    */
   virtual int getRating();
 
+  /*! \brief obtain the samplerate of the track
+   */
+  virtual int getSampleRate();
+
+  /*! \brief obtain the number of audio channels of the track
+   */
+  virtual int getChannels();
+
+  /*! \brief obtain the bitrate of the track
+   */
+  virtual string getBitrate();
+
   /*!
    * \brief obtain the complete track information
    */
@@ -328,10 +340,19 @@ private:
   int m_rating;
   
   /*!
-   * \brief The length of the file in bytes.
-   * \todo TODO: is this true? Or what length are we talking about?
+   * \brief The length of the track in seconds
    */
   int m_length;
+
+  /*!
+   * \brief The sampling rate of the track in Hz
+   */
+  int m_samplerate;
+  
+  /*!
+   * \brief The number of channels of the track
+   */
+  int m_channels;
 
   /*!
    * \brief Access the data of the item from the database and fill actual data fields
