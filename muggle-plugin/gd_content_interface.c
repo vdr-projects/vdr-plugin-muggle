@@ -3,8 +3,8 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.17 $
- * \date    $Date: 2004/02/23 15:41:21 $
+ * \version $Revision: 1.18 $
+ * \date    $Date: 2004/02/23 15:17:51 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: RaK $
  *
@@ -82,7 +82,7 @@ gdFilterSets::gdFilterSets()
   mgFilter* filter;
   vector<mgFilter*>* set;
   vector<string>* rating;
-  m_titles.push_back("Track Search");
+  m_titles.push_back(tr("Track Search"));
 
   // create an initial set of filters with empty values
   set = new vector<mgFilter*>();
@@ -97,53 +97,53 @@ gdFilterSets::gdFilterSets()
   // artist
   filter = new mgFilterString(tr("artist"), ""); set->push_back(filter);
   // genre
-  filter = new mgFilterString("genre", ""); set->push_back(filter);
+  filter = new mgFilterString(tr("genre"), ""); set->push_back(filter);
   // year-from
-  filter = new mgFilterInt("year (from)", 1900); set->push_back(filter);
+  filter = new mgFilterInt(tr("year (from)"), 1900); set->push_back(filter);
   // year-to
-  filter = new mgFilterInt("year (to)", 2100); set->push_back(filter);
+  filter = new mgFilterInt(tr("year (to)"), 2100); set->push_back(filter);
   // rating
-  filter = new mgFilterChoice("rating", 1, rating); set->push_back(filter);
+  filter = new mgFilterChoice(tr("rating"), 1, rating); set->push_back(filter);
 
   m_sets.push_back(set);
   
-  m_titles.push_back("Album Search");
+  m_titles.push_back(tr("Album Search"));
   
   set = new vector<mgFilter*>();
   // title
-  filter = new mgFilterString("album title", ""); set->push_back(filter);
+  filter = new mgFilterString(tr("album title"), ""); set->push_back(filter);
   // artist
-  filter = new mgFilterString("album artist", ""); set->push_back(filter);
+  filter = new mgFilterString(tr("album artist"), ""); set->push_back(filter);
   // genre
-  filter = new mgFilterString("genre", ""); set->push_back(filter);
+  filter = new mgFilterString(tr("genre"), ""); set->push_back(filter);
   // year-from
-  filter = new mgFilterInt("year (from)", 1900); set->push_back(filter);
+  filter = new mgFilterInt(tr("year (from)"), 1900); set->push_back(filter);
   // year-to
-  filter = new mgFilterInt("year (to)", 2100); set->push_back(filter);
+  filter = new mgFilterInt(tr("year (to)"), 2100); set->push_back(filter);
   // rating
-  filter = new mgFilterChoice("rating", 1, rating); set->push_back(filter);
+  filter = new mgFilterChoice(tr("rating"), 1, rating); set->push_back(filter);
 
   m_sets.push_back(set);
   
-  m_titles.push_back("Playlist Search");
+  m_titles.push_back(tr("Playlist Search"));
   
   set = new vector<mgFilter*>();
   // title
-  filter = new mgFilterString("playlist title", ""); set->push_back(filter);
+  filter = new mgFilterString(tr("playlist title"), ""); set->push_back(filter);
   // artist
-  filter = new mgFilterString("playlist author", ""); set->push_back(filter);
+  filter = new mgFilterString(tr("playlist author"), ""); set->push_back(filter);
   // title
   filter = new mgFilterString(tr("title"), ""); set->push_back(filter);
   // artist
   filter = new mgFilterString(tr("artist"), ""); set->push_back(filter);
   // genre
-  filter = new mgFilterString("genre", ""); set->push_back(filter);
+  filter = new mgFilterString(tr("genre"), ""); set->push_back(filter);
   // year-from
-  filter = new mgFilterInt("year (from)", 1900); set->push_back(filter);
+  filter = new mgFilterInt(tr("year (from)"), 1900); set->push_back(filter);
   // year-to
-  filter = new mgFilterInt("year (to)", 2100); set->push_back(filter);
+  filter = new mgFilterInt(tr("year (to)"), 2100); set->push_back(filter);
   // rating
-  filter = new mgFilterChoice("rating", 1, rating); set->push_back(filter);
+  filter = new mgFilterChoice(tr("rating"), 1, rating); set->push_back(filter);
 
   m_sets.push_back(set);
   
@@ -1390,6 +1390,9 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.18  2004/02/23 15:17:51  RaK
+ * - i18n
+ *
  * Revision 1.17  2004/02/23 15:41:21  RaK
  * - first i18n attempt
  *
