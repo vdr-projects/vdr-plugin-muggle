@@ -3,8 +3,8 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.12 $
- * \date    $Date: 2004/02/10 23:47:23 $
+ * \version $Revision: 1.13 $
+ * \date    $Date: 2004/02/11 21:55:16 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: RaK $
  *
@@ -107,6 +107,28 @@ gdFilterSets::gdFilterSets()
   filter = new mgFilterString("album title", ""); set->push_back(filter);
   // artist
   filter = new mgFilterString("album artist", "abba"); set->push_back(filter);
+  // genre
+  filter = new mgFilterString("genre", ""); set->push_back(filter);
+  // year-from
+  filter = new mgFilterInt("year (from)", 1900); set->push_back(filter);
+  // year-to
+  filter = new mgFilterInt("year (to)", 2100); set->push_back(filter);
+  // rating
+  filter = new mgFilterInt("rating", 0); set->push_back(filter);
+
+  m_sets.push_back(set);
+  
+  m_titles.push_back("Playlist Search");
+  
+  set = new vector<mgFilter*>();
+  // title
+  filter = new mgFilterString("playlist title", ""); set->push_back(filter);
+  // artist
+  filter = new mgFilterString("playlist author", ""); set->push_back(filter);
+  // title
+  filter = new mgFilterString("title", ""); set->push_back(filter);
+  // artist
+  filter = new mgFilterString("artist", "abba"); set->push_back(filter);
   // genre
   filter = new mgFilterString("genre", ""); set->push_back(filter);
   // year-from
@@ -226,6 +248,59 @@ string gdFilterSets::computeRestriction(int *viewPrt)
         }
       }
       *viewPrt =  101; // album -> tracks
+      break;
+    case 2: // playlist -> tracks
+      for(vector<mgFilter*>::iterator iter = m_activeSet->begin();
+          iter != m_activeSet->end(); iter++)
+      {
+        if((*iter)->isSet())
+        {
+          if(strcmp((*iter)->getName(), "playlist title") == 0 )
+          {
+            sql_str = sql_str + " AND playlist.title like '%%" 
+  	      + (*iter)->getStrVal() + "%%'";
+          }
+          else if(strcmp((*iter)->getName(), "playlist author") == 0 )
+          {
+            sql_str = sql_str + " AND playlist.author like '%%" 
+  	      + (*iter)->getStrVal() + "%%'";
+          }
+          else if(strcmp((*iter)->getName(), "title") == 0 )
+          {
+            sql_str = sql_str + " AND tracks.title like '%%" 
+  	      + (*iter)->getStrVal() + "%%'";
+          }
+          else if(strcmp((*iter)->getName(), "artist") == 0 )
+          { 
+            sql_str = sql_str + " AND tracks.artist like '%%" 
+	      + (*iter)->getStrVal() + "%%'";
+          }
+          else if(strcmp((*iter)->getName(), "genre") == 0 )
+          { 
+            sql_str = sql_str + " AND (genre1.genre like '" 
+	      + (*iter)->getStrVal() + "'";
+            sql_str = sql_str + " OR genre2.genre like '" 
+	      + (*iter)->getStrVal() + "')";
+          }
+          else if(strcmp((*iter)->getName(), "year (from)") == 0 )
+          { 
+	    sql_str = sql_str + " AND tracks.year >= " + (*iter)->getStrVal();
+          }
+          else if(strcmp((*iter)->getName(), "year (to)") == 0 )
+          { 
+	    sql_str = sql_str + " AND tracks.year <= " + (*iter)->getStrVal();
+          }
+          else if(strcmp((*iter)->getName(), "rating") == 0 )
+          { 
+	    sql_str = sql_str + " AND tracks.rating >= " + (*iter)->getStrVal();
+          }
+          else
+          {
+	    mgWarning("Ignoring unknown filter %s", (*iter)->getName());
+          }  
+        }
+      }
+      *viewPrt =  102; // playlist -> tracks
       break;
     default:
       mgWarning("Ignoring Filter Set %i", m_activeSetId);
@@ -943,6 +1018,12 @@ bool GdTreeNode::isLeafNode()
 		 return false;
 	     }
 	     break;
+         case 102:
+ 	     if( m_level <= 1 )
+	     {
+		 return false;
+	     }
+	     break;
 	 default:
 	     mgError("View '%d' not yet implemented", m_view);
      }
@@ -1168,6 +1249,37 @@ bool GdTreeNode::expand()
                  return false;
            }
            break;
+        case 102:
+           if (m_level == 1) {
+             sprintf(sqlbuff,
+                     "SELECT CONCAT(playlist.title,' (',playlist.author,')'),"
+                     "    playlist.id"
+                     "  FROM playlist,playlistitem,tracks,genre as genre1,genre as genre2"
+                     "  WHERE playlist.id=playlistitem.playlist AND"
+                     "        playlistitem.trackid=tracks.id AND"
+                     "        genre1.id=tracks.genre1 AND"
+                     "        genre2.id=tracks.genre2 AND"
+                     "        %s"
+                     "  ORDER CONCAT(playlist.title,' (',playlist.author,')'),"
+                     , m_restriction.c_str());
+             idfield = "playlist.id";
+           } else if (m_level == 2) {
+             sprintf(sqlbuff,
+                     "SELECT DISTINCT CONCAT(tracks.artist,' - ',tracks.title),"
+                     "    tracks.id"
+                     "  FROM playlist,playlistitem,tracks"
+                     "  WHERE playlist.id=playlistitem.playlist AND"
+                     "        playlistitem.trackid=tracks.id AND"
+                     "        %s"
+                     "  ORDER playlistitem.tracknumber"
+                     , m_restriction.c_str());
+             idfield = "tracks.id";
+           } else {
+                 mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
+                 m_expanded = false;
+                 return false;
+           }
+          break;
 	default:
 	     mgError("View '%d' not yet implemented", m_view);
      }
@@ -1184,8 +1296,15 @@ bool GdTreeNode::expand()
 	 // row[1] is the unique id for the new child
 	 sprintf(idbuf, "%s_%03d",  m_id.c_str(), numchild);
 	 
-	 new_restriction = m_restriction + " AND " 
-	     + idfield + "= '" + row[1] + "'";
+         // Zweite ebene zeigt alle Tracks des Albums und nicht nur 
+         // diese die den Filterkriterien entsprechen.
+         // das betrifft nur die Search Views!
+         if(m_view <100) {
+	   new_restriction = m_restriction + " AND " 
+	       + idfield + "='" + row[1] + "'";
+         } else {
+	   new_restriction = idfield + "='" + row[1] + "'";
+         }
 	 
 	 new_child = new GdTreeNode(this, // parent
 				    (string) idbuf, // id
@@ -1319,6 +1438,11 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.13  2004/02/11 21:55:16  RaK
+ * - playlistsearch eingebaut
+ * - filter search liefert nun in der zweiten
+ *   ebene alle tracks des albums/playlist
+ *
  * Revision 1.12  2004/02/10 23:47:23  RaK
  * - views konsitent gemacht. siehe FROMJOIN
  * - isLeafNode angepasst fuer neue views 4,5,100,101
