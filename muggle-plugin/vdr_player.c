@@ -302,6 +302,11 @@ mgPCMPlayer::ReloadPlaylist()
 {
     Lock ();
     m_playlist->clearCache();
+    if (!m_playing)
+    {
+	SkipFile(1);
+    	Play ();
+    }
     Unlock ();
 }
 
