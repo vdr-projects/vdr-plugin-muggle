@@ -87,7 +87,7 @@ class mgMainMenu : public cOsdMenu
 
   void LoadPlaylist();
   void SavePlaylist();
-  void RenamePlaylist();
+  void RenamePlaylist( std::string name );
   void DisplayPlaylistSubmenu();
   eOSState PlaylistSubmenuAction( int n );
   void DisplayPlaylistCommands();

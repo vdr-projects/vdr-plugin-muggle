@@ -14,7 +14,10 @@
 #include <string>
 #include <vector>
 
+// #include <cstring>
+
 #include <mysql/mysql.h>
+
 #include <menuitems.h>
 #include <tools.h>
 #include <config.h>
@@ -73,9 +76,9 @@ mgMainMenu::mgMainMenu(mgMedia *media, mgSelectionTreeNode *root,
 
   DisplayTree( m_root );
 
-  strncpy( m_listname, playlist->getListname(), 31 );
-  m_listname[31] = "\0";
-  m_editing_listname 
+  strncpy( m_listname, playlist->getListname().c_str(), 31 );
+  m_listname[31] = '\0';
+  m_editing_listname = false;
 }
 
 mgSelectionTreeNode *mgMainMenu::CurrentNode()
@@ -395,10 +398,11 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 		  }
 		else
 		  { // editing playlist name
-		    s_editing_listname = !s_editing_listname;
-		    if( s_editing_listname = false )
+		    m_editing_listname = !m_editing_listname;
+		    if( m_editing_listname = false )
 		      { // we just changed from true to false so editing was terminated
-			m_playlist->setListname( s_listname );
+			RenamePlaylist( std::string( m_listname ) );
+			
 		      }
 		  }
 	      } break;
@@ -700,7 +704,7 @@ void mgMainMenu::DisplayPlaylistSubmenu()
   SetTitle( "Muggle - Playlist View Commands" );
 
   // Add items
-  Add( new cMenuEditStrItem( tr("Playlist name"), s_listname, 32, allowed ) );
+  Add( new cMenuEditStrItem( tr("Playlist name"), m_listname, 31, allowed ) );
   Add( new cOsdItem( tr("Load playlist" ) ) );
   Add( new cOsdItem( tr("Save playlist" ) ) );
   Add( new cOsdItem( tr("Clear playlist" ) ) );
