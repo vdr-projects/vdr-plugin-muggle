@@ -3,10 +3,10 @@
  * \brief  A few util functions for standalone and plugin messaging
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.2 $
- * \date    $Date: 2004/02/02 22:48:04 $
+ * \version $Revision: 1.3 $
+ * \date    $Date: 2004/07/25 21:33:35 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: MountainMan $
+ * \author  file owner: $Author: lvw $
  * 
  */
 /*******************************************************************/
@@ -21,8 +21,8 @@ extern "C"
 #include <stdlib.h>
 
 
-#define  MAX_BUFLEN  1024
-#define  MAX_QUERY_BUFLEN  1024
+#define  MAX_BUFLEN  2048
+#define  MAX_QUERY_BUFLEN  2048
 static char buffer[MAX_BUFLEN];
 static char querybuf[MAX_QUERY_BUFLEN];
 
@@ -113,16 +113,19 @@ void mgError(const char *fmt, ...)
 MYSQL_RES* mgSqlReadQuery(MYSQL *db, const char *fmt, ...)
 {
     va_list ap;
+    va_start( ap, fmt );  
+    vsnprintf( querybuf, MAX_QUERY_BUFLEN-1, fmt, ap );
 
-    va_start(ap, fmt);
-  
-    vsnprintf(querybuf, MAX_QUERY_BUFLEN-1, fmt, ap);
-    mgDebug(9, "SQL-Query: '%s'",querybuf); 
-    if(mysql_query(db,querybuf))
+    mgDebug(9, "mgSqlReadQuery: SQL query: '%s'", querybuf); 
+
+    if( mysql_query(db, querybuf) )
     {
 	mgError("SQL error in MUGGLE\n%s\n", querybuf);
     }
-    return mysql_store_result(db);
+    
+    MYSQL_RES *result = mysql_store_result(db);
+
+    return result;
 }
 
 void mgSqlWriteQuery(MYSQL *db, const char *fmt, ...)
@@ -140,6 +143,9 @@ void mgSqlWriteQuery(MYSQL *db, const char *fmt, ...)
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: mg_tools.c,v $
+ * Revision 1.3  2004/07/25 21:33:35  lvw
+ * Removed bugs in finding track files and playlist indexing.
+ *
  * Revision 1.2  2004/02/02 22:48:04  MountainMan
  *  added CVS $Log
  *

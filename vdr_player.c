@@ -2,12 +2,12 @@
  * \file vdr_player.c
  * \brief A generic PCM player for a VDR media plugin (muggle)
  *
- * \version $Revision: 1.3 $
- * \date    $Date: 2004/07/12 11:06:23 $
+ * \version $Revision: 1.4 $
+ * \date    $Date: 2004/07/25 21:33:35 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: LarsAC $
+ * \author  Responsible author: $Author: lvw $
  *
- * $Id: vdr_player.c,v 1.3 2004/07/12 11:06:23 LarsAC Exp $
+ * $Id: vdr_player.c,v 1.4 2004/07/25 21:33:35 lvw Exp $
  *
  * Adapted from 
  * MP3/MPlayer plugin to VDR (C++)
@@ -337,7 +337,6 @@ void mgPCMPlayer::Action(void)
   dvbSampleRate = 48000;
   m_state = msStop;
   SetPlayMode( pmStopped );
-  cout << "Playmode set." << endl << flush;
  
   while( m_active ) 
     {
@@ -362,6 +361,7 @@ void mgPCMPlayer::Action(void)
 		m_playing = m_current;
 
 		string filename = getSourceFile();
+		mgDebug( 1, "mgPCMPlayer::Action: music file is %s", filename.c_str() );
 
 		if( ( m_decoder = mgDecoders::findDecoder( filename ) ) && m_decoder->start() )
 		  {
@@ -696,7 +696,8 @@ string mgPCMPlayer::getSourceFile()
     }
 
   cout << "mgPCMPlayer::getSourceFile: found filename " << filename << endl << flush;
-  return "/test.mp3";
+  return filename;
+  //  return "/test.mp3";
 }
 
 bool mgPCMPlayer::NextFile()
@@ -1042,6 +1043,9 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 /************************************************************
  *
  * $Log: vdr_player.c,v $
+ * Revision 1.4  2004/07/25 21:33:35  lvw
+ * Removed bugs in finding track files and playlist indexing.
+ *
  * Revision 1.3  2004/07/12 11:06:23  LarsAC
  * No longer skip first file on playlist when starting replay.
  *

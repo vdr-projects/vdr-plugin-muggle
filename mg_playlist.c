@@ -2,10 +2,10 @@
  * \file   mg_playlist.c
  * \brief  defines functions to be executed on playlists for the vdr muggle plugindatabase
  *
- * \version $Revision: 1.3 $
- * \date    $Date: 2004/07/09 12:22:00 $
+ * \version $Revision: 1.4 $
+ * \date    $Date: 2004/07/25 21:33:35 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: LarsAC $
+ * \author  Responsible author: $Author: lvw $
  *
  * This file implements the class mgPlaylist which maintains a playlist
  * and supports editing (e.g. adding or moving tracks), navigating it
@@ -16,7 +16,6 @@
 #include "mg_playlist.h"
 #include "mg_tools.h"
 
-#include <string>
 #include <vector>
 
 using namespace std;
@@ -35,7 +34,7 @@ mgPlaylist::mgPlaylist()
 
 mgPlaylist::mgPlaylist(string listname)
 {
-  m_current_idx = 0;
+  m_current_idx = -1;
   m_listname = listname;
 }
      
@@ -55,7 +54,7 @@ void mgPlaylist::toggleLoop()
 
 void mgPlaylist::initialize()
 {
-  m_current = m_list.begin();
+  m_current_idx = -1;
 }
 
 /* ==== add/remove tracks ==== */
@@ -140,6 +139,7 @@ int mgPlaylist::count()
 mgContentItem* mgPlaylist::getFirst()
 {
     m_current = m_list.begin();
+    m_current_idx = 0;
 
     return *m_current;
 }
@@ -161,6 +161,11 @@ mgContentItem* mgPlaylist::getPosition(unsigned int position)
 mgContentItem*  mgPlaylist::skipFwd()
 {
   mgContentItem* next;
+
+  if( m_current_idx < 0 )
+    {
+      return getFirst();
+    }
 
   if( m_current + 1 == m_list.end() ) // unless loop mode
     {
@@ -207,13 +212,13 @@ mgContentItem* mgPlaylist::sneakNext()
       }
 }
 
-bool mgPlaylist::exportM3U( const char *m3u_file )
+bool mgPlaylist::exportM3U( string m3u_file )
 {
   vector<mgContentItem*>::iterator iter;
   bool result = true;
 
   // open a file for writing
-  FILE *listfile = fopen( m3u_file, "w" );
+  FILE *listfile = fopen( m3u_file.c_str(), "w" );
 
   if( !listfile )
     {

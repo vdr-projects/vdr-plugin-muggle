@@ -2,12 +2,12 @@
  * \file   muggle.c
  * \brief  Implements a plugin for browsing media libraries within VDR
  *
- * \version $Revision: 1.8 $
- * \date    $Date: 2004/07/09 12:22:00 $
+ * \version $Revision: 1.9 $
+ * \date    $Date: 2004/07/25 21:33:35 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: LarsAC $
+ * \author  Responsible author: $Author: lvw $
  *
- *  $Id: muggle.c,v 1.8 2004/07/09 12:22:00 LarsAC Exp $
+ *  $Id: muggle.c,v 1.9 2004/07/25 21:33:35 lvw Exp $
  */
 
 #include <getopt.h>
@@ -50,11 +50,11 @@ mgMuggle::mgMuggle(void)
   // defaults for database arguments
   the_setup.DbHost = "localhost";
   the_setup.DbPort = 0;
-  the_setup.DbName = "GiantDisc2";
+  the_setup.DbName = "GiantDisc";
   the_setup.DbUser = "";
   the_setup.DbPass = "" ;
   the_setup.GdCompatibility = false;
-  the_setup.ToplevelDir = "";
+  the_setup.ToplevelDir = "/mnt/music/";
 }
 
 mgMuggle::~mgMuggle()
@@ -71,13 +71,13 @@ const char *mgMuggle::CommandLineHelp(void)
     "  -p PPPP,  --port=PPPP     specify port of database server (default is )\n"
     "  -u UUUU,  --user=UUUU     specify database user (default is )\n"
     "  -w WWWW,  --password=WWWW specify database password (default is empty)\n"
-    "  -t TTTT,  --toplevel=TTTT specify toplevel directory for music\n"
+    "  -t TTTT,  --toplevel=TTTT specify toplevel directory for music (default is /mnt/music)\n"
     "  -g,       --giantdisc     enable full Giantdisc compatibility mode\n";
 }
 
 bool mgMuggle::ProcessArgs(int argc, char *argv[])
 {
-  cout << "mgMuggle::ProcessArgs" << endl << flush;
+  mgDebug( 1, "mgMuggle::ProcessArgs" );
 
   // Implement command line argument processing here if applicable.
   static struct option long_options[] = 
@@ -119,10 +119,12 @@ bool mgMuggle::ProcessArgs(int argc, char *argv[])
 	  } break;
 	case 't': 
 	  {
-	    the_setup.ToplevelDir = optarg;
+	    string res = string(optarg) + "/";
+	    the_setup.ToplevelDir = strdup( res.c_str() );
 	  } break;
 	case 'g': 
 	  {
+	    the_setup.DbName = "GiantDisc";
 	    the_setup.GdCompatibility = true;
 	  } break;
 	default:  return false;
@@ -151,16 +153,16 @@ bool mgMuggle::Start(void)
   m_media->initFilterSet();
 
   // Read commands for playlists in etc. /video/muggle/playlist_commands.conf
-  m_playlist_cmds = new cCommands();
+  m_playlist_commands = new cCommands();
 
-  char *cmd_file = AddDirectory( cPlugin::ConfigDirectory("muggle"), "playlist_commands.conf" );
-  bool have_cmd_file = m_playlist_cmds->Load(  cmd_file );
-  free( cmd_file );
+  char *cmd_file = (char *) AddDirectory( cPlugin::ConfigDirectory("muggle"), "playlist_commands.conf" );
+  mgDebug( 1, "mgMuggle::Start: Looking for file %s", cmd_file );
+  bool have_cmd_file = m_playlist_commands->Load( (const char*) cmd_file );
 
   if( !have_cmd_file )
     {
-      delete m_playlist_cmds;
-      m_playlist_cmds = NULL;
+      delete m_playlist_commands;
+      m_playlist_commands = NULL;
     }
 
   return true;
@@ -187,6 +189,8 @@ cMenuSetupPage *mgMuggle::SetupMenu(void)
 
 bool mgMuggle::SetupParse(const char *Name, const char *Value)
 {
+  mgDebug( 1, "mgMuggle::SetupParse" );
+
   if      (!strcasecmp(Name, "InitLoopMode"))     the_setup.InitLoopMode    = atoi(Value);
   else if (!strcasecmp(Name, "InitShuffleMode"))  the_setup.InitShuffleMode = atoi(Value);
   else if (!strcasecmp(Name, "AudioMode"))        the_setup.AudioMode       = atoi(Value);
