@@ -3,8 +3,8 @@
  *  \brief  Top level access to media in vdr plugin muggle
  *          for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.7 $
- * \date    $Date: 2004/02/02 22:48:04 $
+ * \version $Revision: 1.8 $
+ * \date    $Date: 2004/02/02 23:33:41 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: MountainMan $
  * 
@@ -207,7 +207,7 @@ vector<mgFilter*> *mgTrackFilters::getFilters()
 mgMedia::mgMedia(contentType mediatype)
 {
     int errval = 0;
-    mgTrackFilters *m_trackfilter;
+    m_trackfilter = NULL;
     m_mediatype = mediatype;
     m_sql_trackfilter = "1";
     m_defaultView = 1;
@@ -250,6 +250,10 @@ mgMedia::mgMedia(contentType mediatype)
 	
 mgMedia::~mgMedia()
 {
+  if( m_trackfilter )
+    {        
+      delete m_trackfilter;
+    }
 }
   
 string mgMedia::getMediaTypeName()
@@ -284,9 +288,13 @@ vector<mgFilter*> *mgMedia::getTrackFilters()
     switch(m_mediatype)
     {
 	case DUMMY:
-	  //return mgFilters();
+	  // return mgFilters();
 	case GD_MP3:
-	  // return m_trackfilters;
+	  if( m_trackfilter == NULL )
+	    {
+	      m_trackfilter = new gdTrackFilters();
+	    }
+	  return m_trackfilter->getFilters();
         default:
 	  break;
     }	 
@@ -375,6 +383,9 @@ mgTracklist* mgMedia::getTracks()
 }
 /* -------------------- begin CVS log ---------------------------------
  * $Log: mg_media.c,v $
+ * Revision 1.8  2004/02/02 23:33:41  MountainMan
+ * impementation of gdTrackFilters
+ *
  * Revision 1.7  2004/02/02 22:48:04  MountainMan
  *  added CVS $Log
  *
