@@ -22,6 +22,10 @@
 
 class mgOggFile;
 
+/*! 
+ * \brief A decoder for Ogg Vorbis files
+ *
+ */
 class mgOggDecoder : public mgDecoder 
 {
  private:
