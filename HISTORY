@@ -162,7 +162,7 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - add all genres listed by id3 -L. Fix spellings.
 - lots of bug fixes, as usual
 
-2005-03-XX: Version 0.1.5-BETA
+2005-03-11: Version 0.1.5-BETA
 - add include files like stdio.h, needed in some environments
 - fix genre import
 - if you have mysql embedded 4.1.11 or better, you can access embedded
@@ -178,6 +178,9 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
   server on localhost using TCP, now it uses the faster sockets. You
   can still request TCP by using -h 127.0.0.1
 
-NEXT VERSION
+2005-03-21: Version 0.1.6-BETA
 - killing vdr could still result in an empty muggle.state. Fixed.
 - new sorting fields: Only by the first character of artist or title
+- import now runs as a separate thread and no longer blocks user
+  input and VDR is no longer killed by the watchdog during import
+
