@@ -228,14 +228,6 @@ class mgKeyGenre3 : public mgKeyGenres
 		unsigned int genrelevel() const { return 3; }
 };
 
-class mgKeyid3Genre : public mgKeyNormal {
-	public:
-		mgKeyid3Genre() : mgKeyNormal(keyid3Genre,"tracks","genre1") {};
-		string map_idfield() const { return "id"; }
-		string map_valuefield() const { return "id3genre"; }
-		string map_valuetable() const { return "genre"; }
-};
-
 string
 mgKeyGenres::GenreClauses(mgmySql &db,bool orderby) const
 {
@@ -607,9 +599,10 @@ mgReference::mgReference(string t1,string f1,string t2,string f2)
 
 mgOrder::mgOrder()
 {
-       	setKey (0,keyArtist);
-       	setKey (1,keyAlbum);
-       	setKey (2,keyTrack);
+       	clear();
+	setKey (keyArtist);
+       	setKey (keyAlbum);
+       	setKey (keyTrack);
 	m_orderByCount = false;
 }
 
@@ -627,7 +620,7 @@ mgOrder::Key(unsigned int idx) const
 mgKey*&
 mgOrder::operator[](unsigned int idx) 
 {
-	assert(idx<Keys.size());
+	assert(idx<size());
 	return Keys[idx];
 }
 
@@ -682,32 +675,11 @@ mgOrder::Name()
 }
 
 void
-mgOrder::setKey (const unsigned int level, const mgKeyTypes kt)
+mgOrder::setKey (const mgKeyTypes kt)
 {
     mgKey *newkey = ktGenerate(kt);
-    if (level == 0 && kt == keyCollection)
-    {
-        clear ();
-	Keys.push_back(newkey);
-	Keys.push_back(ktGenerate(keyCollectionItem));
-        return;
-    }
-    if (level == size ())
-    {
-        Keys.push_back(newkey);
-    }
-    else
-    {
-	if (level >= Keys.size())
-	  mgError("mgOrder::setKey(%u,%s): level greater than size() %u",
-	      level,ktName(kt),Keys.size());
-        delete Keys[level];
-	Keys[level] = newkey;
-    }
-
-// clear values for this and following levels (needed for copy constructor)
-    for (unsigned int i = level; i < Keys.size (); i++)
-        Keys[i]->set ("",EMPTY);
+    if (newkey)
+    	Keys.push_back(newkey);
 }
 
 mgOrder::mgOrder(mgValmap& nv,char *prefix)
@@ -716,14 +688,18 @@ mgOrder::mgOrder(mgValmap& nv,char *prefix)
 	asprintf(&idx,"%s.OrderByCount",prefix);
 	m_orderByCount = nv.getbool(idx);
 	free(idx);
+	clear();
 	for (unsigned int i = 0; i < 999 ; i++)
 	{
 		asprintf(&idx,"%s.Keys.%u.Type",prefix,i);
 		unsigned int v = nv.getuint(idx);
 		free(idx);
 		if (v==0) break;
-        	setKey (i,mgKeyTypes(v) );
+		mgDebug(1,"found %s:%d",idx,v);
+        	setKey (mgKeyTypes(v) );
 	}
+	if (size()>0)
+		clean();
 }
 
 void
@@ -750,7 +726,7 @@ mgOrder::setKeys(vector<mgKeyTypes> kt)
 {
 	clear();
 	for (unsigned int i=0;i<kt.size();i++)
-		setKey(size(),kt[i]);
+		setKey(kt[i]);
         clean();
 }
 
@@ -774,19 +750,6 @@ mgOrder::getKeyId(unsigned int idx) const
 {
 	assert(idx<Keys.size());
 	return Keys[idx]->id();
-}
-
-
-mgKey*
-mgOrder::find(const mgKeyTypes kt) 
-{
-	keyvector::iterator i;
-	for (i = Keys.begin () ; i != Keys.end (); ++i)
-	{
-		if ((*i)->Type() == kt)
-			return *i;
-	}
-	return 0;
 }
 
 void
@@ -853,8 +816,7 @@ cleanagain:
 				goto cleanagain;
 			}
 	}
-	bool IsCollection = size()==0 ? false : Keys[0]->Type()==keyCollection;
-	if (!IsCollection && !is_unique)
+	if (!is_unique)
 	{
 		if (!album_found)
 			Keys.push_back(ktGenerate(keyAlbum));
@@ -863,15 +825,20 @@ cleanagain:
 	}
 }
 
+bool
+mgOrder::isCollectionOrder() const
+{
+	return (size()==2
+		&& (Keys[0]->Type()==keyCollection)
+		&& (Keys[1]->Type()==keyCollectionItem));
+}
 
 mgParts
 mgOrder::Parts(mgmySql &db,unsigned int level,bool orderby) const
 {
 	mgParts result;
 	result.orderByCount = m_orderByCount;
-	mgKeyNormal *k0 = dynamic_cast<mgKeyNormal*>(Keys[0]);
-	mgKeyTypes kt0 = k0->Type();
-	if (level==0 &&  kt0==keyCollection)
+	if (level==0 &&  isCollectionOrder())
 	{
 		// sql command contributed by jarny
 		result.m_sql_select = string("select playlist.title,playlist.id, "
@@ -1002,7 +969,6 @@ ktGenerate(const mgKeyTypes kt)
 		case keyAlbum: result = new mgKeyAlbum;break;
 		case keyCreated: result = new mgKeyDate(kt,"tracks","created");break;
 		case keyModified: result = new mgKeyDate(kt,"tracks","modified");break;
-		case keyid3Genre: result = new mgKeyid3Genre;break;
 		case keyCollection: result = new mgKeyCollection;break;
 		case keyCollectionItem: result = new mgKeyCollectionItem;break;
 		case keyLanguage: result = new mgKeyLanguage;break;
@@ -1033,7 +999,6 @@ ktName(const mgKeyTypes kt)
 		case keyAlbum: result = "Album";break;
 		case keyCreated: result = "Created";break;
 		case keyModified: result = "Modified";break;
-		case keyid3Genre: result = "id3Genre";break;
 		case keyCollection: result = "Collection";break;
 		case keyCollectionItem: result = "Collection item";break;
 		case keyLanguage: result = "Language";break;

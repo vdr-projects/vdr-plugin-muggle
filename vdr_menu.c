@@ -320,6 +320,7 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
 	    m_treesel->CreateCollection(play_collection);
     vector<mgKeyTypes> kt;
     kt.push_back(keyCollection);
+    kt.push_back(keyCollectionItem);
     mgOrder o;
     o.setKeys(kt);
     m_collectionsel = new mgSelection;

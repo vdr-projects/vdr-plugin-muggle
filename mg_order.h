@@ -39,7 +39,6 @@ enum mgKeyTypes {
 	keyFolder4,
 	keyCreated,
 	keyModified,
-	keyid3Genre,
 	keyCollection,
 	keyCollectionItem,
 };
@@ -149,9 +148,7 @@ public:
 	void truncate(unsigned int i);
 	bool empty() const { return Keys.empty(); }
 	void clear();
-	void clean();
 	mgKey* Key(unsigned int idx) const;
-	mgKey* find(const mgKeyTypes kt) ;
 	mgKeyTypes getKeyType(unsigned int idx) const;
 	string getKeyValue(unsigned int idx) const;
 	string getKeyId(unsigned int idx) const;
@@ -161,8 +158,10 @@ public:
 	bool getOrderByCount() { return m_orderByCount; }
 private:
 	bool m_orderByCount;
+	bool isCollectionOrder() const;
 	keyvector Keys;
-	void setKey (const unsigned int level, const mgKeyTypes kt);
+	void setKey ( const mgKeyTypes kt);
+	void clean();
 };
 
 bool operator==(const mgOrder& a,const mgOrder&b); //! \brief compares only the order, not the current key values

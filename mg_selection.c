@@ -215,6 +215,8 @@ mgSelection::AddToCollection (const string Name)
     string listid = m_db.sql_string (m_db.get_col0
         ("SELECT id FROM playlist WHERE title=" + m_db.sql_string (Name)));
     unsigned int tracksize = getNumTracks ();
+    if (tracksize==0)
+	    return 0;
 
     // this code is rather complicated but works in a multi user
     // environment:
