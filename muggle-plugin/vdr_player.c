@@ -41,6 +41,7 @@
 #include "vdr_decoder.h"
 #include "vdr_config.h"
 #include "vdr_setup.h"
+#include "i18n.h"
 
 #include "mg_tools.h"
 #include "mg_playlist.h"
