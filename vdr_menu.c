@@ -1,13 +1,13 @@
 /*******************************************************************/
 /*! \file   vdr_menu.c
- *  \brief  Implements menu handling for broswing media libraries within VDR
+ *  \brief  Implements menu handling for browsing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.13 $
- * \date    $Date: 2004/02/09 19:27:52 $
+ * \version $Revision: 1.14 $
+ * \date    $Date: 2004/02/12 09:08:48 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: MountainMan $
+ * \author  file owner: $Author: LarsAC $
  *
- * $Id: vdr_menu.c,v 1.13 2004/02/09 19:27:52 MountainMan Exp $
+ * $Id: vdr_menu.c,v 1.14 2004/02/12 09:08:48 LarsAC Exp $
  */
 /*******************************************************************/
 
@@ -20,6 +20,7 @@
 #include "mg_content_interface.h"
 #include "mg_tools.h"
 #include "mg_media.h"
+#include "mg_filters.h"
 
 #include "gd_content_interface.h"
 
@@ -349,17 +350,26 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	    case kRed: // 
 	      {
 		mgDebug( 1,  "mgMainMenu: query and display results" );
-		if(m_root) delete m_root;
+
+		if( m_root )
+		  {
+		    delete m_root;
+		  }
+
 		m_root = m_media->applyActiveFilter();
+		// collapse all?
 		DisplayTree( m_root );
+
 		state = osContinue;
 	      } break;
 	    case kGreen:
 	      {
 		// cycle FILTER -> TREE
 		mgDebug( 1,  "mgMainMenu: next filters " );
+
 		m_media->nextFilterSet();
 		DisplayFilter();
+
 		state = osContinue;
 	      } break;
 	    case kYellow:
@@ -569,6 +579,9 @@ void mgMainMenu::DisplayFilter()
 	case mgFilter::STRING:
 	  {
 	    mgFilterString *fs = (mgFilterString *) (*iter);
+
+	    // BUG: This might be buggy as fs->getAllowedChars() may become
+	    // invalid while VDR is still trying to access it
 	    Add( new cMenuEditStrItem( fs->getName(), fs->m_strval,
 				       fs->getMaxLength(), 
 				       fs->getAllowedChars().c_str() ) );
@@ -580,6 +593,29 @@ void mgMainMenu::DisplayFilter()
 	    Add( new cMenuEditBoolItem(  fb->getName(), &( fb->m_bval), 
 					 fb->getTrueString().c_str(), 
 					 fb->getFalseString().c_str() ) );
+	  } break;
+	case mgFilter::CHOICE:
+	  {
+	    mgFilterChoice *fc = (mgFilterChoice *) (*iter);
+	    vector<string> choices = fc->getChoices();
+
+	    char **choices_str = new (char *)[ choices.size() ];
+
+	    int j = 0;
+	    for( vector<string>::iterator iter = choices.begin();
+		 iter != choices.end();
+		 iter ++, j ++ )
+	      {
+		// BUG: Is this a big memory leak!? When to delete and who?
+		choices_str[j] = strndup( choices[i].c_str(), 128 );
+	      }
+	    
+	    Add( new cMenuEditStraItem(  fc->getName(), &( fc->m_selval ),
+					 choices.size(), choices_str ) );
+
+	    // delete all choices_str elements!
+	    // delete[] choices_str; // ???
+
 	  } break;
 	default:
 	case mgFilter::UNDEF:
@@ -600,6 +636,9 @@ void mgMainMenu::DisplayFilterSelector()
 /************************************************************
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.14  2004/02/12 09:08:48  LarsAC
+ * Added handling of filter choices (untested)
+ *
  * Revision 1.13  2004/02/09 19:27:52  MountainMan
  * filter set implemented
  *
