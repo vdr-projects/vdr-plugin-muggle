@@ -2,10 +2,15 @@
 /*! \file   vdr_menu.h
  *  \brief  Implements menu handling for broswing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.2 $
- * \date    $Date: 2004/02/01 22:12:56 $
+ * \version $Revision: 1.3 $
+ * \date    $Date: 2004/02/02 19:17:44 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: RaK $
+ * \author  file owner: $Author: LarsAC $
+ *
+ * $Log: vdr_menu.h,v $
+ * Revision 1.3  2004/02/02 19:17:44  LarsAC
+ * Added generic filter handling to OSD
+ *
  */
 /*******************************************************************/
 
@@ -21,6 +26,8 @@
   #include <vdr/osd.h>
 #endif
 
+#include <list>
+
 class mgMedia;
 class mgSelectionTreeNode;
 class mgPlaylist;
@@ -35,10 +42,14 @@ class mgMenuTreeItem : public cOsdItem
   mgSelectionTreeNode *Node();
 
   void Set();
+
+  void setChildIndex( int index );
+  int  getChildIndex( );
   
  private: 
 
   mgSelectionTreeNode *m_node;
+  int m_child_index;
 
 };
 
@@ -49,6 +60,7 @@ class mgMainMenu : public cOsdMenu
   mgMainMenu();
 
   mgSelectionTreeNode *CurrentNode();
+  mgMenuTreeItem *CurrentItem();
   
   eOSState ProcessKey(eKeys Key);
   void Move( int from, int to);
@@ -89,6 +101,8 @@ class mgMainMenu : public cOsdMenu
   int   m_year_min, m_year_max, m_filter;
 
   MuggleStatus m_state;
+
+  std::list<int> m_indices;
 };
 
 #endif
