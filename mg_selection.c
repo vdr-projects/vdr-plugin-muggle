@@ -637,7 +637,7 @@ mgSelection::InitFrom(mgValmap& nv)
 		        if (s)
 		        {
 				extern char *sync_args[];
-				s->Sync(sync_args,the_setup.DeleteStaleReferences);
+				s->Sync(sync_args,(bool)the_setup.DeleteStaleReferences);
 			}
 		    }
 	    }

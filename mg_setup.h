@@ -35,7 +35,6 @@ class mgSetup
         int AudioMode;
         int DisplayMode;
         int BackgrMode;
-        int MenuMode;
         int TargetLevel;
         int LimiterLevel;
         int Only48kHz;
@@ -49,12 +48,11 @@ class mgSetup
         bool GdCompatibility;
         char *ToplevelDir;
 
-        char PathPrefix[MAX_STRING_LEN];
-
 	int DeleteStaleReferences;
 
     public:
         mgSetup (void);
+	~mgSetup (void);
 
 };
 

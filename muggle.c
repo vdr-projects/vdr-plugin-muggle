@@ -47,15 +47,6 @@ mgMuggle::MainMenuEntry (void)
 
 mgMuggle::mgMuggle (void)
 {
-// defaults for database arguments
-    the_setup.DbHost = 0;
-    the_setup.DbSocket = 0;
-    the_setup.DbPort = 0;
-    the_setup.DbName = strdup ("GiantDisc");
-    the_setup.DbUser = 0;
-    the_setup.DbPass = 0;
-    the_setup.GdCompatibility = false;
-    the_setup.ToplevelDir = strdup ("/mnt/music/");
 #ifndef HAVE_ONLY_SERVER
     char *buf;
     asprintf(&buf,"%s/.muggle",getenv("HOME"));
@@ -68,11 +59,6 @@ mgMuggle::mgMuggle (void)
 void
 mgMuggle::Stop (void)
 {
-    free(the_setup.DbHost);
-    free(the_setup.DbName);
-    free(the_setup.DbUser);
-    free(the_setup.DbPass);
-    free(the_setup.ToplevelDir);
 }
 
 
@@ -95,7 +81,8 @@ mgMuggle::CommandLineHelp (void)
 #ifndef HAVE_ONLY_SERVER
         "  -d DIRN,  --datadir=DIRN  specify directory for embedded sql data (default is $HOME/.muggle)\n"
 #endif
-        "  -g,       --giantdisc     enable full Giantdisc compatibility mode. Overrides -n\n"
+        "  -g,       --giantdisc     enable full Giantdisc compatibility mode.\n"
+	"                            You should not use -n with -g\n"
         "  -v,       --verbose       specify debug level. The higher the more. Default is 1\n"
 	"\n"
 	"if the specified host is localhost, sockets will be used if possible.\n"
@@ -205,7 +192,6 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
             break;
             case 'g':
             {
-                the_setup.DbName = strcpyrealloc (the_setup.DbName, "GiantDisc");
                 the_setup.GdCompatibility = true;
             }
             break;

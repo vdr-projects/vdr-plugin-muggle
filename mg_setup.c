@@ -16,6 +16,7 @@
 
 
 #include "mg_setup.h"
+#include <string>
 
 mgSetup the_setup;
 
@@ -30,8 +31,25 @@ mgSetup::mgSetup ()
     TargetLevel = DEFAULT_TARGET_LEVEL;
     LimiterLevel = DEFAULT_LIMITER_LEVEL;
     Only48kHz = 0;
-    ToplevelDir = "/mnt/music/";
-    DbHost = "localhost";
-    DbName = "GiantDisc";
+
+    DbHost = 0;
+    DbSocket = 0;
+    DbPort = 0;
+    DbName = strdup ("GiantDisc");
+    DbUser = 0;
+    DbPass = 0;
+    GdCompatibility = false;
+    ToplevelDir = strdup("/mnt/music/");
+
     DeleteStaleReferences = false;
+}
+
+mgSetup::~mgSetup ()
+{
+    free(DbHost);
+    free(DbSocket);
+    free(DbName);
+    free(DbUser);
+    free(DbPass);
+    free(ToplevelDir);
 }
