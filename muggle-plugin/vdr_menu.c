@@ -197,6 +197,7 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	    case kBlue:
 	      {
 		m_last_osd_index = Current();
+		m_menu_item = CurrentItem()->Node();
 		DisplayTreeSubmenu();
 
 		state = osContinue;
@@ -242,7 +243,7 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	    {
 	    case k0 ... k9:
 	      {
-		int n = key - k0;		
+		int n = key - k0;
 		TreeSubmenuAction( n );
 		
 		state = osContinue;
@@ -543,7 +544,6 @@ void mgMainMenu::DisplayTreeSubmenu()
 
 eOSState mgMainMenu::TreeSubmenuAction( int n )
 {
-  mgDebug( "mgMainMenu: TreeSubmenuAction( %d )", n );
   eOSState state = osContinue;
   
   switch( n )
@@ -555,14 +555,13 @@ eOSState mgMainMenu::TreeSubmenuAction( int n )
 	mgSelectionTreeNode *current = CurrentNode();
 	if( current )
 	  {
-	    // clear playlist
-	    m_current_playlist->clear();
-
 	    // append current node
-	    std::vector<mgContentItem*> *tracks = current->getTracks();
+	    std::vector<mgContentItem*> *tracks = m_menu_item->getTracks();
 
 	    if( tracks )
 	      {
+		// clear playlist
+		m_current_playlist->clear();
 		m_current_playlist->appendList( tracks );
 		
 		// play
@@ -963,115 +962,3 @@ void mgMainMenu::Play(mgPlaylist *plist)
       cControl::Launch( new mgPlayerControl(plist) );
     }
 }
-
-/************************************************************
- *
- * $Log: vdr_menu.c,v $
- * Revision 1.27  2004/07/27 20:50:54  lvw
- * Playlist indexing now working
- *
- * Revision 1.26  2004/07/27 06:57:35  LarsAC
- * Inserted missing break
- *
- * Revision 1.25  2004/07/26 20:02:38  lvw
- * Bug in handling playlist menu removed
- *
- * Revision 1.24  2004/07/25 21:33:35  lvw
- * Removed bugs in finding track files and playlist indexing.
- *
- * Revision 1.23  2004/07/09 12:22:00  LarsAC
- * Untested extensions for exporting plalists
- *
- * Revision 1.22  2004/07/06 00:20:51  MountainMan
- * loading and saving playlists
- *
- * Revision 1.21  2004/06/02 19:29:22  lvw
- * Use asprintf to create messages
- *
- * Revision 1.20  2004/05/28 15:29:19  lvw
- * Merged player branch back on HEAD branch.
- *
- * Revision 1.19  2004/02/23 17:03:24  RaK
- * - error in filter view while trying to switch or using the colour keys
- *   workaround: first filter criteria is inttype. than it works, dont ask why ;-(
- *
- * Revision 1.18  2004/02/23 16:18:15  RaK
- * - i18n
- *
- * Revision 1.17  2004/02/23 15:56:19  RaK
- * - i18n
- *
- * Revision 1.16  2004/02/23 15:41:21  RaK
- * - first i18n attempt
- *
- * Revision 1.15  2004/02/14 22:02:45  RaK
- * - mgFilterChoice Debuged
- *   fehlendes m_type = CHOICE in mg_filters.c
- *   falscher iterator in vdr_menu.c
- *
- * Revision 1.14  2004/02/12 09:08:48  LarsAC
- * Added handling of filter choices (untested)
- *
- * Revision 1.13.2.12  2004/05/27 07:58:38  lvw
- * Removed bugs in moving and removing tracks from playlists
- *
- * Revision 1.13.2.11  2004/05/26 14:31:04  lvw
- * Added submenu for playlist view
- *
- * Revision 1.13.2.10  2004/05/25 21:58:45  lvw
- * Handle submenus for views
- *
- * Revision 1.13.2.9  2004/05/25 00:10:45  lvw
- * Code cleanup and added use of real database source files
- *
- * Revision 1.13.2.8  2004/05/11 06:35:16  lvw
- * Added debugging while hunting stop bug.
- *
- * Revision 1.13.2.7  2004/05/04 16:51:53  lvw
- * Debugging aids added.
- *
- * Revision 1.13.2.6  2004/04/29 06:48:21  lvw
- * Output statements to aid debugging added
- *
- * Revision 1.13.2.5  2004/04/25 18:44:07  lvw
- * Removed bugs in menu handling
- *
- * Revision 1.13.2.4  2004/03/14 12:30:56  lvw
- * Menu now calls player
- *
- * Revision 1.13.2.3  2004/03/11 07:22:32  lvw
- * Added setup menu
- *
- * Revision 1.13.2.2  2004/03/08 22:28:40  lvw
- * Added documentation headers.
- *
- * Revision 1.13.2.1  2004/03/02 07:07:27  lvw
- * Initial adaptations from MP3 plugin added (untested)
- *
- * Revision 1.13  2004/02/09 19:27:52  MountainMan
- * filter set implemented
- *
- * Revision 1.12  2004/02/08 10:48:44  LarsAC
- * Made major revisions in OSD behavior
- *
- * Revision 1.11  2004/02/03 21:53:32  RaK
- * beak = break in l 212
- *
- * Revision 1.10  2004/02/03 20:24:29  LarsAC
- * Clear index history when jumping to root node in order to avoid overflow
- *
- * Revision 1.9  2004/02/03 19:34:51  LarsAC
- * Back on root level now jumps back to VDR main menu.
- *
- * Revision 1.8  2004/02/03 19:28:46  LarsAC
- * Playlist now created in plugin instead of in menu.
- *
- * Revision 1.7  2004/02/03 19:15:08  LarsAC
- * OSD selection now jumps back to parent when collapsing.
- *
- * Revision 1.6  2004/02/03 00:13:24  LarsAC
- * Improved OSD handling of collapse/back
- *
- *
- ************************************************************
- */
