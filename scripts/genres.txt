@@ -1,20 +1,20 @@
 b	20	Alternative
-ba	40	Alternative General
+ba	40	Alt. Rock
 bb	\N	Art Rock
-bc	90	Avant Rock
+bc	90	Avantgarde
 be	\N	Experimental
 bh	6	Grunge
-bi	\N	Indie
-bm	12	Unclassifiable
-bn	\N	Crossover
+bi	131	Indie
+bm	12	Other
+bn	139	Crossover
 c	\N	Books & Spoken
 ca	\N	Short Stories
 cb	57	Comedy
-cc	77	Musicals/Broadway
+cc	77	Musical
 cd	\N	Poetry
-ce	\N	Cabaret / Satire
+ce	65	Cabaret
 cf	\N	Religion
-cg	101	Spoken Word
+cg	101	Speech
 ch	\N	Stories/Fairytales
 ci	\N	Radio Play
 cia	\N	Literary Radio Play
@@ -28,7 +28,7 @@ eca	\N	Contemp. Crossover
 ecb	\N	Electronic Classical
 ecc	\N	Experimental Classical
 ecd	\N	Minimal Music
-ed	\N	Film Music
+ed	24	Soundtrack
 ee	33	Instrumental
 ef	\N	Period Music
 efa	\N	Baroque
@@ -40,12 +40,11 @@ eg	\N	Solo Instruments
 ega	\N	Guitar
 egb	\N	Percussion
 egc	\N	Piano
-eh	106	Symphonic
-ei	28	Classic Vocal
-eia	97	Choral
+eh	106	Symphony
+ei	28	Vocal
+eia	97	Chorus
 eib	\N	Ensembles
 eic	103	Opera
-ej	\N	Baroque
 f	2	Country
 fa	\N	Alternative Country
 fb	89	Bluegrass
@@ -58,7 +57,7 @@ fi	\N	Rockabilly
 g	98	Easy Listening
 gb	\N	Lounge
 gc	\N	Love Songs
-gca	116	Ballads
+gca	116	Ballad
 gd	\N	Mood Music
 ge	10	New Age
 gf	\N	Soft Rock
@@ -69,7 +68,7 @@ gi	45	Meditative
 gj	\N	Pair Dance
 gja	\N	Walz
 gjb	\N	Tango
-h	102	Songs/Chansons
+h	102	Chanson
 ha	\N	Singer-Songwriter
 hb	65	Children's Music
 i	52	Electronic
@@ -80,33 +79,35 @@ ica	\N	Breakbeat
 icb	\N	Darkside
 icc	63	Jungle
 icd	\N	Ragga
-ice	27	Trip Hop
+ice	27	Trip-Hop
 id	3	Dance
-ie	\N	Drum n' Bass
+ie	127	Drum & Bass
 if	\N	Electronica
 ig	\N	Envir. Soundscapes
 ih	\N	Experimental Elect.
 iha	\N	Minimal Experimental
 ihb	39	Noise
-ii	37	Game Soundtracks
+ii	37	Sound Clip
 ij	35	House
 ija	\N	Acid House
 ijb	\N	Funk House
 ijc	\N	Hard House
 ijd	\N	Progressive House
+ije	124	Euro-House
+ijf	128	Club-House
 ik	19	Industrial
 il	18	Techno
 ilb	\N	Dub
-ild	\N	Goa
+ild	126	Goa
 ile	\N	Hardcore Techno
 ilf	\N	Illbient
 ilg	\N	Minimal
-ilh	25	Old Skool Techno
+ilh	25	Euro-Techno
 ili	68	Rave
 ilj	31	Trance
 im	44	Space Music
 j	\N	Hip Hop/Rap
-ja	7	Hip Hop
+ja	7	Hip-Hop
 jb	15	Rap
 jbb	61	Christian Rap
 jbd	\N	Hardcore Rap
@@ -124,8 +125,8 @@ kd	14	R&B
 ke	42	Soul
 kea	\N	Sweet Soul
 l	8	Jazz
-la	73	Acid Jazz
-lb	85	Bebop
+la	73	Acid Punk
+lb	85	Bebob
 lc	\N	Dancefloor Jazz
 lf	30	Jazz Fusion
 lh	\N	Jazz Vocals
@@ -152,14 +153,14 @@ mcc	22	Death Metal
 mcd	\N	Doom Metal
 mcf	\N	Hard Core Metal
 mcg	\N	Heavy Metal
-mck	\N	Thrash/Speed Metal
+mck	\N	Thrash Metal
 md	13	Pop
 mda	99	Acoustic
 mdb	\N	Synthesizer Pop
 mdd	\N	Latin Pop
-mdg	123	A capella/Pop Vocals
+mdg	123	A Capella
 mdh	\N	Neue Deutsche Welle
-mdi	\N	Disco
+mdi	4	Disco
 mdj	\N	Dance Pop
 mdja	\N	Twist
 mdk	\N	Doo-Wop
@@ -170,15 +171,15 @@ mec	\N	Old School Punk
 med	21	Ska
 mf	17	Rock
 mfb	\N	Acid Rock
-mfe	81	Folk Rock
+mfe	81	Folk/Rock
 mfg	\N	Groove Rock
 mfh	\N	Guitar Rock
 mfha	1	Classic Rock
 mfhb	\N	Improv Rock
-mfhc	47	Instrumental Rock
+mfhc	47	Instrum. Rock
 mfhf	\N	Surf Rock
 mfj	66	New Wave
-mfk	67	Psychedelic
+mfk	67	Psychadelic
 mfl	78	Rock & Roll
 mfm	94	Symphonic Rock
 mg	\N	Rock En Espanol
@@ -194,7 +195,7 @@ nce	\N	Arabian Pop
 ncf	\N	European Ethnopop
 ncg	\N	Latin Pop
 nch	\N	Caribbean Pop
-nd	82	World Traditions
+nd	82	National Folk
 nda	\N	African
 ndaa	\N	Mali Blues
 ndb	\N	Arabic
@@ -202,7 +203,7 @@ ndc	\N	Asian
 ndd	\N	Bossa Nova
 nde	\N	Caribbean
 ndf	88	Celtic
-ndg	53	European Folk/Pop
+ndg	53	Pop-Folk
 ndga	\N	Jodel
 ndh	\N	France
 ndi	\N	Germany
@@ -212,8 +213,8 @@ ndl	86	Latin
 ndlb	\N	Flamenco
 ndlc	\N	Mambo
 ndld	\N	Mariachi
-ndle	\N	Meringue
-ndlg	\N	Salsa
+ndle	142	Merengue
+ndlg	143	Salsa
 ndlh	114	Samba
 ndm	64	Native American
 ndn	\N	Quebecois
@@ -221,4 +222,53 @@ ndo	\N	Russian
 ndp	\N	South/Cent. American
 ndq	\N	Spain
 ndr	113	Tango
+y	11	Oldies
+y2	49	Gothic
+y6	23	Pranks
+y9	29	Jazz+Funk
+y12	46	Instrum. Pop
+y14	48	Ethnic
+y15	50	Darkwave
+y16	51	Techno-Indust.
+y18	54	Eurodance
+y19	55	Dream
+y20	56	Southern Rock
+y21	58	Cult
+y22	60	Top 40
+y23	62	Pop/Funk
+y25	69	Showtunes
+y26	70	Trailer
+y27	72	Tribal
+y29	75	Polka
+y30	79	Hard Rock
+y34	87	Revival
+y36	91	Gothic Rock
+y37	92	Progress. Rock
+y38	93	Psychadel. Rock
+y39	95	Slow Rock
+y41	100	Humour
+y42	107	Booty Bass
+y43	108	Primus
+y44	109	Porn Groove
+y45	111	Slow Jam
+y46	112	Club
+y47	115	Folklore
+y48	117	Power Ballad
+y49	118	Rhythmic Soul
+y50	119	Freestyle
+y51	120	Duet
+y52	122	Drum Solo
+y55	125	Dance Hall
+y58	130	Terror
+y59	132	BritPop
+y60	133	Negerpunk
+y61	134	Polsk Punk
+y62	135	Beat
+y63	136	Christian Gangsta Rap
+y64	138	Black Metal
+y65	140	Contemporary Christian
+y66	141	Christian Rock
+y69	145	Anime
+y70	146	Jpop
+y71	147	Synthpop
 		NULL
