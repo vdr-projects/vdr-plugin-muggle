@@ -22,7 +22,7 @@
 
 mgPlaylist::mgPlaylist()
 {
-  m_current_idx = -1;
+  m_current_idx = 0;
 
   char *buffer;
   asprintf( &buffer, "Playlist-%ld", random() );
@@ -32,7 +32,7 @@ mgPlaylist::mgPlaylist()
 
 mgPlaylist::mgPlaylist(std::string listname)
 {
-  m_current_idx = -1;
+  m_current_idx = 0;
   m_listname = listname;
 }
      
@@ -136,7 +136,7 @@ void mgPlaylist::insert( mgContentItem* item, unsigned int position )
     }
 }
 
-bool mgPlaylist::remove( int pos )
+bool mgPlaylist::remove( unsigned pos )
 {
   bool result = false;
 
@@ -171,7 +171,7 @@ void mgPlaylist::clear()
   m_current_idx = 0;
 }
 
-void mgPlaylist::move( int from, int to )
+void mgPlaylist::move( unsigned from, unsigned to )
 {
   std::vector<mgContentItem*>::iterator from_iter = m_list.begin() + from;  
   std::vector<mgContentItem*>::iterator to_iter   = m_list.begin() + to;
@@ -200,7 +200,7 @@ void mgPlaylist::setListname(std::string name)
 }
 
 // returns current index in the playlist
-int mgPlaylist::getIndex() const
+unsigned mgPlaylist::getIndex() const
 { 
   return m_current_idx;
 }
@@ -223,7 +223,7 @@ mgContentItem* mgPlaylist::getCurrent()
 {
   mgContentItem *result;
 
-  if( 0 <= m_current_idx && m_current_idx < (int) m_list.size() )
+  if( 0 <= m_current_idx && m_current_idx < m_list.size() )
     {
       result = *( m_list.begin() + m_current_idx );
     }
@@ -260,7 +260,7 @@ bool mgPlaylist::skipFwd()
     }
   else
     {
-      if( m_current_idx + 1 < (int) m_list.size() ) // unless loop mode
+      if( m_current_idx + 1 < m_list.size() ) // unless loop mode
 	{
 	  m_current_idx ++;
 	}
@@ -311,7 +311,8 @@ mgContentItem* mgPlaylist::sneakNext()
 {
   mgContentItem* result;
 
-  if( m_current_idx + 1 <= (int) m_list.size() ) // unless loop mode
+  // TODO: a bug?
+  if( m_current_idx + 1 <= m_list.size() ) // unless loop mode
     {
       result =  *(m_list.begin() + m_current_idx + 1);
     }
