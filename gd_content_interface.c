@@ -1,8 +1,8 @@
 /*! \file   gd_content_interface.c
  *  \brief  Data Objects for content (e.g. mp3 files, movies) for the vdr muggle plugin
  *
- *  \version $Revision: 1.26 $
- *  \date    $Date: 2004/08/27 15:19:34 $
+ *  \version $Revision: 1.27 $
+ *  \date    $Date: 2004/08/30 14:31:43 $
  *  \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  *  \author  Responsible author: $Author: LarsAC $
  *
@@ -14,7 +14,7 @@
  *   - mgSelection   a set of tracks (e.g. a database subset matching certain criteria)
  *
  */
-/*******************************************************************/
+
 #define DEBUG
 
 #include "gd_content_interface.h"
@@ -263,11 +263,6 @@ mgGdTrack::mgGdTrack(int sqlIdentifier, MYSQL dbase)
 
 }
 
-/*!
- *****************************************************************************
- * \brief copy constructor
- *
- ****************************************************************************/
 mgGdTrack::mgGdTrack(const mgGdTrack& org)
 {
   m_uniqID = org.m_uniqID;
@@ -285,26 +280,11 @@ mgGdTrack::mgGdTrack(const mgGdTrack& org)
     }
 }
   
-
-/*!
- *****************************************************************************
- * \brief destructor
- *
- ****************************************************************************/
 mgGdTrack::~mgGdTrack()
 {
   // nothing to be done
 }
 
-/*!
- *****************************************************************************
- * \brief accesses the database to fill the actual data fields
- *
- * In order to avoid innecessary queries to the database, the content fields
- * of the mgGdTrack object may not be filled upon creation.
- * As soon as the first content field is needed, this private function 
- * is called to fill all content fields at once
- ****************************************************************************/
 bool mgGdTrack::readData()
 {
     MYSQL_RES	*result;
@@ -363,42 +343,24 @@ bool mgGdTrack::readData()
     return true;
 }
 
-/*!
- *****************************************************************************
- * \brief returns value for _mp3file
- *
- * If value has not been retrieved from the database, radData() is called first
- ****************************************************************************/
 string mgGdTrack::getSourceFile()
 {
-    if(!m_retrieved)
-    {
+    if( !m_retrieved )
+      {
 	readData();
-    }
+      }
     return m_mp3file;
 }
 
-/*!
- *****************************************************************************
- * \brief returns value for m_title
- *
- * If value has not been retrieved from the database, radData() is called first
- ****************************************************************************/
 string mgGdTrack::getTitle()
 {
-    if(!m_retrieved)
+  if( !m_retrieved )
     {
-	readData();
+      readData();
     }
-    return m_title;
+  return m_title;
 }
 
-/*!
- *****************************************************************************
- * \brief returns value for m_artist
- *
- * If value has not been retrieved from the database, radData() is called first
- ****************************************************************************/
 string mgGdTrack::getArtist()
 {
     if(!m_retrieved)
@@ -408,30 +370,24 @@ string mgGdTrack::getArtist()
     return m_artist;
 }
 
-/*!
- *****************************************************************************
- * \brief returns a string for one field of the item
- *
- * This is a generic function that shozld work for all content items
- ****************************************************************************/
 string mgGdTrack::getLabel(int col)
 {
-    if(!m_retrieved)
+  if( !m_retrieved )
     {
-	readData();
+      readData();
     }
-    switch(col)
+  switch(col)
     {
-	case 0: 
-	    return m_title;
-	case 1: 
-	    return m_artist;
-	case 2: 
-	    return m_album;
-	case 3: 
-	    return m_genre;
-	default:
-	    return "";
+    case 0: 
+      return m_title;
+    case 1: 
+      return m_artist;
+    case 2: 
+      return m_album;
+    case 3: 
+      return m_genre;
+    default:
+      return "";
     }
 }
 
@@ -445,27 +401,15 @@ bool mgGdTrack::setTrackInfo(vector<mgFilter*> *info)
   return false;
 }
 
-/*!
- *****************************************************************************
- * \brief returns value for m_album
- *
- * If value has not been retrieved from the database, radData() is called first
- ****************************************************************************/
 string mgGdTrack::getAlbum()
 {
-    if(!m_retrieved)
+  if( !m_retrieved )
     {
-	readData();
+      readData();
     }
-    return m_album;
+  return m_album;
 }
   
-/*!
- *****************************************************************************
- * \brief returns value for m_genre
- *
- * If value has not been retrieved from the database, radData() is called first
- ****************************************************************************/
 string mgGdTrack::getGenre()
 {
     if(!m_retrieved)
@@ -475,12 +419,6 @@ string mgGdTrack::getGenre()
     return m_genre;
 }
 
-/*!
- *****************************************************************************
- * \brief returns value for m_year
- *
- * If value has not been retrieved from the database, radData() is called first
- ****************************************************************************/
 int mgGdTrack::getYear()
 {
     if(!m_retrieved)
@@ -490,12 +428,6 @@ int mgGdTrack::getYear()
     return m_year;
 }
 
-/*!
- *****************************************************************************
- * \brief returns value for m_rating
- *
- * If value has not been retrieved from the database, radData() is called first
- ****************************************************************************/
 int mgGdTrack::getRating()
 {
     if(!m_retrieved)
@@ -518,90 +450,36 @@ string mgGdTrack::getImageFile()
     return "dummyImg.jpg";
 }
 
-/*!
- *****************************************************************************
- * \brief sets the field for m_title to the specified value
- *
- * Note: The new value is not stored in the database. 
- * This is only done, when writeData() is called
- ****************************************************************************/
 void mgGdTrack::setTitle(string new_title)
 {
     m_title = new_title;
 }
 
-/*!
- *****************************************************************************
- * \brief sets the field for m_artist to the specified value
- *
- * Note: The new value is not stored in the database. 
- * This is only done, when writeData() is called
- ****************************************************************************/
 void mgGdTrack::setArtist(string new_artist)
 {
     m_artist =  new_artist;
 }
 
-
-/*!
- *****************************************************************************
- * \brief sets the field for m_album to the specified value
- *
- * Note: The new value is not stored in the database. 
- * This is only done, when writeData() is called
- ****************************************************************************/
 void mgGdTrack::setAlbum(string new_album)
 {
     m_album = new_album;
 }
 
-
-/*!
- *****************************************************************************
- * \brief sets the field for m_genre to the specified value
- *
- * Note: The new value is not stored in the database. 
- * This is only done, when writeData() is called
- ****************************************************************************/
 void mgGdTrack::setGenre(string new_genre)
 {
     m_genre = new_genre;
 }
 
-
-/*!
- *****************************************************************************
- * \brief sets the field for m_year to the specified value
- *
- * Note: The new value is not stored in the database. 
- * This is only done, when writeData() is called
- ****************************************************************************/
 void mgGdTrack::setYear(int new_year)
 {
     m_year = new_year;
 }
 
-
-/*!
- *****************************************************************************
- * \brief sets the field for m_rating to the specified value
- *
- * Note: The new value is not stored in the database. 
- * This is only done, when writeData() is called
- ****************************************************************************/
 void mgGdTrack::setRating(int new_rating)
 {
     m_rating = new_rating;
 }
 
-
-/*!
- *****************************************************************************
- * \brief stores current values in the sql database
- *
- * Note: At the moment, only the values stored directly in the 'tracks' 
- * database are updated 
- ****************************************************************************/
 bool mgGdTrack::writeData()
 {
     mgSqlWriteQuery(&m_db, "UPDATE tracks "
@@ -612,19 +490,12 @@ bool mgGdTrack::writeData()
     return true;
 }
 
-//------------------------------------------------------------------
-//------------------------------------------------------------------
-//                
-//          class  GdTracklist 
-//                
-//------------------------------------------------------------------
-//------------------------------------------------------------------
 GdTracklist::GdTracklist(MYSQL db_handle, string restrictions)
 {
     MYSQL_RES	*result;
     MYSQL_ROW	row;
     int trackid;
-
+    
     result = mgSqlReadQuery(&db_handle,
 			    "SELECT  tracks.id "
 			    " FROM tracks, album, genre WHERE %s"
@@ -634,34 +505,15 @@ GdTracklist::GdTracklist(MYSQL db_handle, string restrictions)
     while((row = mysql_fetch_row(result)) != NULL)
     { 
       // row[0] is the trackid
-	if(sscanf(row[0], "%d", &trackid) != 1)
+      if(sscanf(row[0], "%d", &trackid) != 1)
 	{
-	    mgError("Can not extract integer track id from '%s'",
-		    row[0]);
+	  mgError("Can not extract integer track id from '%s'",
+		  row[0]);
 	}
-	m_list.push_back(new mgGdTrack(trackid, db_handle));
+      m_list.push_back(new mgGdTrack(trackid, db_handle));
     }
-    
 }
     
-
-//------------------------------------------------------------------
-//------------------------------------------------------------------
-//                
-//         class GdPlaylist   
-//                
-//------------------------------------------------------------------
-//------------------------------------------------------------------
-
-/*!
- *****************************************************************************
- * \brief Constructor: opens playlist by name 
- *
- * \param listname user-readable identifier of the paylist
- * \param db_handl database which stores the playlist
- *
- * If the playlist does not yet exist, an empty playlist is created
- ****************************************************************************/
 GdPlaylist::GdPlaylist(string listname, MYSQL db_handle)
 {
     MYSQL_RES	*result;
@@ -671,14 +523,14 @@ GdPlaylist::GdPlaylist(string listname, MYSQL db_handle)
     m_db = db_handle;
 
     //
-    // check, if the database really exists 
+    // check, if the playlist already exists 
     //
-    result=mgSqlReadQuery(&m_db, 
-			  "SELECT id,author FROM playlist where title=\"%s\"",
-			  listname.c_str());
+    result = mgSqlReadQuery(&m_db, 
+			    "SELECT id,author FROM playlist where title=\"%s\"",
+			    listname.c_str());
     nrows   = mysql_num_rows(result);
-    if(nrows == 0)
-    {
+    if( nrows == 0 )
+      {
 	mgDebug(3, "No playlist with name %s found. Creating new playlist\n",
 		listname.c_str());
 	
@@ -692,55 +544,47 @@ GdPlaylist::GdPlaylist(string listname, MYSQL db_handle)
 	m_listname = listname;
 	
 	// now read thenew list to get the id
-	result=mgSqlReadQuery(&m_db, 
-		       "SELECT id,author FROM playlist where title=\"%s\"",
-			listname.c_str());
+	result = mgSqlReadQuery(&m_db, 
+				"SELECT id,author FROM playlist where title=\"%s\"",
+				listname.c_str());
 	nrows   = mysql_num_rows(result);
 	row = mysql_fetch_row(result);
 	
 	if(sscanf(row [0], "%d", & m_sqlId) !=1)
-	{
-	  mgError("Invalid id '%s' in database", row [5]);
-	}
+	  {
+	    mgError("Invalid id '%s' in database", row [5]);
+	  }
 	  
-    }
+      }
     else // playlist exists, read data
-    {
+      {
 	row = mysql_fetch_row(result);
 	
 	if(sscanf(row [0], "%d", & m_sqlId) !=1)
-	{
-	  mgError("Invalid id '%s' in database", row [5]);
-	}
+	  {
+	    mgError("Invalid id '%s' in database", row [5]);
+	  }
 	m_author = row[1];
 	m_listname = listname;
 	// now read allentries of the playlist and 
 	// write them into the tracklist
  	insertDataFromSQL();
-    }// end 'else (playlist exists)
-    	
+      }// end 'else (playlist exists)
+    
     m_listtype = GD_PLAYLIST_TYPE; // GiantDB list type for playlists 
 }
 
-/*!
- *****************************************************************************
- * \brief empty destructor
- *
- * Nothing to be done. Constructor of parent class takes care
- ****************************************************************************/
 GdPlaylist::~GdPlaylist()
 {
     
 }
+
 void GdPlaylist::setListname(std::string name)
 {
   m_listname = name;
   m_sqlId = -1;
 }
-/*!
- *****************************************************************************
- * \brief reads the track list from the sql database into a locallist
- ****************************************************************************/
+
 int GdPlaylist::insertDataFromSQL()
 {
     MYSQL_RES	*result;
@@ -1436,6 +1280,9 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.27  2004/08/30 14:31:43  LarsAC
+ * Documentation added
+ *
  * Revision 1.26  2004/08/27 15:19:34  LarsAC
  * Changed formatting and documentation
  *

@@ -3,8 +3,8 @@
  * \brief  Data objects for content (e.g. mp3 files, movies)
  *         for the vdr muggle plugin database
  *          
- * \version $Revision: 1.10 $
- * \date    $Date: 2004/08/27 15:19:34 $
+ * \version $Revision: 1.11 $
+ * \date    $Date: 2004/08/30 14:31:43 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  Responsible author: $Author: LarsAC $
  * 
@@ -53,6 +53,9 @@ class gdFilterSets : public mgFilterSets
 
  public:
 
+  /*! \addtogroup Object creation and destruction */
+  /*\@{*/
+
   /*!
    * \brief the default constructor
    *
@@ -65,6 +68,8 @@ class gdFilterSets : public mgFilterSets
    * \brief the destructor
    */
   virtual ~gdFilterSets();
+
+  /*\@}*/
 
   /*!
    * \brief compute restriction w.r.t active filters
@@ -95,6 +100,9 @@ class mgGdTrack : public mgContentItem
 {
  public:
  
+  /*! \addtogroup Object creation and destruction */
+  /*\@{*/
+
   /*! 
    * \brief a constructor 
    * 
@@ -128,9 +136,22 @@ class mgGdTrack : public mgContentItem
    * \brief the destructor 
    */
   virtual ~mgGdTrack();
+
+  /*\@}*/
   
-  virtual mgContentItem::contentType getContentType(){return mgContentItem::GD_AUDIO;}
+  /*!
+   * \brief obtain the content type of the item
+   */
+  virtual mgContentItem::contentType getContentType()
+    {
+      return mgContentItem::GD_AUDIO;
+    }
   
+  /*!
+   * \brief obtain the associated player object
+   *
+   * \todo what is this used for?
+   */
   virtual mgMediaPlayer getPlayer()
     {
       return mgMediaPlayer();
@@ -138,42 +159,129 @@ class mgGdTrack : public mgContentItem
 
   /*! \addtogroup Data read access */
   /*\@{*/
+
+  /*!
+   * \brief returns a certain field of the item as a string
+   *
+   *    0 - title
+   *    1 - artist
+   *    2 - album
+   *    3 - genre
+   */
   virtual std::string getLabel( int col = 0 );
 
+  /*!
+   * \brief returns value for the track title
+   */
   virtual std::string getTitle();  
+
+  /*!
+   * \brief returns value for the location of the track on disk
+   */
   virtual std::string getSourceFile();  
+
+  /*!
+   * \brief returns the genre of the track
+   */
   virtual std::string getGenre();  
+
+  /*!
+   * \brief returns the artist of the track
+   */
   std::string getArtist();
+
+  /*!
+   * \brief returns value the album to which the track belongs
+   */
   std::string getAlbum();
+
+  /*!
+   * \brief obtain the location of the image file
+   */
   std::string getImageFile();
+
+  /*!
+   * \brief obtain the year of the track
+   */
   int getYear();
+
+  /*!
+   * \brief obtain the duration of the track
+   */
   int getDuration();
+
+  /*!
+   * \brief obtain the rating of the track
+   */
   virtual int getRating();
 
+  /*!
+   * \brief obtain the complete track information
+   */
   virtual std::vector<mgFilter*> *getTrackInfo();  
+
   /*\@}*/
 
   /*! \addtogroup Data write access */ 
   /*\@{*/
+
+  /*!
+   * \brief set the title of the track
+   */
   void setTitle(std::string new_title);
+
+  /*!
+   * \brief set the title of the track
+   */
   void setArtist(std::string new_artist);
+
+  /*!
+   * \brief set the album name of the track
+   */
   void setAlbum(std::string new_album);
+
+  /*!
+   * \brief set the genre of the track
+   */
   void setGenre(std::string new_genre);
-  void setYear(int new_rating);
+
+  /*!
+   * \brief set the year of the track
+   */
+  void setYear(int new_year);
+
+  /*!
+   * \brief set the rating of the track
+   */
   void setRating(int new_rating);
 
+  /*!
+   * \brief set complete information of the track
+   */
   virtual bool setTrackInfo(std::vector<mgFilter*>*);
 
+  /*!
+   * \brief make changes persistent
+   *
+   * The changes made using the setXxx methods are not
+   * stored persistently in the database until writeData
+   * is called.
+   *
+   * \note only the tracks table in the SQL database is updated.
+   * Genre and album field information is lost.
+   */
   bool writeData();
+
   /*\@}*/
-  
+
+  //! \brief a special instance denoting an undefined track
   static mgGdTrack UNDEFINED;
 
 private:
 
   /*! 
    * \brief the database in which the track resides 
-   * */
+   */
   MYSQL m_db;
   
   /*!
@@ -185,7 +293,9 @@ private:
    */
   bool m_retrieved;
 
-  //! \brief the artist name
+  /*! 
+   * \brief the artist name
+   */
   std::string m_artist;
 
   /*! 
@@ -225,16 +335,25 @@ private:
   int m_length;
 
   /*!
-   * \brief Access the data of the item from the database
+   * \brief Access the data of the item from the database and fill actual data fields
+   *
+   * In order to avoid abundant queries to the database, the content fields
+   * of the mgGdTrack object may not be filled upon creation. As soon as the 
+   * first content field is needed, this private function is called to fill 
+   * all content fields at once.
    */
   bool readData();
 
 };
 
+/* 
+ * \brief a list of tracks stored in the databas
+ */
 class GdTracklist : public mgTracklist
 {
  public:
-    GdTracklist(MYSQL db_handle, std::string restrictions);
+
+  GdTracklist(MYSQL db_handle, std::string restrictions);
 };
 
 /*! 
@@ -246,29 +365,67 @@ class  GdPlaylist : public mgPlaylist
 {	  
  public:
      
+  /*! \addtogroup Object creation and destruction */
+  /*\@{*/
+
+  /*! 
+   * \brief opens an existing or creates empty playlist by name
+   *
+   * If the playlist does not yet exist, an empty playlist is created.
+   *
+   * \param listname  - user-readable identifier of the paylist
+   * \param db_handle - database which stores the playlist
+   */
   GdPlaylist(std::string listname, MYSQL db_handle);
-  /* opens existing or creates empty playlist */
-  
+
+  /*! 
+   * \brief destructor
+   *
+   * \note the destructor only destroys the in-memory footprint of the playlist,
+   *       it does not modify the database.
+   */
   virtual ~GdPlaylist();
+
+  /* \@} */
      
+  /*!
+   * changes the listname of the playlist (and unset the sql id)
+   */
   virtual void setListname(std::string name);
-  /* changes the listname of the playlist (and unset the sql id */
   
+  /*!
+   * returns the total duration of all songs in the list in seconds
+   */
   int getPlayTime();
-  /* returns the total duration of all songs in the list in seconds */
   
+  /*! 
+   * returns the duration of all remaining songs in the list in seconds 
+   */
   int getPlayTimeRemaining();
-  /* returns the duration of all remaining songs in the list in seconds */
-  
+
+  /*! 
+   * \brief write data back to the database
+   */
   bool storePlaylist();
 
  private:
-  int m_sqlId; /* -1 means: not valid */
-  int m_listtype; // used in GiantDisc db queries
-  std::string m_author;
-  MYSQL m_db;
-  
+
+  /*!
+   * \brief reads the track list from the sql database into memory
+   */
   int insertDataFromSQL();
+
+  //! \brief the database identifier of the list
+  int m_sqlId; 
+  
+  //! \brief the list type used in GiantDisc db queries
+  int m_listtype;
+
+  //! \brief the author of the playlist
+  std::string m_author;
+  
+  //! \brief the handle to the database in which the list is stored
+  MYSQL m_db;  
 };
 
 /*! 
@@ -283,29 +440,62 @@ class  GdPlaylist : public mgPlaylist
  * Each child inherits the restrictions of its father and an additional
  * restriction on the recently expanded db field
  */
-class  GdTreeNode : public mgSelectionTreeNode
+class GdTreeNode : public mgSelectionTreeNode
 {
 public:
 
-    /*==== constructors ====*/
-    GdTreeNode(MYSQL db, int view, std::string filters); // top level
-    GdTreeNode(mgSelectionTreeNode* parent,
-	       std::string id, std::string label, std::string restriction); 
+  /*! \addtogroup Object creation and destruction */
+  /*\@{*/
+
+  /*! 
+   * \brief Construct a top level tree node in a certain view with certain filters 
+   */
+  GdTreeNode(MYSQL db, int view, std::string filters);
   
-    /*==== destructor ====*/
-    virtual ~GdTreeNode();
+  /*! 
+   * \brief Construct a subordinate tree node with given labels and restrictions
+   */
+  GdTreeNode(mgSelectionTreeNode* parent,
+	     std::string id, std::string label, std::string restriction); 
 
-    // compute children on the fly 
-    virtual bool isLeafNode();
-    virtual bool expand();  
+  /*! 
+   * \brief destructor to clean up the object
+   */
+  virtual ~GdTreeNode();
 
-    // access data in  current node
-    virtual std::vector<mgContentItem*>* getTracks();
-    virtual mgContentItem* getSingleTrack();
+  /* \@} */
+
+  /*! \addtogroup Access node data */
+  /*\@{*/
+
+  /*!
+   * \brief check, whether the node is a leaf node (i.e. has no more children)
+   */
+  virtual bool isLeafNode();
+
+  /*!
+   * \brief expand the node and generate child nodes according to restrictions passed in the constructor
+   */
+  virtual bool expand();  
+
+  /*!
+   * \brief obtain the tracks in this node
+   */
+  virtual std::vector<mgContentItem*>* getTracks();
+
+  /*!
+   * \brief obtain a single track in this node
+   */
+  virtual mgContentItem* getSingleTrack();
+
+  /* \@} */
 };
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.h,v $
+ * Revision 1.11  2004/08/30 14:31:43  LarsAC
+ * Documentation added
+ *
  * Revision 1.10  2004/08/27 15:19:34  LarsAC
  * Changed formatting and documentation
  *

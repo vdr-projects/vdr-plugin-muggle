@@ -1,34 +1,35 @@
-/*******************************************************************/
 /*! \file  muggle_tools.h
- * \brief  A few util functions for standalone and plugin messaging
- * for the vdr muggle plugindatabase
- ******************************************************************** 
- * \version $Revision: 1.3 $
- * \date    $Date: 2004/05/28 15:29:18 $
+ *  \brief  A few utility functions for standalone and plugin messaging for the vdr muggle plugindatabase
+ *
+ * \version $Revision: 1.4 $
+ * \date    $Date: 2004/08/30 14:31:43 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: lvw $
+ * \author  file owner: $Author: LarsAC $
  * 
  */
-/*******************************************************************/
-/* makes sur we dont use parse the same declarations twice */
+
+/* makes sure we don't use the same declarations twice */
 #ifndef _MUGGLE_TOOLS_H
 #define _MUGGLE_TOOLS_H
 
 #include <iostream>
 #include <string>
+#include <mysql/mysql.h>
 
-#include "mysql/mysql.h"
+#define STANDALONE 1 // what's this?
 
-#define STANDALONE 1
+// mySql helper functions
+
+MYSQL_RES* mgSqlReadQuery(  MYSQL *db, const char *fmt, ... );
+void       mgSqlWriteQuery( MYSQL *db, const char *fmt, ... );
+
+// Messaging functions
 
 void mgSetDebugLevel(int new_level);
 void mgDebug(int level, const char *fmt, ...);
 void mgDebug( const char *fmt, ... );
 void mgWarning(const char *fmt, ...);
 void mgError(const char *fmt, ...);
-
-MYSQL_RES* mgSqlReadQuery(MYSQL *db, const char *fmt, ...);
-void mgSqlWriteQuery(MYSQL *db, const char *fmt, ...);
 
 #ifdef DEBUG
 #define MGLOG(x) mgLog __thelog(x)
@@ -41,7 +42,6 @@ void mgSqlWriteQuery(MYSQL *db, const char *fmt, ...);
 #else
 #define MGLOGSTREAM __thelog.getStream()
 #endif
-
 
 class mgLog
 {
@@ -74,6 +74,9 @@ class mgLog
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: mg_tools.h,v $
+ * Revision 1.4  2004/08/30 14:31:43  LarsAC
+ * Documentation added
+ *
  * Revision 1.3  2004/05/28 15:29:18  lvw
  * Merged player branch back on HEAD branch.
  *
