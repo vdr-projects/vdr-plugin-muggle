@@ -37,8 +37,7 @@ parameters are descibed in Section 5.
 The plugin currently runs on versions 1.3.17- of VDR (including 1.2.6). It also compiles on 1.3.18 
 but your mileage may vary. In addition, the following pieces of software are required:
 
- - mySQL server (tested with 4.0.18) (Debian packages mysql-server, mysql-client)
- - mySQL client libraries
+ - mySQL server (tested with 4.0.18) (Debian packages mysql-server, mysql-client) - mySQL client libraries
    (Debian package libmysqlclient-dev or 
     http://www.mysql.org)
  - libmad (for mp3 decoding)
@@ -308,7 +307,7 @@ removed.
 
 - Collections: switch to the collection view
 
-- Select search order: select another search order
+- Select an order: select another search order, edit existing ones, or create new ones (see below)
 
 - Export tracklist: generate a file X.m3u containing all tracks from the current selection
 
@@ -319,6 +318,20 @@ The green key instantly plays the currently selected collection. The yellow key 
 between the *Music browser* and the *Collection browser*. Thus, if you want to play an
 album, browse to it and press green. Remember that you can redefine commands executed by 
 Red, Green and Yellow by pressing them while displaying the command list.
+
+Muggle comes with a few default browsing orders (like artist / album /track). Since release 0.1.2
+it is possible for the user to change these or create now ones without going into the code.
+In the music browser submenu (enter with blue while in the music browser) enter "Select an order".
+Existing search orders will be shown. Move the cursor to any of those and press the Red button to edit
+it. Each key of the current search order will be shown on a line. Move the cursor to a line and
+change the search key using Left/Right buttons. Note, that the number of key depends on what is
+currently selected. So keys may appear/vanish as you cycle through the choices. This is intented
+and not a bug. Play around with this a while to see, why this is necessary. Press Ok to make your
+choices persistent, use back to leave the search order editor without making any changes.
+
+In addition, you can create new search orders using the Green key and delete orders no longer
+needed using Yellow. As an exercise, try to e.g. create orders like "Decade > Genre > Track" or
+"Year > Album > Track".
 
 \subsection collections Collection browser
 
