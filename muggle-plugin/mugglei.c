@@ -5,7 +5,7 @@
  * \author  Lars von Wedel
  */
 
-#define VERBOSE
+// #define VERBOSE
 #include <string>
 
 #include <stdlib.h>
