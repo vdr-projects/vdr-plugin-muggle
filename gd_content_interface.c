@@ -45,17 +45,41 @@ int GdInitDatabase( MYSQL *db )
     {	
       return -1;
     }
-  
-  if( mysql_real_connect( db,
-			  the_setup.DbHost, 
-			  the_setup.DbUser, 
-			  the_setup.DbPass, 
-			  the_setup.DbName,
-			  the_setup.DbPort,
-			  NULL, 0 ) == NULL )
+    
+  if (the_setup.DbSocket != NULL)
     {
-      return -2;
-    }
+      mgDebug(1,"Using sockets for connecting to Database.");
+
+      //mgDebug(3,"Socket is: '%s'",the_setup.DbSocket);
+      //mgDebug(3,"DbUser is: '%s'",the_setup.DbUser);
+      //mgDebug(3,"DbPassword is: '%s'",the_setup.DbPass);
+
+      if( mysql_real_connect( db,
+			      "",
+			      the_setup.DbUser,       
+			      the_setup.DbPass, 
+			      the_setup.DbName,
+			      0,
+			      the_setup.DbSocket, 0 ) == NULL )
+	{
+        return -2;
+      } // if mysql_real_connect
+    } //if DbSocket
+  else
+    {
+      mgDebug(1,"Using TCP-host for connecting to Database.");
+      if( mysql_real_connect( db,
+			      the_setup.DbHost, 
+			      the_setup.DbUser,       
+			      the_setup.DbPass, 
+			      the_setup.DbName,
+			      the_setup.DbPort,
+			      "", 0 ) == NULL )
+      {
+        return -2;
+      } // if mysql_real_connect
+    } // else (if DbSocket)
+    
   return 0;
 }
 

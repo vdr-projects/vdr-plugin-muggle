@@ -161,7 +161,7 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 		      {
 			
 			char *buffer = 0;
-			asprintf( &buffer, "%d tracks sent to current playlist", (int) tracks->size() );
+			asprintf( &buffer, tr("%d tracks sent to current playlist"), (int) tracks->size() );
 			m_current_playlist->appendList(tracks);
 #if VDRVERSNUM >= 10307
 			Skins.Message(mtInfo,buffer);
@@ -668,16 +668,16 @@ void mgMainMenu::DisplayPlaylistSubmenu()
   SetTitle( "Muggle - Playlist View Commands" );
 
   // Add items
-  Add( new cOsdItem( "Load playlist" ) );
-  Add( new cOsdItem( "Save playlist" ) );
-  Add( new cOsdItem( "Rename playlist" ) );
-  Add( new cOsdItem( "Clear playlist" ) );
-  Add( new cOsdItem( "Remove entry from list" ) );
-  Add( new cOsdItem( "Export playlist" ) );
+  Add( new cOsdItem( tr("Load playlist" ) ) );
+  Add( new cOsdItem( tr("Save playlist" ) ) );
+  Add( new cOsdItem( tr("Rename playlist" ) ) );
+  Add( new cOsdItem( tr("Clear playlist" ) ) );
+  Add( new cOsdItem( tr("Remove entry from list" ) ) );
+  Add( new cOsdItem( tr("Export playlist" ) ) );
 
   if( m_playlist_commands )
     {
-      Add( new cOsdItem( "External playlist commands" ) );
+      Add( new cOsdItem( tr("External playlist commands" ) ) );
     }
 
   Display();

@@ -3,11 +3,11 @@
  * \brief A setup class for a VDR media plugin (muggle)
  *
  * \version $Revision: 1.2 $
- * \date    $Date: 2004/05/28 15:29:19 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  *
- * $Id: vdr_setup.h,v 1.2 2004/05/28 15:29:19 lvw Exp $
+ * $Id$
  *
  * Adapted from 
  * MP3/MPlayer plugin to VDR (C++)
@@ -44,6 +44,7 @@ public:
   int Only48kHz;
 
   char *DbHost;
+  char *DbSocket;
   char *DbName;
   char *DbUser;
   char *DbPass;

@@ -49,6 +49,7 @@ mgMuggle::mgMuggle(void)
 {
   // defaults for database arguments
   the_setup.DbHost = strdup ("localhost");
+  the_setup.DbSocket = NULL;
   the_setup.DbPort = 0;
   the_setup.DbName = strdup ("GiantDisc");
   the_setup.DbUser = strdup ("");
@@ -67,6 +68,7 @@ const char *mgMuggle::CommandLineHelp(void)
   // Return a string that describes all known command line options.
   return 
     "  -h HHHH,  --host=HHHH     specify database host (default is localhost)\n"
+    "  -s SSSS   --socket=PATH   specify database socket (default is TCP connection)\n"
     "  -n NNNN,  --name=NNNN     specify database name (overridden by -g)\n"
     "  -p PPPP,  --port=PPPP     specify port of database server (default is )\n"
     "  -u UUUU,  --user=UUUU     specify database user (default is )\n"
@@ -83,6 +85,7 @@ bool mgMuggle::ProcessArgs(int argc, char *argv[])
   static struct option long_options[] = 
     {
       { "host",      required_argument, NULL, 'h' },
+      { "socket",    required_argument, NULL, 's' },
       { "name",      required_argument, NULL, 'n' },
       { "port",      required_argument, NULL, 'p' },
       { "user",      required_argument, NULL, 'u' },
@@ -93,13 +96,17 @@ bool mgMuggle::ProcessArgs(int argc, char *argv[])
     };
 
   int c, option_index = 0;
-  while( ( c = getopt_long( argc, argv, "gh:n:p:t:u:w:", long_options, &option_index ) ) != -1 ) 
+  while( ( c = getopt_long( argc, argv, "gh:s:n:p:t:u:w:", long_options, &option_index ) ) != -1 ) 
      {
        switch (c) 
  	{
  	case 'h': 
  	  {
 	    the_setup.DbHost = strcpyrealloc (the_setup.DbHost, optarg);
+ 	  } break;
+	case 's': 
+ 	  {
+	    the_setup.DbSocket = strcpyrealloc (the_setup.DbSocket, optarg);
  	  } break;
  	case 'n':
  	  {
