@@ -620,8 +620,8 @@ mgPCMPlayer::Action (void)
                 {
                     if (m_ringbuffer->Available () == 0)
                     {
-                        m_active = false;
-                        SetPlayMode (pmStopped);
+		      // m_active = false;
+		      SetPlayMode (pmStopped);
                     }
                 }
                 break;
