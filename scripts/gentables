@@ -16,9 +16,12 @@ echo '};
 
 echo "lang_t languages[] = {"
 
-cat scripts/languages.txt | while read iso name
+scripts/iso639tab.py scripts/iso_639.xml |
+	grep -v '^#' |
+	grep -v '^$' |
+	while read iso1 iso2 iso3 name
 do
-	echo '	{ "'$iso'", "'$name'" },'
+	echo '	{ "'$iso2'", "'$name'" },'
 done
 echo '};
 '

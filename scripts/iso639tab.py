@@ -6,9 +6,6 @@
 # Released under the GPL.
 # $Id: iso639tab.py,v 1.1 2005/03/02 07:24:51 mckinstry Exp $
 
-# modified by Wolfgang Rohdewald such that it only converts the 
-#   iso-639-2 bibliography code and the name without comments
-
 from xml.sax import saxutils, make_parser, saxlib, saxexts, ContentHandler
 from xml.sax.handler import feature_namespaces
 import sys, os, getopt, urllib2
@@ -37,7 +34,7 @@ class printLines(saxutils.DefaultHandler):
 		short_code=short_code.encode('UTF-8')
 		if type(name) == unicode:
 			name = name.encode('UTF-8')
-		self.ofile.write (b_code + '\t' + name + '\n')
+		self.ofile.write (t_code + '\t' + b_code + '\t' + short_code + '\t' + name + '\n')
 
 
 ## 
@@ -46,6 +43,30 @@ class printLines(saxutils.DefaultHandler):
 
 
 ofile = sys.stdout
+ofile.write("""
+## iso-639.tab
+##
+## Copyright (C) 2005 Alastair McKinstry   <mckinstry@computer.org> 
+## Released under the GNU License; see file COPYING for details
+##
+## PLEASE NOTE: THIS FILE IS DEPRECATED AND SCHEDULED TO BE REMOVED.
+## IT IS FOR BACKWARD-COMPATIBILITY ONLY: PLEASE USE THE ISO-639.XML
+## FILE INSTEAD.
+##
+## This file gives a list of all languages in the ISO-639
+## standard, and is used to provide translations (via gettext)
+##
+## Status: ISO 639-2:1998 + additions and changes until 2003-03-05
+## Source: http://lcweb.loc.gov/standards/iso639-2/englangn.html
+##
+## Columns:
+##   iso-639-2 terminology code
+##   iso-639-2 bibliography code
+##   iso-639-1 code (XX if none exists)
+##   Name (English)
+##
+##
+""")
 p = make_parser()
 p.setErrorHandler(saxutils.ErrorPrinter())
 try:
