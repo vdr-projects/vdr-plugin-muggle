@@ -33,7 +33,21 @@ using namespace std;
 mgMediaType mgDecoders::getMediaType( string s )
 {
   // TODO: currently handles only mp3. LVW
-  return MT_MP3;
+  char *p = s.c_str() + strlen( filename.c_str() ) - 1; 
+
+  while( p >= filename && *p != '.') --p; 
+
+  if( !strcmp( p, ".mp3" ) )
+    {
+      return MT_MP3;
+    }
+  else
+    {
+      if( !strcmp( p, ".ogg" ) )
+	{
+	  return MT_OGG;
+	}
+    }
 }
 
 mgDecoder *mgDecoders::findDecoder( mgContentItem *item )
