@@ -3,8 +3,8 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.2 $
- * \date    $Date: 2004/02/01 22:12:56 $
+ * \version $Revision: 1.3 $
+ * \date    $Date: 2004/02/01 22:35:23 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: RaK $
  *
@@ -40,7 +40,7 @@ int GdInitDatabase(MYSQL *db)
     }
     
     if(mysql_real_connect(db,"localhost","root","",
-			  "GiantDisc",0,NULL,0) == NULL)
+			  "GiantDisc2",0,NULL,0) == NULL)
     {
 	return -2;
     }
@@ -795,7 +795,9 @@ bool GdTreeNode::expand()
 		 idfield = "album.artist";
 	     } else if(m_level == 3) { // genre -> artist -> album
 		 sprintf(sqlbuff,
-			 "SELECT DISTINCT album.title,tracks.sourceid"
+			 "SELECT DISTINCT"
+                         "   album.title,"
+                         "   tracks.sourceid"
 			 "  FROM tracks,genre,album"
 			 "  WHERE (genre.id=tracks.genre1) AND"
 			 "        (album.cddbid=tracks.sourceid) AND"
@@ -881,7 +883,62 @@ bool GdTreeNode::expand()
                 return false;
             }
             break;
-	default:
+        case 5: // Album -> Tracks
+              if(m_level == 1) { // Album
+                sprintf(sqlbuff,
+                        "SELECT DISTINCT"
+                        "    CONCAT(album.artist,' - ',album.title) AS title,"
+                        "    album.cddbid"
+                        "  FROM album"
+                        "  WHERE 1 AND"
+                        "        %s"
+                        "  ORDER BY title"
+                        , m_restriction.c_str());
+                idfield = "tracks.genre1";
+              } else if (m_level == 2) { // 
+		 sprintf(sqlbuff,
+			 "SELECT DISTINCT tracks.title, tracks.id"
+			 "  FROM tracks,genre,album"
+			 "  WHERE (genre.id=tracks.genre1) AND"
+			 "        (album.cddbid=tracks.sourceid) AND"
+			 "         %s"
+			 "  ORDER BY tracks.tracknb"
+			 , m_restriction.c_str());
+		 idfield = "tracks.id";
+              } else {
+                mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
+                m_expanded = false;
+                return false;
+	      }
+         case 100:
+           if (m_level == 1) {
+             sprintf(sqlbuff,
+                         "SELECT DISTINCT"
+                         "    CONCAT(album.artist,' - ',album.title) as title,"
+                         "    album.cddbid"
+                         "  FROM album,genre"
+                         "  WHERE "
+                         "         %s"
+                         "  ORDER BY title"
+                         , m_restriction.c_str());
+             idfield = "tracks.sourceid";
+           } else if (m_level == 2) {
+                 sprintf(sqlbuff,
+                         "SELECT tracks.title,tracks.id"
+                         "  FROM tracks,genre,album"
+                         "  WHERE (genre.id=tracks.genre1) AND"
+                         "        (album.cddbid=tracks.sourceid) AND"
+                         "         %s"
+                         "  ORDER BY tracks.tracknb"
+                         , m_restriction.c_str());
+                 idfield = "tracks.id";
+           } else {
+                 mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
+                 m_expanded = false;
+                 return false;
+           }
+           break;
+default:
 	     mgError("View '%d' not yet implemented", m_view);
      }
      
@@ -926,6 +983,11 @@ bool GdTreeNode::expand()
 	new_child = new GdTreeNode(this, // parent
 				   "4" , // id
 				   "Genre -> Year -> Track" , // label,
+				   "1");
+	m_children.push_back(new_child);
+	new_child = new GdTreeNode(this, // parent
+				   "5" , // id
+				   "Album -> Track" , // label,
 				   "1");
 	m_children.push_back(new_child);
     } else {
