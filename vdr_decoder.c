@@ -203,9 +203,15 @@ bool mgDecoder::tryLock (void)
 
     if (!m_locked && !m_playing)
     {
-        lock ();
+    	m_locked++;
+    
+    	m_locklock.Unlock ();                  	// don't hold the "locklock" when locking
+						// "lock", may cause a deadlock
+    	m_lock.Lock ();
+    	m_urgentLock = false;
         res = true;
     }
-    m_locklock.Unlock ();
+    else
+    	m_locklock.Unlock ();
     return res;
 }
