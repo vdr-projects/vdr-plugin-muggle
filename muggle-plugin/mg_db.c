@@ -633,8 +633,7 @@ mgContentItem::mgContentItem (const mgContentItem* c)
     m_channels = c->m_channels;
 }
 
-#if VDRVERSNUM >= 10318
-static char *readline(FILE *f)
+static char *mg_readline(FILE *f)
 {
   static char buffer[MAXPARSEBUFFER];
   if (fgets(buffer, sizeof(buffer), f) > 0) {
@@ -645,7 +644,6 @@ static char *readline(FILE *f)
      }
   return 0;
 }
-#endif
 
 static const char *FINDCMD = "cd '%s' 2>/dev/null && find -follow -name '%s' -print 2>/dev/null";
 
@@ -659,7 +657,7 @@ GdFindFile( string tld, string mp3file )
   if (p) 
     {
       char *s;
-      if( (s = readline(p) ) != 0) 
+      if( (s = mg_readline(p) ) != 0) 
 	  result = tld + s;
       pclose(p);
     }
@@ -1007,7 +1005,7 @@ mgSelection::InitDatabase ()
 bool mgSelection::enter (unsigned int position)
 {
     if (order.empty())
-	mgWarning("mgSelection::enter(%u): order is empty", position);
+	esyslog("mgSelection::enter(%u): order is empty", position);
     if (empty())
 	return false;
     setPosition (position);
