@@ -2,12 +2,12 @@
  * \file vdr_player.c
  * \brief A generic PCM player for a VDR media plugin (muggle)
  *
- * \version $Revision: 1.5 $
- * \date    $Date: 2004/07/26 20:03:00 $
+ * \version $Revision: 1.6 $
+ * \date    $Date: 2004/07/26 22:20:55 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  Responsible author: $Author: lvw $
  *
- * $Id: vdr_player.c,v 1.5 2004/07/26 20:03:00 lvw Exp $
+ * $Id: vdr_player.c,v 1.6 2004/07/26 22:20:55 lvw Exp $
  *
  * Adapted from 
  * MP3/MPlayer plugin to VDR (C++)
@@ -707,7 +707,8 @@ bool mgPCMPlayer::NextFile()
 {
   bool res = false;
     
-  mgContentItem *newcurr = m_playlist->skipFwd();
+  m_playlist->skipFwd();
+  mgContentItem *newcurr = m_playlist->getCurrent();
 
   if( newcurr && newcurr != &(mgContentItem::UNDEFINED) ) 
     {
@@ -722,7 +723,8 @@ bool mgPCMPlayer::PrevFile(void)
 {
   bool res = false;
     
-  mgContentItem *newcurr = m_playlist->skipBack();
+  m_playlist->skipBack();
+  mgContentItem *newcurr = m_playlist->getCurrent();
 
   if( newcurr && newcurr != &(mgContentItem::UNDEFINED) ) 
     {
@@ -803,9 +805,10 @@ void mgPCMPlayer::Backward(void)
 
 void mgPCMPlayer::Goto( int index, bool still )
 {
-  mgContentItem *next = m_playlist->getPosition( index-1 );
+  m_playlist->gotoPosition( index-1 );
+  mgContentItem *next = m_playlist->getCurrent();
 
-  if( next != &(mgContentItem::UNDEFINED) ) //invalid
+  if( next && next != &(mgContentItem::UNDEFINED) ) //invalid
     {
       Lock();
       StopPlay();
@@ -1047,6 +1050,9 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 /************************************************************
  *
  * $Log: vdr_player.c,v $
+ * Revision 1.6  2004/07/26 22:20:55  lvw
+ * Reworked playlist indexing
+ *
  * Revision 1.5  2004/07/26 20:03:00  lvw
  * Bug in initalizing playlist removed
  *
