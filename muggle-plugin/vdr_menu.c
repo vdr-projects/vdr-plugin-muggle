@@ -120,10 +120,8 @@ mgMainMenu::CollectionChanged(string name)
 	else
 	   PlayQueue();
     }
-    if (CollectionEntered(name))
-    {
+    if (CollectionEntered(name) || selection()->isCollectionlist())
        selection()->clearCache();
-    }
 }
 
 bool

@@ -38,6 +38,8 @@ enum mgKeyTypes {
 	keyFolder2,
 	keyFolder3,
 	keyFolder4,
+	keyCreated,
+	keyModified,
 	keyCollection,
 	keyCollectionItem,
 };
@@ -110,6 +112,7 @@ public:
 	strlist fields;
 	strlist tables;
 	strlist clauses;
+	strlist groupby;
 	strlist orders;
 	mgParts& operator+=(mgParts a);
 	void Prepare();
@@ -118,6 +121,7 @@ public:
 	string sql_delete_from_collection(string pid);
 	string sql_update(strlist new_values);
 	bool empty() const { return tables.size()==0;}
+	string m_sql_select;
 private:
 	bool UsesTracks();
 	mgReferences ref;
