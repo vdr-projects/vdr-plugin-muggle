@@ -9,6 +9,8 @@
  * $Id$
  */
 
+#include <stdio.h>
+
 #include <typeinfo>
 #include <string>
 #include <vector>
@@ -220,7 +222,6 @@ mgMenu::mgMenu ()
 void
 mgMainMenu::DumpOrders(mgValmap& nv)
 {
-	map<string,mgOrder*>::iterator it;
 	for (unsigned int idx=0;idx<orders.size();idx++)
 	{
 		mgOrder *o = orders[idx];
@@ -464,7 +465,6 @@ mgMenu::AddExternalAction(const mgActions action, const char *title)
 void
 mgMainMenu::AddOrderActions(mgMenu* m)
 {
-    map<string,mgOrder*>::iterator it;
     for (unsigned int idx=0;idx<orders.size();idx++)
     {
         mgOrder *o = orders[idx];

@@ -17,10 +17,6 @@
 #include <list>
 #include <vector>
 #include <map>
-#include <iostream>
-#include <istream>
-#include <sstream>
-#include <ostream>
 #include <i18n.h>
 using namespace std;
 

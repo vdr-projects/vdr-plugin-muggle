@@ -1,6 +1,7 @@
 #include "mg_order.h"
 #include "mg_tools.h"
 #include "i18n.h"
+#include <stdio.h>
 
 
 bool iskeyGenre(mgKeyTypes kt)
@@ -28,7 +29,7 @@ sql_string (MYSQL *db, const string s)
 		return "";
 	char *buf = (char *) malloc (s.size () * 2 + 1);
 	mysql_real_escape_string (db, buf, s.c_str (), s.size ());
-	string result = "'" + std::string (buf) + "'";
+	string result = "'" + string (buf) + "'";
 	free (buf);
 	return result;
 }
@@ -866,8 +867,11 @@ mgReferences::mgReferences()
 bool
 mgReferences::Equal(unsigned int i,string table1, string table2) const
 {
-	return (((at(i).t1()==table1) && (at(i).t2()==table2))
-	   || ((at(i).t1()==table2) && (at(i).t2()==table1)));
+	const mgReference& r = operator[](i);
+	string s1 = r.t1();
+	string s2 = r.t2();
+	return ((s1==table1) && (s2==table2))
+	   || ((s1==table2) && (s2==table1));
 }
 
 mgParts
@@ -875,7 +879,7 @@ mgReferences::FindConnectionBetween(string table1, string table2) const
 {
 	for (unsigned int i=0 ; i<size(); i++ )
 		if (Equal(i,table1,table2)) 
-			return mgRefParts(at(i));
+			return mgRefParts(operator[](i));
 	return mgParts();
 }
 
