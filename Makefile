@@ -58,7 +58,7 @@ DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
 ### The object files (add further files here):
 
 OBJS = $(PLUGIN).o i18n.o mg_valmap.o mg_mysql.o mg_sync.o mg_order.o mg_content.o mg_selection.o vdr_actions.o vdr_menu.o mg_tools.o \
-	vdr_decoder_mp3.o vdr_decoder_ogg.o vdr_decoder_flac.o vdr_stream.o vdr_decoder.o vdr_player.o \
+	vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o \
 	vdr_setup.o mg_setup.o
 
 LIBS = -lmad -ltag
