@@ -477,6 +477,7 @@ mgSelection::ShuffleMode mgSelection::toggleShuffleMode ()
         {
     	    long id = m_tracks[m_tracks_position].getId ();
             m_current_tracks = "";                // force a reload
+            tracksize = getNumTracks();		  // getNumTracks also reloads
     	    for (unsigned int i = 0; i < tracksize; i++)
         	if (m_tracks[i].getId () == id)
     		{
