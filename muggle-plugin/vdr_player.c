@@ -1085,8 +1085,10 @@ mgPlayerControl::mgPlayerControl( mgPlaylist *plist, unsigned start )
   m_display = NULL;
   m_menu = NULL;
 #endif
-  m_visible = false;
   m_has_osd = false;
+
+  // obtain settings from last run
+  m_visible = the_setup.visible;  
   m_track_view = the_setup.trackview;
   m_progress_view = the_setup.progressview;
 
@@ -1489,6 +1491,7 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 	      {
 		// toggle progress display between simple and detail
 		m_progress_view = !m_progress_view;
+		the_setup.progressview = m_progress_view;
 		Display();
 	      }
 	  } break;
@@ -1530,6 +1533,7 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 	      {
 		// toggle progress display between playlist and track
 		m_track_view = !m_track_view;
+		the_setup.trackview = m_track_view ;
 		Display();
 	      }
 	  } break;

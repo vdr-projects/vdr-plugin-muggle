@@ -39,6 +39,8 @@ mgMenuSetup::mgMenuSetup()
   Add(new cMenuEditBoolItem(tr("Setup.Muggle$Background mode"),       &m_data.BackgrMode, tr("Black"), tr("Live")));
   Add(new cMenuEditIntItem( tr("Setup.Muggle$Normalizer level"),      &m_data.TargetLevel, 0, MAX_TARGET_LEVEL));
   Add(new cMenuEditIntItem( tr("Setup.Muggle$Limiter level"),         &m_data.LimiterLevel, MIN_LIMITER_LEVEL, 100));
+
+  Add(new cMenuEditBoolItem(tr("Setup.Muggle$Start replay with open display"),           &m_data.visible ));
   Add(new cMenuEditBoolItem(tr("Setup.Muggle$Start replay with progress display"),       &m_data.progressview ));
   Add(new cMenuEditBoolItem(tr("Setup.Muggle$Start replay with track display"),          &m_data.trackview ));
 }
@@ -55,6 +57,8 @@ void mgMenuSetup::Store(void)
   SetupStore("TargetLevel",      the_setup.TargetLevel    );
   SetupStore("LimiterLevel",     the_setup.LimiterLevel   );
   SetupStore("Only48kHz",        the_setup.Only48kHz      );
+
+  SetupStore("Visible",        the_setup.visible      );
   SetupStore("TrackView",        the_setup.trackview      );
   SetupStore("ProgressView",     the_setup.progressview      );
 }
@@ -72,6 +76,8 @@ mgSetup::mgSetup()
   LimiterLevel = DEFAULT_LIMITER_LEVEL;
   Only48kHz = 0;
   ToplevelDir = "/mnt/music/";
-  trackview = true;
-  progressview = true;
+
+  visible = 1;
+  trackview = 1;
+  progressview = 1;
 }
