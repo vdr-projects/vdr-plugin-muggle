@@ -65,7 +65,6 @@ mgMuggle::mgMuggle (void)
 #endif
 }
 
-#if VDRVERSNUM >= 0321
 
 void
 mgMuggle::Stop (void)
@@ -78,7 +77,6 @@ mgMuggle::Stop (void)
     free(the_setup.ToplevelDir);
 }
 
-#endif
 
 const char *
 mgMuggle::CommandLineHelp (void)
