@@ -3,8 +3,8 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.20 $
- * \date    $Date: 2004/02/23 16:30:58 $
+ * \version $Revision: 1.21 $
+ * \date    $Date: 2004/02/23 17:03:24 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: RaK $
  *
@@ -92,16 +92,16 @@ gdFilterSets::gdFilterSets()
   rating->push_back("+");
   rating->push_back("++");
  
+  // year-from
+  filter = new mgFilterInt(tr("year (from)"), 1901, 1900, 2100); set->push_back(filter);
+  // year-to
+  filter = new mgFilterInt(tr("year (to)"), 2099, 1900, 2100); set->push_back(filter);
   // title
   filter = new mgFilterString(tr("title"), ""); set->push_back(filter);
   // artist
   filter = new mgFilterString(tr("artist"), ""); set->push_back(filter);
   // genre
   filter = new mgFilterString(tr("genre"), ""); set->push_back(filter);
-  // year-from
-  filter = new mgFilterInt(tr("year (from)"), 1900); set->push_back(filter);
-  // year-to
-  filter = new mgFilterInt(tr("year (to)"), 2100); set->push_back(filter);
   // rating
   filter = new mgFilterChoice(tr("rating"), 1, rating); set->push_back(filter);
 
@@ -110,16 +110,16 @@ gdFilterSets::gdFilterSets()
   m_titles.push_back(tr("Album Search"));
   
   set = new vector<mgFilter*>();
+  // year-from
+  filter = new mgFilterInt(tr("year (from)"), 1901, 1900, 2100); set->push_back(filter);
+  // year-to
+  filter = new mgFilterInt(tr("year (to)"), 2099, 1900, 2100); set->push_back(filter);
   // title
   filter = new mgFilterString(tr("album title"), ""); set->push_back(filter);
   // artist
   filter = new mgFilterString(tr("album artist"), ""); set->push_back(filter);
   // genre
   filter = new mgFilterString(tr("genre"), ""); set->push_back(filter);
-  // year-from
-  filter = new mgFilterInt(tr("year (from)"), 1900); set->push_back(filter);
-  // year-to
-  filter = new mgFilterInt(tr("year (to)"), 2100); set->push_back(filter);
   // rating
   filter = new mgFilterChoice(tr("rating"), 1, rating); set->push_back(filter);
 
@@ -128,6 +128,10 @@ gdFilterSets::gdFilterSets()
   m_titles.push_back(tr("Playlist Search"));
   
   set = new vector<mgFilter*>();
+  // year-from
+  filter = new mgFilterInt(tr("year (from)"), 1901, 1900, 2100); set->push_back(filter);
+  // year-to
+  filter = new mgFilterInt(tr("year (to)"), 2099, 1900, 2100); set->push_back(filter);
   // title
   filter = new mgFilterString(tr("playlist title"), ""); set->push_back(filter);
   // artist
@@ -138,10 +142,6 @@ gdFilterSets::gdFilterSets()
   filter = new mgFilterString(tr("artist"), ""); set->push_back(filter);
   // genre
   filter = new mgFilterString(tr("genre"), ""); set->push_back(filter);
-  // year-from
-  filter = new mgFilterInt(tr("year (from)"), 1900); set->push_back(filter);
-  // year-to
-  filter = new mgFilterInt(tr("year (to)"), 2100); set->push_back(filter);
   // rating
   filter = new mgFilterChoice(tr("rating"), 1, rating); set->push_back(filter);
 
@@ -1391,6 +1391,10 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.21  2004/02/23 17:03:24  RaK
+ * - error in filter view while trying to switch or using the colour keys
+ *   workaround: first filter criteria is inttype. than it works, dont ask why ;-(
+ *
  * Revision 1.20  2004/02/23 16:30:58  RaK
  * - album search error because of i18n corrected
  *

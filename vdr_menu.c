@@ -2,12 +2,12 @@
 /*! \file   vdr_menu.c
  *  \brief  Implements menu handling for browsing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.18 $
- * \date    $Date: 2004/02/23 16:18:15 $
+ * \version $Revision: 1.19 $
+ * \date    $Date: 2004/02/23 17:03:24 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: RaK $
  *
- * $Id: vdr_menu.c,v 1.18 2004/02/23 16:18:15 RaK Exp $
+ * $Id: vdr_menu.c,v 1.19 2004/02/23 17:03:24 RaK Exp $
  */
 /*******************************************************************/
 
@@ -343,13 +343,6 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	{
 	  switch( key )
 	    {
-	    case kOk:
-	      {
-		// OK: Create filter and selection tree and display
-		mgDebug( 1,  "mgMainMenu: create and apply filter" );
-		// m_media->applyFilters();
-		state = osContinue;
-	      } break;
 	    case kRed: // 
 	      {
 		mgDebug( 1,  "mgMainMenu: query and display results" );
@@ -387,7 +380,8 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	    case kBlue:
 	      {
 		mgDebug( 1,  "mgMainMenu: submenu" );
-	      }
+		state = osContinue;			  
+	      } break;
 	    default:
 	      {
 		state = osContinue;
@@ -398,6 +392,9 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	{
 	  // m_media->resetFilters();?
 	}
+    // RaK: Verhindert, dass die Help Buttons verschwinden, 
+    //      ist aber keine schöne Lösung
+    //SetHelp( tr("Query"), tr("Other Search"), tr("Browser"), tr("Submenu") );
     }
   else
     {
@@ -643,6 +640,10 @@ void mgMainMenu::DisplayFilterSelector()
 /************************************************************
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.19  2004/02/23 17:03:24  RaK
+ * - error in filter view while trying to switch or using the colour keys
+ *   workaround: first filter criteria is inttype. than it works, dont ask why ;-(
+ *
  * Revision 1.18  2004/02/23 16:18:15  RaK
  * - i18n
  *
