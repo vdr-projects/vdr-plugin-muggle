@@ -44,16 +44,16 @@ private:
   mgPCMPlayer *player;
 
   //! \brief indicates, whether the osd should be visible
-  bool m_visible;
+  int m_visible;
 
   //! \brief indicates, whether an osd is currently displayed
   bool m_has_osd;
 
   //! \brief indicates, whether the osd displays a track view (true) or a playlist view (false)
-  bool m_track_view;
+  int m_track_view;
 
   //! \brief indicates, whether the osd presents progress (true) or detail information (false)
-  bool m_progress_view;
+  int m_progress_view;
 
 #if VDRVERSNUM >= 10307
   //! \brief a replay display to show the progress during playback
