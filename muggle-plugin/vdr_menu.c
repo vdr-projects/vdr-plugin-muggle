@@ -2,12 +2,12 @@
 /*! \file   vdr_menu.c
  *  \brief  Implements menu handling for broswing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.10 $
- * \date    $Date: 2004/02/03 20:24:29 $
+ * \version $Revision: 1.11 $
+ * \date    $Date: 2004/02/03 21:53:32 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: RaK $
  *
- * $Id: vdr_menu.c,v 1.10 2004/02/03 20:24:29 LarsAC Exp $
+ * $Id: vdr_menu.c,v 1.11 2004/02/03 21:53:32 RaK Exp $
  */
 /*******************************************************************/
 
@@ -209,7 +209,7 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	  case kRed: // ???
 	    {
 	      state = osContinue;	    
-	    } beak;
+	    } break;
 	  case kYellow:
 	    {
 	      // Yellow always goes to playlist view
@@ -587,6 +587,9 @@ void mgMainMenu::DisplayFilterSelector()
 /************************************************************
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.11  2004/02/03 21:53:32  RaK
+ * beak = break in l 212
+ *
  * Revision 1.10  2004/02/03 20:24:29  LarsAC
  * Clear index history when jumping to root node in order to avoid overflow
  *
