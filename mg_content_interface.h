@@ -318,12 +318,12 @@ class mgTracklist
    *
    * \todo needed? if so, it hides bool remove(int)
    */
-  virtual int remove(mgContentItem* item); // remove all occurences of item
+  virtual int removeItem(mgContentItem* item); // remove all occurences of item
 
   /*!
    * \brief remove all occurences of item
    */
-  virtual bool remove(unsigned int position);    // remove item at position
+  virtual bool remove(int position);    // remove item at position
 };
 
 /*!

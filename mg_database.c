@@ -8,7 +8,11 @@
  */
 
 #include "mg_database.h"
+#include "mg_tools.h"
 
+#include <stdarg.h>
+
+static const int MAX_QUERY_BUFLEN = 2048;
 
 mgDB::mgDB() 
 {
@@ -44,6 +48,7 @@ std::string mgDB::escape_string( MYSQL *db, std::string s )
 
 MYSQL_RES* mgDB::read_query( const char *fmt, ...)
 {
+  char querybuf[MAX_QUERY_BUFLEN];
   va_list ap;
   va_start( ap, fmt );  
   vsnprintf( querybuf, MAX_QUERY_BUFLEN-1, fmt, ap );
@@ -61,6 +66,7 @@ MYSQL_RES* mgDB::read_query( const char *fmt, ...)
 
 void mgDB::write_query( const char *fmt, ... )
 {
+  char querybuf[MAX_QUERY_BUFLEN];
   va_list ap;
   va_start( ap, fmt );
   vsnprintf( querybuf, MAX_QUERY_BUFLEN-1, fmt, ap );

@@ -95,14 +95,14 @@ void mgPlaylist::insert( mgContentItem* item, unsigned int position )
     }
 }
 
-bool mgPlaylist::remove( unsigned int pos )
+bool mgPlaylist::remove( int pos )
 {
   bool result = false;
 
-  if( pos != m_current_idx )
+  if( pos > 0 && pos != m_current_idx )
     {
       result = mgTracklist::remove( pos );
-
+      
       if( result && pos < m_current_idx )
 	{
 	  m_current_idx --;
@@ -176,7 +176,7 @@ mgContentItem* mgPlaylist::getCurrent()
 {
   mgContentItem *result;
 
-  if( 0 <= m_current_idx && m_current_idx < m_list.size() )
+  if( 0 <= m_current_idx && m_current_idx < (int) m_list.size() )
     {
       result = *( m_list.begin() + m_current_idx );
     }
@@ -207,7 +207,7 @@ bool mgPlaylist::skipFwd()
 {
   bool result = false;
 
-  if( m_current_idx + 1 < m_list.size() ) // unless loop mode
+  if( m_current_idx + 1 < (int) m_list.size() ) // unless loop mode
     {
       m_current_idx ++;
       result = true;
@@ -235,7 +235,7 @@ bool mgPlaylist::skipBack()
 // get next track, do not update data structures
 mgContentItem* mgPlaylist::sneakNext()
 {
-  if( m_current_idx + 1 <= m_list.size() ) // unless loop mode
+  if( m_current_idx + 1 <= (int) m_list.size() ) // unless loop mode
     {
       return *(m_list.begin() + m_current_idx + 1);
     }
