@@ -221,4 +221,4 @@ ndo	\N	Russian
 ndp	\N	South/Cent. American
 ndq	\N	Spain
 ndr	113	Tango
-		NULl
+		NULL
