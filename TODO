@@ -3,7 +3,6 @@ TODO File for Muggle
 
 Ogg/Vorbis decoder integration
 ------------------------------
-- mgDecoders::findDecoder: extend decoder detection
 - Think, whether type (mp3, ogg, flac) should be stored in database
 
 Deployment
@@ -168,6 +167,7 @@ Already Done
   - mgOggDecoder: obtain audio properties from DB (channels, sampling rate via mgContentItem)
   - mgPCMPlayer::getSourceFile moved to abstract data layer (mgContentItem)
     and made concrete in subclasses (mgGdTrack)
+  - mgDecoders::findDecoder: extend decoder detection
 
 ************************************************************
 *
