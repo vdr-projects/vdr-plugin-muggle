@@ -1012,6 +1012,8 @@ bool mgSelection::enter (unsigned int position)
 	return false;
     setPosition (position);
     position = gotoPosition();		// reload adjusted position
+    if (values.size()==0)
+	return false;
     string value = values[position];
     string id = m_ids[position];
     mgSelStrings prev;
