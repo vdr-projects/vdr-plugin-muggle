@@ -2,12 +2,12 @@
  * \file   vdr_menu.c
  * \brief  Implements menu handling for browsing media libraries within VDR
  *
- * \version $Revision: 1.26 $
- * \date    $Date: 2004/07/27 06:57:35 $
+ * \version $Revision: 1.27 $
+ * \date    $Date: 2004/07/27 20:50:54 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: LarsAC $
+ * \author  Responsible author: $Author: lvw $
  *
- * $Id: vdr_menu.c,v 1.26 2004/07/27 06:57:35 LarsAC Exp $
+ * $Id: vdr_menu.c,v 1.27 2004/07/27 20:50:54 lvw Exp $
  */
 
 #include <string>
@@ -784,7 +784,8 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
       } break;
     case 5:
       {
-	string m3u_file = AddDirectory( cPlugin::ConfigDirectory("muggle"), m_current_playlist->getListname().c_str() );
+	string m3u_file = AddDirectory( cPlugin::ConfigDirectory("muggle"),
+					m_current_playlist->getListname().c_str() );
 	m_current_playlist->exportM3U( m3u_file );
       } break;
     case 6:
@@ -909,6 +910,9 @@ void mgMainMenu::Play(mgPlaylist *plist)
 /************************************************************
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.27  2004/07/27 20:50:54  lvw
+ * Playlist indexing now working
+ *
  * Revision 1.26  2004/07/27 06:57:35  LarsAC
  * Inserted missing break
  *

@@ -2,8 +2,8 @@
  * \file   mg_playlist.c
  * \brief  defines functions to be executed on playlists for the vdr muggle plugindatabase
  *
- * \version $Revision: 1.5 $
- * \date    $Date: 2004/07/26 22:20:54 $
+ * \version $Revision: 1.6 $
+ * \date    $Date: 2004/07/27 20:50:54 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  Responsible author: $Author: lvw $
  *
@@ -158,7 +158,7 @@ void mgPlaylist::gotoPosition(unsigned int position)
 // proceeds to the next item
 void mgPlaylist::skipFwd()
 {
-  if( m_current_idx + 1 <= m_list.size() ) // unless loop mode
+  if( m_current_idx + 1 < m_list.size() ) // unless loop mode
     {
       m_current_idx ++;      
     }
