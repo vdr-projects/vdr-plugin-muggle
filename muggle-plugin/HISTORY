@@ -2,7 +2,7 @@ VDR Plugin 'muggle' Revision History
 ------------------------------------
 
 2004-08-31: Version 0.0.1-ALPHA
-
 - An initial revision given to a few people.
 
-
+2004-09-05: Version 0.0.2-ALPHA
+- Added an Ogg Vorbis decoder
