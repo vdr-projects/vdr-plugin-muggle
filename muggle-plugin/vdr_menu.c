@@ -2,12 +2,12 @@
 /*! \file   vdr_menu.c
  *  \brief  Implements menu handling for broswing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.9 $
- * \date    $Date: 2004/02/03 19:34:51 $
+ * \version $Revision: 1.10 $
+ * \date    $Date: 2004/02/03 20:24:29 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: LarsAC $
  *
- * $Id: vdr_menu.c,v 1.9 2004/02/03 19:34:51 LarsAC Exp $
+ * $Id: vdr_menu.c,v 1.10 2004/02/03 20:24:29 LarsAC Exp $
  */
 /*******************************************************************/
 
@@ -174,6 +174,7 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	    case kBlue: 
 	      {
 		mgDebug( 1,  "mgMainMenu: switch to TreeView" );
+		m_history.clear();
 		DisplayTree( m_root );
 		state = osContinue;
 	      } break;
@@ -206,6 +207,9 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	      // m_media->applyFilters();
 	    } break;
 	  case kRed: // ???
+	    {
+	      state = osContinue;	    
+	    } beak;
 	  case kYellow:
 	    {
 	      // Yellow always goes to playlist view
@@ -215,7 +219,7 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	    } break;
 	  case kGreen:
 	    {
-	      mgDebug( 1,  "mgMainMenu: switch to filter" );
+	      mgDebug( 1,  "mgMainMenu: switch filters" );
 	      // Green: select other filters
 	      DisplayFilterSelector();			  
 	    } break;
@@ -223,6 +227,7 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	    {
 	      // Blue: treeview
 	      mgDebug( 1,  "mgMainMenu: switch to treeview" );
+	      m_history.clear();
 	      DisplayTree( m_root );
 	      state = osContinue;			  
 	    }
@@ -378,6 +383,7 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	      } break;
 	    case kBlue:
 	      {
+		m_history.clear();
 		DisplayTree( m_root );
 		state = osContinue;
 	      } break;
@@ -508,21 +514,19 @@ void mgMainMenu::DisplayTree( mgSelectionTreeNode* node, int select )
 	  Add( new mgMenuTreeItem( *iter ) );
 	}
 
-      mgDebug( 1, "Setting current to #%d", select );
-
       cOsdItem *item = Get( select );
       SetCurrent( item );
       
       RefreshCurrent();	      
       DisplayCurrent(true);
-      
-      mgDebug( 1,  "mgBrowseMenu::DisplayNode: Children added to OSD" );
     }
   Display();
 }
 
 void mgMainMenu::DisplayTreeViewSelector()
 {
+  m_history.clear();
+  DisplayTree( m_root );
 }
 
 void mgMainMenu::DisplayFilter()
@@ -583,6 +587,9 @@ void mgMainMenu::DisplayFilterSelector()
 /************************************************************
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.10  2004/02/03 20:24:29  LarsAC
+ * Clear index history when jumping to root node in order to avoid overflow
+ *
  * Revision 1.9  2004/02/03 19:34:51  LarsAC
  * Back on root level now jumps back to VDR main menu.
  *
