@@ -56,13 +56,13 @@ mgMediaType mgDecoders::getMediaType (std::string s)
   while (p >= f && *p != '.')
     --p;
 
-  if (!strcmp (p, ".mp3"))
+  if (!strcasecmp (p, ".mp3"))
     {
       mt = MT_MP3;
     }
   else
     {
-      if (!strcmp (p, ".ogg"))
+      if (!strcasecmp (p, ".ogg"))
         {
 #ifdef HAVE_VORBISFILE
 	  mt = MT_OGG;
@@ -72,7 +72,7 @@ mgMediaType mgDecoders::getMediaType (std::string s)
         }
       else
 	{
-	  if (!strcmp (p, ".flac"))
+	  if (!strcasecmp (p, ".flac"))
 	    {
 #ifdef HAVE_FLAC
 	      mt = MT_FLAC;
