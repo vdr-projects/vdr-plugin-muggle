@@ -3,8 +3,8 @@
  * \brief  Top level access to media in vdr plugin muggle
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.5 $
- * \date    $Date: 2004/02/02 22:33:24 $
+ * \version $Revision: 1.6 $
+ * \date    $Date: 2004/02/02 22:48:04 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: MountainMan $
  * 
@@ -200,22 +200,14 @@ class mgMedia
   std::vector<int> getDefaultCols();
   mgTracklist* getTracks();
 };
+
+/* -------------------- begin CVS log ---------------------------------
+ * $Log: mg_media.h,v $
+ * Revision 1.6  2004/02/02 22:48:04  MountainMan
+ *  added CVS $Log
+ *
+ *
+ * --------------------- end CVS log ----------------------------------
+ */
 #endif  /* END  _CONTENT_INTERFACE_H */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

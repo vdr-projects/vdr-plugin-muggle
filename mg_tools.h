@@ -3,10 +3,10 @@
  * \brief  A few util functions for standalone and plugin messaging
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.1 $
- * \date    $Date: 2004/02/01 18:22:53 $
+ * \version $Revision: 1.2 $
+ * \date    $Date: 2004/02/02 22:48:04 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: MountainMan $
  * 
  */
 /*******************************************************************/
@@ -28,4 +28,12 @@ void mgError(const char *fmt, ...);
 MYSQL_RES* mgSqlReadQuery(MYSQL *db, const char *fmt, ...);
 void mgSqlWriteQuery(MYSQL *db, const char *fmt, ...);
 
-#endif
+/* -------------------- begin CVS log ---------------------------------
+ * $Log: mg_tools.h,v $
+ * Revision 1.2  2004/02/02 22:48:04  MountainMan
+ *  added CVS $Log
+ *
+ *
+ * --------------------- end CVS log ----------------------------------
+ */
+#endif /*  _MUGGLE_TOOLS_H */
