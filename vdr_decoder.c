@@ -1,13 +1,14 @@
 /*!
  * \file vdr_decoder.h
  * \brief A generic decoder for a VDR media plugin (muggle)
+ * \ingroup vdr
  *
  * \version $Revision: 1.2 $
- * \date    $Date: 2004/05/28 15:29:18 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  *
- * $Id: vdr_decoder.c,v 1.2 2004/05/28 15:29:18 lvw Exp $
+ * $Id$
  *
  * Adapted from:
  * MP3/MPlayer plugin to VDR (C++)
@@ -23,15 +24,11 @@
 #include <videodir.h>
 #include <interface.h>
 
-// #include "common.h"
-// #include "data-mp3.h"
-// #include "decoder-core.h"
-// #include "decoder-mp3-stream.h"
-// #include "decoder-snd.h"
-// #include "decoder-ogg.h"
-
 #include "vdr_decoder.h"
 #include "vdr_decoder_mp3.h"
+#include "vdr_decoder_ogg.h"
+
+#include "mg_content_interface.h"
 
 using namespace std;
 
@@ -39,38 +36,58 @@ using namespace std;
 
 mgMediaType mgDecoders::getMediaType( string s )
 {
+  mgMediaType mt = MT_UNKNOWN;
+
   // TODO: currently handles only mp3. LVW
-  return MT_MP3;
+  char *f = (char *)s.c_str();
+  char *p = f + strlen( f ) - 1; // point to the end
+
+  while( p >= f && *p != '.') --p; 
+
+  if( !strcmp( p, ".mp3" ) )
+    {
+      mt = MT_MP3;
+    }
+  else
+    {
+      if( !strcmp( p, ".ogg" ) )
+	{
+	  mt = MT_OGG;
+	}
+    }
+  return mt;
 }
 
-mgDecoder *mgDecoders::findDecoder( string filename )
+mgDecoder *mgDecoders::findDecoder( mgContentItem *item )
 {
   mgDecoder *decoder = 0;
+
+  string filename = item->getSourceFile();
 
   switch( getMediaType( filename ) ) 
     {
     case MT_MP3:  
       {
-	// prepend filename with path to music library?? TODO
-	printf( "mp3 file detected, launching mgMP3Decoder\n" );
-	decoder = new mgMP3Decoder(filename); 
+	decoder = new mgMP3Decoder( item ); 
       } break;
-      
-      /*
-	case MT_MP3_STREAM: decoder = new mgMP3StreamDecoder(full); break;
-	#ifdef HAVE_SNDFILE
-	case MT_SND:  decoder = new cSndDecoder(full); break;
-	#endif
-	#ifdef HAVE_VORBISFILE
-	case MT_OGG:  decoder = new mgOggDecoder(full); break;
-	#endif
-      */
+#ifdef HAVE_VORBISFILE
+    case MT_OGG:  
+      {
+	decoder = new mgOggDecoder( item );
+      }  break;
+#endif
+	  /*
+	    case MT_MP3_STREAM: decoder = new mgMP3StreamDecoder(full); break;
+	    #ifdef HAVE_SNDFILE
+	    case MT_SND:  decoder = new cSndDecoder(full); break;
+	    #endif
+	  */
     default:       
       { 
 	esyslog("ERROR: unknown media type" );
       } break;
     }
-
+  
   if( decoder && !decoder->valid() ) 
     {
       // no decoder found or decoder doesn't match
@@ -85,9 +102,9 @@ mgDecoder *mgDecoders::findDecoder( string filename )
 
 // --- mgDecoder ----------------------------------------------------------------
 
-mgDecoder::mgDecoder(string filename)
+mgDecoder::mgDecoder( mgContentItem *item )
 {
-  m_filename = filename;
+  m_item = item;
   m_locked = 0; 
   m_urgentLock = false;
   m_playing = false;
