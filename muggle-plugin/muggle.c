@@ -64,6 +64,11 @@ mgMuggle::mgMuggle (void)
 mgMuggle::~mgMuggle ()
 {
     if (main) main->SaveState();
+    free(the_setup.DbHost);
+    free(the_setup.DbName);
+    free(the_setup.DbUser);
+    free(the_setup.DbPass);
+    free(the_setup.ToplevelDir);
 }
 
 

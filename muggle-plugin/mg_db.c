@@ -648,11 +648,11 @@ static char *mg_readline(FILE *f)
 static const char *FINDCMD = "cd '%s' 2>/dev/null && find -follow -name '%s' -print 2>/dev/null";
 
 static string
-GdFindFile( string tld, string mp3file )
+GdFindFile( const char* tld, string mp3file )
 {
   string result = "";
   char *cmd = 0;
-  asprintf( &cmd, FINDCMD, tld.c_str(), mp3file.c_str() );
+  asprintf( &cmd, FINDCMD, tld, mp3file.c_str() );
   FILE *p = popen( cmd, "r" );
   if (p) 
     {
@@ -670,7 +670,7 @@ GdFindFile( string tld, string mp3file )
 string
 mgContentItem::getSourceFile(bool AbsolutePath) const
 {
-	const string& tld = the_setup.ToplevelDir;
+	const char* tld = the_setup.ToplevelDir;
 	string result="";
 	if (AbsolutePath) result = tld;
 	if (the_setup.GdCompatibility)
@@ -906,7 +906,8 @@ void
 mgSelection::refreshValues ()  const
 {
     assert(this);
-    if (!m_db) return;
+    if (!m_db)
+	return;
     if (m_current_values.empty())
     {
     	mgOrder o1 = order;

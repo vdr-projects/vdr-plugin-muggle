@@ -74,6 +74,7 @@ class mgMainMenu:public cOsdMenu
 	unsigned int m_current_order;
 	void DumpOrders(mgValmap& nv);
 	void LoadOrders(mgValmap& nv);
+	mgMenu *m_root;
     public:
 	void AddOrder();
 	void DeleteOrder();
