@@ -2,12 +2,12 @@
 /*! \file   vdr_menu.c
  *  \brief  Implements menu handling for broswing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.8 $
- * \date    $Date: 2004/02/03 19:28:46 $
+ * \version $Revision: 1.9 $
+ * \date    $Date: 2004/02/03 19:34:51 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: LarsAC $
  *
- * $Id: vdr_menu.c,v 1.8 2004/02/03 19:28:46 LarsAC Exp $
+ * $Id: vdr_menu.c,v 1.9 2004/02/03 19:34:51 LarsAC Exp $
  */
 /*******************************************************************/
 
@@ -328,8 +328,15 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	      m_history.pop_back();
 
 	      DisplayTree( parent, last );
+	      
+	      state = osContinue;
 	    }
-	  state = osContinue;
+	  else
+	    {
+	      // Back pressed on root level... Go back to Main VDR menu
+	      
+	      state = osBack;
+	    }
 	}
     }
   else if( m_state == TRACKS )
@@ -509,8 +516,6 @@ void mgMainMenu::DisplayTree( mgSelectionTreeNode* node, int select )
       RefreshCurrent();	      
       DisplayCurrent(true);
       
-      // Interface->Flush();
-      
       mgDebug( 1,  "mgBrowseMenu::DisplayNode: Children added to OSD" );
     }
   Display();
@@ -578,6 +583,9 @@ void mgMainMenu::DisplayFilterSelector()
 /************************************************************
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.9  2004/02/03 19:34:51  LarsAC
+ * Back on root level now jumps back to VDR main menu.
+ *
  * Revision 1.8  2004/02/03 19:28:46  LarsAC
  * Playlist now created in plugin instead of in menu.
  *
