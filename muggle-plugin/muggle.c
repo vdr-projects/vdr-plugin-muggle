@@ -2,15 +2,17 @@
  * \file   muggle.c
  * \brief  Implements a plugin for browsing media libraries within VDR
  *
- * \version $Revision: 1.7 $
- * \date    $Date: 2004/05/28 15:29:18 $
+ * \version $Revision: 1.8 $
+ * \date    $Date: 2004/07/09 12:22:00 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author: LarsAC $
  *
- *  $Id: muggle.c,v 1.7 2004/05/28 15:29:18 lvw Exp $
+ *  $Id: muggle.c,v 1.8 2004/07/09 12:22:00 LarsAC Exp $
  */
 
 #include <getopt.h>
+
+#include <config.h>
 
 #include "muggle.h"
 
@@ -140,12 +142,27 @@ bool mgMuggle::Start(void)
 {
   // Start any background activities the plugin shall perform.
   mgSetDebugLevel( 99 );
-
   RegisterI18n( Phrases );
+
+  // Database initialization
   m_media    = new mgMedia( mgMedia::GD_MP3 );
   m_root     = m_media->getSelectionRoot();
   m_playlist = m_media->createTemporaryPlaylist();
   m_media->initFilterSet();
+
+  // Read commands for playlists in etc. /video/muggle/playlist_commands.conf
+  m_playlist_cmds = new cCommands();
+
+  char *cmd_file = AddDirectory( cPlugin::ConfigDirectory("muggle"), "playlist_commands.conf" );
+  bool have_cmd_file = m_playlist_cmds->Load(  cmd_file );
+  free( cmd_file );
+
+  if( !have_cmd_file )
+    {
+      delete m_playlist_cmds;
+      m_playlist_cmds = NULL;
+    }
+
   return true;
 }
 
@@ -157,7 +174,8 @@ void mgMuggle::Housekeeping(void)
 cOsdObject *mgMuggle::MainMenuAction(void)
 {
   // Perform the action when selected from the main VDR menu.
-  cOsdObject* osd = new mgMainMenu( m_media, m_root, m_playlist );
+  cOsdObject* osd = new mgMainMenu( m_media, m_root, m_playlist,
+				    m_playlist_commands );
 
   return osd;
 }

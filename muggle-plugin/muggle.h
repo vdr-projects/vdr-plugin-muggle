@@ -2,12 +2,12 @@
  * \file   muggle.h
  * \brief  Implements a plugin for browsing media libraries within VDR
  *
- * \version $Revision: 1.5 $
- * \date    $Date: 2004/05/28 15:29:18 $
+ * \version $Revision: 1.6 $
+ * \date    $Date: 2004/07/09 12:22:00 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: lvw $
+ * \author  file owner: $Author: LarsAC $
  *
- *  $Id: muggle.h,v 1.5 2004/05/28 15:29:18 lvw Exp $
+ *  $Id: muggle.h,v 1.6 2004/07/09 12:22:00 LarsAC Exp $
  */
 
 #ifndef _MUGGLE_H
@@ -18,6 +18,8 @@
 class mgMedia;
 class mgSelectionTreeNode;
 class mgPlaylist;
+
+class cCommands;
 
 class mgMuggle : public cPlugin
 {
@@ -54,7 +56,8 @@ private:
   mgMedia             *m_media;
   mgSelectionTreeNode *m_root;
   mgPlaylist          *m_playlist;
-    
+  cCommands           *m_playlist_commands;
+
 };
 
 #endif

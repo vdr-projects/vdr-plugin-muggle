@@ -2,10 +2,10 @@
  * \file   mg_playlist.c
  * \brief  defines functions to be executed on playlists for the vdr muggle plugindatabase
  *
- * \version $Revision: 1.2 $
- * \date    $Date: 2004/05/28 15:29:18 $
+ * \version $Revision: 1.3 $
+ * \date    $Date: 2004/07/09 12:22:00 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author: LarsAC $
  *
  * This file implements the class mgPlaylist which maintains a playlist
  * and supports editing (e.g. adding or moving tracks), navigating it
@@ -207,3 +207,28 @@ mgContentItem* mgPlaylist::sneakNext()
       }
 }
 
+bool mgPlaylist::exportM3U( const char *m3u_file )
+{
+  vector<mgContentItem*>::iterator iter;
+  bool result = true;
+
+  // open a file for writing
+  FILE *listfile = fopen( m3u_file, "w" );
+
+  if( !listfile )
+    {
+      return false;
+    }
+
+  fprintf( listfile, "#EXTM3U" );
+
+  for( iter = m_list.begin(); iter != m_list.end(); iter++ )
+    { //  each item in the list
+      fprintf( listfile, "#EXTINF:0,%s", (*iter)->getLabel().c_str() );
+      fprintf( listfile, "%s", (*iter)->getSourceFile().c_str() );
+    }
+
+  fclose( listfile );
+
+  return result;
+}
