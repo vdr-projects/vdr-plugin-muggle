@@ -2,12 +2,12 @@
  * \file   vdr_menu.c
  * \brief  Implements menu handling for browsing media libraries within VDR
  *
- * \version $Revision: 1.22 $
- * \date    $Date: 2004/07/06 00:20:51 $
+ * \version $Revision: 1.23 $
+ * \date    $Date: 2004/07/09 12:22:00 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: MountainMan $
+ * \author  Responsible author: $Author: LarsAC $
  *
- * $Id: vdr_menu.c,v 1.22 2004/07/06 00:20:51 MountainMan Exp $
+ * $Id: vdr_menu.c,v 1.23 2004/07/09 12:22:00 LarsAC Exp $
  */
 
 #include <string>
@@ -55,8 +55,10 @@ void mgMenuTreeItem::Set()
 
 // ----------------------- mgMainMenu ----------------------
 
-mgMainMenu::mgMainMenu(mgMedia *media, mgSelectionTreeNode *root, mgPlaylist *playlist)
-  : cOsdMenu( "" ), m_media(media), m_root(root), m_current_playlist(playlist)
+mgMainMenu::mgMainMenu(mgMedia *media, mgSelectionTreeNode *root, 
+		       mgPlaylist *playlist, cCommands playlist_commands)
+  : cOsdMenu( "" ), m_media(media), m_root(root), 
+     m_current_playlist(playlist), m_playlist_commands(playlist_commands)
 {
   mgDebug( 1,  "Creating Muggle Main Menu" );
   
@@ -324,8 +326,9 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 		// load the selected playlist
 		
 		m_current_playlist -> clear();
-		string selected = (*m_plists)[Current()];
-		m_current_playlist = m_media->loadPlaylist(selected.c_str());
+		string selected = (*m_plists)[ Current() ];
+		m_current_playlist = m_media->loadPlaylist( selected.c_str() );
+
 		// clean the list of playlist
 		m_plists->clear();
 		m_last_osd_index =0;
@@ -371,6 +374,19 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	      {
 		state = osContinue;
 	      } break;
+	    }
+	  else if( m_state == PLAYLIST_COMMANDS )
+	    {
+	      if( state == osUnknown )
+		{
+		  switch( key )
+		    {
+		    kOk:
+		      {
+			state = Execute();
+		      }
+		    }
+		}
 	    }
 	}
       else if( state == osBack )
@@ -603,11 +619,9 @@ void mgMainMenu::LoadPlaylist()
   
   for(vector<string>::iterator iter = m_plists->begin(); 
       iter != m_plists->end() ; iter++)
-    {
-      
+    {      
       Add( new cOsdItem( iter->c_str() ) );
     }
-
    
   Display();
 }
@@ -644,8 +658,71 @@ void mgMainMenu::DisplayPlaylistSubmenu()
   Add( new cOsdItem( "3 - Rename playlist" ) );
   Add( new cOsdItem( "4 - Clear playlist" ) );
   Add( new cOsdItem( "5 - Remove entry from list" ) );
+  Add( new cOsdItem( "6 - Export playlist" ) );
+
+  if( m_playlist_commands )
+    {
+      Add( new cOsdItem( "7 - External playlist commands" ) );
+    }
 
   Display();
+}
+
+void mgMainMenu::DisplayPlaylistCommands()
+{
+  m_state = PLAYLIST_COMMANDS;
+
+  cCommand *command;
+  int i = 0;
+
+  Clear();
+  SetTitle( "Muggle - External Playlist Commands" );
+
+  while( ( command = m_playlist_commands->Get(i) ) != NULL )
+    {
+      Add( new cOsdItem( hk( command->Title() ) ) );
+      i++;
+    }
+
+  Display();
+}
+
+eOSState cMenuCommands::ExecutePlaylistCommand( int current, char *parameters )
+{
+  cCommand *command = m_playlist_commands->Get( current );
+  if( command )
+    {
+      char *buffer = NULL;
+      bool confirmed = true;
+      if( command->Confirm() ) 
+	{
+	  asprintf( &buffer, "%s?", command->Title() );
+	  confirmed = Interface->Confirm( buffer );
+	  free( buffer );
+        }
+     if( confirmed )
+       {
+	 asprintf( &buffer, "%s...", command->Title() );
+	 Interface->Status( buffer );
+	 Interface->Flush();
+	 free( buffer );
+
+	 char *tmp_m3u_file = AddDirectory( cPlugin::ConfigDirectory("muggle"), "current.m3u" );
+	 m_current_playlist->exportM3U( tmp_m3u_file );
+	 free( tmp_m3u_file );
+
+	 const char *result = command->Execute( tmp_m3u_file );
+
+	 /* What to do? Recode cMenuText (not much)?
+	 if( result )
+	   {
+	     return AddSubMenu( new cMenuText( command->Title(), result ) );
+	   }
+	 */
+	 return osEnd;
+       }
+    }
+  return osContinue;
 }
 
 eOSState mgMainMenu::PlaylistSubmenuAction( int n )
@@ -659,10 +736,11 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
       {
 	LoadPlaylist();
 	Interface->Flush();
+
+	// jump to playlist view from here?
       } break;
     case 1:
-      {
-	
+      {	
 	SavePlaylist();
 	Interface->Status( "Playlist saved");
 	Interface->Flush();
@@ -699,6 +777,16 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
 	// confirmation
 	Interface->Status( "Entry removed" );
 	Interface->Flush();	
+      }
+    case 5:
+      {
+	char *m3u_file = AddDirectory( cPlugin::ConfigDirectory("muggle"), m_current_playlist->getListname() );
+	m_current_playlist->exportM3U( m3u_file );
+	free( m3u_file );
+      }
+    case 6:
+      {
+	DisplayPlaylistCommands();
       }
     default:
       {
@@ -818,6 +906,9 @@ void mgMainMenu::Play(mgPlaylist *plist)
 /************************************************************
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.23  2004/07/09 12:22:00  LarsAC
+ * Untested extensions for exporting plalists
+ *
  * Revision 1.22  2004/07/06 00:20:51  MountainMan
  * loading and saving playlists
  *

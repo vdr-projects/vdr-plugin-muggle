@@ -2,10 +2,10 @@
  * \file   mg_playlist.c
  * \brief  defines functions to be executed on playlists for the vdr muggle plugindatabase
  *
- * \version $Revision: 1.3 $
- * \date    $Date: 2004/07/06 00:20:51 $
+ * \version $Revision: 1.4 $
+ * \date    $Date: 2004/07/09 12:22:00 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: MountainMan $
+ * \author  Responsible author: $Author: LarsAC $
  *
  * This file implements the class mgPlaylist which maintains a playlist
  * and supports editing (e.g. adding or moving tracks), navigating it
@@ -139,6 +139,9 @@ public:
   //! \brief obtain the next item without skipping the current position
   virtual mgContentItem* sneakNext(); 
   virtual bool storePlaylist()=0;
+
+  //! \brief export the playlist in m3u format
+  virtual void exportM3U( const char *m3u_file );
 };
 
 #endif

@@ -2,12 +2,12 @@
  * \file   vdr_menu.h
  * \brief  Implements menu handling for broswing media libraries within VDR
  *
- * \version $Revision: 1.11 $
- * \date    $Date: 2004/07/06 00:20:51 $
+ * \version $Revision: 1.12 $
+ * \date    $Date: 2004/07/09 12:22:00 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: MountainMan $
+ * \author  Responsible author: $Author: LarsAC $
  *
- *  $Id: vdr_menu.h,v 1.11 2004/07/06 00:20:51 MountainMan Exp $
+ *  $Id: vdr_menu.h,v 1.12 2004/07/09 12:22:00 LarsAC Exp $
  */
 
 #ifndef _VDR_MENU_H
@@ -17,8 +17,7 @@
 #include <vector>
 
 #include <osd.h>
-
-#include "i18n.h"
+#include <config.h>
 
 #include "i18n.h"
 
@@ -53,7 +52,8 @@ class mgMainMenu : public cOsdMenu
 {
  public:
   
-  mgMainMenu(mgMedia *media, mgSelectionTreeNode *root, mgPlaylist *playlist);
+  mgMainMenu(mgMedia *media, mgSelectionTreeNode *root, 
+	     mgPlaylist *playlist, cCommands playlist_commands );
 
   mgSelectionTreeNode *CurrentNode();
   mgMenuTreeItem *CurrentItem();
@@ -66,7 +66,7 @@ class mgMainMenu : public cOsdMenu
     { 
       TREE, TREE_SUBMENU,
       PLAYLIST, LOAD_PLAYLIST, SAVE_PLAYLIST,
-      PLAYLIST_SUBMENU,
+      PLAYLIST_SUBMENU, PLAYLIST_COMMANDS,
       FILTER, FILTER_SUBMENU
     };
 
@@ -108,6 +108,8 @@ class mgMainMenu : public cOsdMenu
   MuggleStatus m_state;
   std::list<int> m_history;
 
+  cCommands m_playlist_commands;
+
   int      m_last_osd_index;
 };
 
@@ -116,6 +118,9 @@ class mgMainMenu : public cOsdMenu
 /************************************************************
  *
  * $Log: vdr_menu.h,v $
+ * Revision 1.12  2004/07/09 12:22:00  LarsAC
+ * Untested extensions for exporting plalists
+ *
  * Revision 1.11  2004/07/06 00:20:51  MountainMan
  * loading and saving playlists
  *
