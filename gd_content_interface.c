@@ -1,19 +1,19 @@
-/*! \file   gd_content_interface.c
- *  \brief  Data Objects for content (e.g. mp3 files, movies) for the vdr muggle plugin
- *  \ingroup giantdisc
+/*! 
+ * \file   gd_content_interface.c
+ * \brief  Data Objects for content (e.g. mp3 files, movies) for the vdr muggle plugin
+ * \ingroup giantdisc
  *
- *  \version $Revision: 1.27 $
- *  \date    $Date$
- *  \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- *  \author  Responsible author: $Author$
+ * \version $Revision: 1.27 $
+ * \date    $Date$
+ * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
+ * \author  Responsible author: $Author$
  *
- *  Implements main classes of for content items and interfaces to SQL databases
+ * Implements main classes of for content items and interfaces to SQL databases
  *
- *  This file implements the following classes 
- *   - GdPlaylist    a playlist
- *   - mgGdTrack     a single track (content item). e.g. an mp3 file
- *   - mgSelection   a set of tracks (e.g. a database subset matching certain criteria)
- *
+ * This file implements the following classes 
+ *  - GdPlaylist    a playlist
+ *  - mgGdTrack     a single track (content item). e.g. an mp3 file
+ *  - mgSelection   a set of tracks (e.g. a database subset matching certain criteria)
  */
 
 #define DEBUG
@@ -21,8 +21,10 @@
 #include "gd_content_interface.h"
 
 #include "mg_tools.h"
-#include "i18n.h"
+#include "mg_database.h"
 #include "vdr_setup.h"
+
+#include "i18n.h"
 
 using namespace std;
 
@@ -77,7 +79,7 @@ gdFilterSets::gdFilterSets()
   mgFilter* filter;
   vector<mgFilter*>* set;
   vector<string>* rating;
-  m_titles.push_back(tr("Track Search"));
+  m_titles.push_back( tr("Track Search") );
 
   // create an initial set of filters with empty values
   set = new vector<mgFilter*>();
@@ -89,17 +91,21 @@ gdFilterSets::gdFilterSets()
  
   // year-from
   filter = new mgFilterInt(tr("year (from)"), 1901, 1900, 2100); set->push_back(filter);
+
   // year-to
   filter = new mgFilterInt(tr("year (to)"), 2099, 1900, 2100); set->push_back(filter);
+
   // title
   filter = new mgFilterString(tr("title"), ""); set->push_back(filter);
+
   // artist
   filter = new mgFilterString(tr("artist"), ""); set->push_back(filter);
+
   // genre
   filter = new mgFilterString(tr("genre"), ""); set->push_back(filter);
 
   // rating. TODO: Currently buggy. LVW
-  //  filter = new mgFilterChoice(tr("rating"), 1, rating); set->push_back(filter);
+  // filter = new mgFilterChoice(tr("rating"), 1, rating); set->push_back(filter);
 
   m_sets.push_back(set);
   
@@ -156,7 +162,7 @@ string gdFilterSets::computeRestriction(int *viewPrt)
 {
   string sql_str = "1";
 
-  switch (m_activeSetId) 
+  switch( m_activeSetId )
     {
     case 0:
       {
@@ -261,12 +267,11 @@ string gdFilterSets::computeRestriction(int *viewPrt)
 
 mgGdTrack mgGdTrack::UNDEFINED =  mgGdTrack();
 
-mgGdTrack::mgGdTrack(int sqlIdentifier, MYSQL dbase)
+mgGdTrack::mgGdTrack( int sqlIdentifier, MYSQL dbase )
 {
   m_uniqID = sqlIdentifier;
   m_db = dbase;
   m_retrieved = false;
-
 }
 
 mgGdTrack::mgGdTrack(const mgGdTrack& org)
@@ -274,15 +279,17 @@ mgGdTrack::mgGdTrack(const mgGdTrack& org)
   m_uniqID = org.m_uniqID;
   m_db    = org.m_db;
   m_retrieved = org.m_retrieved;
-  if(m_retrieved)
+  
+  if( m_retrieved )
     {
       m_artist = org.m_artist;
       m_title = org.m_title;
       m_mp3file = org.m_mp3file;
       m_album = org.m_album;
-      m_genre = org.m_genre; 
-      m_year = org.m_year; 
-      m_rating = org.m_rating;  
+      m_genre = org.m_genre;
+      m_year = org.m_year;
+      m_rating = org.m_rating;
+      m_length = org.m_length;
     }
 }
   
@@ -297,16 +304,16 @@ bool mgGdTrack::readData()
     int	nrows, nfields;
 
     // note: this does not work with empty album or genre fields
-    result = mgSqlReadQuery(&m_db,
-			    "SELECT tracks.artist, album.title, tracks.title, "
-			    "tracks.mp3file, genre.genre, tracks.year, "
-			    "tracks.rating, tracks.length, tracks.samplerate, tracks.channels, tracks.bitrate "
-			    "FROM tracks, album, genre "
-			    "WHERE tracks.id=%d "
-			    "AND album.cddbid=tracks.sourceid AND "
-			    "genre.id=tracks.genre1",
-			    m_uniqID);
-
+    result = mgSqlReadQuery( &m_db,
+			     "SELECT tracks.artist, album.title, tracks.title, "
+			     "tracks.mp3file, genre.genre, tracks.year, "
+			     "tracks.rating, tracks.length, tracks.samplerate, tracks.channels, tracks.bitrate "
+			     "FROM tracks, album, genre "
+			     "WHERE tracks.id = %d "
+			     "AND album.cddbid = tracks.sourceid AND "
+			     "genre.id = tracks.genre1",
+			     m_uniqID );
+    
     nrows   = mysql_num_rows(result);
     nfields = mysql_num_fields(result);
 
@@ -321,7 +328,8 @@ bool mgGdTrack::readData()
 	  {
 	    mgWarning("mgGdTrack::readData: More than one entry found. Using first entry.");
 	  }
-	MYSQL_ROW row = mysql_fetch_row(result);
+	
+	MYSQL_ROW row = mysql_fetch_row( result );
 	
 	m_artist  = row[0];
 	m_album   = row[1];
@@ -330,44 +338,44 @@ bool mgGdTrack::readData()
 	m_genre   = row[4];
 	
 	if( sscanf( row[5], "%d", &m_year) != 1 )
-	{
-	  mgError("Invalid year '%s' in database", row [5]);
-	}
-
+	  {
+	    mgError("Invalid year '%s' in database", row [5]);
+	  }
+	
 	if( row[6] && sscanf( row[6], "%d", &m_rating ) != 1 )
-	{
-	  mgError( "Invalid rating '%s' in database", row [6] );
-	}
-
+	  {
+	    mgError( "Invalid rating '%s' in database", row [6] );
+	  }
+	
 	if( row[7] && sscanf( row[7], "%d", &m_length) != 1 )
-	{
-	  mgError( "Invalid duration '%s' in database", row [7]);
-	}
+	  {
+	    mgError( "Invalid duration '%s' in database", row [7]);
+	  }
 
 	if( row[8] && sscanf( row[8], "%d", &m_samplerate ) != 1 )
-	{
-	  mgError( "Invalid samplerate '%s' in database", row [7]);
-	}
-    
+	  {
+	    mgError( "Invalid samplerate '%s' in database", row [7]);
+	  }
+	
 	if( row[9] && sscanf( row[9], "%d", &m_channels ) != 1 )
-	{
-	  mgError( "Invalid channels '%s' in database", row [7]);
-	}
+	  {
+	    mgError( "Invalid channels '%s' in database", row [7]);
+	  }
 
-    m_bitrate = row[10];
-
-    }
+	m_bitrate = row[10];
+	
+      }
     m_retrieved = true;
     return true;
 }
 
 string mgGdTrack::getSourceFile()
 {
-    if( !m_retrieved )
-      {
-	readData();
-      }
-    return m_mp3file;
+  if( !m_retrieved )
+    {
+      readData();
+    }
+  return m_mp3file;
 }
 
 string mgGdTrack::getTitle()
@@ -387,6 +395,16 @@ string mgGdTrack::getArtist()
     }
     return m_artist;
 }
+
+int mgGdTrack::getLength()
+{
+  if( !m_retrieved )
+    {
+      readData();
+    }
+  return m_length;
+}
+
 
 string mgGdTrack::getLabel(int col)
 {
@@ -518,22 +536,22 @@ void mgGdTrack::setGenre(string new_genre)
 
 void mgGdTrack::setYear(int new_year)
 {
-    m_year = new_year;
+  m_year = new_year;
 }
 
 void mgGdTrack::setRating(int new_rating)
 {
-    m_rating = new_rating;
+  m_rating = new_rating;
 }
 
 bool mgGdTrack::writeData()
 {
-    mgSqlWriteQuery(&m_db, "UPDATE tracks "
-		    "SET artist=\"%s\", title=\"%s\", year=%d, rating=%d "
-		    "WHERE id=%d", 
-		    m_artist.c_str(), m_title.c_str(),
-		    m_year, m_rating, m_uniqID);
-    return true;
+  mgSqlWriteQuery( &m_db, "UPDATE tracks "
+		   "SET artist=\"%s\", title=\"%s\", year=%d, rating=%d "
+		   "WHERE id=%d", 
+		   m_artist.c_str(), m_title.c_str(),
+		   m_year, m_rating, m_uniqID);
+  return true;
 }
 
 GdTracklist::GdTracklist(MYSQL db_handle, string restrictions)
@@ -547,9 +565,9 @@ GdTracklist::GdTracklist(MYSQL db_handle, string restrictions)
 			     " FROM tracks, album, genre WHERE %s"
 			     " AND album.cddbid=tracks.sourceid "
 			     " AND genre.id=tracks.genre1", 
-			     restrictions.c_str() );
-
-    while((row = mysql_fetch_row(result)) != NULL)
+			     restrictions.c_str());
+    
+    while( ( row = mysql_fetch_row(result) ) != NULL )
       { 
 	// row[0] is the trackid
 	if(sscanf(row[0], "%d", &trackid) != 1)
@@ -557,10 +575,10 @@ GdTracklist::GdTracklist(MYSQL db_handle, string restrictions)
 	    mgError("Can not extract integer track id from '%s'",
 		    row[0]);
 	  }
-	m_list.push_back( new mgGdTrack(trackid, db_handle) );
+	m_list.push_back(new mgGdTrack(trackid, db_handle));
       }
 }
-    
+
 GdPlaylist::GdPlaylist(string listname, MYSQL db_handle)
 {
     MYSQL_RES	*result;
@@ -576,41 +594,42 @@ GdPlaylist::GdPlaylist(string listname, MYSQL db_handle)
 			    "SELECT id,author FROM playlist where title=\"%s\"",
 			    listname.c_str());
     nrows   = mysql_num_rows(result);
+
     if( nrows == 0 )
       {
 	mgDebug(3, "No playlist with name %s found. Creating new playlist\n",
 		listname.c_str());
 	
 	// create new database entry
-	mgSqlWriteQuery(&m_db, "INSERT into playlist "
-			"SET title=\"%s\", author=\"%s\"",
-			listname.c_str(), 
-			"VDR", // default author
-			"");  // creates current time as timestamp
+	mgSqlWriteQuery( &m_db, "INSERT into playlist "
+			 "SET title=\"%s\", author=\"%s\"",
+			 listname.c_str(), 
+			 "VDR", // default author
+			 "");  // creates current time as timestamp
 	m_author = "VDR";
 	m_listname = listname;
 	
 	// now read thenew list to get the id
-	result = mgSqlReadQuery(&m_db, 
-				"SELECT id,author FROM playlist where title=\"%s\"",
-				listname.c_str());
+	result = mgSqlReadQuery( &m_db, 
+				 "SELECT id,author FROM playlist where title=\"%s\"",
+				 listname.c_str() );
 	nrows   = mysql_num_rows(result);
-	row = mysql_fetch_row(result);
+	row     = mysql_fetch_row(result);
 	
-	if(sscanf(row [0], "%d", & m_sqlId) !=1)
+	if( sscanf(row [0], "%d", & m_sqlId) !=1 )
 	  {
 	    mgError("Invalid id '%s' in database", row [5]);
 	  }
-	  
       }
     else 
       { // playlist exists, read data
 	row = mysql_fetch_row(result);
 	
-	if(sscanf(row [0], "%d", & m_sqlId) !=1)
+	if( sscanf(row[0], "%d", & m_sqlId) !=1 )
 	  {
 	    mgError("Invalid id '%s' in database", row [5]);
 	  }
+
 	m_author = row[1];
 	m_listname = listname;
 
@@ -624,8 +643,7 @@ GdPlaylist::GdPlaylist(string listname, MYSQL db_handle)
 }
 
 GdPlaylist::~GdPlaylist()
-{
-    
+{    
 }
 
 void GdPlaylist::setListname(std::string name)
@@ -636,32 +654,31 @@ void GdPlaylist::setListname(std::string name)
 
 int GdPlaylist::insertDataFromSQL()
 {
-    MYSQL_RES	*result;
-    MYSQL_ROW	row;
-    mgGdTrack* trackptr;
-    int id;
-    int nrows;
-
-    result = mgSqlReadQuery(&m_db, 
-			    "SELECT tracknumber, trackid FROM playlistitem "
-			    "WHERE playlist = %d ORDER BY tracknumber",
-			    m_sqlId);
-
-    nrows   = mysql_num_rows(result);
-    while( (row = mysql_fetch_row(result) ) != NULL )
-      {
-	// add antry to tracklist
-	if(sscanf(row[1], "%d", &id) !=1)
+  MYSQL_RES	*result;
+  MYSQL_ROW	row;
+  mgGdTrack* trackptr;
+  int id;
+  int nrows;
+  
+  result = mgSqlReadQuery( &m_db, 
+			   "SELECT tracknumber, trackid FROM playlistitem "
+			   "WHERE playlist = %d ORDER BY tracknumber",
+			   m_sqlId);
+  nrows   = mysql_num_rows(result);
+  while( (row = mysql_fetch_row(result) ) != NULL )
+    {
+      // add antry to tracklist
+      if( sscanf( row[1], "%d", &id ) !=1 )
 	  {
-	    mgWarning("Track id '%s' is not an integer. Ignoring \n", row[1]);
+	  mgWarning( "Track id '%s' is not an integer. Ignoring \n", row[1] );
 	  }
-	else
+      else
 	  {
-	    trackptr = new mgGdTrack(id, m_db);
-	    m_list.push_back(trackptr);
+	  trackptr = new mgGdTrack( id, m_db );
+	  m_list.push_back( trackptr );
 	  }
       }
-    return nrows;
+  return nrows;
 }
 
 bool GdPlaylist::storePlaylist()
@@ -672,17 +689,18 @@ bool GdPlaylist::storePlaylist()
     MYSQL_ROW	row;
     int	nrows;
 
-
-    if(m_listname ==" ")
+    if( m_listname == " " )
       {
 	mgWarning("Can not store Tracklist without name");
 	return false;
       }
+
     if(m_sqlId >= 0)
       {
 	// playlist alreay exists in SQL database
 	// remove old items first
-	cout << " GdPlaylist::storePlaylist: removing items from " << m_sqlId << flush;
+	// cout << " GdPlaylist::storePlaylist: removing items from " << m_sqlId << flush;
+
 	// remove old playlist items from db
 	mgSqlWriteQuery(&m_db, 
 			"DELETE FROM playlistitem WHERE playlist = %d",
@@ -705,7 +723,7 @@ bool GdPlaylist::storePlaylist()
 	nrows   = mysql_num_rows(result);
 	row = mysql_fetch_row(result);
 	
-	if(sscanf(row [0], "%d", & m_sqlId) !=1)
+	if( sscanf( row [0], "%d", & m_sqlId ) !=1 )
 	  {
 	    mgError("Invalid id '%s' in database", row [5]);
 	  }
@@ -759,12 +777,15 @@ GdTreeNode::GdTreeNode(MYSQL db, int view, string filters)
   m_view = view;
   m_label = tr("Browser");
 }
-GdTreeNode::GdTreeNode(mgSelectionTreeNode* parent,
-			     string id, string label, string restriction)
+
+GdTreeNode::GdTreeNode( mgSelectionTreeNode* parent,
+			string id, 
+			string label, 
+			string restriction )
   :  mgSelectionTreeNode(parent, id, label)
 {
-    m_restriction = restriction;
-    // everything else is done in the parent class
+  m_restriction = restriction;
+  // everything else is done in the parent class
 }
 
 /*!
@@ -772,10 +793,8 @@ GdTreeNode::GdTreeNode(mgSelectionTreeNode* parent,
  */
 GdTreeNode::~GdTreeNode()
 {
-    // _children.clear();
+  // _children.clear();
 }
-
-
 
 /*!
  * \brief checks if this node can be further expandded or not
@@ -783,63 +802,64 @@ GdTreeNode::~GdTreeNode()
  */
 bool GdTreeNode::isLeafNode()
 {
-    if( m_level == 0 )
-      {
-	return false;
-      }
-    switch(m_view)
-     {
-	 case 1: // artist -> album -> title
-	     if( m_level <= 3 )
-	     {
-		 return false;
-	     }
-	     break;
-	 case 2: // genre -> artist -> album -> track
-	     if( m_level <= 3 )
-	     {
-		 return false;
-	     }
-	     break;
-         case 3: // Artist -> Track
- 	     if( m_level <= 2 )
-	     {
-		 return false;
-	     }
-	     break;
-         case 4:
- 	     if( m_level <= 2 )
-	     {
-		 return false;
-	     }
-	     break;
-         case 5:
- 	     if( m_level <= 1 )
-	     {
-		 return false;
-	     }
-	     break;
-         case 100:
- 	     if( m_level <= 0 )
-	     {
-		 return false;
-	     }
-	     break;
-         case 101:
- 	     if( m_level <= 1 )
-	     {
-		 return false;
-	     }
-	     break;
-         case 102:
- 	     if( m_level <= 1 )
-	     {
-		 return false;
-	     }
-	     break;
-	 default:
-	     mgError("View '%d' not yet implemented", m_view);
-     }
+  if( m_level == 0 )
+    {
+      return false;
+    }
+    
+  switch(m_view)
+    {
+    case 1: // artist -> album -> title
+      if( m_level <= 3 )
+	{
+	  return false;
+	}
+      break;
+    case 2: // genre -> artist -> album -> track
+      if( m_level <= 3 )
+	{
+	  return false;
+	}
+      break;
+    case 3: // Artist -> Track
+      if( m_level <= 2 )
+	{
+	  return false;
+	}
+      break;
+    case 4:
+      if( m_level <= 2 )
+	{
+	  return false;
+	}
+      break;
+    case 5:
+      if( m_level <= 1 )
+	{
+	  return false;
+	}
+      break;
+    case 100:
+      if( m_level <= 0 )
+	{
+	  return false;
+	}
+      break;
+    case 101:
+      if( m_level <= 1 )
+	{
+	  return false;
+	}
+      break;
+    case 102:
+      if( m_level <= 1 )
+	{
+	  return false;
+	}
+      break;
+    default:
+      mgError("View '%d' not yet implemented", m_view);
+    }
     return true;
 }
 
@@ -847,7 +867,7 @@ bool GdTreeNode::isLeafNode()
  * \brief compute children on the fly 
  *
  * \return: true, if the node could be expanded (or was already), false,of
- *           node can not be expanded any further
+ *          node can not be expanded any further
  *
  * retrieves all entries for the next level that satisfy the restriction of
  * the current level and create a child-arc for each distinct entry
@@ -895,13 +915,13 @@ bool GdTreeNode::expand()
 	    { // artist -> album -> title
 	      if( m_level == 1 ) 
 		{
-		  sprintf(sqlbuff,
-			  "SELECT DISTINCT album.artist,album.artist" 
-			  FROMJOIN
-			  " ORDER BY album.artist"
-			  , m_restriction.c_str() );
+		  sprintf( sqlbuff,
+			   "SELECT DISTINCT album.artist,album.artist" 
+			   FROMJOIN
+			   " ORDER BY album.artist"
+			   , m_restriction.c_str() );
 		  idfield = "album.artist";
-		} 
+		}
 	      else if( m_level == 2 ) 
 		{ // artist -> album 
 		  sprintf(sqlbuff, 
@@ -1095,15 +1115,16 @@ bool GdTreeNode::expand()
 			  "  ORDER BY CONCAT(album.artist,' - ',album.title)",
 			  m_restriction.c_str());
 		  idfield = "tracks.sourceid";
-		} else if( m_level == 2 ) 
-		  {
-		    sprintf(sqlbuff,
-			    "SELECT tracks.title,tracks.id"
-			    FROMJOIN
-			    "  ORDER BY tracks.tracknb",
-			    m_restriction.c_str());
-		    idfield = "tracks.id";
-		  } 
+		} 
+	      else if( m_level == 2 ) 
+		{
+		  sprintf(sqlbuff,
+			  "SELECT tracks.title,tracks.id"
+			  FROMJOIN
+			  "  ORDER BY tracks.tracknb",
+			  m_restriction.c_str());
+		  idfield = "tracks.id";
+		} 
 	      else 
 		{
 		  mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
@@ -1169,19 +1190,24 @@ bool GdTreeNode::expand()
 	    // Zweite ebene zeigt alle Tracks des Albums und nicht nur 
 	    // diese die den Filterkriterien entsprechen.
 	    // das betrifft nur die Search Views!
+
+	    string row0 = mgDB::escape_string( &m_db, string( row[0] ) );
+	    string row1 = mgDB::escape_string( &m_db, string( row[1] ) );
+
 	    if( m_view < 100 ) 
 	      {
 		new_restriction = m_restriction + " AND " 
-		  + idfield + "='" + row[1] + "'";
+		  + idfield + "='" + row1 + "'";
 	      } 
 	    else 
 	      {
-		new_restriction = idfield + "='" + row[1] + "'";
+		new_restriction = idfield + "='" + row1 + "'";
 	      }
 	    
 	    new_child = new GdTreeNode(this, // parent
 				       (string) idbuf, // id
-				       row[0], // label,
+				       // row[0], // label,
+				       row0,
 				       new_restriction);
 	    m_children.push_back(new_child);
 	    numchild++;
@@ -1311,120 +1337,3 @@ mgContentItem* GdTreeNode::getSingleTrack()
     return  track;
 }
 
-/* -------------------- begin CVS log ---------------------------------
- * $Log: gd_content_interface.c,v $
- * Revision 1.27  2004/08/30 14:31:43  LarsAC
- * Documentation added
- *
- * Revision 1.26  2004/08/27 15:19:34  LarsAC
- * Changed formatting and documentation
- *
- * Revision 1.25  2004/08/23 06:36:25  lvw
- * Initial version of an import module added
- *
- * Revision 1.24  2004/07/25 21:33:35  lvw
- * Removed bugs in finding track files and playlist indexing.
- *
- * Revision 1.23  2004/07/06 00:20:51  MountainMan
- * loading and saving playlists
- *
- * Revision 1.22  2004/05/28 15:29:18  lvw
- * Merged player branch back on HEAD branch.
- *
- *
- * Revision 1.21  2004/02/23 17:03:24  RaK
- * - error in filter view while trying to switch or using the colour keys
- *   workaround: first filter criteria is inttype. than it works, dont ask why ;-(
- *
- * Revision 1.20  2004/02/23 16:30:58  RaK
- * - album search error because of i18n corrected
- *
- * Revision 1.19  2004/02/23 15:56:19  RaK
- * - i18n
- *
- * Revision 1.18  2004/02/23 15:17:51  RaK
- * - i18n
- *
- * Revision 1.17  2004/02/23 15:41:21  RaK
- * - first i18n attempt
- *
- * Revision 1.16  2004/02/14 22:02:45  RaK
- * - mgFilterChoice Debuged
- *   fehlendes m_type = CHOICE in mg_filters.c
- *   falscher iterator in vdr_menu.c
- *
- * Revision 1.15  2004/02/12 09:15:07  LarsAC
- * Moved filter classes into separate files
- *
- * Revision 1.14.2.4  2004/05/26 14:34:58  lvw
- * Formatting changed
- *
- * Revision 1.14.2.3  2004/05/25 00:10:45  lvw
- * Code cleanup and added use of real database source files
- *
- * Revision 1.14.2.2  2004/03/14 17:57:30  lvw
- * Linked against libmad. Introduced config options into code.
- *
- * Revision 1.14.2.1  2004/03/02 07:05:50  lvw
- * Initial adaptations from MP3 plugin added (untested)
- *
- * Revision 1.21  2004/02/23 17:03:24  RaK
- * - error in filter view while trying to switch or using the colour keys
- *   workaround: first filter criteria is inttype. than it works, dont ask why ;-(
- *
- * Revision 1.20  2004/02/23 16:30:58  RaK
- * - album search error because of i18n corrected
- *
- * Revision 1.19  2004/02/23 15:56:19  RaK
- * - i18n
- *
- * Revision 1.18  2004/02/23 15:17:51  RaK
- * - i18n
- *
- * Revision 1.17  2004/02/23 15:41:21  RaK
- * - first i18n attempt
- *
- * Revision 1.16  2004/02/14 22:02:45  RaK
- * - mgFilterChoice Debuged
- *   fehlendes m_type = CHOICE in mg_filters.c
- *   falscher iterator in vdr_menu.c
- *
- * Revision 1.15  2004/02/12 09:15:07  LarsAC
- * Moved filter classes into separate files
- *
- * Revision 1.14  2004/02/12 07:56:46  RaK
- * - SQL Fehler bei der Playlist Search korrigiert
- *
- * Revision 1.13  2004/02/11 21:55:16  RaK
- * - playlistsearch eingebaut
- * - filter search liefert nun in der zweiten
- *   ebene alle tracks des albums/playlist
- *
- * Revision 1.12  2004/02/10 23:47:23  RaK
- * - views konsitent gemacht. siehe FROMJOIN
- * - isLeafNode angepasst fuer neue views 4,5,100,101
- * - like '%abba%' eingebaut
- * - filter ist default mit abba gefuellt, zum leichteren testen.
- * - search results werden jetzt gleich im ROOT expanded
- *
- * Revision 1.11  2004/02/10 01:23:06  RaK
- * Ein fehler beim Tracksearch behoben. geht jetzt, aber nur einmal?!?!
- *
- * Revision 1.10  2004/02/09 23:21:33  MountainMan
- * partial bug fixes
- *
- * Revision 1.9  2004/02/09 22:07:44  RaK
- * secound filter set (album search incl. special view #101
- *
- * Revision 1.8  2004/02/09 19:27:52  MountainMan
- * filter set implemented
- *
- * Revision 1.7  2004/02/03 00:13:24  LarsAC
- * Improved OSD handling of collapse/back
- *
- * Revision 1.6  2004/02/02 22:48:04  MountainMan
- *  added CVS $Log
- *
- *
- * --------------------- end CVS log ----------------------------------
- */
