@@ -151,6 +151,9 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
   thing
 - orders can now be displayed in the default order or descending by their
   counts
+- orders can now be a combination of order by collection and other key
+  fields. Known bug: If the collection is not the first key field like 
+  in Genre:Collection:Album:Track, the counts are wrong in the top list
 - make additions to playlists multi user safe
 - rename Search to Browse/Navigieren
 - when creating the data base, all ISO 639-2/B codes will be imported,
