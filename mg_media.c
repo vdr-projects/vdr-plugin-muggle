@@ -3,10 +3,10 @@
  *  \brief  Top level access to media in vdr plugin muggle
  *          for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.9 $
- * \date    $Date: 2004/02/09 19:27:52 $
+ * \version $Revision: 1.10 $
+ * \date    $Date: 2004/02/10 23:47:23 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: MountainMan $
+ * \author  file owner: $Author: RaK $
  * 
  *
  */
@@ -691,6 +691,7 @@ void mgMedia::clearActiveFilter()
 mgSelectionTreeNode *mgMedia::applyActiveFilter()
 {
   int view;
+  GdTreeNode* node;
 
   switch(m_mediatype)
   {
@@ -701,7 +702,9 @@ mgSelectionTreeNode *mgMedia::applyActiveFilter()
       }
       m_filters->accept();
       m_sql_filter = m_filters->computeRestriction(&view);
-      return new GdTreeNode(m_db, view,  m_sql_filter);
+      node = new GdTreeNode(m_db, view,  m_sql_filter);
+      node->expand();
+      return node->getChildren()[0];
   }	 
   return NULL;
 }
@@ -709,6 +712,13 @@ mgSelectionTreeNode *mgMedia::applyActiveFilter()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: mg_media.c,v $
+ * Revision 1.10  2004/02/10 23:47:23  RaK
+ * - views konsitent gemacht. siehe FROMJOIN
+ * - isLeafNode angepasst fuer neue views 4,5,100,101
+ * - like '%abba%' eingebaut
+ * - filter ist default mit abba gefuellt, zum leichteren testen.
+ * - search results werden jetzt gleich im ROOT expanded
+ *
  * Revision 1.9  2004/02/09 19:27:52  MountainMan
  * filter set implemented
  *
