@@ -2,12 +2,15 @@
 /*! \file   vdr_menu.c
  *  \brief  Implements menu handling for broswing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.2 $
- * \date    $Date: 2004/02/02 19:17:44 $
+ * \version $Revision: 1.3 $
+ * \date    $Date: 2004/02/02 19:42:37 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: LarsAC $
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.3  2004/02/02 19:42:37  LarsAC
+ * Added positioning of menubar when collapsing nodes.
+ *
  * Revision 1.2  2004/02/02 19:17:44  LarsAC
  * Added generic filter handling to OSD
  *
@@ -51,16 +54,6 @@ void mgMenuTreeItem::Set()
   char *buffer = 0;
   asprintf( &buffer, m_node->getLabel().c_str() );
   SetText( buffer, false );  
-}
-
-void mgMenuTreeItem::setChildIndex( int index )
-{
-  m_child_index = index;
-}
-
-int mgMenuTreeItem::getChildIndex( )
-{
-  return m_child_index;
 }
 
 // ----------------------- mgMenuTrackItem ------------------
@@ -264,7 +257,7 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	      {
 		mgDebug( 1,  "mgMainMenu: switch to filter" );
 
-		m_indices.push_back( Current() );
+		m_history.push_back( Current() );
 
 		mgSelectionTreeNode *child = CurrentNode();		
 		DisplayTree( child );
@@ -339,8 +332,8 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	      DisplayTree( parent );
 
 	      // restore last selected entry
-	      cOsdItem *item = Get( m_indices.back() );
-	      m_indices.pop_back();
+	      cOsdItem *item = Get( m_history.back() );
+	      m_history.pop_back();
 	      SetCurrent( item );
 	    }
 	  state = osContinue;
@@ -491,6 +484,11 @@ void mgMainMenu::DisplayAlbumInfo()
 void mgMainMenu::DisplayTree( mgSelectionTreeNode* node )
 {
   m_state = TREE;
+
+  if( node == m_root )
+    {
+      m_history.clear();
+    }
   
   if( node->expand( ) )
     {
