@@ -1259,6 +1259,10 @@ mgSelection::UsedBefore(mgOrder *o,const mgKeyTypes kt,unsigned int level) const
 	return false;
 }
 
+bool mgSelection::isLanguagelist() const
+{
+    return (order.getKeyType(0) == keyLanguage);
+}
 
 bool mgSelection::isCollectionlist () const
 {

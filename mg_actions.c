@@ -10,6 +10,7 @@
  */
 
 #include <stdio.h>
+#include <libintl.h>
 
 #include <typeinfo>
 #include <string>
@@ -329,6 +330,8 @@ mgEntry::MenuName(const unsigned int idx,const string value)
 	}
 	else if (selection()->inCollection())
 		asprintf(&result,"%4d %s%s",idx,value.c_str(),ct);
+	else if (selection()->isLanguagelist())
+		asprintf(&result,"%s%s",dgettext("iso_639",value.c_str()),ct);
 	else
 		asprintf(&result,"%s%s",value.c_str(),ct);
 	return result;

@@ -476,6 +476,10 @@ class mgSelection
  */
         bool isCollectionlist () const;
 
+/*! \brief true if this selection currently selects a list of languages
+ */
+        bool isLanguagelist () const;
+
 	//! \brief true if we have entered a collection
 	bool inCollection(const string Name="") const;
 
