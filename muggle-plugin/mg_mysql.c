@@ -16,7 +16,7 @@
 #include <sys/types.h>
 #include <time.h>
 
-#include "vdr_setup.h"
+#include "mg_setup.h"
 
 bool needGenre2;
 static bool needGenre2_set;

@@ -26,7 +26,7 @@
 /*!
  * \brief allow user to modify setup on OSD
  */
-class mgMenuSetup:public cMenuSetupPage
+class mgMenuSetup : public cMenuSetupPage
 {
     private:
         mgSetup m_data;
