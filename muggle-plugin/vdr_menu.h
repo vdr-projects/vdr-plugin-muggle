@@ -2,12 +2,12 @@
 /*! \file   vdr_menu.h
  *  \brief  Implements menu handling for broswing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.6 $
- * \date    $Date: 2004/02/03 19:15:08 $
+ * \version $Revision: 1.7 $
+ * \date    $Date: 2004/02/03 19:28:46 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: LarsAC $
  *
- * $Id: vdr_menu.h,v 1.6 2004/02/03 19:15:08 LarsAC Exp $
+ * $Id: vdr_menu.h,v 1.7 2004/02/03 19:28:46 LarsAC Exp $
  *
  */
 /*******************************************************************/
@@ -51,7 +51,7 @@ class mgMainMenu : public cOsdMenu
 {
  public:
   
-  mgMainMenu();
+  mgMainMenu(mgMedia *media, mgSelectionTreeNode *root, mgPlaylist *playlist);
 
   mgSelectionTreeNode *CurrentNode();
   mgMenuTreeItem *CurrentItem();
@@ -104,6 +104,9 @@ class mgMainMenu : public cOsdMenu
 /************************************************************
  *
  * $Log: vdr_menu.h,v $
+ * Revision 1.7  2004/02/03 19:28:46  LarsAC
+ * Playlist now created in plugin instead of in menu.
+ *
  * Revision 1.6  2004/02/03 19:15:08  LarsAC
  * OSD selection now jumps back to parent when collapsing.
  *

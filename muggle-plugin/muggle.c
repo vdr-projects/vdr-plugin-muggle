@@ -2,8 +2,8 @@
 /*! \file   muggle.c
  *  \brief  Implements a plugin for browsing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.1 $
- * \date    $Date: 2004/02/01 18:22:53 $
+ * \version $Revision: 1.2 $
+ * \date    $Date: 2004/02/03 19:28:46 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: LarsAC $
  */
@@ -14,8 +14,13 @@ static const char *DESCRIPTION    = "Access GiantDisc database contents";
 static const char *MAINMENUENTRY  = "Muggle";
 
 #include "muggle.h"
+
 #include "vdr_menu.h"
+
 #include "mg_tools.h"
+#include "mg_content_interface.h"
+#include "mg_media.h"
+
 
 const char* mgMuggle::Version(void)
 { 
@@ -67,6 +72,10 @@ bool mgMuggle::Start(void)
   // Start any background activities the plugin shall perform.
   mgSetDebugLevel( 99 );
 
+  m_media = new mgMedia( mgMedia::GD_MP3 );
+  m_root  = m_media->getSelectionRoot();
+  m_playlist = m_media->createTemporaryPlaylist();
+
   return true;
 }
 
@@ -78,7 +87,7 @@ void mgMuggle::Housekeeping(void)
 cOsdObject *mgMuggle::MainMenuAction(void)
 {
   // Perform the action when selected from the main VDR menu.
-  cOsdObject* osd = new mgMainMenu();
+  cOsdObject* osd = new mgMainMenu( m_media, m_root, m_playlist );
 
   return osd;
 }

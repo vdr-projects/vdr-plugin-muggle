@@ -2,12 +2,12 @@
 /*! \file   vdr_menu.c
  *  \brief  Implements menu handling for broswing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.7 $
- * \date    $Date: 2004/02/03 19:15:08 $
+ * \version $Revision: 1.8 $
+ * \date    $Date: 2004/02/03 19:28:46 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: LarsAC $
  *
- * $Id: vdr_menu.c,v 1.7 2004/02/03 19:15:08 LarsAC Exp $
+ * $Id: vdr_menu.c,v 1.8 2004/02/03 19:28:46 LarsAC Exp $
  */
 /*******************************************************************/
 
@@ -53,16 +53,13 @@ void mgMenuTreeItem::Set()
 
 // ----------------------- mgMainMenu ----------------------
 
-mgMainMenu::mgMainMenu()
-  : cOsdMenu( "" )
+mgMainMenu::mgMainMenu(mgMedia *media, mgSelectionTreeNode *root, mgPlaylist *playlist)
+  : cOsdMenu( "" ), m_media(media), m_root(root), m_current_playlist(playlist)
 {
   mgDebug( 1,  "Creating Muggle Main Menu" );
   
   SetTitle( "Muggle Media Database" );
   SetButtons();
-
-  m_media = new mgMedia( mgMedia::GD_MP3 );
-  m_root  = m_media->getSelectionRoot();
 
   m_filtername = new char[32];
   strcpy( m_filtername, "none" );
@@ -84,7 +81,6 @@ mgMainMenu::mgMainMenu()
 
   m_filter     = 0;
 
-  m_current_playlist = m_media->createTemporaryPlaylist();
   m_tracklist = NULL;
 
   DisplayTree( m_root );
@@ -582,6 +578,9 @@ void mgMainMenu::DisplayFilterSelector()
 /************************************************************
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.8  2004/02/03 19:28:46  LarsAC
+ * Playlist now created in plugin instead of in menu.
+ *
  * Revision 1.7  2004/02/03 19:15:08  LarsAC
  * OSD selection now jumps back to parent when collapsing.
  *

@@ -2,8 +2,8 @@
 /*! \file   muggle.h
  *  \brief  Implements a plugin for browsing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.3 $
- * \date    $Date: 2004/02/03 00:13:24 $
+ * \version $Revision: 1.4 $
+ * \date    $Date: 2004/02/03 19:28:46 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: LarsAC $
  */
@@ -19,6 +19,10 @@
 #else
   #include <plugin.h>
 #endif
+
+class mgMedia;
+class mgSelectionTreeNode;
+class mgPlaylist;
 
 class mgMuggle : public cPlugin
 {
@@ -51,6 +55,10 @@ public:
   virtual bool SetupParse(const char *Name, const char *Value);
 
 private:
+
+  mgMedia             *m_media;
+  mgSelectionTreeNode *m_root;
+  mgPlaylist          *m_playlist;
     
 };
 
