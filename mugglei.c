@@ -30,8 +30,9 @@
 #include <id3v2tag.h>
 #include <fileref.h>
 
-#include "vdr_setup.h"
-#include "mg_selection.h"
+#include "mg_tools.h"
+#include "mg_setup.h"
+#include "mg_sync.h"
 
 
 using namespace std;
@@ -154,8 +155,8 @@ int main( int argc, char *argv[] )
 	}
     }
 
-  mgSelection sel;
-  sel.Sync(filename,false);
+  mgSync sync;
+  sync.Sync(filename,false);
   return 0;
 }
 

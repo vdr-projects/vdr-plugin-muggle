@@ -23,8 +23,6 @@ using namespace std;
 #include "mg_order.h"
 #include "mg_content.h"
 
-#include <tag.h>
-
 typedef vector<string> strvector;
 
 
@@ -467,16 +465,6 @@ class mgSelection
         void loadgenres ();
 
 	void InitFrom(const mgSelection* s);
-	char *sql_Cstring(TagLib::String s);
-	char *lower(char *s);
-	TagLib::String getlanguage(const char *filename);
-	char * getAlbum(const char *c_album,const char *c_artist,const char *c_directory);
-	void AddTrack(const char *filename);
-	void SyncFile(const char *filename);
-
-
-
-
 
 };
 
