@@ -51,9 +51,9 @@ PACKAGE = vdr-$(ARCHIVE)
 ### Includes and Defines (add further entries here):
 
 INCLUDES += -I$(VDRDIR) -I$(VDRDIR)/include -I$(DVBDIR)/include \
-	`mysql_config --cflags` `taglib-config --cflags`
+	$(shell mysql_config --cflags) $(shell taglib-config --cflags)
 
-DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DMYSQLCLIENTVERSION=`mysql_config --version`
+DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DMYSQLCLIENTVERSION=$(shell mysql_config --version)
 
 ### The object files (add further files here):
 
@@ -61,14 +61,14 @@ OBJS = $(PLUGIN).o i18n.o mg_valmap.o mg_mysql.o mg_sync.o mg_order.o mg_content
 	vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o \
 	vdr_setup.o mg_setup.o
 
-LIBS = -lmad `taglib-config --libs`
-MILIBS =  `taglib-config --libs`
+LIBS = -lmad $(shell taglib-config --libs)
+MILIBS =  $(shell taglib-config --libs)
 
 ifdef HAVE_ONLY_SERVER
-SQLLIBS =  `mysql_config --libs`
+SQLLIBS =  $(shell mysql_config --libs)
 DEFINES += -DHAVE_ONLY_SERVER
 else
-SQLLIBS = `mysql_config --libmysqld-libs` -L/lib
+SQLLIBS = $(shell mysql_config --libmysqld-libs) -L/lib
 endif
 
 ifdef HAVE_VORBISFILE
