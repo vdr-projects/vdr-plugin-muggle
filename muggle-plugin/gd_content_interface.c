@@ -3,8 +3,8 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.16 $
- * \date    $Date: 2004/02/14 22:02:45 $
+ * \version $Revision: 1.17 $
+ * \date    $Date: 2004/02/23 15:41:21 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: RaK $
  *
@@ -22,6 +22,7 @@
 
 #include "gd_content_interface.h"
 #include "mg_tools.h"
+#include "i18n.h"
 
 using namespace std;
 
@@ -92,9 +93,9 @@ gdFilterSets::gdFilterSets()
   rating->push_back("++");
  
   // title
-  filter = new mgFilterString("title", ""); set->push_back(filter);
+  filter = new mgFilterString(tr("title"), ""); set->push_back(filter);
   // artist
-  filter = new mgFilterString("artist", ""); set->push_back(filter);
+  filter = new mgFilterString(tr("artist"), ""); set->push_back(filter);
   // genre
   filter = new mgFilterString("genre", ""); set->push_back(filter);
   // year-from
@@ -132,9 +133,9 @@ gdFilterSets::gdFilterSets()
   // artist
   filter = new mgFilterString("playlist author", ""); set->push_back(filter);
   // title
-  filter = new mgFilterString("title", ""); set->push_back(filter);
+  filter = new mgFilterString(tr("title"), ""); set->push_back(filter);
   // artist
-  filter = new mgFilterString("artist", ""); set->push_back(filter);
+  filter = new mgFilterString(tr("artist"), ""); set->push_back(filter);
   // genre
   filter = new mgFilterString("genre", ""); set->push_back(filter);
   // year-from
@@ -209,12 +210,12 @@ string gdFilterSets::computeRestriction(int *viewPrt)
         sql_str = sql_str + " AND album.artist like '%%" 
          + (*iter)->getStrVal() + "%%'";
       }
-      else if(strcmp((*iter)->getName(), "title") == 0 )
+      else if(strcmp((*iter)->getName(), tr("title")) == 0 )
       {
         sql_str = sql_str + " AND tracks.title like '%%" 
            + (*iter)->getStrVal() + "%%'";
       }
-      else if(strcmp((*iter)->getName(), "artist") == 0 )
+      else if(strcmp((*iter)->getName(), tr("artist")) == 0 )
       { 
         sql_str = sql_str + " AND tracks.artist like '%%" 
          + (*iter)->getStrVal() + "%%'";
@@ -1290,7 +1291,7 @@ bool GdTreeNode::expand()
 				   "Album -> Track" , // label,
 				   m_restriction);
 	m_children.push_back(new_child);
-    } else {
+      } else {
         new_child = new GdTreeNode(this, // parent
                                    "" , // id
                                    "Search Result", // label,
@@ -1389,6 +1390,9 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.17  2004/02/23 15:41:21  RaK
+ * - first i18n attempt
+ *
  * Revision 1.16  2004/02/14 22:02:45  RaK
  * - mgFilterChoice Debuged
  *   fehlendes m_type = CHOICE in mg_filters.c

@@ -1,7 +1,7 @@
 #
 # Makefile for a Video Disk Recorder plugin
 #
-# $Id: Makefile,v 1.7 2004/02/12 09:15:07 LarsAC Exp $
+# $Id: Makefile,v 1.8 2004/02/23 15:41:21 RaK Exp $
 
 # The official name of this plugin.
 # This name will be used in the '-P...' option of VDR to load the plugin.
@@ -40,13 +40,13 @@ PACKAGE = vdr-$(ARCHIVE)
 
 ### Includes and Defines (add further entries here):
 
-INCLUDES += -I$(VDRDIR) -I$(DVBDIR)/include -I/usr/include/mysql/
+INCLUDES += -I$(VDRDIR) -I$(VDRDIR)/include -I$(DVBDIR)/include -I/usr/include/mysql/
 
 DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
 
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o vdr_menu.o mg_database.o mg_content_interface.o gd_content_interface.o mg_tools.o mg_media.o mg_filters.o
+OBJS = $(PLUGIN).o vdr_menu.o mg_database.o mg_content_interface.o gd_content_interface.o mg_tools.o mg_media.o mg_filters.o i18n.o
 BINOBJS = mg_database.o mg_content_interface.o gd_content_interface.o mg_tools.o mg_media.o mg_filters.o
 
 ### Targets:

@@ -2,12 +2,12 @@
 /*! \file   vdr_menu.c
  *  \brief  Implements menu handling for browsing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.15 $
- * \date    $Date: 2004/02/14 22:02:45 $
+ * \version $Revision: 1.16 $
+ * \date    $Date: 2004/02/23 15:41:21 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: RaK $
  *
- * $Id: vdr_menu.c,v 1.15 2004/02/14 22:02:45 RaK Exp $
+ * $Id: vdr_menu.c,v 1.16 2004/02/23 15:41:21 RaK Exp $
  */
 /*******************************************************************/
 
@@ -23,6 +23,8 @@
 #include "mg_filters.h"
 
 #include "gd_content_interface.h"
+
+#include "i18n.h"
 
 #include <string>
 #include <vector>
@@ -106,7 +108,7 @@ void mgMainMenu::SetButtons(  )
 
   if( m_state == TREE )
     {
-      SetHelp( "Add", "Cycle tree", "Playlist", "Submenu" );
+      SetHelp( tr("Add"), tr("Cycle tree"), tr("Playlist"), tr("Submenu") );
     }
   else if( m_state == PLAYLIST )
     {
@@ -233,7 +235,8 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	    {
 	      // Back pressed on root level... Go back to Main VDR menu
 	      
-	      state = osBack;
+	      // state = osBack;
+	      state = osContinue;
 	    }
 	}      
     }
@@ -638,6 +641,9 @@ void mgMainMenu::DisplayFilterSelector()
 /************************************************************
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.16  2004/02/23 15:41:21  RaK
+ * - first i18n attempt
+ *
  * Revision 1.15  2004/02/14 22:02:45  RaK
  * - mgFilterChoice Debuged
  *   fehlendes m_type = CHOICE in mg_filters.c

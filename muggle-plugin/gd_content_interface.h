@@ -3,10 +3,10 @@
  *  \brief  Data Objects for content (e.g. mp3 files, movies)
  *          for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.5 $
- * \date    $Date: 2004/02/12 09:15:07 $
+ * \version $Revision: 1.6 $
+ * \date    $Date: 2004/02/23 15:41:21 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: RaK $
  * 
  * Declares main classes of for content items and interfaces to SQL databases
  *
@@ -30,6 +30,8 @@
 #include "mg_content_interface.h"
 #include "mg_media.h"
 #include "mg_filters.h"
+
+#include "i18n.h"
 
 // non-member function
 int GdInitDatabase(MYSQL *db);
@@ -219,6 +221,9 @@ public:
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.h,v $
+ * Revision 1.6  2004/02/23 15:41:21  RaK
+ * - first i18n attempt
+ *
  * Revision 1.5  2004/02/12 09:15:07  LarsAC
  * Moved filter classes into separate files
  *
