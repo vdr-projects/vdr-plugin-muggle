@@ -3,8 +3,8 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.2 $
- * \date    $Date: 2004/02/02 22:48:04 $
+ * \version $Revision: 1.3 $
+ * \date    $Date: 2004/02/09 19:27:52 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: MountainMan $
  * 
@@ -28,6 +28,7 @@
 #include <mysql/mysql.h>
 
 #define ILLEGAL_ID -1
+class mgFilter;
 
 /*! 
  *******************************************************************
@@ -90,6 +91,9 @@ class mgContentItem
   
   virtual std::string getDescription()// return a short textual description
       {return "";}
+  virtual std::vector<mgFilter*> *getTrackInfo(){return NULL;}
+  virtual bool updateTrackInfo(std::vector<mgFilter*>*){return false;}
+
   virtual std::string getGenre(){return "";}
   virtual int getRating()
     {
@@ -212,6 +216,7 @@ public:
     virtual ~mgSelectionTreeNode();
 
     // compute children on the fly 
+    virtual bool isLeafNode()=0;
     virtual bool expand()=0; 
     virtual void collapse(); // removes all children (recursively)
 
@@ -237,11 +242,14 @@ public:
     // Note: This function allocates memory for the vector and for all elements of the vector
     //       The calling function is in charge of releasing this memory 
    virtual std::vector<mgContentItem*>* getTracks()=0;
-
+   virtual mgContentItem* getSingleTrack()=0;
 };
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: mg_content_interface.h,v $
+ * Revision 1.3  2004/02/09 19:27:52  MountainMan
+ * filter set implemented
+ *
  * Revision 1.2  2004/02/02 22:48:04  MountainMan
  *  added CVS $Log
  *

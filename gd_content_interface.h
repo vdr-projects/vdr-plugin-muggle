@@ -3,8 +3,8 @@
  *  \brief  Data Objects for content (e.g. mp3 files, movies)
  *          for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.3 $
- * \date    $Date: 2004/02/02 22:48:04 $
+ * \version $Revision: 1.4 $
+ * \date    $Date: 2004/02/09 19:27:52 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: MountainMan $
  * 
@@ -35,16 +35,23 @@ int GdInitDatabase(MYSQL *db);
 std::vector<std::string> *GdGetStoredPlaylists(MYSQL db);
 
 
-class gdTrackFilters: public mgTrackFilters
+class gdFilterSets : public mgFilterSets 
 {
- public:
-  gdTrackFilters();
-  ~gdTrackFilters();
 
-  virtual std::string CreateSQL();
-  virtual void clear();
-  
+ public:
+  gdFilterSets();
+  // constructor, constracts a number >=1 of filter sets
+  // the first set (index 0 ) is active by default
+
+  virtual ~gdFilterSets();
+  // destructor
+
+  virtual  std::string computeRestriction(int *viewPrt);
+  // computes the (e.g. sql-) restrictions specified by the active filter set
+  // and returns the index of the appropriate defualt view in viewPrt
+
 };
+
 
 /*! 
  *******************************************************************
@@ -99,7 +106,10 @@ private:
   virtual std::string getSourceFile();
   virtual std::string getTitle();
   virtual std::string getLabel(int col);
-  virtual std::string getDescription();
+
+  virtual std::vector<mgFilter*> *getTrackInfo();
+  virtual bool setTrackInfo(std::vector<mgFilter*>*);
+
   virtual std::string getGenre();
   virtual int getRating();
 
@@ -209,6 +219,9 @@ public:
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.h,v $
+ * Revision 1.4  2004/02/09 19:27:52  MountainMan
+ * filter set implemented
+ *
  * Revision 1.3  2004/02/02 22:48:04  MountainMan
  *  added CVS $Log
  *

@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include "mysql/mysql.h"
 
-#include "content_interface.h"
-#include "mgmedia.h"
-#include "muggle_tools.h"
+#include "mg_content_interface.h"
+#include "mg_media.h"
+#include "mg_tools.h"
 #include <unistd.h>
 
 #define DISPLAY_SIZE 20
@@ -17,6 +17,7 @@
 #define PLAYLIST_VIEW 3
 #define FILTER_VIEW   4
 
+using namespace std;
 
 const char playlist_command_str[] = 
 " s : shuffle\n"
