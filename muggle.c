@@ -2,12 +2,12 @@
  * \file   muggle.c
  * \brief  Implements a plugin for browsing media libraries within VDR
  *
- * \version $Revision: 1.9 $
- * \date    $Date: 2004/07/25 21:33:35 $
+ * \version $Revision: 1.10 $
+ * \date    $Date: 2004/07/29 06:18:07 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  Responsible author: $Author: lvw $
  *
- *  $Id: muggle.c,v 1.9 2004/07/25 21:33:35 lvw Exp $
+ *  $Id: muggle.c,v 1.10 2004/07/29 06:18:07 lvw Exp $
  */
 
 #include <getopt.h>
@@ -130,6 +130,8 @@ bool mgMuggle::ProcessArgs(int argc, char *argv[])
 	default:  return false;
 	}
     }
+
+  // check for GD compatibility and override
 
   return true;
 }

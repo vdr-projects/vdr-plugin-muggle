@@ -3,10 +3,10 @@
  * \brief  Data objects for content (e.g. mp3 files, movies)
  *         for the vdr muggle plugin database
  *          
- * \version $Revision: 1.8 $
- * \date    $Date: 2004/07/06 00:20:51 $
+ * \version $Revision: 1.9 $
+ * \date    $Date: 2004/07/29 06:17:50 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: MountainMan $
+ * \author  Responsible author: $Author: lvw $
  * 
  * Declares main classes for content items and interfaces to SQL databases
  *
@@ -65,8 +65,9 @@ class gdFilterSets : public mgFilterSets
    * the active filter sets.
    *
    * \param viewPort - after call, contains the index of the appropriate default view in  
+   * \todo should viewPort be a reference?
    */
-  virtual  std::string computeRestriction(int *viewPrt);
+  virtual std::string computeRestriction(int *viewPrt);
 };
 
 
@@ -77,15 +78,19 @@ class gdFilterSets : public mgFilterSets
  * The object is initially created with a database identifier.
  * The actual data is only read when a content field is accessed for
  * the first time. For subsequent access, cached values are used.
+ *
+ * \todo does each track node need a reference to the database?
+ *       maybe we can use a static db handle in mgDatabase?
+ * \
  */
 class  mgGdTrack : public mgContentItem
 {
 
 private:
 
-	/*! 
-	 * \brief the database in which the track resides 
-	 * */
+  /*! 
+   * \brief the database in which the track resides 
+   * */
   MYSQL m_db;
   
   /*!
@@ -306,6 +311,9 @@ public:
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.h,v $
+ * Revision 1.9  2004/07/29 06:17:50  lvw
+ * Added todo entries
+ *
  * Revision 1.8  2004/07/06 00:20:51  MountainMan
  * loading and saving playlists
  *

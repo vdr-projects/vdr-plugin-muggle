@@ -13,6 +13,7 @@ Testing/bugs
 Code polishing
 ==============
 - Check for memory leaks
+    - Why do filters use pointers?
 - Check for (reasonably) consistent usage of char*/string
 - mgDatabase is not used? 
 - mgPlayer used what for?
@@ -105,6 +106,9 @@ Already Done
 ************************************************************
 *
 * $Log: TODO,v $
+* Revision 1.11  2004/07/29 06:18:07  lvw
+* Added todo entries
+*
 * Revision 1.10  2004/07/29 05:58:14  lvw
 * TODO list changed
 *
