@@ -177,3 +177,6 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
   sequence, up to now not giving any argument to muggle called the
   server on localhost using TCP, now it uses the faster sockets. You
   can still request TCP by using -h 127.0.0.1
+
+NEXT VERSION
+- killing vdr could still result in an empty muggle.state. Fixed.
