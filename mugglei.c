@@ -9,8 +9,10 @@ using namespace std;
 
 #include <mysql/mysql.h>
 
-#include <taglib/tag.h>
-#include <taglib/fileref.h>
+#include <getopt.h>
+
+#include <tag.h>
+#include <fileref.h>
 
 #include "mg_tools.h"
 
@@ -106,7 +108,7 @@ void update_db( long uid, string filename )
       trackno = tag->track();
       genre   = tag->genre();
 
-      AudioProperties *ap = f.audioProperties();
+      TagLib::AudioProperties *ap = f.audioProperties();
       int len      = ap->length();     // tracks.length
       int bitrate  = ap->bitrate();    // tracks.bitrate
       int sample   = ap->sampleRate(); //tracks.samplerate
