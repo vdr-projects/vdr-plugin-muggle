@@ -107,10 +107,10 @@ void update_db( long uid, string filename )
       genre   = tag->genre();
 
       AudioProperties *ap = f.audioProperties();
-      int len      = ap->length();  // tracks.length
-      int bitrate  = ap->bitrate(); // 
-      int sample   = ap->sampleRate();
-      int channels = ap->channels();
+      int len      = ap->length();     // tracks.length
+      int bitrate  = ap->bitrate();    // tracks.bitrate
+      int sample   = ap->sampleRate(); //tracks.samplerate
+      int channels = ap->channels();   //tracks.channels
 
       title  = escape_string( db, title );
       album  = escape_string( db, album );
@@ -185,20 +185,24 @@ void update_db( long uid, string filename )
 	    }
 	}
       
-      // update tracks table
+     // update tracks table
       if( uid > 0 )
 	{ // the entry is known to exist already, hence update it
-	  mgSqlWriteQuery( db, "UPDATE tracks SET artist=\"%s\", title=\"%s\", year=\"%s\", sourceid=\"%s\", mp3file=\"%s\""
-			   "WHERE id=%d", artist.toCString(), title.toCString(), year, cddbid.toCString(), filename.c_str(), uid );
+
+	  mgSqlWriteQuery( db,	"UPDATE tracks SET artist=\"%s\", title=\"%s\", year=\"%s\","
+							"sourceid=\"%s\", mp3file=\"%s\", length=%d, bitrate=\"%d\","
+							"samplerate=%d, channels=%d WHERE id=%d", 
+							artist.toCString(), title.toCString(), year, 
+							cddbid.toCString(), filename.c_str(), len, bitrate,
+							sample, channels, uid );
 	}
       else
 	{ // the entry does not exist, create it
-	  // int t = title.find( "'" );
-	  // int a = artist.find( "'" );
-	  mgSqlWriteQuery( db, 
-			   "INSERT INTO tracks (artist,title,genre1,genre2,year,sourceid,tracknb,mp3file)"
-			   " VALUES (\"%s\", \"%s\", \"\", \"\", %d, \"%s\", %d, \"%s\")",
-			   artist.toCString(), title.toCString(), year, cddbid.toCString(), trackno, filename.c_str() );
+		mgSqlWriteQuery( db,"INSERT INTO tracks (artist,title,genre1,genre2,year,"
+							"sourceid,tracknb,mp3file,length,bitrate,samplerate,channels)"
+							" VALUES (\"%s\", \"%s\", \"\", \"\", %d, \"%s\", %d, \"%s\", %d, \"%d\", %d, %d)",
+							artist.toCString(), title.toCString(), year, cddbid.toCString(), 
+							trackno, filename.c_str(), len, bitrate, sample, channels );
 	  /*
 	  cout << "-- TAG --" << endl;
 	  cout << "title   - \"" << tag->title()   << "\"" << endl;
