@@ -2,12 +2,12 @@
 /*! \file   vdr_menu.c
  *  \brief  Implements menu handling for browsing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.14 $
- * \date    $Date: 2004/02/12 09:08:48 $
+ * \version $Revision: 1.15 $
+ * \date    $Date: 2004/02/14 22:02:45 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: RaK $
  *
- * $Id: vdr_menu.c,v 1.14 2004/02/12 09:08:48 LarsAC Exp $
+ * $Id: vdr_menu.c,v 1.15 2004/02/14 22:02:45 RaK Exp $
  */
 /*******************************************************************/
 
@@ -607,7 +607,9 @@ void mgMainMenu::DisplayFilter()
 		 iter ++, j ++ )
 	      {
 		// BUG: Is this a big memory leak!? When to delete and who?
-		choices_str[j] = strndup( choices[i].c_str(), 128 );
+                // RaK: zweiter Iterator war "i" richtig: "j"
+		// choices_str[j] = strndup( choices[i].c_str(), 128 );
+		choices_str[j] = strndup( choices[j].c_str(), 128 );
 	      }
 	    
 	    Add( new cMenuEditStraItem(  fc->getName(), &( fc->m_selval ),
@@ -636,6 +638,11 @@ void mgMainMenu::DisplayFilterSelector()
 /************************************************************
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.15  2004/02/14 22:02:45  RaK
+ * - mgFilterChoice Debuged
+ *   fehlendes m_type = CHOICE in mg_filters.c
+ *   falscher iterator in vdr_menu.c
+ *
  * Revision 1.14  2004/02/12 09:08:48  LarsAC
  * Added handling of filter choices (untested)
  *
