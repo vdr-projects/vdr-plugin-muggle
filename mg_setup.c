@@ -33,4 +33,5 @@ mgSetup::mgSetup ()
     ToplevelDir = "/mnt/music/";
     DbHost = "localhost";
     DbName = "GiantDisc";
+    DeleteStaleReferences = false;
 }
