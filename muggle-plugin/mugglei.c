@@ -338,7 +338,7 @@ void update_db( long uid, std::string filename )
 			   "samplerate=%d, channels=%d, genre1=\"%s\", lang=\"%s\" WHERE id=%d", 
 			   artist.toCString(), title.toCString(), year, 
 			   cddbid.toCString(), filename.c_str(), len, bitrate,
-			   sample, channels, gid.toCString(), uid, language.toCString() );
+			   sample, channels, gid.toCString(), language.toCString(), uid );
 	}
       else
 	{ // the entry does not exist, create it
