@@ -74,7 +74,7 @@ public:
    *  \param plist - the playlist to be played
    *  \param first - the index where to start the playlist
    */
-  mgPlayerControl(mgPlaylist *plist, int first);
+  mgPlayerControl(mgPlaylist *plist, unsigned first);
 
   /*! \brief destructor
    */

@@ -325,7 +325,7 @@ class mgTracklist
   /*!
    * \brief remove all occurences of item
    */
-  virtual bool remove(int position);    // remove item at position
+  virtual bool remove(unsigned position);    // remove item at position
 };
 
 /*!

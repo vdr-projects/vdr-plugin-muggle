@@ -117,7 +117,7 @@ mgContentItem* mgTracklist::getItem(unsigned int position)
   return *( m_list.begin() + position);
 }
 
-bool mgTracklist::remove(int position)       
+bool mgTracklist::remove(unsigned position)       
 {
   bool result = false;
 
