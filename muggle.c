@@ -48,13 +48,13 @@ const char* mgMuggle::MainMenuEntry(void)
 mgMuggle::mgMuggle(void)
 {
   // defaults for database arguments
-  the_setup.DbHost = "localhost";
+  the_setup.DbHost = strdup ("localhost");
   the_setup.DbPort = 0;
-  the_setup.DbName = "GiantDisc";
-  the_setup.DbUser = "";
-  the_setup.DbPass = "" ;
+  the_setup.DbName = strdup ("GiantDisc");
+  the_setup.DbUser = strdup ("");
+  the_setup.DbPass = strdup ("");
   the_setup.GdCompatibility = false;
-  the_setup.ToplevelDir = "/mnt/music/";
+  the_setup.ToplevelDir = strdup ("/mnt/music/");
 }
 
 mgMuggle::~mgMuggle()
@@ -93,45 +93,50 @@ bool mgMuggle::ProcessArgs(int argc, char *argv[])
     };
 
   int c, option_index = 0;
-  while( ( c = getopt_long( argc, argv, "h:p:u:n:t:w:g:", long_options, &option_index ) ) != -1 ) 
-    {
-      switch (c) 
-	{
-	case 'h': 
-	  {
-	    the_setup.DbHost = optarg;
+  while( ( c = getopt_long( argc, argv, "gh:n:p:t:u:w:", long_options, &option_index ) ) != -1 ) 
+     {
+       switch (c) 
+ 	{
+ 	case 'h': 
+ 	  {
+	    the_setup.DbHost = strcpyrealloc (the_setup.DbHost, optarg);
+ 	  } break;
+ 	case 'n':
+ 	  {
+	    the_setup.DbName = strcpyrealloc (the_setup.DbName, optarg);
 	  } break;
-	case 'n':
-	  {
-	    the_setup.DbName = optarg;
-	  } break;
-	case 'p': 
-	  {
-	    the_setup.DbPort = atoi( optarg );
-	  } break;
-	case 'u': 
-	  {
-	    the_setup.DbUser = optarg;
-	  } break;
-	case 'w': 
-	  {
-	    the_setup.DbPass = optarg;
-	  } break;
-	case 't': 
-	  {
-	    string res = string(optarg) + "/";
-	    the_setup.ToplevelDir = strdup( res.c_str() );
-	  } break;
-	case 'g': 
-	  {
-	    the_setup.DbName = "GiantDisc";
-	    the_setup.GdCompatibility = true;
-	  } break;
-	default:  return false;
+ 	case 'p': 
+ 	  {
+ 	    the_setup.DbPort = atoi( optarg );
+ 	  } break;
+ 	case 'u': 
+ 	  {
+	    the_setup.DbUser = strcpyrealloc (the_setup.DbUser, optarg);
+ 	  } break;
+ 	case 'w': 
+ 	  {
+	    the_setup.DbPass = strcpyrealloc (the_setup.DbPass, optarg);
+ 	  } break;
+ 	case 't': 
+ 	  {
+	    if (optarg[strlen(optarg) - 1] != '/')
+	      {
+		string res = string(optarg) + "/";
+		the_setup.ToplevelDir = strdup( res.c_str() );
+	      }
+	    else
+	      {
+		the_setup.ToplevelDir = strcpyrealloc (the_setup.ToplevelDir, optarg);
+	      }
+ 	  } break;
+ 	case 'g': 
+ 	  {
+	    the_setup.DbName = strcpyrealloc (the_setup.DbName, "GiantDisc");
+ 	    the_setup.GdCompatibility = true;
+ 	  } break;
+ 	default:  return false;
 	}
     }
-
-  // check for GD compatibility and override
 
   return true;
 }
