@@ -43,6 +43,12 @@ class mgOsdItem : public mgAction, public cOsdItem
 };
 
 
+void
+mgAction::setHandle(unsigned int handle)
+{
+	m_handle = handle;
+}
+
 eOSState
 mgAction::ProcessKey(eKeys key)
 {
@@ -208,8 +214,9 @@ mgAction::Enabled(mgActions on)
 
 mgAction::mgAction()
 {
-	m = NULL;
-	m_osd = NULL;
+	m = 0;
+	m_osd = 0;
+	m_handle = 0;
 	IgnoreNextEvent = false;
 }
 
@@ -304,7 +311,7 @@ mgAction::Back()
 void
 mgEntry::Notify()
 {
-	selection()->setPosition(osd()->Current());
+	selection()->setPosition(m_handle);
 	selection()->gotoPosition();
 	osd()->SaveState();
 	mgAction::Notify();	// only after selection is updated

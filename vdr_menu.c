@@ -496,7 +496,18 @@ mgMenu::AddSelectionItems (mgSelection *sel,mgActions act)
     {
     	mgAction *a = GenerateAction(act, actEntry);
 	if (!a) continue;
-        a->SetText(a->MenuName(i+1,sel->values[i]),false);
+	const char *name = a->MenuName(i+1,sel->values[i]);
+	// add incremental filter here
+#if 0
+	// example:
+	if (name[0]!='C')
+		continue;
+#endif
+	// adapt newposition since it refers to position in mgSelection:
+	if ((signed int)i==osd()->newposition)
+		osd()->newposition = osd()->Count();
+	a->SetText(name,false);
+	a->setHandle(i);
         osd()->AddItem(a);
     }
     if (osd()->ShowingCollections ())
@@ -800,7 +811,7 @@ otherkeys:
     	forcerefresh = false;
 	if (newposition<0) 
 		newposition = selection()->gotoPosition();
-        Menus.back ()->Display (newposition);
+        Menus.back ()->Display ();
     }
 pr_exit:
     showMessage();
@@ -847,7 +858,8 @@ mgMainMenu::AddMenu (mgMenu * m,unsigned int position)
     m->setParentIndex(Current());
     if (Get(Current()))
     	m->setParentName(Get(Current())->Text());
-    m->Display (position);
+    newposition = position;
+    m->Display ();
 }
 
 void
@@ -977,13 +989,13 @@ mgTreeRemoveFromCollSelector::mgTreeRemoveFromCollSelector(string title)
 }
 
 void
-mgMainMenu::DisplayGoto (unsigned int select)
+mgMainMenu::DisplayGoto ()
 {
-    if (select >= 0)
+    if (newposition >= 0)
     {
-        if ((int)select>=Count())
-	    select = Count() -1;
-        SetCurrent (Get (select));
+        if ((int)newposition>=Count())
+	    newposition = Count() -1;
+        SetCurrent (Get (newposition));
         RefreshCurrent ();
     }
     Display ();
@@ -991,9 +1003,9 @@ mgMainMenu::DisplayGoto (unsigned int select)
 
 
 void
-mgMenu::Display (const unsigned int position)
+mgMenu::Display ()
 {
     BuildOsd ();
-    osd ()->DisplayGoto (position);
+    osd ()->DisplayGoto ();
 }
 

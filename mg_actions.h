@@ -137,6 +137,12 @@ class mgAction
 		 * or in muggle ?
 		 */
 	bool IgnoreNextEvent;
+
+	/*! \brief defines a reference. Can be used depending on the
+	 * concrete class type. Currently used only by mgEntry
+	 */
+	void setHandle(unsigned int handle);
+
     protected:
 
 	//! \brief returns the OSD owning the menu owning this item
@@ -157,6 +163,8 @@ class mgAction
 	virtual void Notify();
 	eOSState ProcessKey(eKeys key);
 	virtual eOSState Process(eKeys key) { return osUnknown; }
+
+	unsigned int m_handle;
     private:
 	mgMainMenu *m_osd;
 };

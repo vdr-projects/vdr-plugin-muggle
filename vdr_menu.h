@@ -157,9 +157,8 @@ class mgMainMenu:public cOsdMenu
 	string play_collection;
 
 /*! \brief selects a certain line on the OSD and displays the OSD
- * \param select the line that we want to be selected
  */
-        void DisplayGoto (unsigned int select);
+        void DisplayGoto ();
 
 	//! \brief external commands
         cCommands *external_commands;
@@ -306,8 +305,8 @@ class mgMenu
 //! \brief clears the screen, sets a title and the hotkey flag
         void InitOsd (const char *title,const bool hashotkeys=true);
 
-//! \brief display OSD and go to position
-        void Display (const unsigned int position);
+//! \brief display OSD and go to osd()->newposition
+        void Display ();
 
 //! \brief BuildOsd() should be abstract but then we cannot compile
         virtual void BuildOsd ()
