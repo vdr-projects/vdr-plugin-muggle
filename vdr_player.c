@@ -431,7 +431,14 @@ mgPCMPlayer::Action (void)
 			  break;
                         }
 		        else
+		        {
 			      mgWarning("found no decoder for %s",filename.c_str());
+			      m_state=msStop;	// if loop mode is on and no decoder
+			      			// for any track is found, we would
+						// otherwise get into an endless loop
+						// not stoppable with the remote.
+			      break;
+			}
                     }
                     m_state = msEof;
                 }
