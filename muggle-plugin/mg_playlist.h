@@ -36,6 +36,12 @@ private:
   // TODO: should be a property of the player?
   int m_current_idx;
 
+  //! \brief the current loop mode
+  LoopMode m_loop_mode;
+
+  //! \brief the current shuffle mode
+  ShuffleMode m_shuffle_mode;
+
 protected:
 
   // TODO: Why not make these private? Subclasses should use access functions. LVW
@@ -44,9 +50,26 @@ protected:
   std::string m_listname;
   
 public:
-     
-  /* ==== constructors and initialization ==== */
-  
+
+  //! \brief define various ways to play music in random order
+  enum
+    {
+      SM_NONE,    //!< \brief play normal sequence
+      SM_NORMAL,  //!< \brief a shuffle with a fair distribution
+      SM_PARTY    //!< \brief select the next few songs randomly, continue forever
+    } ShuffleMode;
+
+  //! \brief define various ways to play music in a neverending loop
+  enum
+    {
+      LM_NONE,     //!< \brief do not loop
+      LM_SINGLE,   //!< \brief loop a single track
+      LM_FULL      //!< \brief loop the whole playlist
+    } LoopMode;
+
+  //! \brief object construction and destruction
+  //@{
+
   //! \brief the default constructor (random listname)
   mgPlaylist();
 
@@ -58,20 +81,24 @@ public:
 
   void initialize();
   
-  /* ==== destructor ==== */
   //! \brief the destructor
   virtual ~mgPlaylist();
 
-  /* === control behavior */
+  //@}
 
-  //! \brief toggle the loop mode. TODO.
-  void toggleLoop();
+  //! \brief control behavior
+  //@{
 
-  //! \brief toggle the shuffle mode. TODO.
-  void toggleShuffle();
+  //! \brief toggle the loop mode.
+  void setLoopMode( LoopMode lm );
+
+  //! \brief toggle the shuffle mode.
+  void setShuffleMode( ShuffleMode sm );
+
+  //@}
   
-  /* ==== add/ remove tracks ==== */
-  
+  //! \brief modify playlist items
+  //@{
   /*! \brief adds a song at the end of the playlist
    *
    *  \param item - the item to be appended
@@ -94,7 +121,7 @@ public:
   virtual void insert(mgContentItem* item, unsigned int position);
 
   //! \brief clear all tracks
-  virtual void clear();
+m  virtual void clear();
 
   /*! \brief move tracks within playlist
    *
@@ -109,18 +136,11 @@ public:
    */
   bool remove( int pos );
 
-  /* ====  access tracks ==== */
-  
+  //@}
+
   //! \brief obtain the listname
   std::string getListname() ;
 
-  /*! 
-   * \brief returns the current item of the list
-   *
-   * \todo Return null in case of an empty list or invalid index
-   */
-  virtual mgContentItem* getCurrent();
-    
   /*! \brief set the listname
    *
    *  \param name - the new name of this list
@@ -130,9 +150,25 @@ public:
   //! \brief returns the count of items in the list
   int getCount();
 
+  //! \brief access playlist items
+  //@{
+
   //! \brief returns current index in the playlist
   int getIndex() const;
 
+  //! \brief make playlist persistent
+  virtual bool storePlaylist() = 0;
+
+  //! \brief export the playlist in m3u format
+  virtual bool exportM3U( std::string m3u_file );
+
+  /*! 
+   * \brief returns the current item of the list
+   *
+   * \todo Return null in case of an empty list or invalid index
+   */
+  virtual mgContentItem* getCurrent();
+    
   /*! \brief returns the nth track from the playlist
    *
    *  \param position - the position to skip to
@@ -155,13 +191,11 @@ public:
    * \todo Handle play modes
    */
   virtual bool skipBack();
- 
+
   //! \brief obtain the next item without skipping the current position
   virtual mgContentItem* sneakNext(); 
-  virtual bool storePlaylist() = 0;
-
-  //! \brief export the playlist in m3u format
-  virtual bool exportM3U( std::string m3u_file );
+  //@}
+ 
 };
 
 #endif

@@ -106,6 +106,25 @@ long find_file_in_database( MYSQL *db, std::string filename )
   return atol( row[0] );
 }
 
+TagLib::String find_genre_id( TagLib::String genre )
+{
+  TagLib::String result;
+  
+  if( genre.size() )
+    {
+      MYSQL_RES *result = mgSqlReadQuery( db, "SELECT id FROM genre WHERE genre=\"%s\"", genre.toCString() );
+      
+      if( mysql_num_rows(result) )
+	{
+	  MYSQL_ROW row = mysql_fetch_row( result );
+
+	  result = TagLib::String( row[0] );
+	}
+    }
+
+  return result;
+} 
+
 // read tags from the mp3 file and store them into the corresponding database entry
 void update_db( long uid, std::string filename )
 {
