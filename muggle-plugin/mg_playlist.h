@@ -1,6 +1,6 @@
 /*! 
  * \file   mg_playlist.c
- * \brief  defines functions to be executed on playlists for the vdr muggle plugindatabase
+ * \brief  defines functions to be executed on playlists for the vdr muggle plugin
  *
  * \version $Revision: 1.6 $
  * \date    $Date$
@@ -30,42 +30,23 @@
 class mgPlaylist : public mgTracklist
 {	  
 
-private:
-
-  //! \brief current index in the playlist
-  // TODO: should be a property of the player?
-  int m_current_idx;
-
-  //! \brief the current loop mode
-  LoopMode m_loop_mode;
-
-  //! \brief the current shuffle mode
-  ShuffleMode m_shuffle_mode;
-
-protected:
-
-  // TODO: Why not make these private? Subclasses should use access functions. LVW
-  
-  //! \brief the name of the playlist
-  std::string m_listname;
-  
 public:
 
   //! \brief define various ways to play music in random order
-  enum
+  enum ShuffleMode
     {
       SM_NONE,    //!< \brief play normal sequence
       SM_NORMAL,  //!< \brief a shuffle with a fair distribution
       SM_PARTY    //!< \brief select the next few songs randomly, continue forever
-    } ShuffleMode;
+    };
 
   //! \brief define various ways to play music in a neverending loop
-  enum
+  enum LoopMode
     {
       LM_NONE,     //!< \brief do not loop
       LM_SINGLE,   //!< \brief loop a single track
       LM_FULL      //!< \brief loop the whole playlist
-    } LoopMode;
+    };
 
   //! \brief object construction and destruction
   //@{
@@ -90,10 +71,10 @@ public:
   //@{
 
   //! \brief toggle the loop mode.
-  void setLoopMode( LoopMode lm );
+  LoopMode toggleLoopMode( );
 
   //! \brief toggle the shuffle mode.
-  void setShuffleMode( ShuffleMode sm );
+  ShuffleMode toggleShuffleMode( );
 
   //@}
   
@@ -121,7 +102,7 @@ public:
   virtual void insert(mgContentItem* item, unsigned int position);
 
   //! \brief clear all tracks
-m  virtual void clear();
+  virtual void clear();
 
   /*! \brief move tracks within playlist
    *
@@ -195,7 +176,26 @@ m  virtual void clear();
   //! \brief obtain the next item without skipping the current position
   virtual mgContentItem* sneakNext(); 
   //@}
- 
+
+private:
+
+  //! \brief current index in the playlist
+  // TODO: should be a property of the player?
+  int m_current_idx;
+
+  //! \brief the current loop mode
+  LoopMode m_loop_mode;
+
+  //! \brief the current shuffle mode
+  ShuffleMode m_shuffle_mode;
+
+protected:
+
+  // TODO: Why not make these private? Subclasses should use access functions. LVW
+  
+  //! \brief the name of the playlist
+  std::string m_listname;
+   
 };
 
 #endif
