@@ -769,12 +769,12 @@ bool mgPCMPlayer::PrevFile(void)
 
 void mgPCMPlayer::ToggleShuffle()
 {
-  m_playlist->toggleShuffle();
+  m_playlist->toggleShuffleMode();
 }
 
 void mgPCMPlayer::ToggleLoop(void)
 {
-  m_playlist->toggleLoop();
+  m_playlist->toggleLoopMode();
 }
 
 void mgPCMPlayer::Pause(void)
