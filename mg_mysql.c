@@ -452,6 +452,7 @@ mgmySql::Connect ()
     m_db = mysql_init (0);
     if (!m_db)
         return;
+#ifdef HAVE_SERVER
     bool success;
     if (the_setup.DbSocket != NULL)
     {
@@ -483,11 +484,17 @@ mgmySql::Connect ()
     }
     if (!success)
     {
-	mgWarning("Failed to connect to host '%s' as User '%s', Password '%s': Error: %s",
+	mgWarning("Failed to connect to server '%s' as User '%s', Password '%s': %s",
 			    the_setup.DbHost,the_setup.DbUser,the_setup.DbPass,mysql_error(m_db));
         mysql_close (m_db);
 	m_db = 0;
     }
+#else
+    if (!mysql_real_connect(m_db, 0, 0, 0, 0, 0, 0, 0))
+	mgWarning("Failed to connect to embedded data base:%s ",mysql_error(m_db));
+    else
+	mgDebug(1,"Connected to embedded mysql");
+#endif
     if (m_db)
     {
 	    mysql_query(m_db,"SHOW DATABASES");
