@@ -34,6 +34,21 @@
 
 MYSQL *db;
 
+static char *server_args[] = 
+{
+  "this_program",       /* this string is not used */
+  "--datadir=.",
+  "--key_buffer_size=32M"
+};
+
+static char *server_groups[] = 
+{
+  "embedded",
+  "server",
+  "this_program_SERVER",
+  (char *)NULL
+};
+
 std::string host, user, pass, dbname, sck;
 bool import_assorted, delete_mode;
 
@@ -452,8 +467,13 @@ void evaluate_file( std::string filename )
 
 int main( int argc, char *argv[] )
 {
+  if( mysql_server_init(sizeof(server_args) / sizeof(char *),
+                        server_args, server_groups) )
+    {
+      exit(1);
+    }
   std::string filename;
-
+      
   if( argc < 2 )
     { // we need at least a filename!
       std::cout << "mugglei -- import helper for Muggle VDR plugin" << std::endl;
@@ -554,6 +574,9 @@ int main( int argc, char *argv[] )
 	  evaluate_file( filename );
 	}
     }
+
+  mysql_server_end();
+
   return 0;
 }
 
