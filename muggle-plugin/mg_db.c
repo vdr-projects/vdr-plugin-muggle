@@ -768,6 +768,8 @@ string mgSelection::getListname ()
         result = "";
     for (unsigned int i = 0; i < m_level; i++)
         addsep (result, ":", keys[i]->value ());
+    if (m_level==keys.size())
+	addsep (result,":",getCurrentValue());
     if (result.empty ())
         result = string(tr(keys[0]->choice ().c_str()));
     return result;
