@@ -20,6 +20,11 @@
 #include <config.h>
 #include <plugin.h>
 
+#if VDRVERSNUM >= 10307
+#include <vdr/interface.h>
+#include <vdr/skins.h>
+#endif
+
 #include "vdr_menu.h"
 #include "vdr_player.h"
 #include "i18n.h"
@@ -158,9 +163,14 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 			char *buffer = 0;
 			asprintf( &buffer, "%d tracks sent to current playlist", (int) tracks->size() );
 			m_current_playlist->appendList(tracks);
+#if VDRVERSNUM >= 10307
+      Skins.Message(mtInfo,buffer);
+      Skins.Flush();
+#else
 			Interface->Status( buffer );
 			Interface->Flush();
-
+#endif
+      
 			free( buffer );
 		      }
 		    else
@@ -699,14 +709,22 @@ eOSState mgMainMenu::ExecutePlaylistCommand( int current )
       if( command->Confirm() ) 
 	{
 	  asprintf( &buffer, "%s?", command->Title() );
+//#if VDRVERSNUM < 10307
 	  confirmed = Interface->Confirm( buffer );
+//#else
+//#endif
 	  free( buffer );
         }
       if( confirmed )
        {
 	 asprintf( &buffer, "%s...", command->Title() );
+#if VDRVERSNUM >= 10307
+   Skins.Message(mtInfo,buffer);
+   Skins.Flush();
+#else
 	 Interface->Status( buffer );
 	 Interface->Flush();
+#endif
 	 free( buffer );
 
 	 string tmp_m3u_file = (char *) AddDirectory( cPlugin::ConfigDirectory("muggle"), "current.m3u" );
@@ -739,22 +757,36 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
     case 0:
       {
 	LoadPlaylist();
+#if VDRVERSNUM < 10307
 	Interface->Flush();
+#else
+  Skins.Flush();
+#endif
 	// jump to playlist view from here?
       } break;
     case 1:
       {	
 	SavePlaylist();
+#if VDRVERSNUM >= 10307
+  Skins.Message(mtInfo,"Playlist saved");
+  Skins.Flush();
+#else
 	Interface->Status( "Playlist saved");
 	Interface->Flush();
+#endif
       } break;
     case 2:
       {	// renamer playlist
 	RenamePlaylist();
 
 	// confirmation
+#if VDRVERSNUM >= 10307
+  Skins.Message(mtInfo,"Playlist renamed (dummy)");
+  Skins.Flush();
+#else
 	Interface->Status( "Playlist renamed (dummy)" );
 	Interface->Flush();
+#endif
 
 	state = osContinue;	
       } break;
@@ -763,8 +795,13 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
 	m_current_playlist->clear();
 
 	// confirmation
+#if VDRVERSNUM >= 10307
+  Skins.Message(mtInfo,"Playlist cleared");
+  Skins.Flush();
+#else
 	Interface->Status( "Playlist cleared" );
 	Interface->Flush();
+#endif
 
 	state = osContinue;	
       } break;
@@ -778,8 +815,13 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
 	DisplayPlaylist( m_last_osd_index );
 
 	// confirmation
+#if VDRVERSNUM >= 10307
+  Skins.Message(mtInfo,"Entry removed");
+  Skins.Flush();
+#else
 	Interface->Status( "Entry removed" );
 	Interface->Flush();	
+#endif
       } break;
     case 5:
       {

@@ -196,6 +196,7 @@ public:
   virtual bool GetIndex(int &Current, int &Total, bool SnapToIFrame=false);
   //  bool GetPlayInfo(cMP3PlayInfo *rm); // LVW
   void NewPlaylist(mgPlaylist *plist);
+  mgContentItem *GetCurrent () { return m_current; }
   };
 
 mgPCMPlayer::mgPCMPlayer(mgPlaylist *plist)
@@ -924,12 +925,29 @@ void mgPlayerControl::ShowProgress()
       if( !m_has_osd )
 	{
 	  // open the osd if its not already there...
+#if VDRVERSNUM >= 10307
+    osd = cOsdProvider::NewOsd (Setup.OSDLeft, Setup.OSDTop);
+    tArea Areas[] = { { 0, 0, Setup.OSDWidth, Setup.OSDHeight, 2 } };
+    osd->SetAreas(Areas,sizeof(Areas)/sizeof(tArea));
+    font = cFont::GetFont (fontOsd);
+#else
 	  Interface->Open();
+#endif
 	  m_has_osd = true;
 	}
       
       // now an osd is open, go on
       
+#if VDRVERSNUM >= 10307
+      int w = Setup.OSDWidth;
+      int h = Setup.OSDHeight;
+      osd->DrawRectangle (0, 0, w - 1, h - 1, clrGray50);
+      mgContentItem *item = m_player->GetCurrent ();
+      string msg = item->getGenre () + " " + item->getTitle ();
+      osd->DrawText (0, h - font->Height () - 2, msg.c_str (), clrBlack, clrCyan,
+                     cFont::GetFont (fontOsd), w, font->Height () + 2, taCenter);
+      osd->Flush();
+#else
       int w = Interface->Width();
       int h = Interface->Height();
       
@@ -939,6 +957,7 @@ void mgPlayerControl::ShowProgress()
       // Add: progress bar
       
       Interface->Flush();
+#endif
     }
   else
     {
@@ -950,7 +969,12 @@ void mgPlayerControl::Hide()
 {
   if( m_has_osd )
     {
+#if VDRVERSNUM >= 10307
+      osd->Flush();
+      delete osd;
+#else
       Interface->Close();
+#endif
       m_has_osd = false;
     }
 }
