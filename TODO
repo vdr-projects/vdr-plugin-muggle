@@ -12,17 +12,16 @@
     \subsection bugs Bugs and testing needed
 
         - Test execution of playlist commands
-        - Attach to graphlcd plugin via replay string
-        - Possible to resume play instead of restarting list from the beginning?
-        - Keep this? Test mgPCMPlayer::getSourceFile() for GD case (find)
+        - Playlist view: start at selected on Ok
+    
         - Crashes in filter selections?
-        - Save on exit
+        - Keep this? Test mgPCMPlayer::getSourceFile() for GD case (find)
 
     \subsection urgentosd OSD-related Issues
 
-        - Test Instant play from browser view
-        - Playlist view: start at selected on Ok
-    
+        - Possible to resume play instead of restarting list from the beginning?
+        - Save on exit
+
     \subsection urgentcode Code polishing
 
         - Clean up coding style and documentation in general
@@ -70,10 +69,10 @@
 
 	\subsection urgentplayer Player extensions
 
-        - Toggle Track view/Playlist view (red)
+        - Toggle Track view/playlist view (red)
           - For playlist view show playlist name, total time
           - For track view show name, artist, time
-        - Toggle Detail/progress view (green)
+        - Toggle detail/progress view (green)
           - Track view: all metadata
           - Playlist view: all tracks, skip/jump
 	- Determine max. framecount (needed for rewinding)?
@@ -256,4 +255,9 @@
           - Escape query strings correctly
           - should go into gd_content_interface.c (row[] in lines 1175,1179,1882)?
         - Simple progress indicator for 1.3.12      
+        - Attach to graphlcd plugin via replay string
+        - Test Instant play from browser view
+        - Menu while progress display is active
+        - Check int/unsigned stuff in mg_playlist
+
 */
