@@ -22,7 +22,7 @@
 #include <getopt.h>
 #include <config.h>
 
-static const char *VERSION        = "0.0.7";
+static const char *VERSION        = "0.0.8";
 static const char *DESCRIPTION    = "Media juggle plugin for VDR";
 static const char *MAINMENUENTRY  = "Muggle";
 
