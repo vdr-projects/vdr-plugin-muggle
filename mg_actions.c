@@ -138,6 +138,8 @@ mgDoCollEntry::getTarget()
 	    result.erase(0,5);
     else
 	    result.erase(0,3);
+    string::size_type lparen = result.find("  [");
+    result.erase(lparen,string::npos);
     return result;
 }
 
@@ -159,7 +161,8 @@ void
 mgRemoveCollEntry::Execute()
 {
     string target = getTarget();
-    osd()->Message1 ("Removed %s entries",itos (osd()->moveselection->RemoveFromCollection (target)));
+    int removed = osd()->moveselection->RemoveFromCollection (target);
+    osd()->Message1 ("Removed %s entries",ltos(removed));
     osd()->CollectionChanged(target);
 }
 
@@ -306,21 +309,28 @@ mgEntry::Notify()
 	mgAction::Notify();	// only after selection is updated
 }
 
+
 const char *
 mgEntry::MenuName(const unsigned int idx,const string value)
 {
 	char *result;
+	char ct[20];
+	ct[0]=0;
+	unsigned int selcount = selection()->valcount(value);
+	if (selection()->level()<selection()->ordersize()-1 || selcount>1)
+		sprintf(ct,"  [%u]",selcount);
+	// when changing this, also change mgDoCollEntry::getTarget()
 	if (selection()->isCollectionlist())
 	{
 		if (value == osd()->default_collection)
-			asprintf(&result,"-> %s",value.c_str());
+			asprintf(&result,"-> %s%s",value.c_str(),ct);
         	else
-			asprintf(&result,"     %s",value.c_str());
+			asprintf(&result,"     %s%s",value.c_str(),ct);
 	}
 	else if (selection()->inCollection())
-		asprintf(&result,"%4d %s",idx,value.c_str());
+		asprintf(&result,"%4d %s%s",idx,value.c_str(),ct);
 	else
-		result = strdup(value.c_str());
+		asprintf(&result,"%s%s",value.c_str(),ct);
 	return result;
 }
 

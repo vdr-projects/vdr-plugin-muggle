@@ -345,10 +345,7 @@ class mgSelection
         }
 
 //! \brief sets the current shuffle mode
-        void setShuffleMode (const ShuffleMode shuffle_mode)
-        {
-            m_shuffle_mode = shuffle_mode;
-        }
+        void setShuffleMode (const ShuffleMode shuffle_mode);
 
 //! \brief returns the current loop mode
         LoopMode getLoopMode () const
@@ -423,7 +420,7 @@ class mgSelection
  * last existing position
  * \return only if no position exists, false will be returned
  */
-        void setTrackPosition (unsigned int position);
+        void setTrackPosition (unsigned int position) const;
 
 /*! \brief skip some tracks in the track list
  * \return false if new position does not exist
@@ -459,7 +456,7 @@ class mgSelection
  *  instead, only count the tracks. If the size differs from
  *  m_tracks.size(), invalidate m_tracks
  */
-        unsigned int getNumTracks ()
+        unsigned int getNumTracks () const
         {
             return tracks ().size ();
         }
@@ -510,6 +507,7 @@ class mgSelection
 	string id(mgKey* k) const;
 	unsigned int keycount(mgKeyTypes kt);
 	vector <const char *> choices(mgOrder *o,unsigned int level, unsigned int *current);
+	unsigned int valcount (string val);
 
     private:
 	mutable map <mgKeyTypes, map<string,string> > map_values;
@@ -519,12 +517,14 @@ class mgSelection
 //! \brief be careful when accessing this, see mgSelection::tracks()
         mutable vector < mgContentItem > m_tracks;
         mutable strvector m_ids;
+	mutable vector < unsigned int > m_counts;
 	//! \brief initializes maps for id/value mapping in both direction
 	bool loadvalues (mgKeyTypes kt) const;
         bool m_fall_through;
         unsigned int m_position;
         mutable unsigned int m_tracks_position;
         ShuffleMode m_shuffle_mode;
+        void Shuffle() const;
         LoopMode m_loop_mode;
         MYSQL *m_db;
 	void setDB(MYSQL *db);

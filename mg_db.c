@@ -249,8 +249,22 @@ int mgContentItem::getChannels () const
 
 mgSelection::ShuffleMode mgSelection::toggleShuffleMode ()
 {
-    m_shuffle_mode = (m_shuffle_mode == SM_PARTY) ? SM_NONE : ShuffleMode (m_shuffle_mode + 1);
+    setShuffleMode((m_shuffle_mode == SM_PARTY) ? SM_NONE : ShuffleMode (m_shuffle_mode + 1));
+    Shuffle();
+    return getShuffleMode();
+}
+
+void
+mgSelection::setShuffleMode (mgSelection::ShuffleMode mode)
+{
+    m_shuffle_mode = mode;
+}
+
+void
+mgSelection::Shuffle() const
+{
     unsigned int tracksize = getNumTracks();
+    if (tracksize==0) return;
     switch (m_shuffle_mode)
     {
         case SM_NONE:
@@ -299,7 +313,6 @@ mgSelection::ShuffleMode mgSelection::toggleShuffleMode ()
 - add the file to the end of the list
 */
     }
-    return m_shuffle_mode;
 }
 
 
@@ -430,7 +443,7 @@ mgSelection::setPosition (unsigned int position)
 }
 
 void
-mgSelection::setTrackPosition (unsigned int position)
+mgSelection::setTrackPosition (unsigned int position) const
 {
 	m_tracks_position = position;
 }
@@ -605,6 +618,8 @@ mgSelection::tracks () const
 		  m_tracks.push_back (mgContentItem (this,row));
             	mysql_free_result (rows);
 	}
+    if (m_shuffle_mode!=SM_NONE)
+    	Shuffle();
     return m_tracks;
 }
 
@@ -746,8 +761,14 @@ void mgSelection::InitSelection() {
     	m_position = 0;
     	m_tracks_position = 0;
     	m_trackid = -1;
-    	m_shuffle_mode = ShuffleMode(the_setup.InitShuffleMode);
-    	m_loop_mode = LoopMode(the_setup.InitLoopMode);
+    	if (the_setup.InitShuffleMode)
+    		m_shuffle_mode = SM_NORMAL;
+	else
+    		m_shuffle_mode = SM_NONE;
+	if (the_setup.InitLoopMode)
+		m_loop_mode = LM_FULL;
+	else
+    		m_loop_mode = LM_NONE;
     	clearCache();
 	values.setOwner(this);
 }
@@ -836,9 +857,9 @@ void mgSelection::InitFrom(const mgSelection* s)
     m_position = s->m_position;
     m_trackid = s->m_trackid;
     m_tracks_position = s->m_tracks_position;
+    Connect();
     setShuffleMode (s->getShuffleMode ());
     setLoopMode (s->getLoopMode ());
-    Connect();
 }
 
 unsigned int
@@ -866,6 +887,12 @@ mgSelection::valindex (const string val,const bool second_try) const
         return valindex(val,true);
 }
 
+unsigned int
+mgSelection::valcount (string value)
+{
+	assert(m_counts.size()==values.size());
+	return m_counts[valindex(value)];
+}
 
 unsigned int
 mgSelection::idindex (const string id,const bool second_try) const
@@ -898,6 +925,7 @@ mgSelection::refreshValues ()  const
         m_current_values = p.sql_select();
         values.strings.clear ();
         m_ids.clear ();
+	m_counts.clear();
         MYSQL_RES *rows = exec_sql (m_current_values);
         if (rows)
         {
@@ -909,17 +937,19 @@ mgSelection::refreshValues ()  const
 			string r0 = row[0];
 			if (r0=="NULL") // there is a genre NULL!
 				continue;
-			if (num_fields==2)
+			if (num_fields==3)
 			{
 				if (!row[1]) continue;
 				string r1 = row[1];
                 		values.strings.push_back (r0);
                 		m_ids.push_back (r1);
+				m_counts.push_back(atol(row[2]));
 			}
 			else
 			{
                 		values.strings.push_back (value(order.Key(m_level),r0));
                 		m_ids.push_back (r0);
+				m_counts.push_back(atol(row[1]));
 			}
             	}
             	mysql_free_result (rows);

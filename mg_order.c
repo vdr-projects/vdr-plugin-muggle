@@ -176,11 +176,30 @@ class mgKeyNormal : public mgKey {
 		string m_value;
 };
 
+class mgKeyDate : public mgKeyNormal {
+	public:
+		mgKeyDate(mgKeyTypes kt,string table, string field) : mgKeyNormal(kt,table,field) {}
+};
+
 class mgKeyTrack : public mgKeyNormal {
 	public:
 		mgKeyTrack() : mgKeyNormal(keyTrack,"tracks","tracknb") {};
 		mgParts Parts(bool orderby=false) const;
 };
+
+class mgKeyAlbum : public mgKeyNormal {
+	public:
+		mgKeyAlbum() : mgKeyNormal(keyAlbum,"album","title") {};
+		mgParts Parts(bool orderby=false) const;
+};
+
+mgParts
+mgKeyAlbum::Parts(bool orderby) const
+{
+	mgParts result = mgKeyNormal::Parts(orderby);
+	result.tables.push_back("tracks");
+	return result;
+}
 
 class mgKeyFolder : public mgKeyNormal {
 	public:
@@ -402,6 +421,7 @@ mgKeyNormal::set(string value, string id)
 
 mgParts::mgParts()
 {
+	m_sql_select="";
 }
 
 mgParts::~mgParts()
@@ -557,16 +577,24 @@ mgParts::Prepare()
 string
 mgParts::sql_select(bool distinct)
 {
+	if (!m_sql_select.empty())
+		return m_sql_select;
 	Prepare();
-	string result = "";
+	string result;
 	if (distinct)
-		result += sql_list("SELECT DISTINCT",fields);
+	{
+		fields.push_back("COUNT(*)");
+		result = sql_list("SELECT",fields);
+		fields.pop_back();
+	}
 	else
-		result += sql_list("SELECT",fields);
+		result = sql_list("SELECT",fields);
 	if (result.empty())
 		return result;
 	result += sql_list("FROM",tables);
 	result += sql_list("WHERE",clauses," AND ");
+	if (distinct)
+		result += sql_list("GROUP BY",fields);
 	result += sql_list("ORDER BY",orders);
 	optimize(result);
 	return result;
@@ -890,6 +918,17 @@ mgOrder::Parts(unsigned int level,bool orderby) const
 {
 	assert(strlen(m_db->host));
 	mgParts result;
+	mgKeyNormal *k0 = dynamic_cast<mgKeyNormal*>(Keys[0]);
+	mgKeyTypes kt0 = k0->Type();
+	if (level==0 &&  kt0==keyCollection)
+	{
+		// sql command contributed by jarny
+		result.m_sql_select = string("select playlist.title,playlist.id, "
+				"count(*) * (playlistitem.playlist is not null) from playlist "
+				"left join playlistitem on playlist.id = playlistitem.playlist "
+				"group by playlist.title");
+		return result;
+	}
 	for (unsigned int i=0;i<=level;i++)
 	{
 		if (i==Keys.size()) break;
@@ -1010,7 +1049,9 @@ ktGenerate(const mgKeyTypes kt,MYSQL* db)
 		case keyTitle: result = new mgKeyNormal(kt,"tracks","title");break;
 		case keyTrack: result = new mgKeyTrack;break;
 		case keyDecade: result = new mgKeyDecade;break;
-		case keyAlbum: result = new mgKeyNormal(kt,"album","title");break;
+		case keyAlbum: result = new mgKeyAlbum;break;
+		case keyCreated: result = new mgKeyDate(kt,"tracks","created");break;
+		case keyModified: result = new mgKeyDate(kt,"tracks","modified");break;
 		case keyCollection: result = new mgKeyCollection;break;
 		case keyCollectionItem: result = new mgKeyCollectionItem;break;
 		case keyLanguage: result = new mgKeyLanguage;break;
@@ -1040,6 +1081,8 @@ ktName(const mgKeyTypes kt)
 		case keyTrack: result = "Track";break;
 		case keyDecade: result = "Decade";break;
 		case keyAlbum: result = "Album";break;
+		case keyCreated: result = "Created";break;
+		case keyModified: result = "Modified";break;
 		case keyCollection: result = "Collection";break;
 		case keyCollectionItem: result = "Collection item";break;
 		case keyLanguage: result = "Language";break;
