@@ -87,7 +87,7 @@ mgMuggle::CommandLineHelp (void)
         "  -h HHHH,  --host=HHHH     specify database host (default is mysql embedded)\n"
 #endif
         "  -s SSSS   --socket=PATH   specify database socket\n"
-        "  -n NNNN,  --name=NNNN     specify database name (overridden by -g)\n"
+        "  -n NNNN,  --name=NNNN     specify database name (default is GiantDisc)\n"
         "  -p PPPP,  --port=PPPP     specify port of database server (default is )\n"
         "  -u UUUU,  --user=UUUU     specify database user (default is )\n"
         "  -w WWWW,  --password=WWWW specify database password (default is empty)\n"
@@ -95,7 +95,7 @@ mgMuggle::CommandLineHelp (void)
 #ifndef HAVE_ONLY_SERVER
         "  -d DIRN,  --datadir=DIRN  specify directory for embedded sql data (default is $HOME/.muggle)\n"
 #endif
-        "  -g,       --giantdisc     enable full Giantdisc compatibility mode\n"
+        "  -g,       --giantdisc     enable full Giantdisc compatibility mode. Overrides -n\n"
         "  -v,       --verbose       specify debug level. The higher the more. Default is 1\n"
 	"\n"
 	"if the specified host is localhost, sockets will be used if possible.\n"
