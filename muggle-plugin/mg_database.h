@@ -40,7 +40,7 @@ class mgDB
 
   // add constructor for sockets
   
-  /*! \brief constructor */
+  /*! \brief destructor */
   ~mgDB();
 
   /*! 
@@ -48,10 +48,12 @@ class mgDB
    */
   MYSQL getDBHandle();
 
+  MYSQL_RES *exec_sql (std::string query);
+
   /*! 
    * \brief database initialization
    */
-  // int initialize();
+  void initialize();
 
   /*! 
    * \brief helper function to execute read queries
@@ -73,8 +75,6 @@ class mgDB
    * \todo use m_dbase member of this class
    */
   static std::string escape_string( MYSQL *db, std::string s );
-
-  
   
  private:
   MYSQL m_dbase;
