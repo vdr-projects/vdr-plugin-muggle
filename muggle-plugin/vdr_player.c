@@ -323,10 +323,10 @@ mgPCMPlayer::SetPlayMode (ePlayMode mode)
 {
     m_playmode_mutex.Lock ();
     if (mode != m_playmode)
-      {
+    {
         m_playmode = mode;
         m_playmode_cond.Broadcast ();
-      }
+    }
     m_playmode_mutex.Unlock ();
 }
 
@@ -336,10 +336,10 @@ mgPCMPlayer::WaitPlayMode (ePlayMode mode, bool inv)
 {
 // must be called with m_playmode_mutex LOCKED !!!
 
-  while( m_active
-	 && ((!inv && mode != m_playmode) || (inv && mode == m_playmode)) )
+    while (m_active
+        && ((!inv && mode != m_playmode) || (inv && mode == m_playmode)))
     {
-      m_playmode_cond.Wait (m_playmode_mutex);
+        m_playmode_cond.Wait (m_playmode_mutex);
     }
 }
 
@@ -412,18 +412,20 @@ mgPCMPlayer::Action (void)
 
                     if (m_playing)
                     {
-		      if ((m_decoder = mgDecoders::findDecoder (m_playing))
-			  && m_decoder->start ())
+		        std::string filename = m_playing->getSourceFile ();
+                        if ((m_decoder = mgDecoders::findDecoder (m_playing))
+                            && m_decoder->start ())
                         {
 			  levelgood = true;
 			  haslevel = false;
 			  
-			  scale.Init ();
 			  level.Init ();
 			  
 			  m_state = msDecode;
 			  break;
                         }
+		        else
+			      mgWarning("found no decoder for %s",filename.c_str());
                     }
                     m_state = msEof;
                 }
@@ -620,8 +622,8 @@ mgPCMPlayer::Action (void)
                 {
                     if (m_ringbuffer->Available () == 0)
                     {
-		      // m_active = false;
-		      SetPlayMode (pmStopped);
+                        m_active = false;
+                        SetPlayMode (pmStopped);
                     }
                 }
                 break;

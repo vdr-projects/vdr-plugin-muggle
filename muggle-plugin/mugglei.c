@@ -23,6 +23,9 @@
 #include <stdlib.h>
 
 #include <tag.h>
+#include <mpegfile.h>
+#include <flacfile.h>
+#include <id3v2tag.h>
 #include <fileref.h>
 
 #include "mg_tools.h"
@@ -35,6 +38,10 @@ bool import_assorted, delete_mode;
 #define  MAX_QUERY_BUFLEN  2048
 static char querybuf[MAX_QUERY_BUFLEN];
 
+void showmessage(const char *msg)
+{
+}
+
 MYSQL_RES* mgSqlReadQuery(MYSQL *db, const char *fmt, ...)
 {
   va_list ap;
@@ -45,10 +52,6 @@ MYSQL_RES* mgSqlReadQuery(MYSQL *db, const char *fmt, ...)
     {
       mgError( "SQL error in MUGGLE:\n%s\n", querybuf );
     }
-
-#ifdef VERBOSE
-  std::cout << querybuf << std::endl;
-#endif
   
   MYSQL_RES *result = mysql_store_result(db);
   
@@ -67,10 +70,6 @@ void mgSqlWriteQuery(MYSQL *db, const char *fmt, ...)
       mgError( "SQL error in MUGGLE:\n%s\n", querybuf );
     }
   
-#ifdef VERBOSE
-  std::cout << querybuf << std::endl;
-#endif
-
   va_end(ap);
 }
 
@@ -142,23 +141,14 @@ time_t get_db_modification_time( long uid )
 
 TagLib::String escape_string( MYSQL *db, TagLib::String s )
 {
-  TagLib::String r;
+  char *buf = strdup( s.toCString() );
+  char *escbuf = (char *) malloc( 2*strlen( buf ) + 1 );
 
-  if( !s.isNull() && !s.isEmpty() )
-    {
-      char *buf = strdup( s.toCString() );
-      char *escbuf = (char *) malloc( 2*strlen( buf ) + 1 );
+  mysql_real_escape_string( db, escbuf, s.toCString(), s.size() );
+  TagLib::String r = TagLib::String( escbuf );
 
-      mysql_real_escape_string( db, escbuf, s.toCString(), s.size() );
-      r = TagLib::String( escbuf );
-
-      free( escbuf );
-      free( buf);
-    }
-  else
-    {
-      r = s;
-    }
+  free( escbuf );
+  free( buf);
 
   return r;
 }
@@ -204,88 +194,48 @@ TagLib::String find_genre_id( TagLib::String genre )
 // read tags from the mp3 file and store them into the corresponding database entry
 void update_db( long uid, std::string filename )
 {
-  TagLib::String title, album, artist, genre, cddbid;
+  TagLib::String title, album, artist, genre, cddbid, language;
   uint trackno, year;
 
   //  ID3_Tag filetag( filename.c_str() );
   TagLib::FileRef f( filename.c_str() );
 
-  if( !f.isNull() ) 
+  if( !f.isNull() && f.tag() ) 
     {
-#ifdef VERBOSE
-      std::cout << "Evaluating " << filename << std::endl;
-#endif
+      //      std::cout << "Evaluating " << filename << std::endl;
       TagLib::Tag *tag = f.tag();
-      if( tag )
-	{
-	  // obtain tag information
-	  title   = tag->title();
-	  album   = tag->album();
-	  year    = tag->year();
-	  artist  = tag->artist();
-	  trackno = tag->track();
-	  genre   = tag->genre();
 
-#ifdef VERBOSE
-	    std::cout << "-- TAG --" << std::endl;
-	    std::cout << "title   - '" << tag->title()   << "'" << std::endl;
-	    std::cout << "artist  - '" << tag->artist()  << "'" << std::endl;
-	    std::cout << "album   - '" << tag->album()   << "'" << std::endl;
-	    std::cout << "year    - '" << tag->year()    << "'" << std::endl;
-	    std::cout << "comment - '" << tag->comment() << "'" << std::endl;
-	    std::cout << "track   - '" << tag->track()   << "'" << std::endl;
-	    std::cout << "genre   - '" << tag->genre()   << "'" << std::endl;
-#endif
-	}
-      else
-	{
-#ifdef VERBOSE
-	  std::cerr << "No id3 tag found." << std::endl;
-#endif
-	  
-	  // use basename
-	  TagLib::String file( filename.c_str() );
-	  
-	  int pos = title.size();	      
-	  while( pos > 0 && title[pos] != '\\' )
-	    {
-	      pos --;
-	    }	  
-	  
-	  title = file.substr( pos );
-	  
-	  // will be associated to an Unassigned album for Unknown
-	  album = ""; 
-	  artist = "Unknown";
-
-	  year = 0;
-	  trackno = 0;
-	}
-
-      if( title.isNull() || title.isEmpty() )
-	{
-#ifdef VERBOSE
-	  std::cout << "No title tag found." << std::endl;
-#endif
-	  // use basename
-	  TagLib::String file( filename.c_str() );
-	  
-	  int pos = title.size();	      
-	  while( pos > 0 && title[pos] != '\\' )
-	    {
-	      pos --;
-	    }	  
-	  
-	  title = file.substr( pos );
-	}
-
-      if( artist.isNull() || artist.isEmpty() )
-	{
-	  artist = "Unknown";
-#ifdef VERBOSE
-	  std::cout << "No artist tag found." << std::endl;
-#endif
-	}
+      // obtain tag information
+      title   = tag->title();
+      album   = tag->album();
+      year    = tag->year();
+      artist  = tag->artist();
+      trackno = tag->track();
+      genre   = tag->genre();
+      language = "";
+      TagLib::ID3v2::Tag * id3v2tag=0;
+      if (filename.substr(filename.size()-5)==".flac")
+      {
+      	TagLib::FLAC::File f(filename.c_str());
+	id3v2tag = f.ID3v2Tag();
+      	if (id3v2tag)
+      	{
+      	  TagLib::ID3v2::FrameList l = id3v2tag->frameListMap()["TLAN"];
+      	  if (!l.isEmpty())
+  	    language = l.front()->toString();
+        }
+      }
+      else if (filename.substr(filename.size()-4)==".mp3")
+      {
+      	TagLib::MPEG::File f(filename.c_str());
+	id3v2tag = f.ID3v2Tag();
+        if (id3v2tag)
+        {
+      	  TagLib::ID3v2::FrameList l = id3v2tag->frameListMap()["TLAN"];
+      	  if (!l.isEmpty())
+  	    language = l.front()->toString();
+        }
+      }
 
       TagLib::String gid = find_genre_id( genre );
 
@@ -304,7 +254,7 @@ void update_db( long uid, std::string filename )
       // finally update the database
 
       // obtain associated album or create
-      if( album.isNull() || album.isEmpty() )
+      if( album == "" )
 	{ // no album found, create default album for artist
 	  MYSQL_RES *result = mgSqlReadQuery( db, "SELECT cddbid FROM album WHERE title=\"Unassigned\" AND artist=\"%s\"", artist.toCString() );
 	  MYSQL_ROW row = mysql_fetch_row( result );
@@ -385,20 +335,32 @@ void update_db( long uid, std::string filename )
 	  
 	  mgSqlWriteQuery( db,	"UPDATE tracks SET artist=\"%s\", title=\"%s\", year=\"%d\","
 			   "sourceid=\"%s\", mp3file=\"%s\", length=%d, bitrate=\"%d\","
-			   "samplerate=%d, channels=%d, genre1=\"%s\" WHERE id=%d", 
+			   "samplerate=%d, channels=%d, genre1=\"%s\", lang=\"%s\" WHERE id=%d", 
 			   artist.toCString(), title.toCString(), year, 
 			   cddbid.toCString(), filename.c_str(), len, bitrate,
-			   sample, channels, gid.toCString(), uid );
+			   sample, channels, gid.toCString(), uid, language.toCString() );
 	}
       else
 	{ // the entry does not exist, create it
 	  mgSqlWriteQuery( db,
 			   "INSERT INTO tracks "
-			   "(artist, title,  year,sourceid,tracknb,mp3file,length,bitrate,samplerate,channels,genre1,genre2) VALUES"
-			   "(\"%s\", \"%s\", %d,  \"%s\",  %d,     \"%s\", %d,    \"%d\", %d,        %d,      \"%s\",\"\")",
+			   "(artist, title,  year,sourceid,tracknb,mp3file,length,bitrate,samplerate,channels,genre1,genre2,lang) VALUES"
+			   "(\"%s\", \"%s\", %d,  \"%s\",  %d,     \"%s\", %d,    \"%d\", %d,        %d,      \"%s\",\"\",\"%s\")",
 			   artist.toCString(), title.toCString(), year, cddbid.toCString(), 
-			   trackno, filename.c_str(), len, bitrate, sample, channels, gid.toCString() );
+			   trackno, filename.c_str(), len, bitrate, sample, channels, gid.toCString(),
+			   language.toCString());
 
+#ifdef VERBOSE
+	    std::cout << "-- TAG --" << std::endl;
+	    std::cout << "title   - '" << tag->title()   << "'" << std::endl;
+	    std::cout << "artist  - '" << tag->artist()  << "'" << std::endl;
+	    std::cout << "album   - '" << tag->album()   << "'" << std::endl;
+	    std::cout << "year    - '" << tag->year()    << "'" << std::endl;
+	    std::cout << "comment - '" << tag->comment() << "'" << std::endl;
+	    std::cout << "track   - '" << tag->track()   << "'" << std::endl;
+	    std::cout << "genre   - '" << tag->genre()   << "'" << std::endl;
+	    std::cout << "language- '" << language   << "'" << std::endl;
+#endif
 	}
     }
 }

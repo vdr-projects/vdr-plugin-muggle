@@ -25,6 +25,8 @@
 #include "vdr_decoder.h"
 #include "vdr_decoder_mp3.h"
 
+extern void showmessage(const char *);
+
 #ifdef HAVE_VORBISFILE
 #include "vdr_decoder_ogg.h"
 #endif
@@ -60,13 +62,21 @@ mgMediaType mgDecoders::getMediaType (std::string s)
     {
       if (!strcmp (p, ".ogg"))
         {
+#ifdef HAVE_VORBISFILE
 	  mt = MT_OGG;
+#else
+	      	mgWarning("Support for vorbis not compiled in, define HAVE_VORBISFILE in Makefile");
+#endif
         }
       else
 	{
 	  if (!strcmp (p, ".flac"))
 	    {
+#ifdef HAVE_FLAC
 	      mt = MT_FLAC;
+#else
+	      	mgWarning("Support for flac not compiled in, define HAVE_FLAC in Makefile");
+#endif
 	    }	    
 	}
     }
@@ -79,11 +89,19 @@ mgDecoders::findDecoder (mgContentItem * item)
 {
     mgDecoder *decoder = 0;
 
-    std::string filename = the_setup.getFilename( item->getSourceFile () );
+    std::string filename = item->getSourceFile ();
 
     struct stat st;
     if (stat (filename.c_str (), &st))
     {
+	char *b=0;
+	int nsize = filename.size();
+	if (nsize<30)
+		asprintf(&b,tr("%s not readable"),filename.c_str());
+	else
+		asprintf(&b,tr("%s..%s not readable"),filename.substr(0,20).c_str(),filename.substr(nsize-20).c_str());;
+	showmessage(b);
+	free(b);
         esyslog ("ERROR: cannot stat %s. Meaning not found, not a valid file, or no access rights", filename.c_str ());
         return 0;
     }

@@ -239,8 +239,7 @@ mgOggFile::stream (short *buffer, int samples)
 
 mgOggDecoder::mgOggDecoder (mgContentItem * item):mgDecoder (item)
 {
-  // m_filename = item->getSourceFile ();
-  m_filename = the_setup.getFilename( item->getSourceFile () );
+  m_filename = item->getSourceFile ();
   m_file = new mgOggFile (m_filename);
   m_pcm = 0;
   init ();

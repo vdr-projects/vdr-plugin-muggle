@@ -36,19 +36,27 @@ IsEntry(mgActions i)
 class mgOsdItem : public mgAction, public cOsdItem
 {
 	public:
-		eOSState ProcessKey(eKeys key);
-	protected:
-		virtual eOSState Process(eKeys key) { return osUnknown; }
+		eOSState ProcessKey(eKeys key) { return mgAction::ProcessKey(key); }
 };
 
+
 eOSState
-mgOsdItem::ProcessKey(eKeys key)
+mgAction::ProcessKey(eKeys key)
 {
+	if (key!=kNone)
+		mgDebug(1,"mgAction::ProcessKey(%d)",key);
     eOSState result = Process(key);    
     if (result != osUnknown)
 	    IgnoreNextEvent = true;
     return result;
 }
+
+class mgNone: public mgOsdItem
+{	public:
+		void Notify() {};
+		bool Enabled(mgActions on) { return false; }
+		eOSState Process(eKeys key) { return osUnknown; }
+};
 
 //! \brief used for normal data base items
 class mgEntry : public mgOsdItem
@@ -56,11 +64,18 @@ class mgEntry : public mgOsdItem
 	public:
 		void Notify();
 		bool Enabled(mgActions on) { return IsEntry(on);}
-		const char *ButtonName() { return ""; }
         	const char *MenuName (const unsigned int idx,const string value);
-		virtual eOSState Process(eKeys key);
+		eOSState Process(eKeys key);
 		void Execute();
 		eOSState Back();
+};
+
+class mgKeyItem : public mgAction, public cMenuEditStraItem
+{
+	public:
+	   mgKeyItem(const char *Name, int *Value, int NumStrings, const char *const *Strings) : cMenuEditStraItem(Name, Value, NumStrings, Strings) {}
+	   eOSState ProcessKey(eKeys key) { return mgAction::ProcessKey(key); }
+	   eOSState Process(eKeys key);
 };
 
 class mgDoCollEntry : public mgEntry
@@ -100,7 +115,6 @@ mgDoCollEntry::Process(eKeys key)
     eOSState result = osContinue;
     switch (key)
     {
-        case kBlue:
         case kBack:
             break;
         case kOk:
@@ -202,8 +216,59 @@ class mgCommand : public mgOsdItem
 	public:
 		bool Enabled(mgActions on);
 		virtual eOSState Process(eKeys key);
+};
+
+class mgActOrder : public mgOsdItem
+{
+	public:
+		const char* MenuName(const unsigned int idx,const string value);
+		virtual eOSState Process(eKeys key);
 		void Execute();
 };
+
+const char*
+mgActOrder::MenuName(const unsigned int idx,const string value)
+{
+	return strdup(value.c_str());
+}
+
+eOSState
+mgActOrder::Process(eKeys key)
+{
+    mgMenu *n = osd ()->newmenu;
+    osd ()->newmenu = NULL;
+    eOSState result = osContinue;
+    switch (key)
+    {
+        case kBack:
+            break;
+        case kOk:
+            Execute ();
+            break;
+        default:
+            osd ()->newmenu = n;               // wrong key: stay in submenu
+	    result = osUnknown;
+            break;
+    }
+    return result;
+}
+
+void
+mgActOrder::Execute()
+{
+ 	mgSelection *s = osd()->selection();
+	mgOrder oldorder = s->getOrder();
+	mgContentItem o;
+	s->select();
+	if (s->getNumTracks()==1)
+		o = s->getTrack(0);
+	osd()->UseNormalSelection();	// Default for all orders
+	osd()->setOrder(s,osd()->Current());
+	mgSelection *newsel = osd()->selection();
+	newsel->selectfrom(oldorder,&o);
+	osd()->newposition = newsel->getPosition();
+	osd()->SaveState();
+}
 
 bool
 mgCommand::Enabled(mgActions on)
@@ -321,7 +386,6 @@ mgCommand::Process(eKeys key)
 	    else
 		    parent->TreeYellowAction = Type();
             break;
-        case kBlue:
         case kBack:
             break;
         case kOk:
@@ -335,16 +399,11 @@ mgCommand::Process(eKeys key)
     return result;
 }
 
-void
-mgCommand::Execute()
-{
-}
 
 class mgExternal : public mgCommand
 {
 	public:
 		const char *ButtonName();
-        	const char *MenuName (const unsigned int idx,const string value);
 		void Execute();
 		bool Enabled(mgActions on) { return true; }
 	private:
@@ -385,12 +444,6 @@ mgExternal::ButtonName()
 	    return "";
 }
 
-const char*
-mgExternal::MenuName(const unsigned int idx,const string value)
-{
-	return strdup(ButtonName());
-}
-
 cCommand *
 mgExternal::Command()
 {
@@ -426,7 +479,17 @@ mgExternal::Execute()
             if (!m3u_file.empty ())
             {
                 /*char *result = (char *)*/
-	        command->Execute (m3u_file.c_str ());
+		    string quoted = "'" + m3u_file + "'";
+		    char prev[1000];
+		if (!getcwd(prev,1000))
+			mgError("current path too long");
+		if (chdir(the_setup.ToplevelDir))
+			mgError("cannnot change to directory %s",
+					the_setup.ToplevelDir);
+		command->Execute (quoted.c_str ());
+		chdir(prev);
+		selection()->clearCache();
+		osd()->forcerefresh = true; // the ext cmd could change the database
 /* What to do? Recode cMenuText (not much)? 
                 if (result)
                 {
@@ -475,17 +538,91 @@ mgChooseOrder::Process(eKeys key)
 void mgChooseOrder::Execute() 
 {
         osd ()->newmenu = new mgMenuOrders;
+	osd ()->newposition = osd()->getCurrentOrder();
 
 }
+
+class mgEditOrder : public mgCommand
+{
+    public:
+	bool Enabled(mgActions on) { return true; }
+	eOSState Process(eKeys key);
+        void Execute () { osd ()->newmenu = new mgMenuOrder; }
+        const char *ButtonName() { return tr("Edit"); }
+};
+
+eOSState
+mgEditOrder::Process(eKeys key)
+{
+	if (key == kOk)
+	{
+		Execute();
+		return osContinue;
+	}
+	else
+		return mgCommand::Process(key);
+}
+
+class mgCreateOrder : public mgCommand
+{
+    public:
+	bool Enabled(mgActions on) { return true; }
+        void Execute ();
+        const char *ButtonName() { return tr("Create"); }
+};
+
+void 
+mgCreateOrder::Execute()
+{
+	osd()->AddOrder();
+	osd()->SaveState();
+	osd()->forcerefresh = true;
+}
+
+class mgDeleteOrder : public mgCommand
+{
+    public:
+	bool Enabled(mgActions on) { return true; }
+        void Execute ();
+        const char *ButtonName() { return tr("Delete"); }
+};
+
+void 
+mgDeleteOrder::Execute()
+{
+	osd()->DeleteOrder();
+	osd()->SaveState();
+	osd()->forcerefresh = true;
+	osd()->newposition = osd()->Current();
+}
+
+//! \brief show the normal selection list
+class mgShowList: public mgOsdItem
+{
+    public:
+	bool Enabled(mgActions) { return true; }
+        const char *ButtonName () { return tr("List"); }
+	void Execute() { osd()->newmenu=NULL; }
+};
+
+
+//! \brief show the command submenu
+class mgShowCommands: public mgOsdItem
+{
+    public:
+	bool Enabled(mgActions on) { return true; }
+        const char *ButtonName () { return tr("Commands"); }
+	void Execute() { osd()->newmenu = new mgSubmenu; }
+};
+
 
 //! \brief toggles between the normal and the collection selection
 class mgToggleSelection:public mgCommand
 {
     public:
-	bool Enabled(mgActions on = mgActions(0)) { return true; }
+	bool Enabled(mgActions on) { return true; }
         void Execute ();
         const char *ButtonName ();
-        const char *MenuName (const unsigned int idx,const string value);
 };
 
 const char *
@@ -496,17 +633,6 @@ mgToggleSelection::ButtonName ()
     else
         return tr ("Collections");
 }
-
-
-const char *
-mgToggleSelection::MenuName (const unsigned int idx,const string value)
-{
-    if (osd ()->UsingCollection)
-        return strdup(tr ("Search"));
-    else
-        return strdup(tr ("Collections"));
-}
-
 
 void
 mgToggleSelection::Execute ()
@@ -526,7 +652,7 @@ mgToggleSelection::Execute ()
 class mgSetDefaultCollection:public mgCommand
 {
     public:
-	bool Enabled(mgActions on = mgActions(0));
+	bool Enabled(mgActions on);
         void Execute ();
         const char *ButtonName ()
         {
@@ -567,11 +693,7 @@ class mgSetButton : public mgCommand
 {
     public:
 	bool Enabled(mgActions on) { return true; }
-	const char *ButtonName()
-	{
-		return tr("Set");
-	}
-	const char *MenuName(const unsigned int idx,const string value) { return strdup(""); }
+	const char *ButtonName() { return tr("Set"); }
 };
 
 
@@ -579,18 +701,8 @@ class mgSetButton : public mgCommand
 class mgInstantPlay : public mgCommand {
     public:
         void Execute ();
-        const char *ButtonName ()
-        {
-            return tr ("Instant play");
-        }
-        const char *MenuName (const unsigned int idx,const string value);
+        const char *ButtonName () { return tr ("Instant play"); }
 };
-
-const char *
-mgInstantPlay::MenuName (const unsigned int idx,const string value)
-{
-    return strdup(tr("Instant play"));
-}
 
 void
 mgInstantPlay::Execute()
@@ -636,7 +748,8 @@ mgAddAllToCollection::ExecuteMove()
     char *b;
     asprintf(&b,tr("'%s' to collection"),selection()->getCurrentValue().c_str());
     osd ()->newmenu = new mgTreeAddToCollSelector(string(b));
-    osd ()->newposition = osd()->collselection()->getPosition(0); 
+    osd ()->collselection()->leave_all();
+    osd ()->newposition = osd()->collselection()->getPosition(); 
     free(b);
 }
 
@@ -699,7 +812,7 @@ mgAddAllToDefaultCollection::ExecuteSelection (mgSelection *s)
 class mgAddThisToCollection:public mgAddAllToCollection
 {
     public:
-	bool Enabled(mgActions on = mgActions(0));
+	bool Enabled(mgActions on);
         void Execute ();
         const char *ButtonName ();
         const char *MenuName (const unsigned int idx,const string value);
@@ -738,7 +851,7 @@ mgAddThisToCollection::MenuName (const unsigned int idx,const string value)
 class mgAddThisToDefaultCollection:public mgAddAllToDefaultCollection
 {
     public:
-	bool Enabled(mgActions on = mgActions(0));
+	bool Enabled(mgActions on);
         void Execute ();
         const char *ButtonName ();
         const char *MenuName (const unsigned int idx,const string value);
@@ -778,60 +891,6 @@ mgAddThisToDefaultCollection::MenuName (const unsigned int idx,const string valu
     return b;
 }
 
-class mgOrderNew : public mgCommand
-{
-    protected:
-	virtual void NewOrder() = 0;
-    public:
-	bool Enabled(mgActions on = mgActions(0)) { return true; }
-	void Execute();
-};
-
-void
-mgOrderNew::Execute()
-{
- 	mgSelection *s = osd()->selection();
-	map<mgKeyTypes,string>* oldkeys = s->UsedKeyValues();
-	mgContentItem o;
-	s->select();
-	if (s->getNumTracks()==1)
-	{
-		o = s->getTrack(0);
-	}
-	osd()->UseNormalSelection();	// Default for all orders
-	NewOrder();
-	mgSelection *newsel = osd()->selection();
-	newsel->leave(0);
-	for (unsigned int idx = 0; idx < newsel->ordersize(); idx++)
-	{
-		string selval = "";
-		mgKeyTypes new_kt = newsel->getKeyType(idx);
-		if (oldkeys->count(new_kt)>0) 
-			selval=(*oldkeys)[new_kt];
-		else if (o.getId()>=0)
-			selval=o.getKeyValue(new_kt);
-		if (!selval.empty())
-		{
-			if (idx<newsel->ordersize()-1)
-				newsel->select(selval);
-			else
-				newsel->setPosition(selval);
-			continue;
-		}
-		break;
-	}
-	delete oldkeys;
-	osd()->newposition = newsel->getPosition(newsel->level());
-	newsel->clearCache();
-}
-
-class mgOrderCollItem : public mgOrderNew
-{
-        const char *MenuName(const unsigned int idx,const string value) { return strdup(tr("Collection -> Item")); }
-	void NewOrder() { osd ()->UseCollectionSelection (); }
-};
-
-
 //! \brief remove selected items from default collection
 class mgRemoveAllFromCollection:public mgCommand
 {
@@ -864,7 +923,7 @@ mgRemoveAllFromCollection::MenuName (const unsigned int idx,const string value)
 class mgClearCollection : public mgCommand
 {
     public:
-	bool Enabled(mgActions on = mgActions(0));
+	bool Enabled(mgActions on);
         void Execute ();
         const char *ButtonName ()
         {
@@ -922,50 +981,45 @@ mgRemoveThisFromCollection::MenuName (const unsigned int idx,const string value)
     return strdup(tr("Remove from a collection"));
 }
 
-/*! \brief create collection directly in the collection list
- */
-class mgCreateCollection: public mgAction, public cMenuEditStrItem
+class mgEditAction : public mgAction
 {
-    public:
-	mgCreateCollection();
-	void Notify();
-	bool Enabled(mgActions on = mgActions(0));
-	eOSState ProcessKey(eKeys key);
-        void Execute ();
-        const char *MenuName (const unsigned int idx=0,const string value="");
-     private:
-	bool Editing();
-	char value[30];
+	public:
+		mgEditAction() : mgAction() { memset(m_value,0,30); }
+	protected:
+		char m_value[30];
 };
 
+class mgCreate : public mgEditAction, public cMenuEditStrItem
+{
+    public:
+	mgCreate(const char* mn);
+	virtual bool Enabled(mgActions on)=0;
+	void Notify();
+	eOSState ProcessKey(eKeys key) { return mgAction::ProcessKey(key); }
+	eOSState Process(eKeys key);
+     protected:
+	bool Editing();
+};
+
+mgCreate::mgCreate(const char *mn) : mgEditAction(), cMenuEditStrItem(mn,m_value,30,tr(FileNameChars))
+{
+}
 
 bool
-mgCreateCollection::Editing()
+mgCreate::Editing()
 {
 	return (strchr(cOsdItem::Text(),'[') && strchr(cOsdItem::Text(),']'));
 }
 
-
 void
-mgCreateCollection::Notify()
+mgCreate::Notify()
 {
     if (!Editing())
 	m->SetHelpKeys();
 }
 
-const char*
-mgCreateCollection::MenuName(const unsigned int idx,const string value)
-{
-            return strdup(tr ("Create collection"));
-}
-
-mgCreateCollection::mgCreateCollection() : mgAction(), cMenuEditStrItem(MenuName(),value,30,tr(FileNameChars))
-{
-	value[0]=0;
-}
-
 eOSState
-mgCreateCollection::ProcessKey(eKeys key)
+mgCreate::Process(eKeys key)
 {
 	if (key == kOk)
 		if (Editing())
@@ -978,16 +1032,29 @@ mgCreateCollection::ProcessKey(eKeys key)
 		return osUnknown;
 }
 
-bool
-mgCreateCollection::Enabled(mgActions on)
+class mgCreateCollection : public mgCreate
 {
-	return selection()->isCollectionlist();
+    public:
+	mgCreateCollection();
+	bool Enabled(mgActions on);
+        void Execute ();
+        const char *MenuName (const unsigned int idx=0,const string value="");
+};
+
+mgCreateCollection::mgCreateCollection() : mgCreate(MenuName())
+{
+}
+
+const char*
+mgCreateCollection::MenuName(const unsigned int idx,const string value)
+{
+            return strdup(tr ("Create collection"));
 }
 
 void
 mgCreateCollection::Execute ()
 {
-        string name = trim(value); 
+        string name = trim(m_value); 
 	if (name.empty()) return;
         bool created = selection ()->CreateCollection (name);
         if (created)
@@ -1006,12 +1073,19 @@ mgCreateCollection::Execute ()
             osd()->Message1 ("Collection '%s' NOT created", name);
 }
 
+bool
+mgCreateCollection::Enabled(mgActions on)
+{
+	return selection()->isCollectionlist();
+}
+
+
 //! \brief delete collection
 class mgDeleteCollection:public mgCommand
 {
     public:
         void Execute ();
-	bool Enabled(mgActions on = mgActions(0));
+	bool Enabled(mgActions on);
         const char *ButtonName ()
         {
             return tr ("Delete");
@@ -1079,69 +1153,11 @@ mgExportTracklist::Execute ()
     osd()->Message1 ("written to %s", m3u_file);
 }
 
-class mgOrderArtistAlbumTitle : public mgOrderNew
-{
-        const char *MenuName(const unsigned int idx,const string value) { return strdup(tr("Artist -> Album -> Track")); }
-	void NewOrder()
-	{ 
-            selection ()->setKey (0, keyArtist);
-            selection ()->setKey (1, keyAlbum);
-            selection ()->setKey (2, keyTrack);
-	}
-};
-
-
-class mgOrderAlbumTitle : public mgOrderNew
-{
-        const char *MenuName(const unsigned int idx,const string value) { return strdup(tr("Album -> Track")); }
-	void NewOrder()
-	{ 
-            selection ()->setKey (0, keyAlbum);
-            selection ()->setKey (1, keyTrack);
-	}
-};
-
-
-class mgOrderGenreYearTitle : public mgOrderNew
-{
-        const char *MenuName(const unsigned int idx,const string value) { return strdup(tr("Genre 1 -> Year -> Track")); }
-	void NewOrder()
-	{ 
-            selection ()->setKey (0, keyGenre1);
-            selection ()->setKey (1, keyYear);
-            selection ()->setKey (2, keyTrack);
-	}
-};
-
-
-class mgOrderGenreArtistAlbumTitle : public mgOrderNew
-{
-        const char *MenuName(const unsigned int idx,const string value) { return strdup(tr("Genre 1 -> Artist ->Album -> Track")); }
-	void NewOrder()
-	{ 
-            selection ()->setKey (0, keyGenre1);
-            selection ()->setKey (1, keyArtist);
-            selection ()->setKey (2, keyAlbum);
-            selection ()->setKey (3, keyTrack);
-	}
-};
-
-
-class mgOrderArtistTitle : public mgOrderNew
-{
-        const char *MenuName(const unsigned int idx,const string value) { return strdup(tr("Artist -> Track")); }
-	void NewOrder()
-	{ 
-            selection ()->setKey (0, keyArtist);
-            selection ()->setKey (1, keyTrack);
-	}
-};
-
-
 mgActions
 mgAction::Type()
 {
 	const type_info& t = typeid(*this);
+	if (t == typeid(mgNone)) return actNone;
 	if (t == typeid(mgChooseOrder)) return actChooseOrder;
 	if (t == typeid(mgToggleSelection)) return actToggleSelection;
 	if (t == typeid(mgClearCollection)) return actClearCollection;
@@ -1159,13 +1175,13 @@ mgAction::Type()
 	if (t == typeid(mgRemoveThisFromCollection)) return actRemoveThisFromCollection;
 	if (t == typeid(mgEntry)) return actEntry;
 	if (t == typeid(mgSetButton)) return actSetButton;
-	if (t == typeid(mgOrderCollItem)) return ActOrderCollItem;
-	if (t == typeid(mgOrderArtistAlbumTitle)) return ActOrderArtistAlbumTitle;
-	if (t == typeid(mgOrderArtistTitle)) return ActOrderArtistTitle;
-	if (t == typeid(mgOrderAlbumTitle)) return ActOrderAlbumTitle;
-	if (t == typeid(mgOrderGenreYearTitle)) return ActOrderGenreYearTitle;
-	if (t == typeid(mgOrderGenreArtistAlbumTitle)) return ActOrderArtistAlbumTitle;
+	if (t == typeid(mgShowList)) return actShowList;
+	if (t == typeid(mgShowCommands)) return actShowCommands;
 	if (t == typeid(mgSetDefaultCollection)) return actSetDefaultCollection;
+	if (t == typeid(mgActOrder)) return actOrder;
+	if (t == typeid(mgCreateOrder)) return actCreateOrder;
+	if (t == typeid(mgDeleteOrder)) return actDeleteOrder;
+	if (t == typeid(mgEditOrder)) return actEditOrder;
 	if (t == typeid(mgExternal0)) return actExternal0;
 	if (t == typeid(mgExternal1)) return actExternal1;
 	if (t == typeid(mgExternal2)) return actExternal2;
@@ -1186,8 +1202,13 @@ mgAction::Type()
 	if (t == typeid(mgExternal17)) return actExternal17;
 	if (t == typeid(mgExternal18)) return actExternal18;
 	if (t == typeid(mgExternal19)) return actExternal19;
-	mgError("Unknown mgAction %s",t.name());
 	return mgActions(0);
+}
+
+mgAction*
+actGenerateKeyItem(const char *Name, int *Value, int NumStrings, const char * const * Strings)
+{
+	return new mgKeyItem(Name,Value,NumStrings,Strings);
 }
 
 mgAction*
@@ -1196,6 +1217,7 @@ actGenerate(const mgActions action)
 	mgAction * result = NULL;
 	switch (action)
 	{
+		case actNone: 			result = new mgNone;break;
 		case actChooseOrder: 		result = new mgChooseOrder;break;
 		case actToggleSelection: 	result = new mgToggleSelection;break;
 		case actClearCollection:	result = new mgClearCollection;break;
@@ -1213,13 +1235,15 @@ actGenerate(const mgActions action)
 		case actRemoveThisFromCollection: result = new mgRemoveThisFromCollection;break;
 		case actEntry: result = new mgEntry;break;
 		case actSetButton: result = new mgSetButton;break;
-		case ActOrderCollItem: result = new mgOrderCollItem;break;
-		case ActOrderArtistAlbumTitle: result = new mgOrderArtistAlbumTitle;break;
-		case ActOrderArtistTitle: result = new mgOrderArtistTitle;break;
-		case ActOrderAlbumTitle: result = new mgOrderAlbumTitle;break;
-		case ActOrderGenreYearTitle: result = new mgOrderGenreYearTitle;break;
-		case ActOrderGenreArtistAlbumTitle: result = new mgOrderGenreArtistAlbumTitle;break;
+		case actShowList: 		result = new mgShowList;break;
+		case actShowCommands: 		result = new mgShowCommands;break;
+		case actUnused5: break;
 		case actSetDefaultCollection:	result = new mgSetDefaultCollection;break;
+		case actOrder: result = new mgActOrder;break;
+		case actUnused6: break;
+		case actCreateOrder: result = new mgCreateOrder;break;
+		case actDeleteOrder: result = new mgDeleteOrder;break;
+		case actEditOrder: result = new mgEditOrder;break;
 		case actExternal0: result = new mgExternal0;break;
 		case actExternal1: result = new mgExternal1;break;
 		case actExternal2: result = new mgExternal2;break;
@@ -1256,5 +1280,30 @@ mgSelection *
 mgAction::collselection()
 {
 	return osd()->collselection();
+}
+
+eOSState
+mgKeyItem::Process(eKeys key)
+{
+	mgMenuOrder *menu = dynamic_cast<mgMenuOrder*>(m);
+	if (key==kOk)
+	{
+		if (menu->ChangeOrder(key))
+			return osContinue;
+		else
+		{
+			menu->SaveOrder();
+    			osd ()->newmenu = NULL;
+    			return osContinue;
+		}
+	} else if (key==kBack)
+	{
+    		osd ()->newmenu = NULL;
+    		return osContinue;
+	}
+	if (key==kUp || key==kDown)
+		if (menu->ChangeOrder(key))
+			return osContinue;
+	return cMenuEditStraItem::ProcessKey(key);
 }
 

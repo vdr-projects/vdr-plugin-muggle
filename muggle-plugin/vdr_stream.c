@@ -139,7 +139,7 @@ mgStream::close (void)
     else
     {
 #endif
-        delete m_buffer;
+        delete[] m_buffer;
         m_buffer = 0;
 #ifdef USE_MMAP
     }

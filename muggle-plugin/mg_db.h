@@ -37,11 +37,10 @@ class mgSelection;
 class mgContentItem
 {
     public:
-        mgContentItem ()
-        {
-        }
+        mgContentItem ();
 
 	string getKeyValue(mgKeyTypes kt);
+	string getKeyId(mgKeyTypes kt);
 
 	//! \brief copy constructor
         mgContentItem(const mgContentItem* c);
@@ -61,10 +60,7 @@ class mgContentItem
         }
 
 //! \brief returns filename
-        string getSourceFile () const
-        {
-            return m_mp3file;
-        }
+        string getSourceFile (bool AbsolutePath=true) const;
 
 //! \brief returns artist
         string getArtist () const
@@ -75,13 +71,7 @@ class mgContentItem
 //! \brief returns the name of the album
         string getAlbum () const;
 
-//! \brief returns the name of genre 1
-        string getGenre1 () const;
-
-//! \brief returns the name of genre 2
-        string getGenre2 () const;
-
-//! \brief returns the name of genre 1
+//! \brief returns the name of genre
         string getGenre () const;
 
 //! \brief returns the bitrate
@@ -111,6 +101,8 @@ class mgContentItem
         string m_mp3file;
         string m_artist;
         string m_albumtitle;
+        string m_genre1_id;
+        string m_genre2_id;
         string m_genre1;
         string m_genre2;
         string m_bitrate;
@@ -140,20 +132,18 @@ class mgSelection
 			void setOwner(mgSelection* sel);
 		public:
 			string& operator[](unsigned int idx);
-			size_t size();
+			bool operator==(const mgSelStrings&x) const;
+			size_t size() const;
 	};
-
     public:
+//! \brief defines an order to be used 
+        void setOrder(mgOrder *o);
+
+	mgOrder& getOrder() { return order; }
+
 /*! \brief define various ways to play music in random order
  * \todo Party mode is not implemented, does same as SM_NORMAL
  */
-/*! \brief defines a field to be used as key for selection
- *
- * \param level 0 is the top level
- * \param kt type of the key field. For possible values see mg_order.h
- */
-        void setKey (const unsigned int level, const mgKeyTypes kt);
-
         enum ShuffleMode
         {
             SM_NONE,                              //!< \brief play normal sequence
@@ -172,20 +162,12 @@ class mgSelection
 //! \brief escapes special characters
 	string sql_string(const string s) const;
 
-//! \brief the default constructor. Does not start a DB connection.
-        mgSelection();
-
 /*! \brief the main constructor
- * \param Host where the data base lives. If not localhost, TCP/IP is used.
- * \param User if empty, the current user is used.
- * \param Password no comment
  * \param fall_through if TRUE: If enter() returns a choice
  * containing only one item, that item is automatically entered.
  * The analog happens with leave()
  */
-        mgSelection (const string Host, const string User =
-            "", const string Password = "", const bool fall_through =
-            false);
+        mgSelection (  const bool fall_through = false);
 
 /*! \brief a copy constructor. Does a deep copy.
  * Some of the data base content will only be retrieved by the
@@ -226,13 +208,14 @@ class mgSelection
 
 //! \brief return the current value of this key
         string getKeyValue (const unsigned int level) const;
+	unsigned int getKeyIndex(const unsigned int level) const;
 	
 /*! \brief returns the current item from the value() list
  */
 	string getCurrentValue();
 
 //! \brief returns a map (new allocated) for all used key fields and their values
-	map<mgKeyTypes,string> * UsedKeyValues();
+	map<mgKeyTypes,string> UsedKeyValues();
 
 //! \brief the number of key fields used for the query
         unsigned int ordersize ();
@@ -240,18 +223,12 @@ class mgSelection
 //! \brief the number of music items currently selected
         unsigned int count () const;
 
-//! \brief the current position in the current level
-        unsigned int gotoPosition () 
-        {
-            return gotoPosition (m_level);
-        }
-
 //! \brief the current position
-        unsigned int getPosition (unsigned int level)const;
+        unsigned int getPosition ()const;
 
 	//! \brief go to the current position. If it does not exist,
 	// go to the nearest.
-        unsigned int gotoPosition (unsigned int level);
+        unsigned int gotoPosition ();
 
 
 //! \brief the current position in the tracks list
@@ -307,6 +284,13 @@ class mgSelection
             return select (valindex(value));
         }
 
+	bool selectid (const string id)
+	{
+	    return select(idindex(id));
+	}
+
+	void selectfrom(mgOrder& oldorder,mgContentItem* o);
+
 /*! \brief leave the current level, go one up in the tree.
  * If fall_through (see constructor) is set to true, and the
  * level entered by leave() contains only one item, automatically
@@ -322,12 +306,7 @@ class mgSelection
  * goes up further until a level with more than one item is reached.
  * \return returns false if there is no further upper level
  */
-        bool leave (const unsigned int target_level)
-	{
-		while (m_level>target_level)
-			if (!leave()) return false;
-		return true;
-	}
+        void leave_all ();
 
 //! \brief the current level in the tree
         unsigned int level () const
@@ -529,6 +508,8 @@ class mgSelection
 	string id(mgKeyTypes kt, string val) const;
 	string id(mgKey* k, string val) const;
 	string id(mgKey* k) const;
+	unsigned int keycount(mgKeyTypes kt);
+	vector <const char *> choices(mgOrder *o,unsigned int level, unsigned int *current);
 
     private:
 	mutable map <mgKeyTypes, map<string,string> > map_values;
@@ -541,20 +522,17 @@ class mgSelection
 	//! \brief initializes maps for id/value mapping in both direction
 	bool loadvalues (mgKeyTypes kt) const;
         bool m_fall_through;
-        vector < unsigned int >m_position;
+        unsigned int m_position;
         mutable unsigned int m_tracks_position;
         ShuffleMode m_shuffle_mode;
         LoopMode m_loop_mode;
         MYSQL *m_db;
 	void setDB(MYSQL *db);
-        string m_Host;
-        string m_User;
-        string m_Password;
         unsigned int m_level;
         long m_trackid;
 
         mgOrder order;
-	bool UsedBefore (const mgKeyTypes kt, unsigned int level) const;
+	bool UsedBefore (mgOrder *o,const mgKeyTypes kt, unsigned int level) const;
         void InitSelection ();
         void InitDatabase ();
 	/*! \brief returns the SQL command for getting all values. 
@@ -565,7 +543,8 @@ class mgSelection
 	 * entries and the wrong tracks might be played.
 	 */
         string sql_values ();
-        unsigned int valindex (const string val,const bool second_try=false);
+        unsigned int valindex (const string val,const bool second_try=false) const;
+        unsigned int idindex (const string val,const bool second_try=false) const;
         string ListFilename ();
         string m_Directory;
         void loadgenres ();
@@ -579,9 +558,9 @@ class mgSelection
  * returning only one row.
  * \param query the SQL query to be executed
  */
-        unsigned long mgSelection::exec_count (string query) const;
+        unsigned long exec_count (string query) const;
 
-
+	
 };
 
 

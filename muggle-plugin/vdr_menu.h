@@ -31,6 +31,8 @@ using namespace std;
 //! \param select if true, play only what the current position selects
 void Play(mgSelection *sel,const bool select=false);
 
+void showmessage(const char *msg);
+
 class cCommands;
 
 class mgSelection;
@@ -68,7 +70,18 @@ class mgMainMenu:public cOsdMenu
 	char *m_message;
 	void showMessage();
 	void LoadExternalCommands();
+	vector<mgOrder*> orders;
+	unsigned int m_current_order;
+	void DumpOrders(mgValmap& nv);
+	void LoadOrders(mgValmap& nv);
     public:
+	void AddOrder();
+	void DeleteOrder();
+	void AddOrderActions(mgMenu *m);
+	unsigned int getCurrentOrder() { return m_current_order; }
+	mgOrder* getOrder(unsigned int idx);
+	void setOrder(mgSelection *sel, unsigned int idx);
+
 	mgSelection *moveselection;
 	mgActions CurrentType();
 
@@ -243,7 +256,8 @@ class mgMenu
 // creation.
         void AddSelectionItems (mgSelection *sel,mgActions act = actEntry);
 	//! \brief the name of the blue button depends of where we are
-        const char *mgMenu::BlueName (mgActions on);
+	int m_parent_index;
+	string m_parent_name;
     public:
 	/*! sets the correct help keys.
 	 * \todo without data from mysql, no key is shown,
@@ -254,10 +268,15 @@ class mgMenu
 	mgAction* GenerateAction(const mgActions action,mgActions on);
 
 //! \brief executes the wanted action
-        void ExecuteAction (const mgActions action, const mgActions on);
+        eOSState ExecuteAction (const mgActions action, const mgActions on);
 
 //! \brief sets the pointer to the owning mgMainMenu
         void setosd (mgMainMenu* osd);
+
+	void setParentIndex(int idx) { m_parent_index = idx; }
+	int getParentIndex() { return m_parent_index; }
+	void setParentName(string name) { m_parent_name = name; }
+	string getParentName() { return m_parent_name; }
 
 //! \brief the pointer to the owning mgMainMenu
         mgMainMenu* osd ()
@@ -299,10 +318,7 @@ class mgMenu
  * value for a new display. If NULL is returned, the caller will display
  * the previous menu.
  */
-        virtual eOSState Process (eKeys Key)
-        {
-		return osUnknown;
-        }
+        virtual eOSState Process (eKeys Key);
 
 //! \brief the ID of the action defined by the red button.
         mgActions TreeRedAction;
@@ -315,13 +331,17 @@ class mgMenu
 //! \brief the action defined by the yellow button.
         mgActions TreeYellowAction;
         mgActions CollYellowAction;
+
+//! \brief the action defined by the blue button.
+        mgActions TreeBlueAction;
+        mgActions CollBlueAction;
 };
 
 //! \brief an mgMenu class for navigating through the data base
 class mgTree:public mgMenu
 {
     public:
-        eOSState Process (eKeys Key);
+	mgTree();
     protected:
         void BuildOsd ();
 };
@@ -330,7 +350,7 @@ class mgTree:public mgMenu
 class mgSubmenu:public mgMenu
 {
     public:
-        eOSState Process (eKeys Key);
+	mgSubmenu::mgSubmenu();
     protected:
         void BuildOsd ();
 };
@@ -342,10 +362,27 @@ class mgMenuOrders:public mgMenu
         void BuildOsd ();
 };
 
+class mgMenuOrder : public mgMenu
+{
+    public:
+        mgMenuOrder();
+        ~mgMenuOrder();
+	bool ChangeOrder(eKeys key);
+	void SaveOrder();
+    protected:
+        void BuildOsd ();
+    private:
+	void AddKeyActions(mgMenu *m,mgOrder *o);
+	mgOrder * m_order;
+	vector<int> m_keytypes;
+	vector < vector <const char*> > m_keynames;
+};
+
 //! \brief an mgMenu class for selecting a collection
 class mgTreeCollSelector:public mgMenu
 {
     public:
+        mgTreeCollSelector();
         ~mgTreeCollSelector();
     protected:
         void BuildOsd ();

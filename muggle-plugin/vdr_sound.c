@@ -343,7 +343,7 @@ cNormalize::cNormalize (void)
 cNormalize::~cNormalize ()
 {
 #ifdef USE_FAST_LIMITER
-    delete table;
+    delete[] table;
 #endif
 }
 
@@ -550,15 +550,14 @@ class cScale
         inline unsigned long Prng (unsigned long state);
         inline signed long LinearDither (mad_fixed_t sample, struct dither *dither);
     public:
-        void Init (void);
+	cScale();
         void Stats (void);
         unsigned int ScaleBlock (unsigned char *data, unsigned int size,
             unsigned int &nsamples, const mad_fixed_t * &left,
             const mad_fixed_t * &right, eAudioMode mode);
 };
 
-void
-cScale::Init (void)
+cScale::cScale()
 {
 #ifdef DEBUG
     clipped_samples = 0;

@@ -34,8 +34,7 @@ mgFlacDecoder::mgFlacDecoder( mgContentItem *item )
 {
   mgLog lg( "mgFlacDecoder::mgFlacDecoder" );
 
-  m_filename = the_setup.getFilename( item->getSourceFile () );
-  //   m_filename = item->getSourceFile();
+  m_filename = item->getSourceFile();
   m_pcm = 0;
   m_reservoir = 0;
 
@@ -100,10 +99,10 @@ bool mgFlacDecoder::clean()
   
   if( m_reservoir )
     {
-      delete m_reservoir[0];
-      delete m_reservoir[1];
+      delete[] m_reservoir[0];
+      delete[] m_reservoir[1];
     }
-  delete m_reservoir;
+  delete[] m_reservoir;
   
   // why false? true?
   return true;
