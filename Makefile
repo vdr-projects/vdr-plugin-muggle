@@ -115,7 +115,7 @@ install:
 	@cp mugglei /usr/local/bin/
 #	@install -m 755 mugglei /usr/local/bin/
 
-dist: clean
+dist: clean mg_tables.h
 	@-rm -rf $(TMPDIR)/$(ARCHIVE)
 	@mkdir $(TMPDIR)/$(ARCHIVE)
 	@cp -a * $(TMPDIR)/$(ARCHIVE)
