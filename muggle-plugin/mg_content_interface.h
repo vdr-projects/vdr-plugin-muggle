@@ -9,7 +9,7 @@
  *  Declares generic classes of for content items and interfaces to SQL databases
  *
  *  This file defines the following classes 
- *   - mgMediaMplayer
+ *   - mgMediaPlayer
  *   - mgContentItem
  *   - mgTracklist
  *   - mgSelectionTreeNode
@@ -236,6 +236,9 @@ class mgContentItem
 
 /*!
  * \brief a list of content items
+ * \ingroup muggle
+ *
+ * \todo check, whether this class really needs a current item etc.
  */
 class mgTracklist
 {
@@ -312,6 +315,8 @@ class mgTracklist
 
   /*!
    * \brief remove item at position
+   *
+   * \todo needed? if so, it hides bool remove(int)
    */
   virtual int remove(mgContentItem* item); // remove all occurences of item
 
@@ -322,67 +327,151 @@ class mgTracklist
 };
 
 /*!
- *  \brief represent a node in a tree of selections
- *  \ingroup muggle
+ * \brief represent a node in a tree of selections
+ * \ingroup muggle
+ *
+ * The class represents a tree representation. Each node can have a parent node and
+ * an arbitrary number of children nodes. 
  */
 class  mgSelectionTreeNode
 {
+ protected:
 
-protected:
-    MYSQL m_db;
-    bool m_expanded;      // already expanded ?
-    std::string m_restriction; // list of active restrictions at this level
-    std::string m_id;          // ID of the node, used for further expand
-    int m_level;          // depth of tree (0 = root)
-    int m_view;
-    std::string m_label; 
-    
-//    std::vector<std::string> _labels; // Labels used for interaction with the user 
-    // about this node
+  /*! 
+   * \brief the database in which a node is stored
+   * \todo should this be in the authority of concrete subclasses?
+   */
+  MYSQL m_db;
 
-//    vector<mgSelectionTreeNode> _children; // if expanded the links to the 
-                                           // children are stopred here
-    mgSelectionTreeNode* m_parent;
-    std::vector <mgSelectionTreeNode*> m_children;
-    
-public:
+  //! \brief maintain a flag, whether the node is currently expanded
+  bool m_expanded;      
 
-    /*==== constructors ====*/
-    mgSelectionTreeNode(MYSQL db, int view);
+  //! \brief list of active restrictions at this level
+  std::string m_restriction; 
 
-    mgSelectionTreeNode(mgSelectionTreeNode* parent, std::string id, std::string label);
+  //! \brief depth of node in the tree (0 = root)
+  int m_level;          
+
+  //! \brief unknown
+  int m_view;
+
+  //! \brief ID of the node, used for further expand
+  std::string m_id;          
+
+  //! \brief label of the node, used for user interaction
+  std::string m_label; 
   
-    /*==== destructor ====*/
-    virtual ~mgSelectionTreeNode();
+  //! \brief parent of this node
+  mgSelectionTreeNode* m_parent;
 
-    // compute children on the fly 
-    virtual bool isLeafNode()=0;
-    virtual bool expand()=0; 
-    virtual void collapse(); // removes all children (recursively)
-
-    mgSelectionTreeNode* getParent();
-
-    // access children
-    virtual std::vector<mgSelectionTreeNode*> &getChildren();
-
-    // access data in  current node
-    bool isExpanded(){return m_expanded;}
-    int getLevel(){return m_level;} // for debugging
-    std::string getID();
-    virtual std::string getRestrictions();
-
-    std::string getLabel(); 
-    virtual std::string getLabel(int n); 
- #if 0
-    virtual std::string viewTitle(int level)=0;
-    virtual std::vector<std::string> viewChoices(int level, int choice);
-#endif
+  //! \brief hold the set of immediate children if expanded, empty if collapsed
+  std::vector <mgSelectionTreeNode*> m_children;
     
-    // returns all tracks below this node
-    // Note: This function allocates memory for the vector and for all elements of the vector
-    //       The calling function is in charge of releasing this memory 
-   virtual std::vector<mgContentItem*>* getTracks()=0;
-   virtual mgContentItem* getSingleTrack()=0;
+ public:
+
+  //! \brief Object lifecycle management
+  //@{
+
+  /*!
+   * \brief a constructor for an empty node
+   */
+  mgSelectionTreeNode(MYSQL db, int view);
+  
+  /*!
+   * \brief a constructor for a node with a parent
+   */
+  mgSelectionTreeNode(mgSelectionTreeNode* parent, std::string id, std::string label);
+  
+  /*!
+   * \brief the destructor
+   */
+  virtual ~mgSelectionTreeNode();
+
+  //@}
+  
+  //! \brief expand and collapse tree
+  //@{
+
+  /*!
+   * \brief whether the node is a leaf (i.e. has no more children)
+   */
+  virtual bool isLeafNode() = 0;
+
+  /*!
+   * \brief expand the node
+   *
+   * The method will obtain all its children node, e.g. from a database
+   */
+  virtual bool expand() = 0; 
+
+  /*!
+   * \brief collapse all children nodes
+   *
+   * The method will collapse the subtree below this node and 
+   * destroy all children node objects.
+   */
+  virtual void collapse(); // removes all children (recursively)
+
+  /*! 
+   * \brief obtain parent node
+   *
+   * \todo what is that magic number 100 for in the implementation?
+   */
+  mgSelectionTreeNode* getParent();
+
+  /*!
+   * \brief access direct children of the node
+   */
+  virtual std::vector<mgSelectionTreeNode*> &getChildren();
+
+  /*!
+   * \brief returns all tracks which are children of this node (transitive closure!)
+   *
+   * This function allocates memory for the vector and for all elements of the vector
+   * The calling function is in charge of releasing this memory 
+   */
+  virtual std::vector<mgContentItem*>* getTracks() = 0;
+
+  /*! 
+   * \brief obtain a single track
+   */
+  virtual mgContentItem* getSingleTrack() = 0;
+
+  bool isExpanded()
+    { return m_expanded; }
+
+  int getLevel()
+    { return m_level; } 
+
+  //@}
+
+  //! \brief obtain node information
+  //@{
+
+  /*!
+   * \brief obtain the ID of this node
+   */  
+  std::string getID();
+  
+  /*!
+   * \brief obtain the label of this node
+   */
+  virtual std::string getLabel(int n); 
+
+  /*! 
+   * \brief obtain the label from the topmost parent of this node
+   */  
+  std::string getLabel(); 
+
+  /*!
+   * \brief obtain a SQL restriction
+   *
+   * The restriction returned is part of a SQL query string which will restrict
+   * results to nodes that belong to the set of items grouped by this node
+  virtual std::string getRestrictions();
+
+  //@}
+  
 };
 
 #endif
