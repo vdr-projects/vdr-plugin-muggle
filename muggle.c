@@ -15,6 +15,7 @@
 #include "vdr_menu.h"
 #include "vdr_setup.h"
 #include "mg_tools.h"
+#include "mg_playlist.h"
 #include "mg_content_interface.h"
 #include "mg_media.h"
 

@@ -11,7 +11,6 @@
  *  $Id$
  */
 
-
 // Some notes about the general structure of the plugin
 
 /* \defgroup giantdisc GiantDisc integration layer
