@@ -21,7 +21,7 @@
 
 MYSQL *db;
 
-std::string host, user, pass, dbname, sock;
+std::string host, user, pass, dbname, sck;
 bool import_assorted;
 
 int init_database()
@@ -35,10 +35,10 @@ int init_database()
     }
 
   // check for use of sockets
-  if( sock != "" )
+  if( sck != "" )
     {
       if( mysql_real_connect( db, NULL, user.c_str(), pass.c_str(), dbname.c_str(),
-			      0, sock.c_str(), 0 ) == NULL )
+			      0, sck.c_str(), 0 ) == NULL )
 
 	{
 	  std::cout << "mysql_real_connect using sockets failed." << std::endl;
@@ -95,21 +95,31 @@ TagLib::String escape_string( MYSQL *db, TagLib::String s )
   char *buf = strdup( s.toCString() );
   char *escbuf = (char *) malloc( 2*strlen( buf ) + 1 );
 
-  mysql_real_escape_string( db, escbuf, buf, strlen( buf ) );
+  mysql_real_escape_string( db, escbuf, s.toCString(), s.size() );
+  TagLib::String r = TagLib::String( escbuf );
 
-  return TagLib::String( escbuf );
+  free( escbuf );
+  free( buf);
+
+  return r;
 }
 
 long find_file_in_database( MYSQL *db, std::string filename )
 {
+  long uid = -1;
+ 
   TagLib::String file = TagLib::String( filename.c_str() );
   file = escape_string( db, file );
 
   MYSQL_RES *result = mgSqlReadQuery( db, "SELECT id FROM tracks WHERE mp3file=\"%s\"", file.toCString() );
-  MYSQL_ROW row = mysql_fetch_row( result );
+  if( mysql_num_rows(result) )
+    {
+      MYSQL_ROW row = mysql_fetch_row( result );
+      uid = atol( row[0] );
+    }
 
   // obtain ID and return
-  return atol( row[0] );
+  return uid;
 }
 
 TagLib::String find_genre_id( TagLib::String genre )
@@ -279,7 +289,7 @@ void update_tags( long uid, std::string filename )
   
 }
 
-void evaluate_file( MYSQL *db, std::string filename )
+void evaluate_file( std::string filename )
 {
   if( 0 == init_database() )
     {  
@@ -305,13 +315,11 @@ void evaluate_file( MYSQL *db, std::string filename )
 	    }
 	  */
 
-	  std::cout << "Updating " << filename << std::endl;
 	  update_db( uid, filename );
 	}
       else
 	{
 	  // not in db yet: import file
-	  std::cout << "Creating " << filename << std::endl;
 	  update_db( -1, filename );
 	}
     }
@@ -344,7 +352,7 @@ int main( int argc, char *argv[] )
   dbname = "GiantDisc";
   user   = "";
   pass   = "";
-  sock = "";
+  sck = "";
   import_assorted = false;
 
   // parse command line options
@@ -387,7 +395,7 @@ int main( int argc, char *argv[] )
 	  } break;
         case 's':
           {
-            sock = optarg;
+            sck = optarg;
           } break;
 	}
     }
@@ -398,20 +406,7 @@ int main( int argc, char *argv[] )
   gettimeofday( &tv, &tz );
   srandom( tv.tv_usec );  
 
-  /*
-  int res = init_database();
-
-  if( !res )
-    {
-      update_db( 0, filename );
-    }
-  else
-    {
-      std::cout << "Database initialization failed. Exiting.\n" << std::endl;
-    }
-  */  
-
-  evaluate_file( db, filename );
+  evaluate_file( filename );
   return 0;
 }
 
