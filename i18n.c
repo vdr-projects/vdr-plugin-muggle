@@ -19,7 +19,24 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "Chercher",           // TODO
+        "Rechercher",           // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {
+        "Order",
+        "Sortierung",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "Ordre",           // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -47,6 +64,40 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {
+        "Clear the collection?",
+        "Sammlung leeren?",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "Vider la collection?",               // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {
+        "Delete the collection?",
+        "Sammlung löschen?",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "Effacer la collection?",               // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {
         "Create collection",
         "Sammlung neu anlegen",
         "",                                       // TODO
@@ -64,7 +115,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {
-        "Delete collection",
+        "Delete the collection",
         "Sammlung löschen",
         "",                                       // TODO
         "",                                       // TODO
@@ -275,6 +326,23 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
         "Liste",                                  // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {
+        "Export",
+        "Exportieren",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "Exporter",                      // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -523,6 +591,23 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {
+        "'%s' to collection",
+        "'%s' zu Sammlung",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "Ajoute '%s' à une collection",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {
         "Set default to collection '%s'",
         "Setze Ziel auf Sammlung '%s'",
         "",                                       // TODO
@@ -574,47 +659,30 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {
+        "Add to a collection",
+        "Zu einer Sammlung hinzufügen",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "Ajouter à une collection",               // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {
         "Add to '%s'",
         "Zu '%s' hinzufügen",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "Ajouter à '%s'",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-    },
-    {
-        "Add '%s' to '%s'",
-        "'%s' zu '%s' hinzufügen",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "Ajouter '%s' à '%s'",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-    },
-    {
-        "Add all to '%s'",
-        "Alles '%s' hinzufügen",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "Ajouter tout à '%s'",                                       // TODO
+        "Ajouter à '%s'",                         // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -626,29 +694,12 @@ const tI18nPhrase Phrases[] =
     },
     {
         "Remove",
-        "Entfernen",
+        "Weg",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "Effacer",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-    },
-    {
-        "Remove from '%s'",
-        "Aus '%s' entfernen",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "Effacer de '%s'",                                       // TODO
+        "Effacer",                                // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -659,30 +710,13 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {
-        "Remove '%s' from '%s'",
-        "'%s' aus '%s' entfernen",
+        "Clear",
+        "Leeren",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "Effacer '%s' de '%s'",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-    },
-    {
-        "Remove all entries from '%s'",
-        "Alle Einträge aus '%s' entfernen",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "Effacer tout de '%s'",                                       // TODO
+        "Vider",                                // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -693,13 +727,30 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {
-        "Remove all from '%s'",
-        "Alles aus '%s' entfernen",
+        "Clear the collection",
+        "Sammlung leeren",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "Effacer tout de '%s'",                                       // TODO
+        "Vider la collection",                    // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {
+        "Remove from a collection",
+        "Aus einer Sammlung entfernen",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "Effacer d'une collection",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -965,23 +1016,6 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {
-        "Tree View Selection",
-        "Suchschema wählen",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "Choisir le schéma de recherche",         // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-    },
-    {
         "Title -> Album -> Track",
         "Titel -> Album -> Track",
         "",                                       // TODO
@@ -1023,23 +1057,6 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
         "Genre -> Décade -> Interprète -> Album -> Pièce",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-    },
-    {
-        "Search",
-        "Suche",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "Chercher",                               // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1118,13 +1135,13 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {
-        "Select search order",
-        "Suchschema wählen",
+        "Select an order",
+        "Sortierung wählen",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "Choisir le schéma de recherchage",       // TODO
+        "Choisir un ordre",       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO

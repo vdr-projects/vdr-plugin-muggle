@@ -44,18 +44,16 @@ PACKAGE = vdr-$(ARCHIVE)
 INCLUDES += -I$(VDRDIR) -I$(VDRDIR)/include -I$(DVBDIR)/include \
 	-I/usr/include/mysql/ -I/usr/include/taglib
 
-DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DHAVE_VORBISFILE
-# DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
-DEFINES += -D_GNU_SOURCE
+DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DHAVE_VORBISFILE -DHAVE_FLAC
 
 MIFLAGS += -I/usr/include/taglib -lmysqlclient
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o i18n.o mg_db.o mg_actions.o vdr_menu.o mg_tools.o \
+OBJS = $(PLUGIN).o i18n.o mg_valmap.o mg_order.o mg_db.o mg_actions.o vdr_menu.o mg_tools.o \
 	vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o \
-	vdr_setup.o vdr_decoder_ogg.o
+	vdr_setup.o vdr_decoder_ogg.o vdr_decoder_flac.o
 
-LIBS = -lmad -lmysqlclient -lvorbisfile -lvorbis
+LIBS = -lmad -lmysqlclient -lvorbisfile -lvorbis -lFLAC++
 MILIBS = -lmysqlclient -ltag
 
 ### Targets:

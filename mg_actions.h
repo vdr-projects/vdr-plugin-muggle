@@ -24,35 +24,37 @@ using namespace std;
 class mgSelection;
 class mgMenu;
 class mgMainMenu;
-class mgOsdItem;
 
 /*! \brief defines all actions which can appear in command submenus.
  * Since these values are saved in muggle.state, new actions should
  * always be appended. The order does not matter. Value 0 means undefined.
  */
 enum mgActions {
-	actChooseSearch=1, 	//!< show a menu with all possible search schemas
+	actChooseOrder=1, 	//!< show a menu with all possible orders
 	actToggleSelection,	//!< toggle between search and collection view
-	actSetDefault,	   	//!< set default collection
-	actUnused1,
+	actClearCollection,	//!< clear a collection,
+	actCreateCollection,
 	actInstantPlay,		//!< instant play
 	actAddAllToCollection,	//!< add all items of OSD list to default collection
 	actRemoveAllFromCollection,//!< remove from default collection
 	actDeleteCollection,	//!< delete collection
 	actExportTracklist,	//!< export track list into a *.m3u file
-	actUnused2,
-	actUnused3,
+	actAddCollEntry,
+	actRemoveCollEntry,
 	actAddThisToCollection,	//!< add selected item to default collection
 	actRemoveThisFromCollection,	//!< remove selected item from default collection
 	actEntry, 		//!< used for normal data base items
 	actSetButton,		//!< connect a button with an action
-	actSearchCollItem,	//!< search in the collections
-	actSearchArtistAlbumTitle,	//!< search by Artist/Album/Title
-	actSearchArtistTitle,	//!< search by Artist/Title
-	actSearchAlbumTitle,	//!< search by Album/Title
-	actSearchGenreYearTitle,	//!< search by Genre1/Year/Title
-	actSearchGenreArtistAlbumTitle,	//!< search by Genre1/Artist/Album/Title
-	actExternal0, 		//!< used for external commands, the number is the entry number in the .conf file starting with line 0
+	ActOrderCollItem,	//!< order by collections
+	ActOrderArtistAlbumTitle,	//!< order by Artist/Album/Title
+	ActOrderArtistTitle,	//!< order by Artist/Title
+	ActOrderAlbumTitle,	//!< order by Album/Title
+	ActOrderGenreYearTitle,	//!< order by Genre1/Year/Title
+	ActOrderGenreArtistAlbumTitle,	//!< order by Genre1/Artist/Album/Title
+	actAddAllToDefaultCollection,
+	actAddThisToDefaultCollection,
+	actSetDefaultCollection,
+	actExternal0 = 1000, 		//!< used for external commands, the number is the entry number in the .conf file starting with line 0
 	actExternal1, 		//!< used for external commands, the number is the entry number in the .conf file
 	actExternal2, 		//!< used for external commands, the number is the entry number in the .conf file
 	actExternal3, 		//!< used for external commands, the number is the entry number in the .conf file
@@ -83,7 +85,7 @@ class mgAction
     public:
 
 	//! \brief if true, can be displayed
-	virtual bool Enabled();
+	virtual bool Enabled(mgActions on = mgActions(0));
 
 	//! \brief the action to be executed
         virtual void Execute () = 0;
@@ -101,7 +103,7 @@ class mgAction
 
 /*! \brief the name for a menu entry. If empty, no button will be able
  * to execute this. The returned C string must be freeable at any time.
- * \todo use virtual Set() instead? Compare definition of mgMenu::AddAction
+ * \param value a string that can be used for building the menu name.
  */
         virtual const char *MenuName (const unsigned int idx=0,const string value="") = 0;
 
@@ -116,8 +118,21 @@ class mgAction
 
 	//! \brief what to do when mgStatus::OsdCurrentItem is called
 	//for this one
-	virtual void Notify();
+	mgActions Type();
+	void SetText(const char *text,bool copy=true);
+	const char *Text();
+	
+	void TryNotify();
+
+		/*! \brief vdr calls OsdCurrentItem more often than we
+		 * want. This tells mgStatus to ignore the next call 
+		 * for a specific item.
+		 * \todo is this behaviour intended or a bug in vdr
+		 * or in muggle ?
+		 */
+	bool IgnoreNextEvent;
     protected:
+
 	//! \brief returns the OSD owning the menu owning this item
         mgMainMenu* osd ();
 
@@ -132,38 +147,14 @@ class mgAction
 
 	//! \brief returns the playselection
         mgSelection* playselection ();
+
+	virtual void Notify();
+    private:
+	mgMainMenu *m_osd;
 };
 
-//! \brief a generic class for all actions that can be used in the
-// command submenu
-class mgOsdItem : public mgAction, public cOsdItem
-{
-    public:
-	//! \brief the enum mgActions value of this class
-	virtual mgActions Type();
 
-	//! \brief to be executed for kBack. We might want to call this
-	// directly, so expose it.
-	virtual eOSState Back();
-};
+//! \brief generate an mgAction for action
+mgAction* actGenerate(const mgActions action);
 
-//! \brief generate a mgOsdItem for action
-mgOsdItem* actGenerate(const mgActions action);
-
-
-/*! \brief create collection directly in the collection list
- */
-class mgCreateCollection:public cMenuEditStrItem, public mgAction
-{
-    public:
-	mgCreateCollection();
-	void Notify();
-	bool Enabled();
-	eOSState ProcessKey(eKeys key);
-        void Execute ();
-        const char *MenuName (const unsigned int idx=0,const string value="");
-     private:
-	bool Editing();
-	char value[30];
-};
 #endif

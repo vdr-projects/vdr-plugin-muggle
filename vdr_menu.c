@@ -42,15 +42,10 @@ mgStatus::OsdCurrentItem(const char* Text)
 {
 	cOsdItem* i = main->Get(main->Current());
 	if (!i) return;
-	if (i == IgnoreNextEventOn)
-	{
-		IgnoreNextEventOn = NULL;
-		return;
-	}
 	mgAction * a = dynamic_cast<mgAction *>(i);
 	if (!a)
 		mgError("mgStatus::OsdCurrentItem expected an mgAction*");
-	a->Notify();
+	a->TryNotify();
 }
 
 void Play(mgSelection *sel,const bool select) {
@@ -86,6 +81,26 @@ mgMainMenu::PlayInstant(const bool select)
 	Play(selection(),select);
 }
 
+void
+mgMainMenu::CollectionChanged(string name)
+{
+    delete moveselection;
+    moveselection = NULL;
+    forcerefresh = true; // TODO brauchen wir das?
+    if (name == play_collection)
+    {
+	playselection()->clearCache();
+	mgPlayerControl *c = PlayerControl();
+	if (c)
+	   c->ReloadPlaylist();
+	else
+	   PlayQueue();
+    }
+    if (CollectionEntered(name))
+    {
+       selection()->clearCache();
+    }
+}
 
 bool
 mgMainMenu::ShowingCollections()
@@ -101,14 +116,13 @@ mgMainMenu::DefaultCollectionSelected()
     return (ShowingCollections () && this_sel == default_collection);
 }
 
-
 bool
-mgMainMenu::DefaultCollectionEntered()
+mgMainMenu::CollectionEntered(string name)
 {
     if (!UsingCollection) return false;
     if (selection()->level()==0) return false;
     string collection = trim(selection ()->getKeyValue(0));
-    return (collection == default_collection);
+    return (collection == name);
 }
 
 
@@ -121,14 +135,14 @@ mgMainMenu::Parent ()
 }
 
 
-mgOsdItem* 
-mgMenu::GenerateAction(const mgActions action)
+mgAction* 
+mgMenu::GenerateAction(const mgActions action,mgActions on)
 {
-	mgOsdItem *result = actGenerate(action);
+	mgAction *result = actGenerate(action);
 	if (result)
 	{
 		result->SetMenu(this);
-		if (!result->Enabled())
+		if (!result->Enabled(on))
 		{
 			delete result;
 			result=NULL;
@@ -138,9 +152,9 @@ mgMenu::GenerateAction(const mgActions action)
 }
 
 void
-mgMenu::ExecuteAction(const mgActions action)
+mgMenu::ExecuteAction(const mgActions action,mgActions on)
 {
-    mgAction *a = GenerateAction (action);
+    mgAction *a = GenerateAction (action,on);
     if (a)
     {
     	a->Execute ();
@@ -206,6 +220,8 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("")
 {
     m_Status = new mgStatus(this);
     m_message = NULL;
+    moveselection = NULL;
+    external_commands = NULL;
     queue_playing=false;
     instant_playing=false;
     play_collection = tr("play");
@@ -214,8 +230,11 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("")
     mgValmap nmain("MainMenu");
 
     // define defaults for values missing in state file:
-    ncol.put("Keys.0.Choice","Collection");
-    ncol.put("Keys.1.Choice","Collection item");
+    nsel.put("Keys.0.Choice",keyArtist);
+    nsel.put("Keys.1.Choice",keyAlbum);
+    nsel.put("Keys.2.Choice",keyTitle);
+    ncol.put("Keys.0.Choice",keyCollection);
+    ncol.put("Keys.1.Choice",keyCollectionItem);
     nmain.put("DefaultCollection",play_collection);
     nmain.put("UsingCollection","false");
     nmain.put("TreeRedAction",int(actAddThisToCollection));
@@ -249,11 +268,13 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("")
     // initialize
     m_collectionsel.CreateCollection(default_collection);
     m_collectionsel.CreateCollection(play_collection);
-    m_playsel.setKey(0,"Collection");
-    m_playsel.setKey(1,"Collection item");
+    m_playsel.setKey(0,keyCollection);
+    m_playsel.setKey(1,keyCollectionItem);
+    m_playsel.leave(0);
     m_playsel.enter(play_collection);
     UseNormalSelection ();
     unsigned int posi = selection()->gotoPosition();
+    LoadExternalCommands();	// before AddMenu()
     mgMenu *root = new mgTree;
     root->TreeRedAction = mgActions(nmain.getuint("TreeRedAction"));
     root->TreeGreenAction = mgActions(nmain.getuint("TreeGreenAction"));
@@ -261,10 +282,16 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("")
     root->CollRedAction = mgActions(nmain.getuint("CollRedAction"));
     root->CollGreenAction = mgActions(nmain.getuint("CollGreenAction"));
     root->CollYellowAction = mgActions(nmain.getuint("CollYellowAction"));
-    AddMenu (root);
+    AddMenu (root,posi);
 
-    SetCurrent (Get (posi));
+    //SetCurrent (Get (posi));
 
+    forcerefresh = false;
+}
+
+void
+mgMainMenu::LoadExternalCommands()
+{
 // Read commands for collections in etc. /video/muggle/playlist_commands.conf
     external_commands = new cCommands ();
 
@@ -286,12 +313,13 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("")
         delete external_commands;
         external_commands = NULL;
     }
-    forcerefresh = false;
 }
 
 mgMainMenu::~mgMainMenu()
 {
 	delete m_Status;
+	if (moveselection)
+		delete moveselection;
 }
 
 void
@@ -306,9 +334,9 @@ mgMainMenu::InitMapFromSetup (mgValmap& nv)
 }
 
 void
-mgMenu::AddAction (const mgActions action, const bool hotkey)
+mgMenu::AddAction (const mgActions action, mgActions on,const bool hotkey)
 {
-    mgOsdItem *a = GenerateAction(action);
+    mgAction *a = GenerateAction(action,on);
     if (!a) return;
     const char *mn = a->MenuName();
     if (strlen(mn)==0)
@@ -318,81 +346,88 @@ mgMenu::AddAction (const mgActions action, const bool hotkey)
     else
     	a->SetText(mn);
     free(const_cast<char*>(mn));
-    osd()->Add(a);
+    osd()->AddItem(a);
 }
 
 
 void
 mgMenu::AddExternalAction(const mgActions action, const char *title)
 {
-    mgOsdItem *a = GenerateAction(action);
+    mgAction *a = GenerateAction(action,mgActions(0));
     if (!a) return;
     a->SetText(osd()->hk(title));
-    osd()->Add(a);
+    osd()->AddItem(a);
 }
 
 void
-mgMenu::AddSelectionItems ()
+mgMenu::AddSelectionItems (mgSelection *sel,mgActions act)
 {
-    for (unsigned int i = 0; i < selection()->values.size (); i++)
+    for (unsigned int i = 0; i < sel->values.size (); i++)
     {
-    	mgOsdItem *a = GenerateAction(actEntry);
+    	mgAction *a = GenerateAction(act, actEntry);
 	if (!a) continue;
-        a->SetText(a->MenuName(i+1,selection()->values[i]),false);
-        osd()->Add(a);
+        a->SetText(a->MenuName(i+1,sel->values[i]),false);
+        osd()->AddItem(a);
     }
     if (osd()->ShowingCollections ())
     {
-    mgCreateCollection *a = new mgCreateCollection;
-    if (!a) return;
-    a->SetMenu(this);
-    if (!a->Enabled())
+    	mgAction *a = GenerateAction(actCreateCollection,mgActions(0));
+    	if (a) 
 	{
-		delete a;
-		a=NULL;
+    		a->SetText(a->MenuName(),false);
+    		osd()->AddItem(a);
 	}
-    if (!a) return;
-    a->SetText(a->MenuName(),false);
-    osd()->Add(a);
     }
 }
 
 
 const char *
-mgMenu::BlueName ()
+mgMenu::BlueName (mgActions on)
 {
-    if (typeid (*this) == typeid (mgTree))
-	    return tr("Commands");
+    // do not use typeid because we want to catch descendants too
+    if (dynamic_cast<mgTreeCollSelector*>(this))
+        return tr ("List");
+    else if (osd()->Current()<0)
+	return tr("Commands");
+    else if (dynamic_cast<mgTree*>(this))
+	return tr("Commands");
     else
         return tr ("List");
 }
 
-void
-mgMenu::SetHelpKeys()
+const char*
+mgMenu::HKey(const mgActions act,mgActions on)
 {
-    const char *Red = NULL;
-    const char *Green = NULL;
-    const char *Yellow = NULL;
-    mgOsdItem *a;
+    const char* result = NULL;
+    mgAction *a = GenerateAction(act,on);
+    if (a)
+    {
+        result = a->ButtonName();	
+	delete a;
+    }
+    return result;
+}
+
+void
+mgMenu::SetHelpKeys(mgActions on)
+{
+    mgActions r,g,y;
     if (osd()->UsingCollection)
     {
-    	if ((a = GenerateAction (CollRedAction)))
-        	Red = a->ButtonName ();
-    	if ((a = GenerateAction (CollGreenAction)))
-        	Green = a->ButtonName ();
-    	if ((a = GenerateAction (CollYellowAction)))
-        	Yellow = a->ButtonName ();
+	r = CollRedAction;
+	g = CollGreenAction;
+	y = CollYellowAction;
     }
-    else 
+    else
     {
-    	if ((a = GenerateAction (TreeRedAction)))
-        	Red = a->ButtonName ();
-    	if ((a = GenerateAction (TreeGreenAction)))
-        	Green = a->ButtonName ();
-    	if ((a = GenerateAction (TreeYellowAction)))
-        	Yellow = a->ButtonName ();
+	r = TreeRedAction;
+	g = TreeGreenAction;
+	y = TreeYellowAction;
     }
-    osd()->SetHelpKeys(Red,Green,Yellow,BlueName());
+    osd()->SetHelpKeys(HKey(r,on),
+			HKey(g,on),
+			HKey(y,on),
+                        BlueName(on));
 }
 
 
@@ -400,6 +435,7 @@ void
 mgMenu::InitOsd (const char *title,const bool hashotkeys)
 {
     osd ()->InitOsd (title,hashotkeys);
+    SetHelpKeys();	// Default, will be overridden by the single items
 }
 
 
@@ -411,24 +447,35 @@ mgMainMenu::InitOsd (const char *title,const bool hashotkeys)
     if (hashotkeys) SetHasHotkeys ();
 }
 
+void
+mgMainMenu::AddItem(mgAction *a)
+{
+    cOsdItem *c = dynamic_cast<cOsdItem*>(a);
+    if (!c)
+	    mgError("AddItem with non cOsdItem");
+    Add(c);
+}
 
 void
 mgSubmenu::BuildOsd ()
 {
     static char b[100];
     snprintf(b,99,tr("Commands:%s"),trim(osd()->selection()->getCurrentValue()).c_str());
+    mgActions on = osd()->CurrentType();
     InitOsd (b);
     mgMenu *p = osd ()->Parent ();
     if (!p)
 	    return;
-    AddAction(actInstantPlay);
-    AddAction(actAddThisToCollection);
-    AddAction(actRemoveThisFromCollection);
-    AddAction(actToggleSelection);
-    AddAction(actSetDefault);
-    AddAction(actDeleteCollection);
-    AddAction(actChooseSearch);
-    AddAction(actExportTracklist);
+    AddAction(actInstantPlay,on);
+    AddAction(actAddThisToCollection,on);
+    AddAction(actAddThisToDefaultCollection,on);
+    AddAction(actSetDefaultCollection,on);
+    AddAction(actRemoveThisFromCollection,on);
+    AddAction(actToggleSelection,on);
+    AddAction(actDeleteCollection,on);
+    AddAction(actClearCollection,on);
+    AddAction(actChooseOrder,on);
+    AddAction(actExportTracklist,on);
     cCommand *command;
     if (osd()->external_commands)
     {
@@ -452,43 +499,65 @@ mgSubmenu::BuildOsd ()
     CollYellowAction = actSetButton;
 }
 
+mgActions
+mgMainMenu::CurrentType()
+{
+    mgActions result = mgActions(0);
+    cOsdItem* c = Get(Current());
+    if (c)
+    {
+	mgAction *a = dynamic_cast<mgAction*>(c);
+	if (!a)
+		mgError("Found an OSD item which is not mgAction:%s",c->Text());
+	result = a->Type();
+    }
+    return result;
+}
 
 eOSState
-mgTree::Process (eKeys key)
+mgMenu::ExecuteButton(eKeys key)
 {
-    eOSState result = osUnknown;
+    mgActions on = osd()->CurrentType();
     switch (key)
     {
         case kRed:
             	if (osd()->UsingCollection)
-			ExecuteAction (CollRedAction);
+			ExecuteAction (CollRedAction,on);
 		else
-			ExecuteAction (TreeRedAction);
+			ExecuteAction (TreeRedAction,on);
 		return osContinue;
         case kGreen:
             	if (osd()->UsingCollection)
-			ExecuteAction (CollGreenAction);
+			ExecuteAction (CollGreenAction,on);
 		else
-			ExecuteAction (TreeGreenAction);
+			ExecuteAction (TreeGreenAction,on);
 		return osContinue;
         case kYellow:
             	if (osd()->UsingCollection)
-			ExecuteAction (CollYellowAction);
+			ExecuteAction (CollYellowAction,on);
 		else
-			ExecuteAction (TreeYellowAction);
+			ExecuteAction (TreeYellowAction,on);
+		return osContinue;
+        case kBlue:
+		osd()->newmenu = new mgSubmenu;
 		return osContinue;
         default:
-	    result = osUnknown;
             break;
     }
-    return result;
+    return osUnknown;
+}
+
+eOSState
+mgTree::Process (eKeys key)
+{
+    return ExecuteButton(key);
 }
 
 void
 mgTree::BuildOsd ()
 {
     InitOsd (selection ()->getListname ().c_str (), false);
-    AddSelectionItems ();
+    AddSelectionItems (selection());
 }
 
 void
@@ -502,8 +571,6 @@ mgMainMenu::Message1(const char *msg, const char *arg1)
 eOSState mgMainMenu::ProcessKey (eKeys key)
 {
     eOSState result = osContinue;
-    if (key!=kNone)
-    	mgDebug (3, "MainMenu::ProcessKey(%d)", (int) key);
 
     if (Menus.size()<1)
 	mgError("mgMainMenu::ProcessKey: Menus is empty");
@@ -562,21 +629,21 @@ otherkeys:
     newposition = -1;
 
     {
-	    mgMenu * oldmenu = newmenu;
+	 mgMenu * oldmenu = newmenu;
 
 // item specific key logic:
-    result = cOsdMenu::ProcessKey (key);
+   	 result = cOsdMenu::ProcessKey (key);
 
 // mgMenu specific key logic:
-    if (result == osUnknown)
-        result = oldmenu->Process (key);
+    	if (result == osUnknown)
+        	result = oldmenu->Process (key);
     }
-// catch osBack for empty OSD lists 
-// (because if the list was empty, no mgOsdItem::ProcessKey was ever called)
+// catch osBack for empty OSD lists . This should only happen for playlistitems
+// (because if the list was empty, no mgActions::ProcessKey was ever called)
     if (result == osBack)
     {
 	    // do as if there was an entry
-	    mgOsdItem *a = Menus.back()->GenerateAction(actEntry);
+	    mgAction *a = Menus.back()->GenerateAction(actEntry,actEntry);
 	    if (a) 
 	    {
 		result = a->Back();
@@ -593,7 +660,7 @@ otherkeys:
     {
         if (Menus.size () > 1)
         {
-            Menus.pop_back ();
+   	    CloseMenu();
             forcerefresh = true;
         }
         else
@@ -603,9 +670,7 @@ otherkeys:
 	}
     }
     else if (newmenu != Menus.back ())
-    {
-        AddMenu (newmenu);
-    }
+        AddMenu (newmenu,newposition);
 
     if (UsingCollection)
     	forcerefresh |= m_collectionsel.cacheIsEmpty();
@@ -616,7 +681,6 @@ otherkeys:
 
     if (forcerefresh)
     {
-	mgDebug(2,"forced refresh");
     	forcerefresh = false;
 	if (newposition<0) 
 		newposition = selection()->gotoPosition();
@@ -628,12 +692,20 @@ pr_exit:
 }
 
 void
+mgMainMenu::CloseMenu()
+{
+    mgMenu* m = Menus.back();
+    Menus.pop_back ();
+    delete m;
+}
+
+void
 mgMainMenu::showMessage()
 {
     if (m_message)
     {
 #if VDRVERSNUM >= 10307
-    	Skins.Message (mtInfo, m_message);
+    	Skins.Message (mtInfo, m_message,2);
     	Skins.Flush ();
 #else
     	Interface->Status (m_message);
@@ -646,13 +718,19 @@ mgMainMenu::showMessage()
 
 
 void
-mgMainMenu::AddMenu (mgMenu * m)
+mgMainMenu::AddMenu (mgMenu * m,unsigned int position)
 {
     Menus.push_back (m);
     m->setosd (this);
-    m->Display (0);
+    m->Display (position);
 }
 
+void
+mgMenu::setosd(mgMainMenu *osd)
+{
+    m_osd = osd;
+    m_prevUsingCollection = osd->UsingCollection;
+}
 
 eOSState
 mgSubmenu::Process (eKeys key)
@@ -662,15 +740,46 @@ mgSubmenu::Process (eKeys key)
 
 
 void
-mgTreeViewSelector::BuildOsd ()
+mgMenuOrders::BuildOsd ()
 {
-    InitOsd (tr ("Tree View Selection"));
-    AddAction(actSearchCollItem);
-    AddAction(actSearchArtistAlbumTitle);
-    AddAction(actSearchArtistTitle);
-    AddAction(actSearchAlbumTitle);
-    AddAction(actSearchGenreYearTitle);
-    AddAction(actSearchGenreArtistAlbumTitle);
+    InitOsd (tr ("Select an order"));
+    AddAction(ActOrderCollItem);
+    AddAction(ActOrderArtistAlbumTitle);
+    AddAction(ActOrderArtistTitle);
+    AddAction(ActOrderAlbumTitle);
+    AddAction(ActOrderGenreYearTitle);
+    AddAction(ActOrderGenreArtistAlbumTitle);
+}
+
+
+mgTreeCollSelector::~mgTreeCollSelector()
+{
+    osd()->UsingCollection = m_prevUsingCollection;
+}
+
+void
+mgTreeCollSelector::BuildOsd ()
+{
+    osd()->UsingCollection = true;
+    mgSelection *coll = osd()->collselection();
+    InitOsd (m_title.c_str());
+    coll->leave(0);
+    coll->setPosition(osd()->default_collection);
+    AddSelectionItems (coll,coll_action());
+    osd()->newposition = coll->gotoPosition(0);
+    cOsdItem *c = osd()->Get(osd()->newposition);
+    mgAction *a = dynamic_cast<mgAction *>(c);
+    a->IgnoreNextEvent = true;
+}
+
+mgTreeAddToCollSelector::mgTreeAddToCollSelector(string title)
+{
+    m_title = title;
+}
+
+mgTreeRemoveFromCollSelector::mgTreeRemoveFromCollSelector(string title)
+{
+    m_title = title;
 }
 
 void
