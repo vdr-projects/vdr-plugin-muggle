@@ -2,18 +2,19 @@
  * \file   vdr_menu.h
  * \brief  Implements menu handling for broswing media libraries within VDR
  *
- * \version $Revision: 1.10 $
- * \date    $Date: 2004/05/28 15:29:19 $
+ * \version $Revision: 1.11 $
+ * \date    $Date: 2004/07/06 00:20:51 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author: MountainMan $
  *
- *  $Id: vdr_menu.h,v 1.10 2004/05/28 15:29:19 lvw Exp $
+ *  $Id: vdr_menu.h,v 1.11 2004/07/06 00:20:51 MountainMan Exp $
  */
 
 #ifndef _VDR_MENU_H
 #define _VDR_MENU_H
 
 #include <list>
+#include <vector>
 
 #include <osd.h>
 
@@ -64,7 +65,8 @@ class mgMainMenu : public cOsdMenu
   enum MuggleStatus
     { 
       TREE, TREE_SUBMENU,
-      PLAYLIST, PLAYLIST_SUBMENU,
+      PLAYLIST, LOAD_PLAYLIST, SAVE_PLAYLIST,
+      PLAYLIST_SUBMENU,
       FILTER, FILTER_SUBMENU
     };
 
@@ -83,6 +85,9 @@ class mgMainMenu : public cOsdMenu
   void DisplayTrackInfo();
   void DisplayAlbumInfo();  
 
+  void LoadPlaylist();
+  void SavePlaylist();
+  void RenamePlaylist();
   void DisplayPlaylistSubmenu();
   eOSState PlaylistSubmenuAction( int n );
 
@@ -98,6 +103,7 @@ class mgMainMenu : public cOsdMenu
   mgSelectionTreeNode *m_root;
   mgSelectionTreeNode *m_node;
   mgPlaylist          *m_current_playlist;
+  std::vector<std::string>      *m_plists;
 
   MuggleStatus m_state;
   std::list<int> m_history;
@@ -110,6 +116,9 @@ class mgMainMenu : public cOsdMenu
 /************************************************************
  *
  * $Log: vdr_menu.h,v $
+ * Revision 1.11  2004/07/06 00:20:51  MountainMan
+ * loading and saving playlists
+ *
  * Revision 1.10  2004/05/28 15:29:19  lvw
  * Merged player branch back on HEAD branch.
  *
