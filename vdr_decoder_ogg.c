@@ -22,7 +22,6 @@
 
 #include "mg_content_interface.h"
 
-using namespace std;
 
 // --- mgOggFile ----------------------------------------------------------------
 
@@ -36,11 +35,11 @@ class mgOggFile // : public mgFileInfo
 
   void error( const char *action, const int err );
 
-  string m_filename;
+  std::string m_filename;
 
  public:
 
-  mgOggFile( string filename );
+  mgOggFile( std::string filename );
   ~mgOggFile();
 
   bool open(bool log=true);
@@ -56,7 +55,7 @@ class mgOggFile // : public mgFileInfo
   long long indexMs(void);
 };
 
-mgOggFile::mgOggFile( string filename ) :
+mgOggFile::mgOggFile( std::string filename ) :
   m_filename( filename )
 {
   m_canSeek = false;

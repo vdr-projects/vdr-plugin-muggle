@@ -10,11 +10,11 @@
  * $Id$
  */
 
+#include <typeinfo>
 #include <string>
 #include <vector>
 
 #include <mysql/mysql.h>
-
 #include <menuitems.h>
 #include <tools.h>
 #include <config.h>
@@ -38,7 +38,6 @@
 
 #include "gd_content_interface.h"
 
-using namespace std;
 
 // ----------------------- mgMenuTreeItem ------------------
 
@@ -155,7 +154,7 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 		  {
 		    mgDebug( 1,  "mgMainMenu: add selection %s to playlist", current->getLabel().c_str() );
 		    // Add selection to Play		
-		    vector<mgContentItem*> *tracks = current->getTracks();
+		    std::vector<mgContentItem*> *tracks = current->getTracks();
 
 		    if( tracks )
 		      {
@@ -335,7 +334,7 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 		m_current_playlist -> clear();
 		delete m_current_playlist;
 
-		string selected = (*m_plists)[ Current() ];
+		std::string selected = (*m_plists)[ Current() ];
 		m_current_playlist = m_media->loadPlaylist( selected.c_str() );
 
 		// clean the list of playlist
@@ -499,9 +498,9 @@ void mgMainMenu::DisplayTree( mgSelectionTreeNode* node, int select )
       SetButtons();
 
       m_node = node;
-      vector<mgSelectionTreeNode*> children = node->getChildren();
+      std::vector<mgSelectionTreeNode*> children = node->getChildren();
       
-      for( vector<mgSelectionTreeNode*>::iterator iter = children.begin();
+      for( std::vector<mgSelectionTreeNode*>::iterator iter = children.begin();
 	   iter != children.end();
 	   iter ++ )
 	{
@@ -560,7 +559,7 @@ eOSState mgMainMenu::TreeSubmenuAction( int n )
 	    m_current_playlist->clear();
 
 	    // append current node
-	    vector<mgContentItem*> *tracks = current->getTracks();
+	    std::vector<mgContentItem*> *tracks = current->getTracks();
 
 	    if( tracks )
 	      {
@@ -594,7 +593,7 @@ void mgMainMenu::DisplayPlaylist( int index_current )
   Clear();
   SetButtons();
 
-  vector<mgContentItem*>* list = m_current_playlist-> getAll();
+  std::vector<mgContentItem*>* list = m_current_playlist-> getAll();
   static char titlestr[80];
   sprintf( titlestr, "Muggle - %s (%d %s)",tr("Playlist"),
                      list->size() ,
@@ -603,7 +602,7 @@ void mgMainMenu::DisplayPlaylist( int index_current )
 
   for( unsigned int i = 0; i < m_current_playlist->getNumItems(); i++)
     {
-      string label =  m_current_playlist->getLabel( i, "   " );
+      std::string label =  m_current_playlist->getLabel( i, "   " );
       Add( new cOsdItem( label.c_str() ) );
     }
 
@@ -632,7 +631,7 @@ void mgMainMenu::LoadPlaylist()
   // retrieve list of available playlists
   m_plists = m_media->getStoredPlaylists();
   
-  for(vector<string>::iterator iter = m_plists->begin(); 
+  for(std::vector<std::string>::iterator iter = m_plists->begin(); 
       iter != m_plists->end() ; iter++)
     {      
       Add( new cOsdItem( iter->c_str() ) );
@@ -730,7 +729,7 @@ eOSState mgMainMenu::ExecutePlaylistCommand( int current )
 #endif
 	 free( buffer );
 
-	 string tmp_m3u_file = (char *) AddDirectory( cPlugin::ConfigDirectory("muggle"), "current.m3u" );
+	 std::string tmp_m3u_file = (char *) AddDirectory( cPlugin::ConfigDirectory("muggle"), "current.m3u" );
 	 m_current_playlist->exportM3U( tmp_m3u_file );
 
 	 char *result = (char *)command->Execute( tmp_m3u_file.c_str() );
@@ -752,7 +751,7 @@ eOSState mgMainMenu::ExecutePlaylistCommand( int current )
 
 eOSState mgMainMenu::PlaylistSubmenuAction( int n )
 {
-  cout << "mgMainMenu::PlaylistSubmenuAction: " << n << endl << flush;
+  std::cout << "mgMainMenu::PlaylistSubmenuAction: " << n << std::endl << std::flush;
   eOSState state = osContinue;
   
   switch( n )
@@ -797,7 +796,7 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
       {	// clear playlist
 
 	cControl *control = cControl::Control();
-	string buffer;
+	std::string buffer;
 
 	if( control && typeid(*control) == typeid(mgPlayerControl) ) 
 	  {
@@ -832,7 +831,7 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
 	DisplayPlaylist( m_last_osd_index );
 
 	// confirmation
-	string confirm = res? "Entry deleted": "Cannot delete entry";
+	std::string confirm = res? "Entry deleted": "Cannot delete entry";
 
 #if VDRVERSNUM >= 10307
 	Skins.Message( mtInfo, confirm.c_str() );
@@ -844,7 +843,7 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
       } break;
     case 5:
       {
-	string m3u_file = AddDirectory( cPlugin::ConfigDirectory("muggle"),
+	std::string m3u_file = AddDirectory( cPlugin::ConfigDirectory("muggle"),
 					m_current_playlist->getListname().c_str() );
 	m_current_playlist->exportM3U( m3u_file );
       } break;
@@ -869,10 +868,10 @@ void mgMainMenu::DisplayFilter()
   SetButtons();
 
   SetTitle( m_media->getActiveFilterTitle().c_str() );
-  vector<mgFilter*> *filter_list = m_media->getActiveFilters();
+  std::vector<mgFilter*> *filter_list = m_media->getActiveFilters();
   
   int i=0;
-  for( vector<mgFilter*>::iterator iter = filter_list->begin();
+  for( std::vector<mgFilter*>::iterator iter = filter_list->begin();
        iter != filter_list->end();
        iter ++ )
     {
@@ -912,12 +911,12 @@ void mgMainMenu::DisplayFilter()
 	case mgFilter::CHOICE:
 	  {
 	    mgFilterChoice *fc = (mgFilterChoice *) (*iter);
-	    vector<string> choices = fc->getChoices();
+	    std::vector<std::string> choices = fc->getChoices();
 
 	    char **choices_str = new (char *)[ choices.size() ];
 
 	    int j = 0;
-	    for( vector<string>::iterator iter = choices.begin();
+	    for( std::vector<std::string>::iterator iter = choices.begin();
 		 iter != choices.end();
 		 iter ++, j ++ )
 	      {

@@ -10,12 +10,12 @@
 
 #include "mg_tools.h"
 
-extern "C"
-{
+/*extern "C"
+{*/
   #include <stdarg.h>
   #include <stdio.h>
-}
-
+/*}
+*/
 #include <stdlib.h>
 
 #define  MAX_BUFLEN  2048

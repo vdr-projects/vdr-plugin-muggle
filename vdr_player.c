@@ -45,7 +45,6 @@
 #include "mg_playlist.h"
 #include "mg_content_interface.h"
 
-using namespace std;
 
 // ----------------------------------------------------------------
 
@@ -350,7 +349,7 @@ void mgPCMPlayer::Action(void)
 #ifdef DEBUG
       if(time(0)>=beat+30) 
 	{
-	  cout << "mgPCMPlayer::Action: heartbeat buffer=" << m_ringbuffer->Available() << endl << flush;
+	  std::cout << "mgPCMPlayer::Action: heartbeat buffer=" << m_ringbuffer->Available() << std::endl << std::flush;
 	  scale.Stats(); if(haslevel) norm.Stats();
 	  beat=time(0);
 	}
@@ -369,7 +368,7 @@ void mgPCMPlayer::Action(void)
 
 		if( m_playing && m_playing != &(mgContentItem::UNDEFINED) )
 		    {
-		      string filename = m_playing->getSourceFile();
+		      std::string filename = m_playing->getSourceFile();
 		      // mgDebug( 1, "mgPCMPlayer::Action: music file is %s", filename.c_str() );
 
 		      if( ( m_decoder = mgDecoders::findDecoder( m_playing ) ) && m_decoder->start() )
@@ -436,7 +435,7 @@ void mgPCMPlayer::Action(void)
 		  static unsigned int oldrate=0;
 		  if(oldrate!=pcm->samplerate) 
 		    {
-		      cout << "mgPCMPlayer::Action: new input sample rate " << pcm->samplerate << endl << flush;
+		      std::cout << "mgPCMPlayer::Action: new input sample rate " << pcm->samplerate << std::endl << std::flush;
 		      oldrate = pcm->samplerate;
 		    }
 		}

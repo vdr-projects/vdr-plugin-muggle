@@ -32,7 +32,7 @@
 
 #ifndef _MUGGLE_H
 #define _MUGGLE_H
-
+#include <string>
 #include <plugin.h>
 
 class mgMedia;

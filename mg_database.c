@@ -9,14 +9,13 @@
 
 #include "mg_database.h"
 
-using namespace std;
 
 mgDB::mgDB() 
 {
 }
 
-mgDB::mgDB(string host, string name, 
-	   string user, string pass,
+mgDB::mgDB(std::string host, std::string name, 
+	   std::string user, std::string pass,
 	   int port) 
 {
 }
@@ -31,13 +30,13 @@ MYSQL mgDB::getDBHandle()
   return m_dbase;
 }
 
-string mgDB::escape_string( MYSQL *db, string s )
+std::string mgDB::escape_string( MYSQL *db, std::string s )
 {
   char *escbuf = (char *) malloc( 2*s.size() + 1 );
 
   int len = mysql_real_escape_string( db, escbuf, s.c_str(), s.size() );
 
-  string r = string( escbuf );
+  std::string r = std::string( escbuf );
   free( escbuf );
 
   return r;

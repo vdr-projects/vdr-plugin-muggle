@@ -3,11 +3,11 @@
  * \brief Implementation of media stream classes
  *
  * \version $Revision: 1.2 $
- * \date    $Date: 2004/05/28 15:29:19 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  *
- * $Id: vdr_stream.c,v 1.2 2004/05/28 15:29:19 lvw Exp $
+ * $Id$
  *
  * Adapted from
  * MP3/MPlayer plugin to VDR (C++)
@@ -31,7 +31,7 @@
 // #include "i18n.h"
 // #include "version.h"
 
-#define tr(x) x
+//#define tr(x) x
 
 #ifdef USE_MMAP
 #include <sys/mman.h>
@@ -39,11 +39,10 @@
 
 #define DEFAULT_PORT 80 // default port for streaming (HTTP)
 
-using namespace std;
 
 // --- mgStream -----------------------------------------------------------------
 
-mgStream::mgStream( string filename )
+mgStream::mgStream( std::string filename )
   : m_filename( filename )
 {
   m_fd = -1; 

@@ -13,11 +13,11 @@
 #ifndef _VDR_MENU_H
 #define _VDR_MENU_H
 
+#include <string>
 #include <list>
 #include <vector>
 
 #include <osd.h>
-
 #include "i18n.h"
 
 class cCommands;
@@ -107,10 +107,10 @@ class mgMainMenu : public cOsdMenu
   mgSelectionTreeNode *m_root;
   mgSelectionTreeNode *m_node;
   mgPlaylist          *m_current_playlist;
-  std::vector<std::string> *m_plists;
+  std::vector< std::string > *m_plists;
 
   MuggleStatus m_state;
-  std::list<int> m_history;
+  std::list< int > m_history;
 
   cCommands *m_playlist_commands;
 
