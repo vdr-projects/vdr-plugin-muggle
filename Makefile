@@ -61,6 +61,7 @@ OBJS = $(PLUGIN).o i18n.o mg_valmap.o mg_order.o mg_db.o mg_actions.o vdr_menu.o
 
 LIBS = -lmad -lmysqlclient 
 MILIBS = -lmysqlclient -ltag
+# MILIBS = -lmysqld -lpthread -lz -lcrypt -lnsl -lm -lpthread -lrt -lwrap -ltag
 
 ifdef HAVE_VORBISFILE
 DEFINES += -DHAVE_VORBISFILE
