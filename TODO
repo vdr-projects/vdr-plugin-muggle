@@ -10,12 +10,44 @@
   \section urgent Urgent/Short-term issues
 
     \subsection bugs Bugs and testing needed
-        - Check whether track/progress view settings are saved
         - Crashes in filter selections?
         - Keep this? Test mgPCMPlayer::getSourceFile() for GD case (find)
 
     \subsection urgentosd OSD-related Issues
         - Rename playlist
+
+    \subsection urgentplayer Player extensions
+	- Display covers
+          - Import filename
+          - Show image during replay
+	- Add FLAC decoder
+	- Determine max. framecount (needed for rewinding?)
+	- Init scale/level/normalize?
+	  - The max. level should be recognized during play
+	  - Store max. level in the database
+
+    \subsection urgentcontent Content handling    
+        - Think, whether type (mp3, ogg, flac) should be stored in database
+          - could be used in searching/structuring as well
+	- Handle shuffle mode in mgPlaylist
+	  - shuffle mode on
+	    - for next file:
+	      - generate a set of random numbers as long as the playlist
+              - re-generate when removing or adding entries 
+              - in mgPlaylist::getCurrent use this additional set as a mapping
+        - Party mode (see iTunes)
+          - initialization
+            - find 15 titles according to the scheme below
+          - playing 
+            - before entering next title perform track selection
+          - track selection
+  	    - generate a random uid
+	    - if file exists:
+	      - determine maximum playcount of all tracks
+	      - generate a random number n
+	        - if n < playcount / max. playcount
+	          - add the file to the end of the list
+
 
     \subsection urgentcode Code polishing
         - Clean up coding style and documentation in general
@@ -39,40 +71,7 @@
 	  - Could save IP/host name and associate last playlist/index loaded
         - Move differences 1.3.7+- to link level
 
-    \subsection urgentcontent Content handling    
-	- Think, whether type (mp3, ogg, flac) should be stored in database
-          - could be used in searching/structuring as well
-	- Handle shuffle mode in mgPlaylist
-	  - shuffle mode on
-	    - for next file:
-	      - generate a set of random numbers as long as the playlist
-              - re-generate when removing or adding entries 
-              - in mgPlaylist::getCurrent use this additional set as a mapping
-        - Party mode (see iTunes)
-          - initialization
-            - find 15 titles according to the scheme below
-          - playing 
-            - before entering next title perform track selection
-          - track selection
-  	    - generate a random uid
-	    - if file exists:
-	      - determine maximum playcount of all tracks
-	      - generate a random number n
-	        - if n < playcount / max. playcount
-	          - add the file to the end of the list
-
-    \subsection urgentplayer Player extensions
-	- Display covers
-          - Import filename
-          - Show image during replay
-	- Add FLAC decoder
-	- Determine max. framecount (needed for rewinding?)
-	- Init scale/level/normalize?
-	  - The max. level should be recognized during play
-	  - Store max. level in the database
-        - Display covers
-
-    \subsection deploy Deployment
+   \subsection deploy Deployment
 
     - Script to publish a version
       - make dist
@@ -241,11 +240,13 @@
     - BUG: Red key does not work in Browser submenu
     - Test execution of playlist commands    
     - Resume play instead of restarting list from the beginning when terminating play with blue instead of back
+    - Save current playlist on exit and restore on start
     - Save on exit
       - implement storePlaylistAs( string name ) in gdPlaylist
         - find id of playlist called name or create it
         - delete all entries
         - store current entries
     - Handle loop mode in mgPlaylist
-
+    - Track/progress view settings are now saved in the setup
+    - BUG: could not delete first track of a playlist
 */
