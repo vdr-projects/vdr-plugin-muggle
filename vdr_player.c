@@ -856,7 +856,7 @@ bool mgPCMPlayer::GetIndex( int &current, int &total, bool snaptoiframe )
 {
   bool res = false;
   current = SecondsToFrames( m_index ); 
-  total = -1;
+  total = SecondsToFrames( m_current->getLength() );
 
   return res;
 }
