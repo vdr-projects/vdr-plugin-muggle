@@ -3,9 +3,9 @@
  *  \brief  A capsule around MySql database access
  ******************************************************************** 
  * \version $Revision: 1.2 $
- * \date    $Date: 2004/05/28 15:29:18 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: lvw $
+ * \author  file owner: $Author$
  */
 /*******************************************************************/
 
@@ -25,6 +25,18 @@ mgDB::mgDB(string host, string name,
 
 mgDB::~mgDB()
 {
+}
+
+string mgDB::escape_string( MYSQL *db, string s )
+{
+  char *escbuf = (char *) malloc( 2*s.length() + 1 );
+
+  int len = mysql_real_escape_string( db, escbuf, s.c_str(), s.length() );
+
+  string res( escbuf );
+  free( resbuf );
+
+  return res;
 }
 
 MYSQL mgDB::getDBHandle()
