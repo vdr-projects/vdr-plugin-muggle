@@ -2,12 +2,12 @@
 /*! \file   vdr_menu.c
  *  \brief  Implements menu handling for browsing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.17 $
- * \date    $Date: 2004/02/23 15:56:19 $
+ * \version $Revision: 1.18 $
+ * \date    $Date: 2004/02/23 16:18:15 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: RaK $
  *
- * $Id: vdr_menu.c,v 1.17 2004/02/23 15:56:19 RaK Exp $
+ * $Id: vdr_menu.c,v 1.18 2004/02/23 16:18:15 RaK Exp $
  */
 /*******************************************************************/
 
@@ -61,7 +61,7 @@ mgMainMenu::mgMainMenu(mgMedia *media, mgSelectionTreeNode *root, mgPlaylist *pl
 {
   mgDebug( 1,  "Creating Muggle Main Menu" );
   
-  SetTitle( "Muggle Media Database" );
+  SetTitle( tr("Muggle Media Database") );
   SetButtons();
 
   m_filtername = new char[32];
@@ -124,7 +124,7 @@ void mgMainMenu::SetButtons(  )
     }
   else if( m_state == FILTER )
     {
-      SetHelp( tr("Query"), tr("Load"), tr("Browser"), tr("Submenu") );
+      SetHelp( tr("Query"), tr("Other Search"), tr("Browser"), tr("Submenu") );
     }
   else
     {
@@ -461,7 +461,7 @@ void mgMainMenu::DisplayTreeSubmenu()
   mgDebug( 1, "Creating Muggle tree view submenu" );
   SetButtons();
 
-  SetTitle( "Muggle Tree View Commands" );
+  SetTitle( strcat("Muggle - ",tr("Tree View Commands") ) );
 
   // Add items
   Add( new cOsdItem( "1 - Test1" ) );
@@ -504,7 +504,9 @@ void mgMainMenu::DisplayPlaylist()
 
   vector<mgContentItem*>* list = m_current_playlist-> getAll();
   static char titlestr[80];
-  sprintf( titlestr, "Muggle Playlist (%d items)", list->size() );
+  sprintf( titlestr, "Muggle - %s (%d %s)",tr("Playlist"),
+                     list->size() ,
+                     tr("items") );
   SetTitle( titlestr ); 
   
   mgDebug( 1, "mgBrowseMenu::DisplayPlaylist: %d elements received", 
@@ -641,6 +643,9 @@ void mgMainMenu::DisplayFilterSelector()
 /************************************************************
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.18  2004/02/23 16:18:15  RaK
+ * - i18n
+ *
  * Revision 1.17  2004/02/23 15:56:19  RaK
  * - i18n
  *

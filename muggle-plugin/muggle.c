@@ -2,8 +2,8 @@
 /*! \file   muggle.c
  *  \brief  Implements a plugin for browsing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.5 $
- * \date    $Date: 2004/02/23 15:17:51 $
+ * \version $Revision: 1.6 $
+ * \date    $Date: 2004/02/23 16:18:15 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: RaK $
  */
@@ -73,11 +73,11 @@ bool mgMuggle::Start(void)
   // Start any background activities the plugin shall perform.
   mgSetDebugLevel( 99 );
 
+  RegisterI18n(Phrases);
   m_media = new mgMedia( mgMedia::GD_MP3 );
   m_root  = m_media->getSelectionRoot();
   m_playlist = m_media->createTemporaryPlaylist();
   m_media->initFilterSet();
-  RegisterI18n(Phrases);
   return true;
 }
 
