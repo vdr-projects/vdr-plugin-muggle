@@ -448,7 +448,8 @@ mgSelection::loadgenres ()
     	MYSQL_ROW row;
     	while ((row = mysql_fetch_row (rows)) != NULL)
     	{
-        	genres[row[0]] = row[1];
+        	if (row[0] && row[1])
+			genres[row[0]] = row[1];
     	}
     	mysql_free_result (rows);
     }
@@ -872,19 +873,54 @@ mgContentItem::mgContentItem (const mgContentItem* c)
 mgContentItem::mgContentItem (const MYSQL_ROW row, const string ToplevelDir)
 {
     m_id = atol (row[0]);
-    m_title = row[1];
-    m_mp3file = ToplevelDir + row[2];
-    m_artist = row[3];
-    m_albumtitle = row[4];
-    m_genre1 = row[5];
-    m_genre2 = row[6];
-    m_bitrate = row[7];
-    m_year = atol (row[8]);
+    if (row[1])
+	m_title = row[1];
+    else
+	m_title = "NULL";
+    if (row[2])
+    	m_mp3file = ToplevelDir + row[2];
+    else
+    	m_mp3file = "NULL";
+    if (row[3])
+    	m_artist = row[3];
+    else
+    	m_artist = row[3];
+    if (row[4])
+    	m_albumtitle = row[4];
+    else
+    	m_albumtitle = "NULL";
+    if (row[5])
+    	m_genre1 = row[5];
+    else
+    	m_genre1 = "NULL";
+    if (row[6])
+    	m_genre2 = row[6];
+    else
+    	m_genre2 = "NULL";
+    if (row[7])
+    	m_bitrate = row[7];
+    else
+    	m_bitrate = "NULL";
+    if (row[8])
+    	m_year = atol (row[8]);
+    else
+    	m_year = 0;
     if (row[9])
         m_rating = atol (row[9]);
-    m_duration = atol (row[10]);
-    m_samplerate = atol (row[11]);
-    m_channels = atol (row[12]);
+    else
+        m_rating = 0;
+    if (row[10])
+    	m_duration = atol (row[10]);
+    else
+    	m_duration = 0;
+    if (row[11])
+    	m_samplerate = atol (row[11]);
+    else
+    	m_samplerate = 0;
+    if (row[12])
+    	m_channels = atol (row[12]);
+    else
+    	m_channels = 0;
 };
 
 string mgContentItem::getAlbum ()
@@ -1171,11 +1207,20 @@ mgSelection::refreshValues ()
 		MYSQL_ROW row;
             	while ((row = mysql_fetch_row (rows)) != NULL)
             	{
-                	values.strings.push_back (row[0]);
-			if (num_fields==2)
-                		m_ids.push_back (row[1]);
+			string r0,r1;
+			if (row[0])
+				r0 = row[0];
 			else
-                		m_ids.push_back (row[0]);
+				r0 = "NULL";
+			if (row[1])
+				r1 = row[1];
+			else
+				r1 = "NULL";
+                	values.strings.push_back (r0);
+			if (num_fields==2)
+                		m_ids.push_back (r1);
+			else
+                		m_ids.push_back (r0);
             	}
             	mysql_free_result (rows);
         }
