@@ -1378,6 +1378,14 @@ mgPlayerControl::ShowContents ()
                 m_menu->SetItem (buf, 6, false, false);
                 free (buf);
             }
+            if (num_items > 6)
+            {
+                string sf = player->getCurrent ()->getSourceFile ();
+		char *p = strrchr(sf.c_str(),'/');
+                asprintf (&buf, "File name:\t%s", p+1);
+                m_menu->SetItem (buf, 7, false, false);
+                free (buf);
+	    }
         }
         else
         {
