@@ -1,10 +1,17 @@
 #include <string>
 using namespace std;
 
-#include <id3.h/tag.h>
+#include <stdlib.h>
+
+#include <sys/stat.h>
+#include <id3/tag.h>
 #include <mysql/mysql.h>
 
+#include "mg_tools.h"
+
 MYSQL *db;
+
+char host[255], user[32], pass[32], dbname[32];
 
 int init_database()
 {
@@ -13,8 +20,8 @@ int init_database()
       return -1;
     }
   
-  if( mysql_real_connect( db, "host", "user", "pass", 
-			  "dbname", 0, NULL, 0 ) == NULL )
+  if( mysql_real_connect( db, host, user, pass, 
+			  dbname, 0, NULL, 0 ) == NULL )
     {
       return -2;
     }
@@ -24,63 +31,146 @@ int init_database()
 
 time_t get_fs_modification_time( string filename )
 {
-  struct stat *buf = malloc( sizeof( struct stat ) );
+  struct stat *buf = (struct stat*) malloc( sizeof( struct stat ) );
   
-  //    yes: obtain modification date for file and db entry
-  int res = stat( filename.c_str(), buf );
+  // yes: obtain modification date for file and db entry
+  int statres = stat( filename.c_str(), buf );
 
-  time_t res = buf->st_mtime;
+  time_t mod = buf->st_mtime;
   free( buf );
 
-  return res;
+  return mod;
 }
 
 time_t get_db_modification_time( long uid )
 {
-  char *query;
   time_t mt;
 
-  asprintf( &query, "SELECT modification_time FROM tracks WHERE id='%d'", uid );
+  MYSQL_RES *result = mgSqlReadQuery( db, "SELECT modification_time FROM tracks WHERE id='%d'", uid );
+  MYSQL_ROW row     = mysql_fetch_row( result );
+  
+  string mod_time = row[0];
+  mt = (time_t) atol( mod_time.c_str() );
 
-  if( mysql_real_query( &db, query, strlen( query ) ) )
-    { 
-      printf( mysql_error(&db) );
-      exit(1);
-    }
-  else
-    {
-      MYSQL_RES *result = mysql_store_result( db );
-      MYSQL_ROW row     = mysql_fetch_row( result );
-
-      string mod_time = row[0];
-      mt = (time_t) atol( mod_time.c_str() );
-    }  
-
-  free( query );
   return mt;
 }
 
 long find_file_in_database( string filename )
 {
-  char *query;
+  MYSQL_RES *result = mgSqlReadQuery( db, "SELECT id FROM tracks WHERE mp3file='%s'", filename.c_str() );
+  MYSQL_ROW row = mysql_fetch_row( result );
 
-  asprintf( &query, "SELECT id FROM tracks WHERE mp3file='%s'", filename.c_str() );
+  // obtain ID and return
+  return atol( row[0] );
+}
 
-  if( mysql_real_query( &demo_db, query, strlen( query ) ) )
-    { 
-      printf( mysql_error(&demo_db) );
-      exit(1);
+// read tags from the mp3 file and store them into the corresponding database entry
+void update_db( long uid, string filename )
+{
+  char title[1024], album[1024], year[5], artist[1024], cddbid[20], trackno[5];
+  ID3_Tag filetag( filename.c_str() );
+
+  // obtain album value
+  ID3_Frame* album_frame = filetag.Find( ID3FID_ALBUM );
+  if( NULL != album_frame )
+    {      
+      album_frame->Field ( ID3FN_TEXT ).Get ( album, 1024 );
     }
   else
     {
-      MYSQL_RES *result = mysql_store_result( db );
-      row = mysql_fetch_row( result );
-
-      // obtain ID and return
-      return atol( row[0] );
+      strcpy( "Unassigned", album );
     }
 
-  free( query );
+  // obtain title value
+  ID3_Frame* title_frame = filetag.Find( ID3FID_TITLE );
+  if( NULL != title_frame )
+    {      
+      title_frame->Field ( ID3FN_TEXT ).Get ( title, 1024 ); 
+    }
+  else
+    {
+      strcpy( "Unknown title", title );
+    }
+
+  // obtain year value (ID3FID_YEAR)
+  ID3_Frame* year_frame = filetag.Find( ID3FID_YEAR );
+  if( NULL != year_frame )
+    {      
+      year_frame->Field ( ID3FN_TEXT ).Get ( year, 5 ); 
+    }
+  else
+    {
+      strcpy( "0", title );
+    }
+
+  // obtain artist value (ID3FID_LEADARTIST)
+  ID3_Frame* artist_frame = filetag.Find( ID3FID_LEADARTIST );
+  if( NULL != artist_frame )
+    {      
+      artist_frame->Field ( ID3FN_TEXT ).Get ( artist, 5 ); 
+    }
+  else
+    {
+      strcpy( "Unknown artist", artist );
+    }
+
+  // obtain track number ID3FID_TRACKNUM
+  ID3_Frame* trackno_frame = filetag.Find( ID3FID_TRACKNUM );
+  if( NULL != trackno_frame )
+    {      
+      trackno_frame->Field ( ID3FN_TEXT ).Get ( trackno, 5 ); 
+    }
+  else
+    {
+      strcpy( "0", trackno );
+    }
+
+  // obtain associated album or create
+  if( NULL == album_frame )
+    { // no album found, associate with default album
+      strcpy( cddbid, "0000unknown0000" );
+    }
+  else
+    { // album tag found, associate or create
+      MYSQL_RES *result = mgSqlReadQuery( db, "SELECT cddbid FROM album WHERE title='%s' AND artist='%s'", 
+					  album, artist );
+      MYSQL_ROW row = mysql_fetch_row( result );
+
+      // num rows == 0 ?
+      int nrows   = mysql_num_rows(result);
+      if( nrows == 0 )
+	{
+	  // create new album entry 
+	  long id = random();
+	  snprintf( cddbid, 19, "%d-%s", id, album );      
+	  
+	  mgSqlWriteQuery( db, "INSERT INTO album VALUES ('%s', '%s', '%s')", artist, title, cddbid );
+	}
+      else
+	{ // use first album found as source id for the track
+	  strncpy( cddbid, row[0], 19 );
+	}
+    }
+  
+  // TODO: genre(s), CD identifier (?), playcounter, popularimeter?, volume adjustment
+
+  // finally update the database
+
+  // update tracks table
+  if( uid > 0 )
+    { // the entry is known to exist already, hence update it
+      mgSqlWriteQuery( db, "UPDATE tracks SET artist='%s', title='%s', year='%s', sourceid='%s'"
+		       "WHERE id=%d", artist, title, year, cddbid, uid );
+    }
+  else
+    { // the entry does not exist, create it
+      mgSqlWriteQuery( db, "INSERT INTO tracks VALUES ('%s', '%s', NULL, NULL, '%s', NULL, NULL, NULL, NULL, NULL, '%s', '%s', '%s'", artist, title, year, cddbid, trackno, filename.c_str() );
+    }
+}
+
+void update_tags( long uid, string filename )
+{
+  
 }
 
 void evaluate_file( string filename )
@@ -109,62 +199,24 @@ void evaluate_file( string filename )
       else
 	{
 	  // not in db yet: import file
-	  import_file( filename );
+	  update_db( -1, filename );
 	}
     }
 }
 
-void update_db( long uid, string filename )
+int main( int argc, char *argv[] )
 {
-  char title[1024], album[1024];
-  ID3_Tag filetag( filename.c_str() );
+  int res = init_database();
 
-  // obtain album value
-  ID3_Frame* album_frame = filetag.Find( ID3FID_ALBUM );
-  if( NULL != album_frame )
-    {      
-      album_frame->Field ( ID3FN_TEXT ).Get ( album, 1024 );
+  if( !res )
+    {
+      update_db( 0, string( argv[1] ) );
     }
-  
-  // obtain title value
-  ID3_Frame* title_frame = filetag.Find( ID3FID_TITLE );
-  if( NULL != title_frame )
-    {      
-      title_frame->Field ( ID3FN_TEXT ).Get ( title, 1024 ); 
+  else
+    {
+      printf( "Database initialization failed. Exiting.\n" );
     }
 
-  // obtain year value (ID3FID_YEAR)
-
-  // obtain artist value (ID3FID_LEADARTIST)
-
-  // see what else may be needed later
-
-  // finally update the database
-
-  // update tracks table
-  mgSqlWriteQuery( db, 
-		   "UPDATE tracks "
-		   "SET artist=\"%s\", title=\"%s\", year=%d, rating=%d "
-		   "WHERE id=%d", 
-		   artist, title,
-		   m_year, m_rating, uid );
-
-  // obtain associated album or create
-  
-  
+  return res;
 }
 
-void update_tags( long uid, string filename )
-{
-  
-}
-
-void import_file( string filename )
-{
-
-}
-
-void main( int argc, char *argv[] )
-{
-  
-}
