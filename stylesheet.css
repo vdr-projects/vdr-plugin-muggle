@@ -1,0 +1,109 @@
+body { 		background-color:	white 
+		}
+		
+P {		font-family: 		arial, sans-serif; 
+		font-size: 		10pt; 
+		color:			black; 
+		text-align: 		justify; 
+		vertical-align:		top; 
+		margin-right: 		10pt
+		}
+		
+P.header { 	font-family: 		arial,sans-serif; 
+		font-size: 		10pt; 
+		color:			black; 
+		text-align: 		right; 
+		margin-right: 		10pt
+		}
+		
+P.klein { 	font-family: 		arial,sans-serif; 
+		font-size: 		8pt; 
+		color:			black; 
+		text-align: 		justify; 
+		margin-right: 		10pt
+		}
+		
+P.kleinmitte { 	font-family: 		arial,sans-serif; 
+		font-size: 		8pt; 
+		color:			black; 		
+		text-align:		center; 
+		margin-right: 10pt
+		}
+		
+P.kleinrechts {	font-family: 		arial,sans-serif; 
+		font-size: 		8pt; 
+		color:			black; 
+		text-align: 		right; 
+		margin-right: 		10pt
+		}
+		
+P.kleinlinks {	font-family: 		arial,sans-serif; 
+		font-size: 		8pt; 
+		color:			black; 
+		text-align: 		left; 
+		margin-right: 		10pt
+		}
+		
+P.bildtitel { 	font-family: 		arial,sans-serif; 
+		font-size: 		8pt; 
+		font-weight: 		900; 
+		color:			black; 
+		text-align: 		left; 
+		vertikal-align: 	top; 
+		margin-left: 		10pt
+		}
+		
+P.bild { 	font-family: 		arial,sans-serif; 
+		font-size: 		8pt; 
+		font-weight: 		900; 
+		color:			black; 		
+		text-align: 		left; 
+		vertikal-align: 	top; 
+		margin-right: 		10pt
+		}
+		
+H1 { 		font-family: 		arial,sans-serif; 
+		font-size: 		20pt; 
+		color:			black; 
+		text-align: 		left; 
+		text-transform: 	uppercase; 
+		letter-spacing: 	10pt; 
+		margin-right: 10pt
+		}
+		
+H2 { 		font-family: 		arial,sans-serif; 
+		font-size: 12pt; 
+		color:black; 
+		text-align: left; 
+		margin-right: 10pt
+		}
+
+H3 {		font-family:		arial,sans-serif;
+		font-size: 10pt;
+		color:black;
+		text-align:left;
+		margin-right: 10pt;
+		}
+		
+UL { 		font-family: arial,sans-serif; 
+		font-size: 10pt; 
+		color:black; 
+		text-align: justify; 
+		margin-right: 10pt
+		}
+DT {		font-family: arial,sans-serif;
+		font-size: 10pt;
+		font-weight: bold;
+		color:black;
+		text-align: left;
+		}
+
+DD {		font-family: arial,sans-serif;
+		font-size: 10pt;
+		color:black;
+		text-align: justify;
+		margin-right: 10pt;
+		}
+TD { 		vertical-align: top
+		}
+

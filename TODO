@@ -8,12 +8,32 @@ Ogg/Vorbis decoder integration
 Deployment
 ----------
 - Script to publish a version
-   - Checkout
    - make dist
    - copy .tgz, README, CHANGES, HISTORY into web directory
    - generate documentation
    - copy into web directory
    - sync with web
+
+----------------- publish_muggle.sh -----------------
+# $1: version name (e.g. 0.0.5-BETA)
+
+# how to determine current path?
+svn copy ... http://.../svn/muggle/tags/$1
+
+make dist
+# obtain name from output? or copy commands and make correctly
+mv vdr-muggle-0.0.1.tgz ~/Web/current/htpc/muggle/vdr-muggle-$1.tgz
+
+cp README ...
+cp TODO ...
+cp CHANGES ...
+
+doxygen muggle.doxygen
+cp -R doc ~/Web/current/htpc/muggle/
+
+sitecopy --update htpctech
+
+-----------------------------------------------------
 
 - How to track bugs and feature requests?
 
