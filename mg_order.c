@@ -625,7 +625,7 @@ operator==(const mgOrder& a, const mgOrder &b)
 const mgOrder&
 mgOrder::operator=(const mgOrder& from)
 {
-	Keys.clear();
+	clear();
     	for (unsigned int i = 0; i < from.size();i++)
     	{
         	mgKey *k = ktGenerate(from.getKeyType(i),m_db);
@@ -811,7 +811,8 @@ cleanagain:
 				goto cleanagain;
 			}
 	}
-	if (!is_unique)
+	bool IsCollection = size()==0 ? false : Keys[0]->Type()==keyCollection;
+	if (!IsCollection && !is_unique)
 	{
 		if (!album_found)
 			Keys.push_back(ktGenerate(keyAlbum,m_db));
