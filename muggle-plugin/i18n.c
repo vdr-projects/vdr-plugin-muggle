@@ -2,6 +2,7 @@
  * i18n.c: Internationalization
  *
  * See the README file for copyright information and how to reach the author.
+ * Traduction en Français Patrice Staudt
  *
  * $Id$
  */
@@ -16,7 +17,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Notation",// Traduction en Français Patrice Staudt
     "",// TODO
     "",// TODO
     "",// TODO
@@ -32,7 +33,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Base de donnée Muggle Media",// TODO Francais
     "",// TODO
     "",// TODO
     "",// TODO
@@ -48,7 +49,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Commande navigateur",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -64,7 +65,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Résultat de recherche",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -80,7 +81,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Titre après albume",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -96,7 +97,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Genre -> Année -> Titre",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -112,7 +113,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "interprète -> titre",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -128,7 +129,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Genre -> interprète -> album -> Titre",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -144,7 +145,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "interprète -> album -> Titre",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -160,7 +161,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Navigateur",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -176,7 +177,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Mode rechercher",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -192,7 +193,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Rechercher",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -208,7 +209,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Infos Albume",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -224,7 +225,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Édition PL?",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -240,7 +241,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Filtre",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -256,7 +257,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Détails trites",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -272,7 +273,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Édition PL",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -288,7 +289,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Chercher titre",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -304,7 +305,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Chercher albume",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -320,7 +321,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Chercher playlist",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -336,7 +337,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Playlist titre",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -352,7 +353,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Playlist auteur",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -368,7 +369,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Albume interpret",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -384,7 +385,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Albume titre",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -399,7 +400,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "estimation",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -416,7 +417,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Année (à)",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -432,7 +433,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Année (de)",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -448,7 +449,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Genre",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -464,7 +465,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "interprète",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -480,7 +481,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "titre",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -496,7 +497,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "ajouter",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -512,7 +513,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Mode Navigateur",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -528,7 +529,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Playlist",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -544,7 +545,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "sous menu",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -560,7 +561,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "charger",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -576,7 +577,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "sauvegarder",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -592,7 +593,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "effacer",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -608,7 +609,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Menu principal",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -624,7 +625,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "%d mettre titre dans la playlist actuel?",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -640,7 +641,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Charger playlist",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -656,7 +657,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "sauvegarder playlist",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -672,7 +673,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Playliste umbenennen",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -688,7 +689,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Playliste vider",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -704,7 +705,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Supprimer de la list",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -720,7 +721,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Exporter la playlist",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -736,7 +737,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "commande externe playlist",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -752,7 +753,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Déclancher le mode répétition",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -768,7 +769,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Mode répétition titre seul",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -784,7 +785,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Mode répétition playlist",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -800,7 +801,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "mode allèatoire déclenché",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -816,7 +817,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Mode allèatoire normal",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
@@ -832,7 +833,7 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
     "",// TODO
-    "",// TODO
+    "Mode allèatoire fêtes",// TODO
     "",// TODO
     "",// TODO
     "",// TODO
