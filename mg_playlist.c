@@ -42,14 +42,54 @@ mgPlaylist::~mgPlaylist()
 {
 }
 
-void mgPlaylist::setLoopMode( LoopMode lm )
-{
-  m_loop_mode = lm;
+mgPlaylist::LoopMode mgPlaylist::toggleLoopMode( )
+{  
+  switch( m_loop_mode )
+    {
+    case LM_NONE:
+      {
+	m_loop_mode = LM_SINGLE;
+      } break;
+    case LM_SINGLE:
+      {
+	m_loop_mode = LM_FULL;
+      } break;
+    case LM_FULL:
+      {
+	m_loop_mode = LM_NONE;
+      } break;
+    default:
+      {
+	m_loop_mode = LM_NONE;
+      }
+    }
+
+  return m_loop_mode;
 }
 
-void mgPlaylist::setShuffleMode( ShuffleMode sm )
+mgPlaylist::ShuffleMode mgPlaylist::toggleShuffleMode( )
 {
-  m_shuffle_mode = sm;
+  switch( m_shuffle_mode )
+    {
+    case SM_NONE:
+      {
+	m_shuffle_mode = SM_NORMAL;
+      } break;
+    case SM_NORMAL:
+      {
+	m_shuffle_mode = SM_PARTY;
+      } break;
+    case SM_PARTY:
+      {
+	m_shuffle_mode = SM_NONE;
+      } break;
+    default:
+      {
+	m_shuffle_mode = SM_NONE;
+      }
+    }
+
+  return m_shuffle_mode;
 }
 
 void mgPlaylist::initialize()
