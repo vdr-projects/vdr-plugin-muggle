@@ -248,8 +248,8 @@ mgOggDecoder::mgOggDecoder (mgContentItem * item):mgDecoder (item)
 
 mgOggDecoder::~mgOggDecoder ()
 {
-    delete m_file;
     clean ();
+    delete m_file;
 }
 
 
