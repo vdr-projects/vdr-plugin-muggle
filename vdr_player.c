@@ -1174,23 +1174,26 @@ void mgPlayerControl::Display()
 	}
       
       // now an osd is open, go on
-
       if( m_progress_view )
 	{
+#if VDRVERSNUM >= 10307
 	  if( m_menu )
 	    {
 	      delete m_menu;
 	      m_menu = NULL;
 	    }
+#endif
 	  ShowProgress();
 	}
       else
 	{
+#if VDRVERSNUM >= 10307
 	  if( m_display )
 	    {
 	      delete m_display;
 	      m_display = NULL;
 	    }
+#endif
 	  ShowContents();
 	}
     }
