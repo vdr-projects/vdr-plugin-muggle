@@ -51,7 +51,7 @@ PACKAGE = vdr-$(ARCHIVE)
 ### Includes and Defines (add further entries here):
 
 INCLUDES += -I$(VDRDIR) -I$(VDRDIR)/include -I$(DVBDIR)/include \
-	-I/usr/include/mysql/ -I/usr/include/taglib
+	`mysql_config --cflags` `taglib-config --cflags`
 
 DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
 
@@ -61,8 +61,8 @@ OBJS = $(PLUGIN).o i18n.o mg_valmap.o mg_mysql.o mg_sync.o mg_order.o mg_content
 	vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o \
 	vdr_setup.o mg_setup.o
 
-LIBS = -lmad -ltag
-MILIBS =  -ltag
+LIBS = -lmad `taglib-config --libs`
+MILIBS =  `taglib-config --libs`
 
 ifdef HAVE_SERVER
 SQLLIBS =  `mysql_config --libs`
