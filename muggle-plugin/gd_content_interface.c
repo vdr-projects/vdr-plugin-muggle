@@ -3,10 +3,10 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.4 $
- * \date    $Date: 2004/02/01 23:13:33 $
+ * \version $Revision: 1.5 $
+ * \date    $Date: 2004/02/02 02:01:11 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: RaK $
+ * \author  file owner: $Author: MountainMan $
  *
  * DUMMY
  * Implements main classes of for content items and interfaces to SQL databases
@@ -47,9 +47,9 @@ int GdInitDatabase(MYSQL *db)
     return 0;
 }
 
-vector<string> GdGetStoredPlaylists(MYSQL db)
+vector<string> *GdGetStoredPlaylists(MYSQL db)
 {
-    vector<string> list;
+    vector<string>* list = new  vector<string>();
     MYSQL_RES	*result;
     MYSQL_ROW	row;
 
@@ -57,9 +57,82 @@ vector<string> GdGetStoredPlaylists(MYSQL db)
 
     while((row = mysql_fetch_row(result)) != NULL)
     {
-	list.push_back(row[0]);
+	list->push_back(row[0]);
     }
     return list;
+}
+
+/*******************************************************************/
+/* class class gdTrackFilters                                      */
+/********************************************************************/
+gdTrackFilters::gdTrackFilters()
+{
+  clear();
+}
+gdTrackFilters::~gdTrackFilters()
+{
+}
+void gdTrackFilters::clear()
+{
+  mgFilter* filter ;
+  // remove old filters 
+  for(vector<mgFilter*>::iterator iter = m_filters.begin();
+      iter != m_filters.end(); iter++)
+    {
+      delete (*iter);
+    }
+  m_filters.clear();
+  
+  // create an initial set of filters with empty values
+ // title
+  filter = new mgFilterString("title", "");
+  m_filters.push_back(filter);
+  // artist
+  filter = new mgFilterString("artist", "");
+  m_filters.push_back(filter);
+  // genre
+  filter = new mgFilterString("genre", "");
+  m_filters.push_back(filter);
+  // year
+  filter = new mgFilterInt("year", -1);
+  m_filters.push_back(filter);
+ // rating
+  filter = new mgFilterInt("rating", -1);
+  m_filters.push_back(filter);
+}
+
+string gdTrackFilters::CreateSQL()
+{
+  string sql_str = "1";
+
+  for(vector<mgFilter*>::iterator iter = m_filters.begin();
+      iter != m_filters.end(); iter++)
+  {
+    if(strcmp((*iter)->getName(), "title") == 0 )
+      {
+	sql_str = "AND tracks.title like '" 
+	  + (*iter)->getStrVal() + "%'";
+      }
+    else if(strcmp((*iter)->getName(), "artist") == 0 )
+      {
+	sql_str = "AND tracks.artist like '" 
+	  + (*iter)->getStrVal() + "%'";
+      }
+    else if(strcmp((*iter)->getName(), "genre") == 0 )
+      {
+	sql_str = "AND genre.name like '" 
+	  + (*iter)->getStrVal() + "%'";
+      }
+    else if(strcmp((*iter)->getName(), "year") == 0 )
+      {
+	sql_str = "AND tracks.year = " + (*iter)->getStrVal();
+      }
+    else if(strcmp((*iter)->getName(), "rating") == 0 )
+      {
+	sql_str = "AND tracks.rating >= " + (*iter)->getStrVal();
+      }
+  }
+  return sql_str;
 }
 
 /*******************************************************************/
@@ -700,6 +773,42 @@ GdTreeNode::~GdTreeNode()
 
 /*!
  *****************************************************************************
+ * \brief checks if this node can be further expandded or not
+ * \true, if node ia leaf node, false if node can be expanded
+ *
+ ****************************************************************************/
+bool GdTreeNode::isLeafNode()
+{
+    if( m_level == 0)
+	return false;
+    switch(m_view)
+     {
+	 case 1: // artist -> album -> title
+	     if( m_level <= 3 )
+	     {
+		 return false;
+	     }
+	     break;
+	 case 2: // genre -> artist -> album -> track
+	     if( m_level <= 3 )
+	     {
+		 return false;
+	     }
+	     break;
+     case 3: // Artist -> Track
+ 	     if( m_level <= 2 )
+	     {
+		 return false;
+	     }
+	     break;
+	 default:
+	     mgError("View '%d' not yet implemented", m_view);
+     }
+    return true;
+}
+
+/*!
+ *****************************************************************************
  * \brief compute children on the fly 
  *
  * \return: true, if the node could be expanded (or was already), false,of
@@ -1044,10 +1153,46 @@ vector<mgContentItem*>* GdTreeNode::getTracks()
 }
 
 
+/*!
+ *****************************************************************************
+ * \brief returns the first track matchin the restrictions of this node
+ * assuming we are in a leaf node, this returns the track represented by the
+ * the leaf 
+ ****************************************************************************/
+mgContentItem* GdTreeNode::getSingleTrack()
+{
+    MYSQL_ROW	row;
+    MYSQL_RES	*result;
+    int	nrows;
+    int	nfields;
+    mgContentItem* track = NULL;
+    int trackid;
 
-
-
-
-
-
-
+    // get all tracks satisying the restrictions of this node
+    mgDebug(5, "getTracks(): query '%s'", m_restriction.c_str());
+    
+    result = mgSqlReadQuery(&m_db,
+			"SELECT  tracks.id FROM tracks, album, genre WHERE %s"
+	       " AND album.cddbid=tracks.sourceid AND genre.id=tracks.genre1", 
+			    m_restriction.c_str());
+    nrows   = mysql_num_rows(result);
+    nfields = mysql_num_fields(result);
+    
+    if( nrows != 1 )
+    {
+	mgWarning( "GdTreeNode::getSingleTrack() :SQL call returned %d tracks, using only the first",
+		   nrows );
+    }
+    // get the first row 
+    if( ( row = mysql_fetch_row(result)) != NULL )
+    { 
+	// row[0] is the trackid
+	if(sscanf(row[0], "%d", &trackid) != 1)
+	{
+	    mgError("Can not extract integer track id from '%s'",
+		    row[0]);
+	}
+	track = new mgGdTrack(trackid, m_db);
+    }
+    return  track;
+}
