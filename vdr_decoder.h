@@ -1,6 +1,7 @@
 /*!
  * \file vdr_decoder.h
  * \brief A generic decoder for a VDR media plugin (muggle)
+ * \ingroup vdr
  *
  * \version $Revision: 1.2 $
  * \date    $Date$
@@ -30,6 +31,7 @@ class mgContentItem;
 
 /*! 
  * \brief The current status of the decoder
+ * \ingroup vdr
  */
 enum eDecodeStatus
   { 
@@ -40,6 +42,7 @@ enum eDecodeStatus
 
 /*! 
  * \brief A data structure to put decoded PCM data
+ * \ingroup vdr
  */
 struct mgDecode
 {
@@ -52,6 +55,7 @@ struct mgDecode
 
 /*! 
  * \brief Information about ???
+ * \ingroup vdr
  */
 class mgPlayInfo
 {
@@ -63,6 +67,7 @@ public:
 
 /*! 
  * \brief Media types
+ * \ingroup vdr
  */
 enum mgMediaType
 {
@@ -71,6 +76,7 @@ enum mgMediaType
 
 /*! 
  * \brief A generic decoder class to handle conversion into PCM format
+ * \ingroup vdr
  */
 class mgDecoder
 {
@@ -154,7 +160,7 @@ public:
   
   /*! \brief Try to find a valid decoder for a file 
    */
-  static mgDecoder *findDecoder( std::string filename );
+  static mgDecoder *findDecoder( mgContentItem *item );
 
   /*! \brief determine the media type for a given source
    */

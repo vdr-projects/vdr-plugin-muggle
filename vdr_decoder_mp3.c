@@ -27,6 +27,7 @@
 #include "vdr_decoder_mp3.h"
 #include "vdr_stream.h"
 
+#include "mg_content_interface.h"
 #include "mg_tools.h"
 
 #define d(x) x

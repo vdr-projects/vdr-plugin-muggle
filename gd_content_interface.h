@@ -227,7 +227,7 @@ class mgGdTrack : public mgContentItem
 
   /*! \brief obtain the bitrate of the track
    */
-  virtual string getBitrate();
+  virtual std::string getBitrate();
 
   /*!
    * \brief obtain the complete track information
@@ -329,6 +329,11 @@ private:
    */
   std::string m_genre; 
   
+  /*!
+   * \brief The bitrate of the music
+   */
+  std::string m_bitrate; 
+
   /*!
    * \brief The year in which the track appeared
    */

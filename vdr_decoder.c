@@ -1,6 +1,7 @@
 /*!
  * \file vdr_decoder.h
  * \brief A generic decoder for a VDR media plugin (muggle)
+ * \ingroup vdr
  *
  * \version $Revision: 1.2 $
  * \date    $Date$
@@ -26,6 +27,8 @@
 #include "vdr_decoder.h"
 #include "vdr_decoder_mp3.h"
 
+#include "mg_content_interface.h"
+
 using namespace std;
 
 // --- mgDecoders ---------------------------------------------------------------
@@ -33,9 +36,10 @@ using namespace std;
 mgMediaType mgDecoders::getMediaType( string s )
 {
   // TODO: currently handles only mp3. LVW
-  char *p = s.c_str() + strlen( filename.c_str() ) - 1; 
+  char *f = (char *)s.c_str();
+  char *p = f + strlen( f ) - 1; // point to the end
 
-  while( p >= filename && *p != '.') --p; 
+  while( p >= f && *p != '.') --p; 
 
   if( !strcmp( p, ".mp3" ) )
     {

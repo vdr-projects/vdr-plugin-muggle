@@ -177,7 +177,7 @@ class mgContentItem
 
   /*! \brief obtain the bitrate of the track
    */
-  virtual string getBitrate()
+  virtual std::string getBitrate()
     {
       return "";
     }
