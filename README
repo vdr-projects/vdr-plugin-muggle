@@ -38,10 +38,18 @@ The plugin is written for VDR 1.2.6. In addition, the following pieces of
 software are required:
 
  - mySQL server (tested with 4.0.18) (Debian packages mysql-server, mysql-client)
- - mySQL client libraries (Debian package libmysqlclient-dev)
- - libmad (for mp3 decoding) (Debian package libmad0-dev)
- - libtag (for ID3 tag reading/writing) (Debian package libtag1-dev)
- - optionally libvorbis and libvorbisfile (Debian packages )
+ - mySQL client libraries
+   (Debian package libmysqlclient-devi or 
+    http://www.mysql.org)
+ - libmad (for mp3 decoding)
+   (Debian package libmad0-dev or 
+    http://www.underbit.com/products/mad/)
+ - libtag (for ID3 tag reading/writing)
+   (Debian package libtag1-dev or 
+    http://developer.kde.org/~wheeler/taglib.html)
+ - optionally libvorbis and libvorbisfile
+   (Debian packages  or
+    http://www.xiph.org/ogg/vorbis/)
 
 The developer versions are needed because their headers are required for compilation.
 The server need not be on the same machine as the VDR. Also, music tracks can reside somewhere else,
