@@ -3,10 +3,10 @@
  *  \brief  Top level access to media in vdr plugin muggle
  *          for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.4 $
- * \date    $Date: 2004/02/02 18:34:34 $
+ * \version $Revision: 1.5 $
+ * \date    $Date: 2004/02/02 19:42:18 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: MountainMan $
+ * \author  file owner: $Author: LarsAC $
  * 
  *
  */
@@ -37,6 +37,11 @@ mgFilter::~mgFilter()
 const char* mgFilter::getName()
 {
   return m_name;
+}
+
+mgFilter::filterType mgFilter::getType()
+{
+  return m_type;
 }
 
 //-------------------------------------------------------------------
