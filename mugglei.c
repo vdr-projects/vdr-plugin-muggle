@@ -61,26 +61,32 @@ int init_database()
 time_t get_fs_modification_time( std::string filename )
 {
   struct stat *buf = (struct stat*) malloc( sizeof( struct stat ) );
-  
-  // yes: obtain modification date for file and db entry
-  // int statres = stat( filename.c_str(), buf );
+  time_t mod = 0;
 
-  time_t mod = buf->st_mtime;
-  free( buf );
+  // yes: obtain modification date for file and db entry
+  if( !stat( filename.c_str(), buf ) )
+    {
+      mod = buf->st_mtime;
+      free( buf );
+    }
 
   return mod;
 }
 
 time_t get_db_modification_time( long uid )
 {
-  time_t mt;
+  time_t mt = 0;
 
-  MYSQL_RES *result = mgSqlReadQuery( db, "SELECT modification_time FROM tracks WHERE id=\"%d\"", uid );
-  MYSQL_ROW row     = mysql_fetch_row( result );
+  MYSQL_RES *result = mgSqlReadQuery( db, "SELECT UNIX_TIMESTAMP(modification_time) "
+				          "FROM tracks WHERE id=\"%d\"", uid );
+  if( mysql_num_rows(result) )
+    {
+      MYSQL_ROW row     = mysql_fetch_row( result );
   
-  std::string mod_time = row[0];
-  mt = (time_t) atol( mod_time.c_str() );
-
+      std::string mod_time = row[0];
+      mt = (time_t) atol( mod_time.c_str() );
+    }
+  
   return mt;
 }
 
@@ -108,21 +114,22 @@ long find_file_in_database( MYSQL *db, std::string filename )
 
 TagLib::String find_genre_id( TagLib::String genre )
 {
-  TagLib::String result;
+  TagLib::String id = "";
   
   if( genre.size() )
     {
-      MYSQL_RES *result = mgSqlReadQuery( db, "SELECT id FROM genre WHERE genre=\"%s\"", genre.toCString() );
+      MYSQL_RES *result = mgSqlReadQuery( db, "SELECT id FROM genre WHERE "
+					  "genre=\"%s\"", genre.toCString() );
       
       if( mysql_num_rows(result) )
 	{
 	  MYSQL_ROW row = mysql_fetch_row( result );
-
-	  result = TagLib::String( row[0] );
+	  
+	  id = row[0];
 	}
     }
 
-  return result;
+  return id;
 } 
 
 // read tags from the mp3 file and store them into the corresponding database entry
@@ -297,12 +304,14 @@ void evaluate_file( MYSQL *db, std::string filename )
 	      update_db( uid, filename );
 	    }
 	  */
-	      
+
+	  std::cout << "Updating " << filename << std::endl;
 	  update_db( uid, filename );
 	}
       else
 	{
 	  // not in db yet: import file
+	  std::cout << "Creating " << filename << std::endl;
 	  update_db( -1, filename );
 	}
     }
@@ -389,9 +398,9 @@ int main( int argc, char *argv[] )
   gettimeofday( &tv, &tz );
   srandom( tv.tv_usec );  
 
+  /*
   int res = init_database();
 
-  
   if( !res )
     {
       update_db( 0, filename );
@@ -400,7 +409,9 @@ int main( int argc, char *argv[] )
     {
       std::cout << "Database initialization failed. Exiting.\n" << std::endl;
     }
-  
-  return res;
+  */  
+
+  evaluate_file( db, filename );
+  return 0;
 }
 
