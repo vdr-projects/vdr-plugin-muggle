@@ -15,13 +15,12 @@
 #include "vdr_menu.h"
 #include "vdr_setup.h"
 #include "mg_tools.h"
-#include "mg_db.h"
 
 #include "i18n.h"
 #include <getopt.h>
 #include <config.h>
 
-static const char *VERSION = "0.1.3";
+static const char *VERSION = "0.1.4";
 static const char *DESCRIPTION = "Media juggle plugin for VDR";
 static const char *MAINMENUENTRY = "Muggle";
 
@@ -58,10 +57,18 @@ mgMuggle::mgMuggle (void)
     the_setup.DbPass = strdup ("");
     the_setup.GdCompatibility = false;
     the_setup.ToplevelDir = strdup ("/mnt/music/");
+#ifndef HAVE_SERVER
+    char *buf;
+    asprintf(&buf,"%s/.muggle",getenv("HOME"));
+    set_datadir(buf);
+    free(buf);
+#endif
 }
 
+#if VDRVERSNUM >= 0321
 
-mgMuggle::~mgMuggle ()
+void
+mgMuggle::Stop (void)
 {
     if (main) main->SaveState();
     free(the_setup.DbHost);
@@ -71,6 +78,7 @@ mgMuggle::~mgMuggle ()
     free(the_setup.ToplevelDir);
 }
 
+#endif
 
 const char *
 mgMuggle::CommandLineHelp (void)
@@ -84,12 +92,17 @@ mgMuggle::CommandLineHelp (void)
         "  -u UUUU,  --user=UUUU     specify database user (default is )\n"
         "  -w WWWW,  --password=WWWW specify database password (default is empty)\n"
         "  -t TTTT,  --toplevel=TTTT specify toplevel directory for music (default is /mnt/music)\n"
-        "  -g,       --giantdisc     enable full Giantdisc compatibility mode\n";
+#ifndef HAVE_SERVER
+        "  -d DIRN,  --datadir=DIRN  specify directory for embedded sql data (default is $HOME/.muggle)\n"
+#endif
+        "  -g,       --giantdisc     enable full Giantdisc compatibility mode\n"
+        "  -v,       --verbose       specify debug level. The higher the more. Default is 1\n";
 }
 
 
 bool mgMuggle::ProcessArgs (int argc, char *argv[])
 {
+    mgSetDebugLevel (1);
     mgDebug (1, "mgMuggle::ProcessArgs");
 
 // Implement command line argument processing here if applicable.
@@ -102,6 +115,9 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
         {"port", required_argument, NULL, 'p'},
         {"user", required_argument, NULL, 'u'},
         {"password", required_argument, NULL, 'w'},
+#ifndef HAVE_SERVER
+        {"datadir", required_argument, NULL, 'd'},
+#endif
         {"toplevel", required_argument, NULL, 't'},
         {"giantdisc", no_argument, NULL, 'g'},
         {NULL}
@@ -111,7 +127,11 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
         c,
         option_index = 0;
     while ((c =
-        getopt_long (argc, argv, "gh:s:n:p:t:u:w:", long_options,
+#ifndef HAVE_SERVER
+        getopt_long (argc, argv, "gh:s:n:p:t:u:w:d:v:", long_options,
+#else
+        getopt_long (argc, argv, "gh:s:n:p:t:u:w:v:", long_options,
+#endif
         &option_index)) != -1)
     {
         switch (c)
@@ -144,6 +164,18 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
             case 'w':
             {
                 the_setup.DbPass = strcpyrealloc (the_setup.DbPass, optarg);
+            }
+            break;
+#ifndef HAVE_SERVER
+            case 'd':
+            {
+	        set_datadir(optarg);
+            }
+	    break;
+#endif
+            case 'v':
+            {
+    		mgSetDebugLevel (atol(optarg));
             }
             break;
             case 't':
@@ -185,7 +217,6 @@ bool mgMuggle::Initialize (void)
 bool mgMuggle::Start (void)
 {
 // Start any background activities the plugin shall perform.
-    mgSetDebugLevel (99);
     RegisterI18n (Phrases);
     return true;
 }

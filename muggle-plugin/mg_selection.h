@@ -1,6 +1,6 @@
 /*!
- * \file mg_db.h
- * \brief A database interface to the GiantDisc
+ * \file mg_selection.h
+ * \brief A general interface to data items, currently only GiantDisc
  *
  * \version $Revision: 1.0 $
  * \date    $Date: 2004-12-07 10:10:35 +0200 (Tue, 07 Dec 2004) $
@@ -9,105 +9,22 @@
  *
  */
 
-#ifndef _MG_DB_H
-#define _MG_DB_H
+#ifndef _MG_SELECTION_H
+#define _MG_SELECTION_H
 #include <stdlib.h>
-#include <mysql/mysql.h>
 #include <string>
 #include <list>
 #include <vector>
 #include <map>
-#include <i18n.h>
 using namespace std;
 
 #include "mg_tools.h"
 #include "mg_valmap.h"
 #include "mg_order.h"
+#include "mg_content.h"
 
 typedef vector<string> strvector;
 
-
-class mgSelection;
-
-//! \brief represents a content item like an mp3 file.
-class mgContentItem
-{
-    public:
-        mgContentItem ();
-
-	string getKeyValue(mgKeyTypes kt);
-	string getKeyId(mgKeyTypes kt);
-
-	//! \brief copy constructor
-        mgContentItem(const mgContentItem* c);
-
-	//! \brief construct an item from an SQL row
-        mgContentItem (const mgSelection* sel, const MYSQL_ROW row);
-//! \brief returns track id
-        long getId () const
-        {
-            return m_id;
-        }
-
-//! \brief returns title
-        string getTitle () const
-        {
-            return m_title;
-        }
-
-//! \brief returns filename
-        string getSourceFile (bool AbsolutePath=true) const;
-
-//! \brief returns artist
-        string getArtist () const
-        {
-            return m_artist;
-        }
-
-//! \brief returns the name of the album
-        string getAlbum () const;
-
-//! \brief returns the name of genre
-        string getGenre () const;
-
-//! \brief returns the bitrate
-        string getBitrate () const;
-
-//! \brief returns the file name of the album image
-        string getImageFile () const;
-
-//! \brief returns year
-        int getYear () const;
-
-//! \brief returns rating
-        int getRating () const;
-
-//! \brief returns duration
-        int getDuration () const;
-
-//! \brief returns samplerate
-        int getSampleRate () const;
-
-//! \brief returns # of channels
-        int getChannels () const;
-        
-    private:
-        long m_id;
-        string m_title;
-        string m_mp3file;
-        string m_artist;
-        string m_albumtitle;
-        string m_genre1_id;
-        string m_genre2_id;
-        string m_genre1;
-        string m_genre2;
-        string m_bitrate;
-        int m_year;
-        int m_rating;
-        int m_duration;
-        int m_samplerate;
-        int m_channels;
-};
 
 /*!
  * \brief the only interface to the database.
@@ -154,9 +71,6 @@ class mgSelection
             LM_SINGLE,                            //!< \brief loop a single track
             LM_FULL                               //!< \brief loop the whole track list
         };
-
-//! \brief escapes special characters
-	string sql_string(const string s) const;
 
 /*! \brief the main constructor
  * \param fall_through if TRUE: If enter() returns a choice
@@ -388,15 +302,6 @@ class mgSelection
  */
         string exportM3U ();
 
-	/*! import/export tags like
-	 * \par path can be a file or a directory. If directory, 
-	 * sync all files within but by default non recursive
-	 * \par recursive recurse into all directories beneath path
-	 * \par assorted see mugglei -h
-	 * \par delete_missing if the file does not exist, delete the
-	 * data base entry. If the file is unreadable, do not delete.
-	 */
-	void Sync(string path, bool recursive=false,bool assorted=false,bool delete_missing=false);
 
 /*! \brief go to a position in the current level. If we are at the
  * most detailled level this also sets the track position since
@@ -476,6 +381,10 @@ class mgSelection
  */
         bool isCollectionlist () const;
 
+/*! \brief true if this selection currently selects a list of languages
+ */
+        bool isLanguagelist () const;
+
 	//! \brief true if we have entered a collection
 	bool inCollection(const string Name="") const;
 
@@ -508,6 +417,7 @@ class mgSelection
 	unsigned int keycount(mgKeyTypes kt);
 	vector <const char *> choices(mgOrder *o,unsigned int level, unsigned int *current);
 	unsigned int valcount (string val);
+	bool Connected() { return m_db.Connected(); }
 
     private:
 	mutable map <mgKeyTypes, map<string,string> > map_values;
@@ -526,15 +436,13 @@ class mgSelection
         ShuffleMode m_shuffle_mode;
         void Shuffle() const;
         LoopMode m_loop_mode;
-        MYSQL *m_db;
-	void setDB(MYSQL *db);
+        mutable mgmySql m_db;
         unsigned int m_level;
         long m_trackid;
 
         mgOrder order;
 	bool UsedBefore (mgOrder *o,const mgKeyTypes kt, unsigned int level) const;
         void InitSelection ();
-        void Connect ();
 	/*! \brief returns the SQL command for getting all values. 
 	 * For the leaf level, all values are returned. For upper
 	 * levels, every distinct value is returned only once.
@@ -548,19 +456,9 @@ class mgSelection
         string ListFilename ();
         string m_Directory;
         void loadgenres ();
-	MYSQL_RES * exec_sql(string query) const;
-        string get_col0 (string query) const;
 
 	void InitFrom(const mgSelection* s);
 
-/*! \brief executes a query and returns the integer value from
- * the first column in the first row. The query shold be a COUNT query
- * returning only one row.
- * \param query the SQL query to be executed
- */
-        unsigned long exec_count (string query) const;
-
-	
 };
 
 

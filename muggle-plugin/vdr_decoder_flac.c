@@ -17,7 +17,7 @@
 #include <stdio.h>
 
 #include "mg_tools.h"
-#include "mg_db.h"
+#include "mg_content.h"
 
 #include "vdr_setup.h"
 #include "vdr_decoder_flac.h"

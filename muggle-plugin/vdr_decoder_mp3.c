@@ -29,7 +29,7 @@
 #include "vdr_setup.h"
 
 #include "mg_tools.h"
-#include "mg_db.h"
+#include "mg_content.h"
 
 #define d(x) x
 

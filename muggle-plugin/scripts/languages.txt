@@ -10,8 +10,6 @@ afr	Afrikaans
 aka	Akan
 akk	Akkadian
 alb	Albanian
-ale	Aleut
-alg	Algonquian languages
 amh	Amharic
 ang	English, Old (ca.450-1100)
 apa	Apache languages
@@ -95,12 +93,10 @@ crh	Crimean Turkish; Crimean Tatar
 crp	Creoles and pidgins (Other)
 csb	Kashubian
 cus	Cushitic (Other)
-cus	Portuguese-based (Other)
 cze	Czech
 dak	Dakota
 dan	Danish
 dar	Dargwa
-dsb	Lower Sorbian
 del	Delaware
 den	Slave (Athapascan)
 dgr	Dogrib
@@ -108,6 +104,7 @@ din	Dinka
 div	Divehi
 doi	Dogri
 dra	Dravidian (Other)
+dsb	Lower Sorbian
 dua	Duala
 dum	Dutch, Middle (ca. 1050-1350)
 dut	Dutch
@@ -127,6 +124,7 @@ fan	Fang
 fao	Faroese
 fat	Fanti
 fij	Fijian
+fil	Filipino; Pilipino
 fin	Finnish
 fiu	Finno-Ugrian (Other)
 fon	Fon
@@ -262,12 +260,12 @@ mao	Maori
 map	Austronesian (Other)
 mar	Marathi
 mas	Masai
-mal	Malay
+may	Malay
 mdf	Moksha
 mdr	Mandar
 men	Mende
 mga	Irish, Middle (900-1200)
-mic	Micmac
+mic	Mi'kmaq; Micmac
 min	Minangkabau
 mis	Miscellaneous languages
 mkh	Mon-Khmer (Other)
@@ -282,6 +280,7 @@ mos	Mossi
 mul	Multiple languages
 mun	Munda languages
 mus	Creek
+mwl	Mirandese
 mwr	Marwari
 myn	Mayan languages
 myv	Erzya
@@ -300,15 +299,16 @@ nia	Nias
 nic	Niger-Kordofanian (Other)
 niu	Niuean
 nno	Norwegian Nynorsk
-nob	Bøkmal, Norwegian
+nob	Bokmål, Norwegian
 nog	Nogai
 non	Norse, Old
 nor	Norwegian
-nso	Sotho, Northern
+nso	Northern Sotho; Pedi; Sepedi
 nub	Nubian languages
+nym	Nyamwezi
 nwc	Classical Newari; Old Newari
 nya	Chewa; Chichewa; Nyanja
-nym	Nyankole
+nyn	Nyankole
 nyo	Nyoro
 nzi	Nzima
 oci	Occitan (post 1500)
@@ -335,7 +335,7 @@ pol	Polish
 por	Portuguese
 pon	Pohnpeian
 pra	Prakrit languages
-pro	Proveçal, Old (to 1500)
+pro	Provençal, Old (to 1500)
 pus	Pushto
 que	Quechua
 raj	Rajasthani
@@ -357,6 +357,7 @@ san	Sanskrit
 sas	Sasak
 sat	Santali
 scc	Serbian
+scn	Sicilian
 sco	Scots
 scr	Croatian
 sel	Selkup
@@ -365,7 +366,7 @@ sga	Irish, Old (to 900)
 sgn	Sign languages
 shn	Shan
 sid	Sidamo
-sin	Sinhalese
+sin	Sinhala; Sinhalese
 sio	Siouan languages
 sit	Sino-Tibetan (Other)
 sla	Slavic (Other)
@@ -385,7 +386,7 @@ sog	Sogdian
 som	Somali
 son	Songhai
 sot	Sotho, Southern
-spa	Spanish (Castilian)
+spa	Spanish
 srd	Sardinian
 srr	Serer
 ssa	Nilo-Saharan (Other)
@@ -413,8 +414,8 @@ tib	Tibetan
 tig	Tigre
 tir	Tigrinya
 tiv	Tiv
-tkl	Tokelau
 tlh	Klingon; tlhIngan-Hol
+tkl	Tokelau
 tli	Tlinglit
 tmh	Tamashek
 tog	Tonga (Nyasa)

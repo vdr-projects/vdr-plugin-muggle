@@ -10,6 +10,7 @@
  */
 
 #include <stdio.h>
+#include <assert.h>
 
 #include <typeinfo>
 #include <string>
@@ -225,13 +226,9 @@ mgMainMenu::DumpOrders(mgValmap& nv)
 		mgOrder *o = orders[idx];
 		if (!o) 
 			mgError("DumpOrders:order[%u] is 0",idx);
-		char *n;
-    		for (unsigned int i=0;i<o->size();i++)
-		{
-			asprintf(&n,"order%u.Keys.%d.Type",idx,i);
-			nv.put(n,int(o->Key(i)->Type()));
-			free(n);
-		}
+		char prefix[20];
+		sprintf(prefix,"order%u",idx);
+		o->DumpState(nv,prefix);
 	}
 }
 
@@ -262,9 +259,9 @@ mgMainMenu::SaveState()
     nmain.put("CurrentOrder",m_current_order);
     DumpOrders(nmain);
     mgValmap nsel("tree");
-    m_treesel.DumpState(nsel);
+    m_treesel->DumpState(nsel);
     mgValmap ncol("collection");
-    m_collectionsel.DumpState(ncol);
+    m_collectionsel->DumpState(ncol);
     nmain.Write(f);
     nsel.Write(f);
     ncol.Write(f);
@@ -315,25 +312,29 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
     UsingCollection = nmain.getbool("UsingCollection");
     InitMapFromSetup(nsel);
     InitMapFromSetup(ncol);
-    m_treesel.setOrder(getOrder(m_current_order));
-    m_treesel.InitFrom (nsel);
-    m_treesel.CreateCollection(default_collection);
+    m_treesel = new mgSelection;
+    m_treesel->setOrder(getOrder(m_current_order));
+    m_treesel->InitFrom (nsel);
+    m_treesel->CreateCollection(default_collection);
     if (default_collection!=play_collection)
-	    m_treesel.CreateCollection(play_collection);
+	    m_treesel->CreateCollection(play_collection);
     vector<mgKeyTypes> kt;
     kt.push_back(keyCollection);
+    kt.push_back(keyCollectionItem);
     mgOrder o;
     o.setKeys(kt);
-    m_collectionsel.setOrder(&o);
-    m_collectionsel.InitFrom (ncol);
-    m_playsel.setOrder(&o);
-    m_playsel.InitFrom(ncol);
+    m_collectionsel = new mgSelection;
+    m_collectionsel->setOrder(&o);
+    m_collectionsel->InitFrom (ncol);
+    m_playsel = new mgSelection;
+    m_playsel->setOrder(&o);
+    m_playsel->InitFrom(ncol);
 
     // initialize
-    if (m_playsel.level()!=1)
+    if (m_playsel->level()!=1)
     {
-    	m_playsel.leave_all();
-    	m_playsel.enter(play_collection);
+    	m_playsel->leave_all();
+    	m_playsel->enter(play_collection);
     }
     UseNormalSelection ();
     unsigned int posi = selection()->gotoPosition();
@@ -433,6 +434,9 @@ mgMainMenu::LoadExternalCommands()
 
 mgMainMenu::~mgMainMenu()
 {
+	delete m_treesel;
+	delete m_collectionsel;
+	delete m_playsel;
 	delete m_Status;
 	delete moveselection;
 	delete m_root;
@@ -496,7 +500,18 @@ mgMenu::AddSelectionItems (mgSelection *sel,mgActions act)
     {
     	mgAction *a = GenerateAction(act, actEntry);
 	if (!a) continue;
-        a->SetText(a->MenuName(i+1,sel->values[i]),false);
+	const char *name = a->MenuName(i+1,sel->values[i]);
+	// add incremental filter here
+#if 0
+	// example:
+	if (name[0]!='C')
+		continue;
+#endif
+	// adapt newposition since it refers to position in mgSelection:
+	if ((signed int)i==osd()->newposition)
+		osd()->newposition = osd()->Count();
+	a->SetText(name,false);
+	a->setHandle(i);
         osd()->AddItem(a);
     }
     if (osd()->ShowingCollections ())
@@ -593,6 +608,9 @@ mgSubmenu::BuildOsd ()
     AddAction(actClearCollection,on);
     AddAction(actChooseOrder,on);
     AddAction(actExportTracklist,on);
+#if 0
+    AddAction(actSync,on);
+#endif
     cCommand *command;
     if (osd()->external_commands)
     {
@@ -789,9 +807,9 @@ otherkeys:
         AddMenu (newmenu,newposition);
 
     if (UsingCollection)
-    	forcerefresh |= m_collectionsel.cacheIsEmpty();
+    	forcerefresh |= m_collectionsel->cacheIsEmpty();
     else
-    	forcerefresh |= m_treesel.cacheIsEmpty();
+    	forcerefresh |= m_treesel->cacheIsEmpty();
 
     forcerefresh |= (newposition>=0);
 
@@ -800,7 +818,7 @@ otherkeys:
     	forcerefresh = false;
 	if (newposition<0) 
 		newposition = selection()->gotoPosition();
-        Menus.back ()->Display (newposition);
+        Menus.back ()->Display ();
     }
 pr_exit:
     showMessage();
@@ -828,15 +846,24 @@ mgMainMenu::showMessage()
 }
 
 void
-showmessage(const char * msg)
+showmessage(const char * msg,int duration)
 {
 #if VDRVERSNUM >= 10307
-    	Skins.Message (mtInfo, msg,2);
+    	Skins.Message (mtInfo, msg,duration);
     	Skins.Flush ();
 #else
     	Interface->Status (msg);
     	Interface->Flush ();
 #endif
+}
+
+void
+showimportcount(unsigned int count)
+{
+	char b[100];
+	sprintf(b,tr("Imported %d tracks..."),count);
+	assert(strlen(b)<100);
+	showmessage(b,1);
 }
 
 void
@@ -847,7 +874,8 @@ mgMainMenu::AddMenu (mgMenu * m,unsigned int position)
     m->setParentIndex(Current());
     if (Get(Current()))
     	m->setParentName(Get(Current())->Text());
-    m->Display (position);
+    newposition = position;
+    m->Display ();
 }
 
 void
@@ -898,6 +926,8 @@ mgMenuOrder::BuildOsd ()
     m_keytypes.reserve(mgKeyTypesNr+1);
     m_keynames.clear();
     m_keynames.reserve(50);
+    m_orderbycount = m_order->getOrderByCount();
+    mgDebug(1,"m_orderbycount wird %d",m_orderbycount);
     for (unsigned int i=0;i<m_order->size();i++)
     {
 	unsigned int kt;
@@ -909,6 +939,9 @@ mgMenuOrder::BuildOsd ()
 	a->SetMenu(this);
         osd()->AddItem(a);
     }
+    mgAction *a = actGenerateBoolItem(tr("Sort by count"),&m_orderbycount);
+    a->SetMenu(this);
+    osd()->AddItem(a);
 }
 
 bool
@@ -919,6 +952,8 @@ mgMenuOrder::ChangeOrder(eKeys key)
     for (unsigned int i=0; i<m_keytypes.size();i++)
     	newtypes.push_back(ktValue(m_keynames[i][m_keytypes[i]]));
     mgOrder n = mgOrder(newtypes);
+    n.setOrderByCount(m_orderbycount);
+    mgDebug(1,"m_orderbycount %d nach n",m_orderbycount);
     bool result = !(n == *m_order);
     *m_order = n;
     if (result)
@@ -977,13 +1012,13 @@ mgTreeRemoveFromCollSelector::mgTreeRemoveFromCollSelector(string title)
 }
 
 void
-mgMainMenu::DisplayGoto (unsigned int select)
+mgMainMenu::DisplayGoto ()
 {
-    if (select >= 0)
+    if (newposition >= 0)
     {
-        if ((int)select>=Count())
-	    select = Count() -1;
-        SetCurrent (Get (select));
+        if ((int)newposition>=Count())
+	    newposition = Count() -1;
+        SetCurrent (Get (newposition));
         RefreshCurrent ();
     }
     Display ();
@@ -991,9 +1026,9 @@ mgMainMenu::DisplayGoto (unsigned int select)
 
 
 void
-mgMenu::Display (const unsigned int position)
+mgMenu::Display ()
 {
     BuildOsd ();
-    osd ()->DisplayGoto (position);
+    osd ()->DisplayGoto ();
 }
 

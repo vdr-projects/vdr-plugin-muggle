@@ -11,9 +11,13 @@ PLUGIN = muggle
 
 #if you want ogg / flac support, define HAVE_VORBISFILE and/or HAVE_FLAC
 #in $VDRDIR/Make.config like this:
-#  HAVE_VORBISFILE=1
-#  HAVE_FLAC=1
+# HAVE_VORBISFILE=1
+# HAVE_FLAC=1
 
+#if you want to use a dedicated Mysql server instead of the embedded code,
+#define this in $VDRDIR/Make.config:
+# HAVE_SERVER
+#
 ### The version number of this plugin (taken from the main source file):
 
 VERSION = $(shell grep 'static const char \*VERSION *=' $(PLUGIN).c | awk '{ print $$6 }' | sed -e 's/[";]//g')
@@ -51,17 +55,21 @@ INCLUDES += -I$(VDRDIR) -I$(VDRDIR)/include -I$(DVBDIR)/include \
 
 DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
 
-MIFLAGS += -I/usr/include/taglib -lmysqlclient
-
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o i18n.o mg_valmap.o mg_order.o mg_db.o mg_actions.o vdr_menu.o mg_tools.o \
+OBJS = $(PLUGIN).o i18n.o mg_valmap.o mg_mysql.o mg_sync.o mg_order.o mg_content.o mg_selection.o vdr_actions.o vdr_menu.o mg_tools.o \
 	vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o \
 	vdr_setup.o mg_setup.o
 
-LIBS = -lmad -lmysqlclient 
-MILIBS = -lmysqlclient -ltag
-# MILIBS = -lmysqld -lpthread -lz -lcrypt -lnsl -lm -lpthread -lrt -lwrap -ltag
+LIBS = -lmad -ltag
+MILIBS =  -ltag
+
+ifdef HAVE_SERVER
+SQLLIBS =  `mysql_config --libs`
+DEFINES += -DHAVE_SERVER
+else
+SQLLIBS = `mysql_config --libmysqld-libs` -L/lib
+endif
 
 ifdef HAVE_VORBISFILE
 DEFINES += -DHAVE_VORBISFILE
@@ -92,12 +100,15 @@ $(DEPFILE): Makefile
 %.o: %.c %.h
 	$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDES) -c $<
 
+mg_tables.h:	scripts/genres.txt scripts/iso_639.xml scripts/musictypes.txt scripts/sources.txt
+	scripts/gentables
+
 libvdr-$(PLUGIN).so: $(OBJS)
-	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LIBS) -o $@
+	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LIBS) $(SQLLIBS) -o $@
 	@cp $@ $(LIBDIR)/$@.$(VDRVERSION)
 
-mugglei: mg_tools.o mugglei.o
-	$(CXX) $(CXXFLAGS) $^ $(MILIBS) -o $@
+mugglei: mg_tools.o mugglei.o mg_sync.o mg_mysql.o mg_setup.o 
+	$(CXX) $(CXXFLAGS) $^ $(MILIBS) $(SQLLIBS) -o $@
 
 install:
 	@cp ../../lib/libvdr-muggle*.so.* /usr/lib/vdr/

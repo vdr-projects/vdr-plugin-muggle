@@ -20,8 +20,7 @@
 #include <osd.h>
 #include <plugin.h>
 #include <status.h>
-#include "i18n.h"
-#include "mg_actions.h"
+#include "vdr_actions.h"
 
 #include "vdr_player.h"
 
@@ -31,7 +30,8 @@ using namespace std;
 //! \param select if true, play only what the current position selects
 void Play(mgSelection *sel,const bool select=false);
 
-void showmessage(const char *msg);
+void showmessage(const char *msg,int duration=2);
+void showimportcount(unsigned int count);
 
 class cCommands;
 
@@ -64,9 +64,9 @@ class mgStatus : public cStatus
 class mgMainMenu:public cOsdMenu
 {
     private:
-        mgSelection m_treesel;
-        mgSelection m_playsel;
-        mgSelection m_collectionsel;
+        mgSelection *m_treesel;
+        mgSelection *m_playsel;
+        mgSelection *m_collectionsel;
 	char *m_message;
 	void showMessage();
 	void LoadExternalCommands();
@@ -157,9 +157,8 @@ class mgMainMenu:public cOsdMenu
 	string play_collection;
 
 /*! \brief selects a certain line on the OSD and displays the OSD
- * \param select the line that we want to be selected
  */
-        void DisplayGoto (unsigned int select);
+        void DisplayGoto ();
 
 	//! \brief external commands
         cCommands *external_commands;
@@ -204,21 +203,21 @@ class mgMainMenu:public cOsdMenu
         mgSelection* selection ()
         {
             if (UsingCollection) 
-		   return &m_collectionsel;
+		   return m_collectionsel;
 	    else
-		   return &m_treesel;
+		   return m_treesel;
         }
 
 	//! \brief the collection selection
 	mgSelection* collselection()
 	{
-	    return &m_collectionsel;
+	    return m_collectionsel;
 	}
 
 //! \brief the "now playing" selection
         mgSelection* playselection ()
         {
-            return &m_playsel;
+            return m_playsel;
         }
 
 //! \brief true if the cursor is placed in the collection list
@@ -306,8 +305,8 @@ class mgMenu
 //! \brief clears the screen, sets a title and the hotkey flag
         void InitOsd (const char *title,const bool hashotkeys=true);
 
-//! \brief display OSD and go to position
-        void Display (const unsigned int position);
+//! \brief display OSD and go to osd()->newposition
+        void Display ();
 
 //! \brief BuildOsd() should be abstract but then we cannot compile
         virtual void BuildOsd ()
@@ -376,6 +375,7 @@ class mgMenuOrder : public mgMenu
     private:
 	void AddKeyActions(mgMenu *m,mgOrder *o);
 	mgOrder * m_order;
+	int m_orderbycount;
 	vector<int> m_keytypes;
 	vector < vector <const char*> > m_keynames;
 };

@@ -21,7 +21,7 @@
 #include <sys/stat.h>
 #include <sys/vfs.h>
 
-#include "mg_db.h"
+#include "mg_selection.h"
 
 #include <videodir.h>
 #include <interface.h>
@@ -31,7 +31,7 @@
 #include "vdr_decoder.h"
 #include "vdr_decoder_mp3.h"
 
-extern void showmessage(const char *);
+extern void showmessage(const char *,int duration=0);
 
 #ifdef HAVE_VORBISFILE
 #include "vdr_decoder_ogg.h"
