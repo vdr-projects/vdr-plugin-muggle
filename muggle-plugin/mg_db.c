@@ -746,8 +746,8 @@ void mgSelection::InitSelection() {
     	m_position = 0;
     	m_tracks_position = 0;
     	m_trackid = -1;
-    	m_shuffle_mode = SM_NONE;
-    	m_loop_mode = LM_NONE;
+    	m_shuffle_mode = ShuffleMode(the_setup.InitShuffleMode);
+    	m_loop_mode = LoopMode(the_setup.InitLoopMode);
     	clearCache();
 	values.setOwner(this);
 	if (!needGenre2_set)
@@ -819,8 +819,6 @@ mgSelection::InitFrom(mgValmap& nv)
 	setPosition(nv.getstr("Position"));
 	if (m_level>=order.size()-1) 
 		setTrackPosition(nv.getlong("TrackPosition"));
-	setShuffleMode(ShuffleMode(nv.getuint("ShuffleMode")));
-	setLoopMode(LoopMode(nv.getuint("LoopMode")));
 }
 
 
@@ -1265,8 +1263,6 @@ mgSelection::inCollection(const string Name) const
 void mgSelection::DumpState(mgValmap& nv) const
 {
 	nv.put("FallThrough",m_fall_through);
-	nv.put("ShuffleMode",int(m_shuffle_mode));
-	nv.put("LoopMode",int(m_loop_mode));
 	nv.put("Directory",m_Directory);
 	nv.put("Level",int(m_level));
     	for (unsigned int i=0;i<order.size();i++)
