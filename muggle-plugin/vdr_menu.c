@@ -268,11 +268,18 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("")
 // Read commands for collections in etc. /video/muggle/playlist_commands.conf
     external_commands = new cCommands ();
 
-    char *
-        cmd_file = (char *) AddDirectory (cPlugin::ConfigDirectory ("muggle"),
+#if VDRVERSNUM >= 10318
+    cString cmd_file = AddDirectory (cPlugin::ConfigDirectory ("muggle"),
         "playlist_commands.conf");
-    mgDebug (1, "mgMuggle::Start: Looking for file %s", cmd_file);
+    mgDebug (1, "mgMuggle::Start: 10318 Looking for file %s", *cmd_file);
+    bool have_cmd_file = external_commands->Load (*cmd_file);
+#else
+    const char *
+        cmd_file = (const char *) AddDirectory (cPlugin::ConfigDirectory ("muggle"),
+        "playlist_commands.conf");
+    mgDebug (1, "mgMuggle::Start: 10317 Looking for file %s", cmd_file);
     bool have_cmd_file = external_commands->Load ((const char *) cmd_file);
+#endif
 
     if (!have_cmd_file)
     {
