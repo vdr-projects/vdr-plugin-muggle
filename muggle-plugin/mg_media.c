@@ -1,8 +1,8 @@
 /*! \file   mg_media.c
  *  \brief  Top level access to media in vdr plugin muggle
  *
- * \version $Revision: 1.13 $
- * \date    $Date: 2004/05/28 15:29:18 $
+ * \version $Revision: 1.14 $
+ * \date    $Date: 2004/07/29 06:17:40 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  Responsible author: $Author: lvw $
  */
@@ -245,55 +245,61 @@ mgSelectionTreeNode* mgMedia::getSelectionRoot()
 mgPlaylist* mgMedia::createTemporaryPlaylist()
 {
     string tmpname = "current";
-    return loadPlaylist(tmpname);
+    return loadPlaylist( tmpname );
 }
 
 /*! 
- *******************************************************************
- * \brief
- ********************************************************************/
+ * \brief Load a playlist from the database
+ *
+ */
 mgPlaylist* mgMedia::loadPlaylist(string name)
 {
     mgPlaylist *list;
-    switch(m_mediatype)
-    {
-	case GD_MP3:
-	    list =  new GdPlaylist(name, m_db);
-	    list->setDisplayColumns(getDefaultCols());
-	    return list;
+    switch( m_mediatype )
+      {
+      case GD_MP3:
+	{
+	  list =  new GdPlaylist(name, m_db);
+	  list->setDisplayColumns(getDefaultCols());
+
+	  return list;
+	} break;
     }	 
-    mgError("implementation Error"); // we should never get here
+    mgError("Implementation error: Unknown media type"); // we should never get here
     return NULL;
 }
 
 /*! 
- *******************************************************************
- * \brief
- ********************************************************************/
+ * \brief Obtain a list of stored playlists
+ */
 vector<string> *mgMedia::getStoredPlaylists()
 {
     switch(m_mediatype)
     {
 	case GD_MP3:
-	    return GdGetStoredPlaylists(m_db);
+	  {
+	    return GdGetStoredPlaylists( m_db );
+	  } break;
     }	 
     mgError("implementation Error"); // we should never get here
     return new vector<string>();
 }
 
 /*! 
- *******************************************************************
- * \brief
- ********************************************************************/
+ * \brief obtain the indices of columns which are presented by default
+ */
 vector<int> mgMedia::getDefaultCols()
 {
     vector<int> cols;
     switch(m_mediatype)
     {
 	case GD_MP3:
+	  {
 	    cols.push_back(1); // artist
 	    cols.push_back(0); // track
+
 	    return cols;
+	  } break;
     }	 
     mgError("implementation Error"); // we should never get here
     
@@ -301,9 +307,8 @@ vector<int> mgMedia::getDefaultCols()
 }
 
 /*! 
- *******************************************************************
- * \brief
- ********************************************************************/
+ * \brief 
+ */
 mgTracklist* mgMedia::getTracks()
 {
     mgTracklist *tracks;
@@ -320,18 +325,18 @@ mgTracklist* mgMedia::getTracks()
 }
 
 /*! 
- *******************************************************************
  * \brief creates FiliterSetObject for the selected media type 
  *        and activates set n (if available)
- ********************************************************************/
+ */
 void mgMedia::initFilterSet(int num)
 {
-    switch(m_mediatype)
+  switch(m_mediatype)
     {
-	case GD_MP3:
-	  m_filters = new gdFilterSets();
-	  m_filters->select(num);
-	  break;
+    case GD_MP3:
+      {
+	m_filters = new gdFilterSets();
+	m_filters->select(num);
+      } break;
     }	 
 }
 
@@ -351,56 +356,54 @@ vector<mgFilter*> *mgMedia::getActiveFilters()
 }
 
 /*! 
- *******************************************************************
  * \brief returns title of the active filter set
- ********************************************************************/
+ */
 string mgMedia::getActiveFilterTitle()
 {
 
     switch(m_mediatype)
     {
      case GD_MP3:
-       if(!m_filters)
        {
-	 mgError("ImplementationError:getActiveFilterTitle m_filters == NULL");
-       }
-       return m_filters->getTitle();
+	 if( !m_filters )
+	   {
+	     mgError("ImplementationError:getActiveFilterTitle m_filters == NULL");
+	   }
+	 return m_filters->getTitle();
+       } break;
     }	 
     return "";
 }
 
 /*! 
- *******************************************************************
  * \brief proceeds to the next filter set in a cirlucar fashion
- ********************************************************************/
+ */
 void mgMedia::nextFilterSet()
 {
   if(!m_filters)
-  {
-    mgError("ImplementationError: nextFilterSet  m_filters == NULL");
-  }
+    {
+      mgError("ImplementationError: nextFilterSet  m_filters == NULL");
+    }
   m_filters->nextSet();
 }
 
 /*! 
- *******************************************************************
  * \brief clears the current filter values and restores defaults
- ********************************************************************/
+ */
 void mgMedia::clearActiveFilter()
 {
-  if(!m_filters)
-  {
-    mgError("ImplementationError: clearActiveFilter m_filters == NULL");
-  }
+  if( !m_filters )
+    {
+      mgError("ImplementationError: clearActiveFilter m_filters == NULL");
+    }
   m_filters->clear();
 }
 
 /*! 
- *******************************************************************
  * \brief Applies the active filter set and returns a root node for the 
  *        selection in the default view for this filter set
- ********************************************************************/
-mgSelectionTreeNode *mgMedia::applyActiveFilter()
+ */
+mgSelectionTreeNode* mgMedia::applyActiveFilter()
 {
   int view;
   GdTreeNode* node;
@@ -408,15 +411,17 @@ mgSelectionTreeNode *mgMedia::applyActiveFilter()
   switch(m_mediatype)
   {
     case GD_MP3:
-      if(!m_filters)
       {
-	mgError("ImplementationError: applyActiveFilter() m_filters == NULL");
-      }
-      m_filters->accept();
-      m_sql_filter = m_filters->computeRestriction(&view);
-      node = new GdTreeNode(m_db, view,  m_sql_filter);
-      node->expand();
-      return node->getChildren()[0];
+	if(!m_filters)
+	  {
+	    mgError("ImplementationError: applyActiveFilter() m_filters == NULL");
+	  }
+	m_filters->accept();
+	m_sql_filter = m_filters->computeRestriction(&view);
+	node = new GdTreeNode(m_db, view,  m_sql_filter);
+	node->expand();
+	return node->getChildren()[0];
+      } break;
   }	 
   return NULL;
 }
@@ -424,6 +429,9 @@ mgSelectionTreeNode *mgMedia::applyActiveFilter()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: mg_media.c,v $
+ * Revision 1.14  2004/07/29 06:17:40  lvw
+ * Added todo entries
+ *
  * Revision 1.13  2004/05/28 15:29:18  lvw
  * Merged player branch back on HEAD branch.
  *
