@@ -1,6 +1,13 @@
 TODO File for Muggle
 ====================
 
+Ogg/Vorbis decoder integration
+==============================
+- cOggFile needed? equivalence in Mp3?
+- cOggInfo/cSongInfo to be replaced by DB information
+
+Deployment
+==========
 - Script to publish a version
    - Checkout
    - make dist
@@ -8,6 +15,7 @@ TODO File for Muggle
    - generate documentation
    - copy into web directory
    - sync with web
+- How to track bugs and feature requests?
 
 Testing/bugs
 ============
@@ -24,10 +32,10 @@ Import
   - Modified
 
 - Tracks
+  - !Audio properties( bitrate, channels, length, sampleRate )
   - Language (?)
   - Genre1, 2
   - Rating?
-  - Bitrate
   - Modified, created
   - Lyrics
 
@@ -38,10 +46,10 @@ Code polishing
 - Check for memory leaks
     - Why do filters use pointers?
 - Check for (reasonably) consistent usage of char*/string
+
 - mgDatabase is not used? 
    - should handle a static object with a MySQL connection
    - execute queries?
-
 - mgPlayer used what for?
    - Could save IP/host name and associate last playlist loaded
 

@@ -2,11 +2,12 @@
  * \file   gd_content_interface.h
  * \brief  Data objects for content (e.g. mp3 files, movies)
  *         for the vdr muggle plugin database
+ * \ingroup giantdisc
  *          
  * \version $Revision: 1.11 $
- * \date    $Date: 2004/08/30 14:31:43 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: LarsAC $
+ * \author  Responsible author: $Author$
  * 
  * Declares main classes for content items and interfaces to SQL databases
  *
@@ -35,26 +36,28 @@
 
 /*! 
  * \brief Initialize a database for GD use
+ * \ingroup giantdisc
  * \todo Should be a static member of some GD class
  */
 int GdInitDatabase(MYSQL *db);
 
 /*! 
  * \brief Obtain the playlists stored within the GD schema
+ * \ingroup giantdisc
  * \todo Should be a static member of some GD class
  */
 std::vector<std::string> *GdGetStoredPlaylists(MYSQL db);
 
 /*! 
  * \brief A set of filters to search for content
+ * \ingroup giantdisc
  */
 class gdFilterSets : public mgFilterSets 
 {
 
  public:
 
-  /*! \addtogroup Object creation and destruction */
-  /*\@{*/
+  //\@{
 
   /*!
    * \brief the default constructor
@@ -69,7 +72,7 @@ class gdFilterSets : public mgFilterSets
    */
   virtual ~gdFilterSets();
 
-  /*\@}*/
+  //\@
 
   /*!
    * \brief compute restriction w.r.t active filters
@@ -86,7 +89,8 @@ class gdFilterSets : public mgFilterSets
 
 
 /*! 
- * \brief represents a a single track 
+ * \brief represents a a single track
+ * \ingroup giantdisc
  *
  * This may be any content item. e.g. a mp3 fileselection
  * The object is initially created with a database identifier.
@@ -100,8 +104,7 @@ class mgGdTrack : public mgContentItem
 {
  public:
  
-  /*! \addtogroup Object creation and destruction */
-  /*\@{*/
+  //@{
 
   /*! 
    * \brief a constructor 
@@ -137,7 +140,7 @@ class mgGdTrack : public mgContentItem
    */
   virtual ~mgGdTrack();
 
-  /*\@}*/
+  //@}
   
   /*!
    * \brief obtain the content type of the item
@@ -157,8 +160,7 @@ class mgGdTrack : public mgContentItem
       return mgMediaPlayer();
     }
 
-  /*! \addtogroup Data read access */
-  /*\@{*/
+  //\@{
 
   /*!
    * \brief returns a certain field of the item as a string
@@ -220,11 +222,9 @@ class mgGdTrack : public mgContentItem
    */
   virtual std::vector<mgFilter*> *getTrackInfo();  
 
-  /*\@}*/
+  //\@}
 
-  /*! \addtogroup Data write access */ 
-  /*\@{*/
-
+  //\@{
   /*!
    * \brief set the title of the track
    */
@@ -271,8 +271,7 @@ class mgGdTrack : public mgContentItem
    * Genre and album field information is lost.
    */
   bool writeData();
-
-  /*\@}*/
+  //\@}
 
   //! \brief a special instance denoting an undefined track
   static mgGdTrack UNDEFINED;
@@ -348,6 +347,7 @@ private:
 
 /* 
  * \brief a list of tracks stored in the databas
+ * \ingroup giantdisc
  */
 class GdTracklist : public mgTracklist
 {
@@ -365,9 +365,7 @@ class  GdPlaylist : public mgPlaylist
 {	  
  public:
      
-  /*! \addtogroup Object creation and destruction */
-  /*\@{*/
-
+  //@{
   /*! 
    * \brief opens an existing or creates empty playlist by name
    *
@@ -386,7 +384,7 @@ class  GdPlaylist : public mgPlaylist
    */
   virtual ~GdPlaylist();
 
-  /* \@} */
+  //@}
      
   /*!
    * changes the listname of the playlist (and unset the sql id)
@@ -430,6 +428,7 @@ class  GdPlaylist : public mgPlaylist
 
 /*! 
  * \brief hierarchical representation of a set of tracks
+ * \ingroup giantdisc
  *
  * The selection can be based on the whole database or a subset of it.
  * Within this selection, the data is organized in a tree hierarchy
@@ -444,9 +443,7 @@ class GdTreeNode : public mgSelectionTreeNode
 {
 public:
 
-  /*! \addtogroup Object creation and destruction */
-  /*\@{*/
-
+  //@{
   /*! 
    * \brief Construct a top level tree node in a certain view with certain filters 
    */
@@ -462,12 +459,9 @@ public:
    * \brief destructor to clean up the object
    */
   virtual ~GdTreeNode();
+  //@}
 
-  /* \@} */
-
-  /*! \addtogroup Access node data */
-  /*\@{*/
-
+  //@{
   /*!
    * \brief check, whether the node is a leaf node (i.e. has no more children)
    */
@@ -488,7 +482,7 @@ public:
    */
   virtual mgContentItem* getSingleTrack();
 
-  /* \@} */
+  //@}
 };
 
 /* -------------------- begin CVS log ---------------------------------

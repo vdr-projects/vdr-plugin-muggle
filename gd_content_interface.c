@@ -1,10 +1,11 @@
 /*! \file   gd_content_interface.c
  *  \brief  Data Objects for content (e.g. mp3 files, movies) for the vdr muggle plugin
+ *  \ingroup giantdisc
  *
  *  \version $Revision: 1.27 $
- *  \date    $Date: 2004/08/30 14:31:43 $
+ *  \date    $Date$
  *  \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- *  \author  Responsible author: $Author: LarsAC $
+ *  \author  Responsible author: $Author$
  *
  *  Implements main classes of for content items and interfaces to SQL databases
  *

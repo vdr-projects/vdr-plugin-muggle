@@ -1,13 +1,33 @@
 /*! 
  * \file   muggle.h
+ * \ingroup vdr
  * \brief  Implements a plugin for browsing media libraries within VDR
  *
  * \version $Revision: 1.6 $
- * \date    $Date: 2004/07/09 12:22:00 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author$
  *
- *  $Id: muggle.h,v 1.6 2004/07/09 12:22:00 LarsAC Exp $
+ *  $Id$
+ */
+
+
+// Some notes about the general structure of the plugin
+
+/* \defgroup giantdisc GiantDisc integration layer
+ *    The GiantDisc integration layer contains functions and classes
+ *    which enable interoperability with a database schema that conforms
+ *    to the GiantDisc layout.
+ *
+ * \defgroup vdr       VDR integration layer
+ *    The VDR integration layer contains components which allow the
+ *    plugin functionality to be accessed by VDR. These are mainly
+ *    related to the OSD and a player/control combination.
+ *
+ * \defgroup muggle    Main muggle business
+ *    The core of the plugin is an abstract representation of information
+ *    organized in trees (thus suitable for OSD navigation) as well as
+ *    means to organize 
  */
 
 #ifndef _MUGGLE_H
