@@ -3,8 +3,8 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.19 $
- * \date    $Date: 2004/02/23 15:56:19 $
+ * \version $Revision: 1.20 $
+ * \date    $Date: 2004/02/23 16:30:58 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: RaK $
  *
@@ -190,22 +190,22 @@ string gdFilterSets::computeRestriction(int *viewPrt)
   {
     if((*iter)->isSet())
     {
-      if(strcmp((*iter)->getName(), "playlist title") == 0 )
+      if(strcmp((*iter)->getName(), tr("playlist title")) == 0 )
       {
         sql_str = sql_str + " AND playlist.title like '%%" 
            + (*iter)->getStrVal() + "%%'";
       }
-      else if(strcmp((*iter)->getName(), "playlist author") == 0 )
+      else if(strcmp((*iter)->getName(), tr("playlist author")) == 0 )
       {
         sql_str = sql_str + " AND playlist.author like '%%" 
            + (*iter)->getStrVal() + "%%'";
       }
-      else if(strcmp((*iter)->getName(), "album title") == 0 )
+      else if(strcmp((*iter)->getName(), tr("album title")) == 0 )
       {
         sql_str = sql_str + " AND album.title like '%%" 
            + (*iter)->getStrVal() + "%%'";
       }
-      else if(strcmp((*iter)->getName(), "album artist") == 0 )
+      else if(strcmp((*iter)->getName(), tr("album artist")) == 0 )
       { 
         sql_str = sql_str + " AND album.artist like '%%" 
          + (*iter)->getStrVal() + "%%'";
@@ -220,22 +220,22 @@ string gdFilterSets::computeRestriction(int *viewPrt)
         sql_str = sql_str + " AND tracks.artist like '%%" 
          + (*iter)->getStrVal() + "%%'";
       }
-      else if(strcmp((*iter)->getName(), "genre") == 0 )
+      else if(strcmp((*iter)->getName(), tr("genre")) == 0 )
       { 
         sql_str = sql_str + " AND (genre1.genre like '" 
          + (*iter)->getStrVal() + "'";
         sql_str = sql_str + " OR genre2.genre like '" 
          + (*iter)->getStrVal() + "')";
       }
-      else if(strcmp((*iter)->getName(), "year (from)") == 0 )
+      else if(strcmp((*iter)->getName(), tr("year (from)")) == 0 )
       { 
         sql_str = sql_str + " AND tracks.year >= " + (*iter)->getStrVal();
       }
-      else if(strcmp((*iter)->getName(), "year (to)") == 0 )
+      else if(strcmp((*iter)->getName(), tr("year (to)")) == 0 )
       { 
         sql_str = sql_str + " AND tracks.year <= " + (*iter)->getStrVal();
       }
-      else if(strcmp((*iter)->getName(), "rating") == 0 )
+      else if(strcmp((*iter)->getName(), tr("rating")) == 0 )
       { 
         if ((*iter)->getStrVal() == "-") {
           sql_str = sql_str + " AND tracks.rating >= 0 ";
@@ -1391,6 +1391,9 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.20  2004/02/23 16:30:58  RaK
+ * - album search error because of i18n corrected
+ *
  * Revision 1.19  2004/02/23 15:56:19  RaK
  * - i18n
  *

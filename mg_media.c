@@ -3,10 +3,10 @@
  *  \brief  Top level access to media in vdr plugin muggle
  *          for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.11 $
- * \date    $Date: 2004/02/12 09:15:07 $
+ * \version $Revision: 1.12 $
+ * \date    $Date: 2004/02/23 16:30:58 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: RaK $
  */
 /*******************************************************************/
 
@@ -180,7 +180,7 @@ mgMedia::mgMedia(contentType mediatype)
 	case GD_MP3:
 	{
 	    errval = GdInitDatabase(&m_db);
-	    mgDebug(3, "Successfully conntected to sql database 'GiantDisc2'"); 
+	    mgDebug(3, "Successfully conntected to sql database 'GiantDisc'"); 
 	}
     }
     if(errval < 0)
@@ -194,7 +194,7 @@ mgMedia::mgMedia(contentType mediatype)
 	case GD_MP3:
 	{
 	    errval = GdInitDatabase(&m_db);
-	    mgDebug(3, "Successfully conntected to sql database 'GiantDisc2'"); 
+	    mgDebug(3, "Successfully conntected to sql database 'GiantDisc'"); 
 	}
     }
 }
@@ -220,7 +220,7 @@ string mgMedia::getMediaTypeName()
     switch(m_mediatype)
     {
 	case GD_MP3:
-	    return "GiantDisc2";
+	    return "GiantDisc";
     }	    
     mgError("implementation Error"); // we should never get here
     return "";
@@ -429,6 +429,9 @@ mgSelectionTreeNode *mgMedia::applyActiveFilter()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: mg_media.c,v $
+ * Revision 1.12  2004/02/23 16:30:58  RaK
+ * - album search error because of i18n corrected
+ *
  * Revision 1.11  2004/02/12 09:15:07  LarsAC
  * Moved filter classes into separate files
  *
