@@ -343,6 +343,7 @@ class mgTree:public mgMenu
 {
     public:
 	mgTree();
+        virtual eOSState Process (eKeys Key);
     protected:
         void BuildOsd ();
 };
