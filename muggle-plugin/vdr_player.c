@@ -200,7 +200,7 @@ public:
   void ToggleShuffle(void);
   void ToggleLoop(void);
 
-  virtual bool getIndex(int &Current, int &Total, bool SnapToIFrame=false);
+  virtual bool GetIndex(int &Current, int &Total, bool SnapToIFrame=false);
   //  bool GetPlayInfo(cMP3PlayInfo *rm); // LVW
 
   void NewPlaylist( mgPlaylist *plist, int first );
@@ -869,7 +869,7 @@ void mgPCMPlayer::SkipSeconds(int secs)
     }
 }
 
-bool mgPCMPlayer::getIndex( int &current, int &total, bool snaptoiframe )
+bool mgPCMPlayer::GetIndex( int &current, int &total, bool snaptoiframe )
 {
   if( m_current ) 
     {  
@@ -1106,7 +1106,7 @@ void mgPCMPlayer::send_pes_packet(unsigned char *data, int len, int timestamp)
 // --- mgPlayerControl -------------------------------------------------------
 
 mgPlayerControl::mgPlayerControl( mgPlaylist *plist, int start )
-  : cControl( m_player = new mgPCMPlayer( plist, start ) )
+  : cControl( player = new mgPCMPlayer( plist, start ) )
 {
   MGLOG( "mgPlayerControl::mgPlayerControl" );
 
@@ -1141,87 +1141,87 @@ mgPlayerControl::~mgPlayerControl()
 
 bool mgPlayerControl::Active(void)
 {
-  return m_player && m_player->Active();
+  return player && player->Active();
 }
 
 void mgPlayerControl::Stop(void)
 {
-  if( m_player )
+  if( player )
     {
-      delete m_player; 
-      m_player = 0;
+      delete player; 
+      player = 0;
     }
 }
 
 void mgPlayerControl::Pause(void)
 {
-  if( m_player )
+  if( player )
     {
-      m_player->Pause();
+      player->Pause();
     }
 }
 
 void mgPlayerControl::Play(void)
 {
-  if( m_player ) 
+  if( player ) 
     {
-      m_player->Play();
+      player->Play();
     }
 }
 
 void mgPlayerControl::Forward(void)
 {
-  if( m_player ) 
+  if( player ) 
     {
-      m_player->Forward();
+      player->Forward();
     }
 }
 
 void mgPlayerControl::Backward(void)
 {
-  if( m_player ) 
+  if( player ) 
     {
-      m_player->Backward();
+      player->Backward();
     }
 }
 
 void mgPlayerControl::SkipSeconds(int Seconds)
 {
-  if( m_player ) 
+  if( player ) 
     {
-      m_player->SkipSeconds(Seconds);
+      player->SkipSeconds(Seconds);
     }
 }
 
 void mgPlayerControl::Goto(int Position, bool Still)
 {
-  if( m_player )
+  if( player )
     {
-      m_player->Goto(Position, Still);
+      player->Goto(Position, Still);
     }
 }
 
 void mgPlayerControl::ToggleShuffle(void)
 {
-  if( m_player )
+  if( player )
     {
-      m_player->ToggleShuffle();
+      player->ToggleShuffle();
     }
 }
 
 void mgPlayerControl::ToggleLoop(void)
 {
-  if( m_player ) 
+  if( player ) 
     {
-      m_player->ToggleLoop();
+      player->ToggleLoop();
     }
 }
 
 void mgPlayerControl::NewPlaylist(mgPlaylist *plist, int start)
 {
-  if( m_player ) 
+  if( player ) 
     {
-      m_player->NewPlaylist(plist, start);
+      player->NewPlaylist(plist, start);
     }
 }
 
@@ -1233,7 +1233,7 @@ void mgPlayerControl::ShowContents()
       m_menu = Skins.Current()->DisplayMenu();
     }
 
-  if( m_player && m_menu ) 
+  if( player && m_menu ) 
     {
       int num_items = m_menu->MaxItems();
 
@@ -1247,44 +1247,44 @@ void mgPlayerControl::ShowContents()
 	  char *buf;
 	  if( num_items > 0 )
 	    {
-	      asprintf( &buf, "Title:\t%s", m_player->getCurrent()->getLabel(0).c_str() );
+	      asprintf( &buf, "Title:\t%s", player->getCurrent()->getLabel(0).c_str() );
 	      m_menu->SetItem( buf, 0, false, false );
 	      free( buf );
 	    }
 	  if( num_items > 1 )
 	    {
-	      asprintf( &buf, "Artist:\t%s", m_player->getCurrent()->getLabel(1).c_str() );
+	      asprintf( &buf, "Artist:\t%s", player->getCurrent()->getLabel(1).c_str() );
 	      m_menu->SetItem( buf, 1, false, false );
 	      free( buf );
 	    }
 	  if( num_items > 2 )
 	    {
-	      asprintf( &buf, "Album:\t%s", m_player->getCurrent()->getLabel(2).c_str() );
+	      asprintf( &buf, "Album:\t%s", player->getCurrent()->getLabel(2).c_str() );
 	      m_menu->SetItem( buf, 2, false, false );
 	      free( buf );
 	    }
 	  if( num_items > 3 )
 	    {
-	      asprintf( &buf, "Genre:\t%s", m_player->getCurrent()->getLabel(3).c_str() );
+	      asprintf( &buf, "Genre:\t%s", player->getCurrent()->getLabel(3).c_str() );
 	      m_menu->SetItem( buf, 3, false, false );
 	      free( buf );
 	    }
 	  if( num_items > 4 )
 	    {
-	      int len = m_player->getCurrent()->getLength();
+	      int len = player->getCurrent()->getLength();
 	      asprintf( &buf, "Length:\t%s", IndexToHMSF( SecondsToFrames( len ) ) );
 	      m_menu->SetItem( buf, 4, false, false );
 	      free( buf );
 	    }
 	  if( num_items > 5 )
 	    {
-	      asprintf( &buf, "Bit rate:\t%s", m_player->getCurrent()->getBitrate().c_str() );
+	      asprintf( &buf, "Bit rate:\t%s", player->getCurrent()->getBitrate().c_str() );
 	      m_menu->SetItem( buf, 5, false, false );
 	      free( buf );
 	    }
 	  if( num_items > 6 )
 	    {
-	      int sr = m_player->getCurrent()->getSampleRate();
+	      int sr = player->getCurrent()->getSampleRate();
 	      
 	      asprintf( &buf, "Sampling rate:\t%d", sr );
 	      m_menu->SetItem( buf, 6, false, false );
@@ -1293,7 +1293,7 @@ void mgPlayerControl::ShowContents()
 	}
       else
 	{
-	  mgPlaylist *list = m_player->getPlaylist();
+	  mgPlaylist *list = player->getPlaylist();
 	  if( list )
 	    {
 	      // use items for playlist tag display
@@ -1332,18 +1332,18 @@ void mgPlayerControl::ShowContents()
 
 void mgPlayerControl::ShowProgress()
 {
-  if( m_player )
+  if( player )
     {
       char *buf;
       bool play = true, forward = true;
       int speed = -1;
 
       int current_frame, total_frames;
-      m_player->getIndex( current_frame, total_frames ); 
+      player->GetIndex( current_frame, total_frames ); 
       
       if( !m_track_view )
 	{ // playlist stuff
-	  mgPlaylist *list = m_player->getPlaylist();
+	  mgPlaylist *list = player->getPlaylist();
 	  if( list )
 	    {
 	      total_frames = SecondsToFrames( list->getLength() );
@@ -1353,7 +1353,7 @@ void mgPlayerControl::ShowProgress()
 	}
       else
 	{ // track view
-	  asprintf( &buf, "%s: %s", m_player->getCurrent()->getLabel(1).c_str(), m_player->getCurrent()->getTitle().c_str() );
+	  asprintf( &buf, "%s: %s", player->getCurrent()->getLabel(1).c_str(), player->getCurrent()->getTitle().c_str() );
 	}
 
 #if VDRVERSNUM >= 10307
@@ -1383,8 +1383,6 @@ void mgPlayerControl::ShowProgress()
 
 void mgPlayerControl::Display()
 {
-  StatusMsgReplaying();
-
   if( m_visible )
     {
       if( !m_has_osd )
@@ -1464,6 +1462,8 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
       return osEnd;
     }
 
+  StatusMsgReplaying();
+
   Display();
 
   eOSState state = cControl::ProcessKey(key);
@@ -1482,9 +1482,9 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 	  } break;
 	case kRed:
 	  {
-	    if( !m_visible && m_player )
+	    if( !m_visible && player )
 	      {
-		mgPlaylist *pl = m_player->getPlaylist();
+		mgPlaylist *pl = player->getPlaylist();
 
 		std::string s;
 		switch( pl->toggleLoopMode() )
@@ -1505,14 +1505,14 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 		    {
 		      s = tr( "Unknown loop mode" );
 		    }
-#if VDRVERSNUM >= 10307
-			Skins.Message(mtInfo, s.c_str() );
-			Skins.Flush();
-#else
-			Interface->Status( s.c_str() );
-			Interface->Flush();
-#endif
 		  }
+#if VDRVERSNUM >= 10307
+		Skins.Message(mtInfo, s.c_str() );
+		Skins.Flush();
+#else
+		Interface->Status( s.c_str() );
+		Interface->Flush();
+#endif
 	      }
 	    else
 	      {
@@ -1523,9 +1523,9 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 	  } break;
 	case kGreen:
 	  {
-	    if( !m_visible && m_player )
+	    if( !m_visible && player )
 	      {
-		mgPlaylist *pl = m_player->getPlaylist();
+		mgPlaylist *pl = player->getPlaylist();
 
 		std::string s;
 		switch( pl->toggleShuffleMode() )
@@ -1546,14 +1546,14 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 		    {
 		      s = tr( "Unknown shuffle mode" );
 		    }
-#if VDRVERSNUM >= 10307
-			Skins.Message(mtInfo, s.c_str() );
-			Skins.Flush();
-#else
-			Interface->Status( s.c_str() );
-			Interface->Flush();
-#endif
 		  }
+#if VDRVERSNUM >= 10307
+		Skins.Message(mtInfo, s.c_str() );
+		Skins.Flush();
+#else
+		Interface->Status( s.c_str() );
+		Interface->Flush();
+#endif
 	      }
 	    else
 	      {
@@ -1601,50 +1601,81 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 void mgPlayerControl::StatusMsgReplaying()
 {
   char *szBuf=NULL;
-  if(m_player 
-      && m_player->getCurrent() 
-      && m_player->getCurrent()->isValid() 
-      && m_player->getCurrent()->getContentType() == mgContentItem::GD_AUDIO
-      && m_player->getPlaylist()) 
+  if(player 
+     && player->getCurrent() 
+     && player->getPlaylist()) 
     {
-      /* 
-	 if(m_player->getCurrent()->getAlbum().length() > 0)
-	 {  
-	 asprintf(&szBuf,"[%c%c] (%d/%d) %s - %s",
-	 m_player->getPlaylist()->isLoop()?'L':'.',
-	 m_player->getPlaylist()->isShuffle()'S':'.',
-	 m_player->getPlaylist()->getIndex() + 1,m_player->getPlaylist()->getCount(),
-	 m_player->getCurrent()->getTitle().c_str(),
-	 m_player->getCurrent()->getAlbum().c_str());
-	 }
-	 else */
-      {  
-	asprintf(&szBuf,"[%c%c] (%d/%d) %s",
-		 /* TODO m_player->GetPlaylist()->isLoop()?'L':*/'.',
-		 /* TODO m_player->GetPlaylist()->isShuffle()'S':*/'.',
-		 m_player->getPlaylist()->getIndex() + 1,m_player->getPlaylist()->getNumItems(),
-		 m_player->getCurrent()->getTitle().c_str());
-      }
+      char cLoopMode;
+      char cShuffle;
+      
+      switch( player->getPlaylist()->getLoopMode() )
+	{
+	default:
+	case mgPlaylist::LM_NONE:
+	  cLoopMode = '.'; // Loop mode off
+	  break;
+	case mgPlaylist::LM_SINGLE:
+	  cLoopMode = 'S'; // Loop mode single
+	  break;
+	case mgPlaylist::LM_FULL:
+	  cLoopMode = 'P'; // Loop mode fuel
+	  break;
+	}
+	
+      switch( player->getPlaylist()->getShuffleMode() )
+	{
+	default:
+	case mgPlaylist::SM_NONE:
+	  cShuffle = '.'; // Shuffle mode off
+	  break;
+	case mgPlaylist::SM_NORMAL:
+	  cShuffle = 'S'; // Shuffle mode normal
+	  break;
+	case mgPlaylist::SM_PARTY:
+	  cShuffle = 'P'; // Shuffle mode party
+	  break;
+        }
+
+      if(player->getCurrent()->getLabel(1).length() > 0)
+	{  
+	  asprintf(&szBuf,"[%c%c] (%d/%d) %s - %s",
+		   cLoopMode,
+		   cShuffle,
+		   player->getPlaylist()->getIndex() + 1,player->getPlaylist()->getNumItems(),
+		   player->getCurrent()->getLabel(1).c_str(),
+		   player->getCurrent()->getTitle().c_str());
+	}
+      else 
+        {  
+	  asprintf(&szBuf,"[%c%c] (%d/%d) %s",
+		   cLoopMode,
+		   cShuffle,
+		   player->getPlaylist()->getIndex() + 1,player->getPlaylist()->getNumItems(),
+		   player->getCurrent()->getTitle().c_str());
+	}
     }
   else
     {
       asprintf(&szBuf,"[muggle]");
     }
-  
-  if(szBuf 
-     && ( m_szLastShowStatusMsg == NULL 
-	  || 0 != strcmp(szBuf,m_szLastShowStatusMsg) ) )  
-    {  
-      cStatus::MsgReplaying(this,szBuf);
-
-      if(m_szLastShowStatusMsg)
-	{
-	  free(m_szLastShowStatusMsg);
-	}
-      m_szLastShowStatusMsg = szBuf;
-    }
-  else
-    {
-      free(szBuf);
+    
+  //fprintf(stderr,"StatusMsgReplaying(%s)\n",szBuf);
+  if( szBuf )
+    { 
+      if( m_szLastShowStatusMsg == NULL 
+ 	  || 0 != strcmp(szBuf,m_szLastShowStatusMsg) ) 
+ 	{  
+	  if(m_szLastShowStatusMsg)
+ 	    {
+ 	      free(m_szLastShowStatusMsg);
+ 	    }
+	  m_szLastShowStatusMsg = szBuf;
+	  cStatus::MsgReplaying(this,m_szLastShowStatusMsg);
+ 	}
+      else
+  	{
+	  free(szBuf);
+  	}
     }
 }
+

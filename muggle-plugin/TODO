@@ -17,7 +17,6 @@
 
     \subsection urgentosd OSD-related Issues
 
-        - Red key does not work in Browser submenu
         - Possible to resume play instead of restarting list from the beginning?
         - Save on exit
         - Rename playlist
@@ -69,6 +68,8 @@
 
 	\subsection urgentplayer Player extensions
 
+	- Display covers
+	- Add FLAC decoder
 	- Determine max. framecount (needed for rewinding)?
 	- Init scale/level/normalize?
 	  - The max. level should be recognized during play
@@ -157,8 +158,6 @@
 
 	\subsection midplayer Player issues
 	
-	- Display covers
-	- Add FLAC decoder
         - Use single CD files with cuesheets in metadata for FLAC
 	- Handle recoding samplerate, limiter etc correctly
     
@@ -241,5 +240,6 @@
     - Toggle detail/progress view (green)
       - Track view: all metadata
       - Playlist view: all tracks (past three, upcoming ones)
+    - BUG: Red key does not work in Browser submenu
 
 */
