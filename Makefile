@@ -1,7 +1,7 @@
 #
 # Makefile for a Video Disk Recorder plugin
 #
-# $Id: Makefile,v 1.6 2004/02/09 22:07:44 RaK Exp $
+# $Id: Makefile,v 1.7 2004/02/12 09:15:07 LarsAC Exp $
 
 # The official name of this plugin.
 # This name will be used in the '-P...' option of VDR to load the plugin.
@@ -46,10 +46,8 @@ DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
 
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o vdr_menu.o mg_database.o mg_content_interface.o gd_content_interface.o mg_tools.o mg_media.o
-
-BINOBJS = mg_database.o mg_content_interface.o gd_content_interface.o mg_tools.o mg_media.o
-#BINOBJS = sh_console_osd.o muggle.o vdr_menu.o content_interface.o gd_content_interface.o muggle_tools.o mgmedia.o
+OBJS = $(PLUGIN).o vdr_menu.o mg_database.o mg_content_interface.o gd_content_interface.o mg_tools.o mg_media.o mg_filters.o
+BINOBJS = mg_database.o mg_content_interface.o gd_content_interface.o mg_tools.o mg_media.o mg_filters.o
 
 ### Targets:
 
@@ -72,12 +70,6 @@ $(DEPFILE): Makefile
 libvdr-$(PLUGIN).so: $(OBJS)
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) -lmysqlclient -o $@
 	@cp $@ $(LIBDIR)/$@.$(VDRVERSION)
-
-sh_muggle : sh_muggle.c $(BINOBJS)
-	$(CXX) $(CXXFLAGS) $(BINOBJS) sh_muggle.c -lmysqlclient -o $@
-
-sh_muggle2 : sh_muggle2.c $(BINOBJS)
-	$(CXX) $(CXXFLAGS) sh_muggle2.c $(BINOBJS) -lmysqlclient -o $@
 
 dist: clean
 	@-rm -rf $(TMPDIR)/$(ARCHIVE)
