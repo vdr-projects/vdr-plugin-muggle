@@ -3,13 +3,77 @@
  *
  * See the README file for copyright information and how to reach the author.
  *
- * $Id: i18n.c,v 1.3 2004/02/23 15:56:19 RaK Exp $
+ * $Id: i18n.c,v 1.4 2004/02/23 16:18:15 RaK Exp $
  */
 
 #include "i18n.h"
 
 const tI18nPhrase Phrases[] = {
 
+  { "items",
+    "Einträge",
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+  },
+  { "Muggle Media Database",
+    "Muggle Media Database",
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+  },
+  { "Tree View Commands",
+    "Browser Befehle",
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+  },
+  { "Search Result",
+    "Suchergebnis",
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+    "",// TODO
+  },
   { "Album -> Track",
     "Titel nach Album",
     "",// TODO
@@ -106,8 +170,8 @@ const tI18nPhrase Phrases[] = {
     "",// TODO
     "",// TODO
   },
-  { "Load",
-    "Laden",
+  { "Other Search",
+    "Suchmodus",
     "",// TODO
     "",// TODO
     "",// TODO

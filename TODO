@@ -6,6 +6,7 @@ Code polishing
 - check for memory leaks
 - check for (reasonably) consistent usage of char*/string
 - mg_database is not used
+- album filter works not properly
 
 Short term items
 ================
