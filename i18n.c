@@ -455,6 +455,23 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {
+        "ArtistABC",
+        "InterpretABC",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "InterprèteABC",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {
         "Play all",
         "Spiele alles",
         "",                                       // TODO
@@ -1006,6 +1023,23 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
         "Titre",                                  // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {
+        "TitleABC",
+        "TitelABC",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "TitreABC",                                  // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO

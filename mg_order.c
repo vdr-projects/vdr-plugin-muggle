@@ -103,7 +103,7 @@ ltos (long l)
 class mgKeyNormal : public mgKey {
 	public:
 		mgKeyNormal(const mgKeyNormal& k);
-			mgKeyNormal(const mgKeyTypes kt, string table, string field);
+		mgKeyNormal(const mgKeyTypes kt, string table, string field);
 		virtual mgParts Parts(mgmySql &db,bool orderby=false) const;
 		string value() const;
 		string id() const;
@@ -120,6 +120,15 @@ class mgKeyNormal : public mgKey {
 		mgKeyTypes m_kt;
 		string m_table;
 		string m_value;
+};
+
+class mgKeyABC : public mgKeyNormal {
+	public:
+		mgKeyABC(const mgKeyNormal& k) : mgKeyNormal(k) {}
+		mgKeyABC(const mgKeyTypes kt, string table, string field) : mgKeyNormal(kt,table,field) {}
+		virtual string expr() const { return "substring("+mgKeyNormal::expr()+",1,1)"; }
+	protected:
+		//void AddIdClause(mgmySql &db,mgParts &result,string what) const;
 };
 
 class mgKeyDate : public mgKeyNormal {
@@ -962,7 +971,9 @@ ktGenerate(const mgKeyTypes kt)
 		case keyFolder3:result = new mgKeyFolder3;break;
 		case keyFolder4:result = new mgKeyFolder4;break;
 		case keyArtist: result = new mgKeyNormal(kt,"tracks","artist");break;
+		case keyArtistABC: result = new mgKeyABC(kt,"tracks","artist");break;
 		case keyTitle: result = new mgKeyNormal(kt,"tracks","title");break;
+		case keyTitleABC: result = new mgKeyABC(kt,"tracks","title");break;
 		case keyTrack: result = new mgKeyTrack;break;
 		case keyDecade: result = new mgKeyDecade;break;
 		case keyAlbum: result = new mgKeyAlbum;break;
@@ -992,7 +1003,9 @@ ktName(const mgKeyTypes kt)
 		case keyFolder3: result = "Folder3";break;
 		case keyFolder4: result = "Folder4";break;
 		case keyArtist: result = "Artist";break;
+		case keyArtistABC: result = "ArtistABC";break;
 		case keyTitle: result = "Title";break;
+		case keyTitleABC: result = "TitleABC";break;
 		case keyTrack: result = "Track";break;
 		case keyDecade: result = "Decade";break;
 		case keyAlbum: result = "Album";break;

@@ -180,3 +180,4 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 
 NEXT VERSION
 - killing vdr could still result in an empty muggle.state. Fixed.
+- new sorting fields: Only by the first character of artist or title

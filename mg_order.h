@@ -39,6 +39,8 @@ enum mgKeyTypes {
 	keyFolder4,
 	keyCreated,
 	keyModified,
+	keyArtistABC,
+	keyTitleABC,
 	keyCollection,
 	keyCollectionItem,
 };
