@@ -1,76 +1,73 @@
-PLAYLIST 
----------
-OK       --// should start playing in the future
-BACK     --
-
-UP       select previous item (VDR-mechanism)
-DOWN     select next item   (VDR-mechanism)
-LEFT     selection pg-up    (VDR-mechanism)
-RIGHT    selection pg-down  (VDR-mechanism)
-
-RED      ==>display Tracklist(current filter setting)
-GREEN    ==>DisplayFilter
-Yellow   ==>DisplayTrackInfo(current)
-Blue     ==>DisplayTree( m_root )
-
-FILTER
----------
-
-
-
 TREE
 ---------
-OK       Leaf: ==>DisplayTrackInfo( leaf )
+OK       Leaf: ==>DisplayTrackInfo( leaf ) // TODO
          Node: ==> DisplayTree( child ); // expand
 BACK     ==> DisplayTree( parent ); // collapse
+         ==> on root: return to VDR main menu
 
 UP      select previous item (VDR-mechanism)
-DOWN    select next item   (VDR-mechanism)
-LEFT    selection pg-up    (VDR-mechanism)
-RIGHT   selection pg-down  (VDR-mechanism)
+DOWN    select next item     (VDR-mechanism)
+LEFT    selection pg-up      (VDR-mechanism)
+RIGHT   selection pg-down    (VDR-mechanism)
 
 RED     add all tracks under currently highlighted node to playlist
-GREEN   ==>DisplayFilter
-YELLOW  ==>DisplayPlaylist();
-BLUE    --	
-        // Should be in the future: Collapse all and goto default View
+GREEN   ==>Switch to next tree view(TODO?)
+YELLOW  ==>Cycle to playlist view
+BLUE    ==>Enter tree view submenu
 
+PLAYLIST 
+---------
+OK       -- // should start playing in the future
+BACK     -- 
 
-TRACKS (Tracklist)
-------------------
-        // Andi, ich kapier es nicht. Was unterscheidet Tracks from Tree?
-        // IMHO ist Tracks eine Sonderform von Tree, der nur Leaves hat, oder?
-OK      DisplayTrackInfo(current)
-BACK    ==> DisplayTree( parent ); // collapse
+UP       select previous item (VDR-mechanism)
+DOWN     select next item     (VDR-mechanism)
+LEFT     selection pg-up      (VDR-mechanism)
+RIGHT    selection pg-down    (VDR-mechanism)
 
-UP      select previous item (VDR-mechanism)
-DOWN    select next item   (VDR-mechanism)
-LEFT    selection pg-up    (VDR-mechanism)
-RIGHT   selection pg-down  (VDR-mechanism)
+RED      ==>Edit playlist (mark/move, VDR mechanism) TODO
+GREEN    ==>Playlist -> Track info -> Album info -> Playlist
+YELLOW   ==>Cycle to filter view
+BLUE     ==>Playlist submenu
 
-RED	add currend item to playlist
-GREEN	==>DisplayFilter
-YELLOW	==>DisplayPlaylist();
-BLUE    ==>DisplayTree(root)
+TRACKINFO (TODO)
+---------
+OK      PlayItem (jump/skip to item? useful choice?)
+BACK	go to previous view (?)
 
-TRACKINFO (previous == TREE || previous == TRACKS )
-------------------
-OK      PlayItem
-BACK	go to previous view (==> DisplayTracklist || ==>DisplayTree )
+RED     ??
+GREEN	==>Album info (TODO)
+YELLOW	==>Cycle to filter view
+BLUE     ==>Playlist submenu
 
-RED     add currend item to playlist
-GREEN	==>DisplayFilter
-YELLOW	==>DisplayPlaylist();
-BLUE    --
+ALBUMINFO
+---------
+OK      PlayItem (track? album?)
+BACK	==>DisplayPlaylist(); (?)
 
-TRACKINFO (previous == playlist )
-------------------
-OK      PlayItem
-BACK	==>DisplayPlaylist();
+RED     ??
+GREEN	==>Cycle to playlist view
+YELLOW	==>Cycle to filter view
+BLUE     ==>Playlist submenu
 
-RED     --
-GREEN	==>DisplayFilter
-YELLOW	==>DisplayPlaylist(); // also on back
-BLUE    --
+FILTER
+------
+OK	Confirm entry (really? VDR mechanism)
+BACK	?
 
+UP	Previous filter entry (VDR mechanism)
+DOWN	Next filter entry (VDR mechanism)
 
+RED     Perform query, display according to view type entry (TODO)
+GREEN	==>Load other filter
+YELLOW	==>Cycle to tree view
+BLUE    ==>Filter submenu
+
+/************************************************************
+ *
+ * $Log: menu.txt,v $
+ * Revision 1.3  2004/02/08 10:48:44  LarsAC
+ * Made major revisions in OSD behavior
+ *
+ *  
+ ************************************************************/
