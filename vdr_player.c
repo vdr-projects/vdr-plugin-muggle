@@ -643,7 +643,11 @@ mgDebug( 1, "mgPCMPlayer::Action: music file is %s", filename.c_str() );
 
         if (m_pframe)
         {
+#if VDRVERSNUM >= 10318
+            int w = PlayPes (p, pc);
+#else
             int w = PlayVideo (p, pc);
+#endif
             if (w > 0)
             {
                 p += w;
@@ -1111,7 +1115,11 @@ pes_header[6] = 0x0f;
 }
 
 memcpy(&pes_header[6 + ptslen], data, payload_size);
+#if VDRVERSNUM >= 10318
+PlayPes(pes_header, 6 + ptslen + payload_size);
+#else
 PlayVideo(pes_header, 6 + ptslen + payload_size);
+#endif
 
 len -= payload_size;
 data += payload_size;
@@ -1325,7 +1333,11 @@ mgPlayerControl::ShowContents ()
             {
                 int len = player->getCurrent ()->getDuration ();
                 asprintf (&buf, "Length:\t%s",
+#if VDRVERSNUM >= 10318
+                    *IndexToHMSF (SecondsToFrames (len)));
+#else
                     IndexToHMSF (SecondsToFrames (len)));
+#endif
                 m_menu->SetItem (buf, 4, false, false);
                 free (buf);
             }
