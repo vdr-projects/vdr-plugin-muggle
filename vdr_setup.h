@@ -52,6 +52,9 @@ public:
   bool GdCompatibility;
   char *ToplevelDir;
 
+  bool trackview;
+  bool progressview;
+
   char PathPrefix[MAX_STRING_LEN];
 
  public:
