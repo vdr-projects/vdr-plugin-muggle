@@ -1,0 +1,73 @@
+PLAYLIST 
+---------
+OK       --// should start playing in the future
+BACK     --
+
+UP       select previous item (VDR-mechanism)
+DOWN     select next item   (VDR-mechanism)
+LEFT     selection pg-up    (VDR-mechanism)
+RIGHT    selection pg-down  (VDR-mechanism)
+
+RED      ==>display Tracklist(current filter setting)
+GREEN    ==>DisplayFilter
+Yellow   ==>DisplayTrackInfo(current)
+Blue     ==>DisplayTree( m_root )
+
+FILTER
+---------
+
+
+
+TREE
+---------
+OK       Leaf: ==>DisplayTrackInfo( leaf )
+         Node: ==> DisplayTree( child ); // expand
+BACK     ==> DisplayTree( parent ); // collapse
+
+UP      select previous item (VDR-mechanism)
+DOWN    select next item   (VDR-mechanism)
+LEFT    selection pg-up    (VDR-mechanism)
+RIGHT   selection pg-down  (VDR-mechanism)
+
+RED     add all tracks under this node to playlist
+GREEN   ==>DisplayFilter
+YELLOW  ==>DisplayPlaylist();
+BLUE    --	
+
+
+TRACKS (Tracklist)
+------------------
+OK      DisplayTrackInfo(current)
+BACK    ==> DisplayTree( parent ); // collapse
+
+UP      select previous item (VDR-mechanism)
+DOWN    select next item   (VDR-mechanism)
+LEFT    selection pg-up    (VDR-mechanism)
+RIGHT   selection pg-down  (VDR-mechanism)
+
+RED	add currend item to playlist
+GREEN	==>DisplayFilter
+YELLOW	==>DisplayPlaylist();
+BLUE    ==>DisplayTree(root)
+
+TRACKINFO (previous == TREE || previous == TRACKS )
+------------------
+OK      PlayItem
+BACK	go to previous view (==> DisplayTracklist || ==>DisplayTree )
+
+RED     add currend item to playlist
+GREEN	==>DisplayFilter
+YELLOW	==>DisplayPlaylist();
+BLUE    --
+
+TRACKINFO (previous == playlist )
+------------------
+OK      PlayItem
+BACK	==>DisplayPlaylist();
+
+RED     --
+GREEN	==>DisplayFilter
+YELLOW	==>DisplayPlaylist(); // also on back
+BLUE    --
+
+
