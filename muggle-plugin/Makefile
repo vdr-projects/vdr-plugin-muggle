@@ -54,6 +54,7 @@ MIFLAGS += -I/usr/include/taglib -lmysqlclient
 OBJS = $(PLUGIN).o i18n.o vdr_menu.o mg_database.o mg_content_interface.o gd_content_interface.o mg_tools.o mg_media.o mg_filters.o mg_playlist.o vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o vdr_setup.o vdr_decoder_ogg.o
 
 LIBS = -lmad -lmysqlclient -lvorbisfile -lvorbis
+MILIBS = -lmysqlclient -ltag
 
 ### Targets:
 
@@ -78,7 +79,7 @@ libvdr-$(PLUGIN).so: $(OBJS)
 	@cp $@ $(LIBDIR)/$@.$(VDRVERSION)
 
 mugglei: mg_tools.o mugglei.o
-	$(CXX) $(CXXFLAGS) $^ $(LIBS) -ltag -o $@
+	$(CXX) $(CXXFLAGS) $^ $(MILIBS) -o $@
 
 dist: clean
 	@-rm -rf $(TMPDIR)/$(ARCHIVE)
