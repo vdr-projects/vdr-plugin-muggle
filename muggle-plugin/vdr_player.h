@@ -122,6 +122,9 @@ public:
   //! \brief hide the osd, if present
   void Hide();
 
+  //! \brief hide the osd, if present
+  void InternalHide();
+
   //! \brief process key events
   eOSState ProcessKey(eKeys key);
 

@@ -892,7 +892,7 @@ mgPlayerControl::~mgPlayerControl()
       m_szLastShowStatusMsg = NULL;
     }
 
-  Hide();
+  InternalHide();
   Stop();
 }
 
@@ -1047,11 +1047,19 @@ void mgPlayerControl::ShowProgress()
     }
   else
     {
-      Hide();
+      InternalHide();
     }
 }
 
 void mgPlayerControl::Hide()
+{
+  m_visible = false;
+  
+  InternalHide();
+}
+
+
+void mgPlayerControl::InternalHide()
 {
   if( m_has_osd )
     {
@@ -1103,7 +1111,7 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 	case kStop:
 	case kBlue:
 	  {
-	    Hide();
+	    InternalHide();
 	    Stop();
 	    
 	    return osEnd;
@@ -1117,7 +1125,7 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 	  } break;
 	case kBack:
 	  {
-	    Hide();
+	    InternalHide();
 	    Stop();
 
 	    return osEnd;
