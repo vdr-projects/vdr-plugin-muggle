@@ -868,7 +868,9 @@ mgPlayerControl::mgPlayerControl( mgPlaylist *plist )
 {
   MGLOG( "mgPlayerControl::mgPlayerControl" );
 
+#if VDRVERSNUM >= 10307
   m_display = NULL;
+#endif
   m_visible = false;
   m_has_osd = false;
 }
