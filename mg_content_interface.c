@@ -6,24 +6,22 @@
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  Responsible author: $Author$
  *
- * Implements main classes of for content items and interfaces to SQL databases
+ * Implements main classes of for content items and abstract interfaces to media access
  *
  * This file implements the following classes 
- * - GdTracklist    a playlist
- * - mgGdTrack       a single track (content item). e.g. an mp3 file
- * - mgSelection   a set of tracks (e.g. a database subset matching certain criteria)
+ *   - mgContentItem
+ *   - mgTracklist
+ *   - mgSelectionTreeNode
  */
 #define DEBUG
 
 #include "mg_content_interface.h"
 #include "mg_tools.h"
 
-#define DUMMY
+using namespace std;
 
 //! \brief a special item representing an undefined state
 mgContentItem mgContentItem::UNDEFINED = mgContentItem();
-
-using namespace std;
 
 mgTracklist::mgTracklist()
 {
@@ -55,7 +53,7 @@ unsigned int mgTracklist::getNumItems()
 
 void mgTracklist::shuffle()
 {
-  random_shuffle(m_list.begin(),m_list.end ());
+  random_shuffle( m_list.begin(), m_list.end () );
 }
 
 void mgTracklist::sortBy(int col, bool direction)
@@ -86,8 +84,6 @@ string mgTracklist::getLabel(unsigned int position, const string separator)
 	item = *( m_list.begin() + position );
       }     
 
-    mgDebug( 1, "mgTracklist::getLabel: Starting to iterate columns." );
-   
     for( vector<int>::iterator iter = m_columns.begin();
 	 iter != m_columns.end(); iter++ )
       {
@@ -95,7 +91,6 @@ string mgTracklist::getLabel(unsigned int position, const string separator)
 	  {
 	    label += separator;
 	  }
-	mgDebug( 1, "mgTracklist::getLabel: obtaining label from item %d", *iter );
 	label += item->getLabel(*iter);
       }
     return label;
@@ -129,18 +124,19 @@ bool mgTracklist::remove(unsigned int position)
 
 int mgTracklist::remove(mgContentItem* item) 
 {
-    int retval = 0;
-    vector<mgContentItem*>::iterator iter;
-    for(iter=m_list.begin(); iter != m_list.end (); iter++)
+  int retval = 0;
+  vector<mgContentItem*>::iterator iter;
+  
+  for( iter = m_list.begin(); iter != m_list.end (); iter++ )
     {
-	     if(*iter == item) 
-	     {
-		 m_list.erase(iter);
-		 retval++;
-		 break;
-	     }
+      if( *iter == item ) 
+	{
+	  m_list.erase(iter);
+	  retval++;
+	  break;
+	}
     }
-    return retval;
+  return retval;
 }
 
 mgSelectionTreeNode::mgSelectionTreeNode(MYSQL db, int view)
@@ -173,7 +169,6 @@ mgSelectionTreeNode::~mgSelectionTreeNode()
 
 mgSelectionTreeNode*  mgSelectionTreeNode::getParent()
 {
-  // TODO: why 100?
   if (m_view < 100 || m_level > 1) 
     {
       return  m_parent;
@@ -206,26 +201,26 @@ vector<mgSelectionTreeNode*> &mgSelectionTreeNode::getChildren()
 
 string mgSelectionTreeNode::getID()
 {
-    return m_id;
+  return m_id;
 }
 
 string mgSelectionTreeNode::getLabel()
 {
-    return m_label;
+  return m_label;
 }
 
 string mgSelectionTreeNode::getLabel(int n)
 {
-    mgSelectionTreeNode* node = this;
-    int d = m_level;
-    while(n < d)
-      {
-	// TODO: check for NULL
-	node = node->m_parent;
-	d--;
-      }
-    
-    return node->m_label;
+  mgSelectionTreeNode* node = this;
+  int d = m_level;
+  while(n < d)
+    {
+      // TODO: check for NULL
+      node = node->m_parent;
+      d--;
+    }
+  
+  return node->m_label;
 } 
 
 string mgSelectionTreeNode::getRestrictions()
