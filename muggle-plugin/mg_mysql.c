@@ -11,6 +11,7 @@
 #include "mg_tools.h"
 
 #include <assert.h>
+#include <stdio.h>
 #include <stdarg.h>
 #include <errno.h>
 #include <sys/stat.h>
