@@ -37,9 +37,11 @@ parameters are descibed in Section 5.
 The plugin currently runs on versions 1.3.17- of VDR (including 1.2.6). It also compiles on 1.3.18 
 but your mileage may vary. In addition, the following pieces of software are required:
 
- - mySQL server (tested with 4.0.18) (Debian packages mysql-server, mysql-client) - mySQL client libraries
+ - mySQL client libraries
    (Debian package libmysqlclient-dev or 
     http://www.mysql.org)
+ - mySQL server (tested with 4.0.18) (Debian packages mysql-server, mysql-client)
+    only needed, if you want to run the database server on a remote machine
  - libmad (for mp3 decoding)
    (Debian package libmad0-dev or 
     http://www.underbit.com/products/mad/)
@@ -72,9 +74,23 @@ Establish a symlink as you would for other plugins:
    ln -s muggle-0.1.1 muggle
 \endverbatim
 
-Adapt the Makefile to your system. Define HAVE_VORBIS and/or HAVE_FLAC and adapt the LIBS variable accordingly.
+Adapt the Makefile to your system. Define HAVE_VORBIS and/or HAVE_FLAC and adapt
+the LIBS variable accordingly.
 
-Within the VDR main directory (e.g. /usr/local/src/VDR) issue
+NOTE: By default, muggle will be built using the embedded mysql library so that it is 
+not required to install further packages or run additional services. If you want to use
+the remote server as in previous versions, you have to define the variable HAVE_SERVER
+in the Makefile by uncommenting the corresponding line.
+
+NOTE: If you have not installed the mysql server package on your machine the files
+containing error messages for MySQL you will see an error message like this:
+
+050306  9:29:14 Can't find messagefile '/usr/share/mysql/english/errmsg.sys'
+050306  9:29:14 Aborting
+
+In this case you need to obtain these files and put them there.
+
+Then, within the VDR main directory (e.g. /usr/local/src/VDR) issue
 
 \verbatim
    make plugins
@@ -83,106 +99,68 @@ Within the VDR main directory (e.g. /usr/local/src/VDR) issue
 This should build all relevant stuff. If you have difficulties, check that required libraries are 
 in the library directories stated in the muggle Makefile.
 
-\section import IMPORT
+Note: On my Debian sarge system, I had difficulties because a proper symlink for libwrap.so was
+missing. Check this in case the compiler complains about a missing -lwrap. 
 
-The import is done in two steps: First, a database is created and initialized with proper data structures (so-called schema).
-Then, these data structures are filled from the ID3 tags of your music tracks.
+\section SET UP MUGGLE WITH EMBEDDED MYSQL
 
-\subsection dbsetup Setup Database
+The step of setting up the database and importing music has been simplified a lot
+for Muggle using the embedded MySQL server. When starting up muggle the first time
+it will determine that the database does not exist and will ask, whether to
+create the database. Confirm this with Ok. 
+
+After successfully creating the database, muggle will query whether to import music. 
+Confirm this question with Ok, too. Muggle will now recursively descend into the
+directories below the music directory specified with the -t option on the command line.
+Once muggle is running, you can import new tracks and read updated tags by a command
+in the setup menu. The use of mugglei is still possible, but only while VDR is not
+running (because muggle will then block the use of the database).
+
+NOTE: The embedded MySQL server cannot be used by other programs. The use of the
+GiantDisc web interface for example is not possible. 
+
+\section SET UP MUGGLE WITH REMOTE MYSQL
+
+If you already have a MySQL server running in your network (e.g. as a basis
+for a webserver) or want to access the music database with other programs
+(e.g. the GiantDisc web interface) you may be interested in using
 
 This step can be done on the database server or on some other client machine.
-Within the directory scripts there are a few helpful files to support setting
-up the database. Change into that directory:#
+The scripts in the directory scripts is no longer needed. Instead, mugglei can
+now also create new databases and provide basic information about existing languages,
+genres etc. A small utility called 'mugglei' to administer the database has been
+created along with the plugin. Run
 
 \verbatim
-   cd scripts
+  mugglei -c 
 \endverbatim
 
-The first step is to essentially create the database:
+to create a database and initialize the tables. This replaces the series of commands
+needed in former commands. If you want to change the server or database name look at
+the command line arguments (execute mugglei without arguments to see a list).
 
-\verbatim
-   mysql -u root -p < createdb.mysql
-\endverbatim
+\subsection importremote Import for Muggle with remote MySQL
 
-You will need to enter your root password that you choose during mySQL installation.
-Next, we generate the database tables (schema):
-
-\verbatim
-   mysql -u root -p < createtables.mysql 
-\endverbatim
-
-Further, initial data about known languages, genres, sources and musictypes is fed into the database:
-Execute these commands on a single line, the \ for the linebreak ist just for presentation purposes here.
-
-\verbatim
-   echo " use GiantDisc; load data local infile 'genres.txt' into table genre;" | \
-      mysql -u root -p  --local-infile=1
-
-   echo "use GiantDisc; load data local infile 'languages.txt' into table language;" | \
-      mysql -u root --local-infile=1
-
-   echo "use GiantDisc; load data local infile 'musictypes.txt' into table musictype;" | \
-      mysql -u root --local-infile=1
-
-   echo "use GiantDisc; load data local infile 'sources.txt' into table source;" | \
-      mysql -u root --local-infile=1
-\endverbatim
-
-You can find the sequence of commands in the file scripts/make-empty-db. Use it at your own luck after making necessary modification (program paths, database names, servers, users, etc.).
-
-Please note, that the scripts and commands above are quite basic in terms of security (e.g. no
-password set for the vdr user, no proper selection of privileges). You may want to spend some
-time reading the mySQL documentation in order to set up a proper configuration. Especially when
-VDR and mySQL will run on different machines you'll have to invest some time into mySQL
-networking and access rights.
-
-If you want your database name to be different than 'GiantDisc' you will need to adapt the name
-in the files createdb.mysql and createtables.mysql and in the commands above. Now your database
-is ready for import.
-
-\subsection importfile Import Music
-
-The next step is to feed all music information into the database. There is a small tool called 'mugglei'
-in the muggle main directory. It connects to the database, evaluates ID3 tags from a file, and writes
-the tags into the database. It runs on just one file, so you need some more effort using the Unix command
-'find' to take all files into consideration. 
+The next step is to feed all music information into the database. To accomplish this, mugglei
+connects to the database, evaluates ID3 tags from a file, and writes the tags into the 
+database. Since release 0.1.4 mugglei recursively descends a file system hierarchy so that 
+the use of find is no longer needed.
 
 For this step, it is helpful, that all music files are somehow gathered under a toplevel directory.
 It does not matter whether there are further subdirectories which organize files into genres, artists,
 album or whatever. If this is not the case, you may want to take some time to do this. Read on before
-you start
-
-You probably do not want to import all files in one go: albums on which tracks of various artists are found
-(samplers) require different treatment than files of just one artist. What I did: all samplers are collected
-below a special subdirectory "Assorted". Import is then run separately for those tracks. There has been discussion
-about this and ideas for better solutions are welcome.
-
-For now, let's assume your music tracks are located in /home/music and samplers are in /home/music/Assorted.
-
-First, import the files in Assorted. This requires the flag -a to mugglei. Further flags -h, -n, -u, and -p
-specify database host, name, user and password, respectively. The filename to import is given using the -f
-directive. Using 'find' you can import all files for assorted albums with a command like:
+you start. Executing 
 
 \verbatim
-   find Assorted -name '*' -type f -exec mugglei -a -f {} \;
+   mugglei *
 \endverbatim
 
-For reasons of simplicity, the arguments -h, -n, -u and -p are not shown. You will need them if the default
-values do not apply or modify the source code accordingly (beginning of function main). Also, make sure 
-that either mugglei is on your path or specify an absolute or relative path in the above command line.
+will import all music files (*.mp3., *.ogg, *.flac) below the current directory. Obviously,
+you may need additional options for the database host, user, etc.
+It is important that you perform various import steps from the same location so the 
+filenames are relative to exactly the same directory (e.g. /home/music in the example case).
 
-For "regular" albums, the following command may be helpful:
-
-\verbatim
-   find * -path 'Assorted' -prune -o -type f -exec mugglei -f {} \;
-\endverbatim
-
-It is important that you perform all these steps from the same location so the filenames are relative to
-exactly the same directory (e.g. /home/music in the example case).
-
-Speed should not be an issue: on my machine, it takes about 10 secs to run the import of 60 assorted
-albums with more than 600 tracks. Further 1200 tracks or so require 20 more secs. This depends on machine
-configuration, of course.
+NOTE: The options -f and -a are no longer needed. mugglei should now automatically do the right thing.
 
 If a track has no ID3 tags, the following defaults will be applied:
 
@@ -194,8 +172,13 @@ If a track has no ID3 tags, the following defaults will be applied:
 
 \section config MUGGLE CONFIGURATION
 
-Muggle uses a small set of command line parameters in order to control 
-the interaction with the mySQL server. Let's look at an example:
+In case you use mugglei with the embedded MySQL server the most important
+options are -d DIR (controls where the database file is created) and
+-t DIR (controls where the music resides).
+
+When using the remote MySQL server, muggle uses a small set of command line
+parameters in order to control the interaction with the mySQL server. Let's
+look at an example:
 
 \verbatim
   -P'muggle -h localhost -u vdr -n GiantDisc -t/home/music'
@@ -208,6 +191,9 @@ of passwords, but restrict database acccess on a server basis.
 The -t argument specifies the top level directory of the music files. 
 On a local installation, this is the directory in which you executed the
 import steps (Chapter 4.2).
+
+In case you want to use Muggle with the embedded MySQL server, specify the
+directory to place the database into with the option -d DIR.
 
 \section quickuse QUICK INTRO
 

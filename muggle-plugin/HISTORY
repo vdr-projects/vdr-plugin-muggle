@@ -135,7 +135,7 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
   die Aufrufe mysql_server_init/end zu entfernen. Das README hat schon
   immer mindestens 4.0.18 empfohlen.
 
-2005-03-XX: Version 0.1.4-BETA
+2005-03-06: Version 0.1.4-BETA
 - embedded mysql server as default. If you want to use an external server
   as before, read the README file
 - If the embedded version find the database missing, it offers to create
