@@ -164,6 +164,8 @@ void update_db( long uid, std::string filename )
       trackno = tag->track();
       genre   = tag->genre();
 
+      TagLib::String gid = find_genre_id( genre );
+
       TagLib::AudioProperties *ap = f.audioProperties();
       int len      = ap->length();     // tracks.length
       int bitrate  = ap->bitrate();    // tracks.bitrate
@@ -257,18 +259,18 @@ void update_db( long uid, std::string filename )
 	  
 	  mgSqlWriteQuery( db,	"UPDATE tracks SET artist=\"%s\", title=\"%s\", year=\"%d\","
 			   "sourceid=\"%s\", mp3file=\"%s\", length=%d, bitrate=\"%d\","
-			   "samplerate=%d, channels=%d WHERE id=%d", 
+			   "samplerate=%d, channels=%d, genre1=\"%s\" WHERE id=%d", 
 			   artist.toCString(), title.toCString(), year, 
 			   cddbid.toCString(), filename.c_str(), len, bitrate,
-			   sample, channels, uid );
+			   sample, channels, gid.toCString(), uid );
 	}
       else
 	{ // the entry does not exist, create it
 	  mgSqlWriteQuery( db,"INSERT INTO tracks (artist,title,genre1,genre2,year,"
-			   "sourceid,tracknb,mp3file,length,bitrate,samplerate,channels)"
-			   " VALUES (\"%s\", \"%s\", \"\", \"\", %d, \"%s\", %d, \"%s\", %d, \"%d\", %d, %d)",
+			   "sourceid,tracknb,mp3file,length,bitrate,samplerate,channels,genre1)"
+			   " VALUES (\"%s\", \"%s\", \"\", \"\", %d, \"%s\", %d, \"%s\", %d, \"%d\", %d, %d, %s)",
 			   artist.toCString(), title.toCString(), year, cddbid.toCString(), 
-			   trackno, filename.c_str(), len, bitrate, sample, channels );
+			   trackno, filename.c_str(), len, bitrate, sample, channels, gid.toCString() );
 
 #ifdef VERBOSE
 	    std::cout << "-- TAG --" << std::endl;
@@ -373,6 +375,10 @@ int main( int argc, char *argv[] )
 	  {
 	    host = optarg;
 	  } break;
+	case 'n':
+	  {
+	    dbname = optarg;
+	  } break;
 	case 'u':
 	  {
 	    user = optarg;
@@ -380,10 +386,6 @@ int main( int argc, char *argv[] )
 	case 'p':
 	  {
 	    pass = optarg;
-	  } break;
-	case 'd':
-	  {
-	    dbname = optarg;
 	  } break;
 	case 'a':
 	  {
