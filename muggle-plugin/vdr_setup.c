@@ -2,12 +2,12 @@
  * \file vdr_setup.c
  * \brief A setup class for a VDR media plugin (muggle)
  *
- * \version $Revision: 1.2 $
- * \date    $Date: 2004/05/28 15:29:19 $
+ * \version $Revision: 1.3 $
+ * \date    $Date: 2004/07/25 21:33:35 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  Responsible author: $Author: lvw $
  *
- * $Id: vdr_setup.c,v 1.2 2004/05/28 15:29:19 lvw Exp $
+ * $Id: vdr_setup.c,v 1.3 2004/07/25 21:33:35 lvw Exp $
  *
  * Partially adapted from 
  * MP3/MPlayer plugin to VDR (C++)
@@ -67,4 +67,5 @@ mgSetup::mgSetup()
   TargetLevel = DEFAULT_TARGET_LEVEL;
   LimiterLevel = DEFAULT_LIMITER_LEVEL;
   Only48kHz = 0;
+  ToplevelDir = "/mnt/music/";
 }

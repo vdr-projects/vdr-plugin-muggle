@@ -2,10 +2,10 @@
  * \file   mg_playlist.c
  * \brief  defines functions to be executed on playlists for the vdr muggle plugindatabase
  *
- * \version $Revision: 1.4 $
- * \date    $Date: 2004/07/09 12:22:00 $
+ * \version $Revision: 1.5 $
+ * \date    $Date: 2004/07/25 21:33:35 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: LarsAC $
+ * \author  Responsible author: $Author: lvw $
  *
  * This file implements the class mgPlaylist which maintains a playlist
  * and supports editing (e.g. adding or moving tracks), navigating it
@@ -14,6 +14,8 @@
  */
 #ifndef __MG_PLAYLIST
 #define __MG_PLAYLIST
+
+#include <string>
 
 #include "mg_content_interface.h"
 
@@ -141,7 +143,7 @@ public:
   virtual bool storePlaylist()=0;
 
   //! \brief export the playlist in m3u format
-  virtual void exportM3U( const char *m3u_file );
+  virtual bool exportM3U( std::string m3u_file );
 };
 
 #endif

@@ -1,10 +1,10 @@
 /*! \file  content_interface.cpp
  *  \brief  Data Objects for content (e.g. mp3 files, movies) for the vdr muggle plugindatabase
  *
- * \version $Revision: 1.23 $
- * \date    $Date: 2004/07/06 00:20:51 $
+ * \version $Revision: 1.24 $
+ * \date    $Date: 2004/07/25 21:33:35 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: MountainMan $
+ * \author  Responsible author: $Author: lvw $
  *
  * Implements main classes of for content items and interfaces to SQL databases
  *
@@ -330,8 +330,7 @@ mgGdTrack::~mgGdTrack()
 bool mgGdTrack::readData()
 {
     MYSQL_RES	*result;
-    int	nrows;
-    int	nfields;
+    int	nrows, nfields;
 
     // note: this does not work with empty album or genre fields
     result = mgSqlReadQuery(&m_db,
@@ -346,6 +345,7 @@ bool mgGdTrack::readData()
 
     nrows   = mysql_num_rows(result);
     nfields = mysql_num_fields(result);
+
     if(nrows == 0)
     {
       mgWarning("No entries found \n");
@@ -353,30 +353,33 @@ bool mgGdTrack::readData()
     }
     else 
     {
-	if (nrows >1 )
+	if( nrows > 1 )
 	{
-	  mgWarning("More than one entry found");
+	  mgWarning("mgGdTrack::readData: More than one entry found. Using first entry.");
 	}
-	MYSQL_ROW	row;
-	
-	row = mysql_fetch_row(result);
-	m_artist = row[0];
-	m_album = row[1];
-	m_title = row [2];
-	m_mp3file =  row [3];
-	m_genre = row [4]; 
-	if(sscanf(row [5], "%d", &m_year) !=1)
+	MYSQL_ROW row = mysql_fetch_row(result);
+
+	m_artist  = row[0];
+	m_album   = row[1];
+	m_title   = row[2];
+	m_mp3file = row[3];
+	m_genre   = row[4]; 
+
+	if( sscanf( row[5], "%d", &m_year) != 1 )
 	{
 	  mgError("Invalid year '%s' in database", row [5]);
 	}
-	if(sscanf(row [6], "%d", &m_rating) !=1)
+
+	if( row[6] && sscanf( row[6], "%d", &m_rating ) != 1 )
 	{
-	  mgError("Invalid rating '%s' in database", row [6]);
+	  mgError( "Invalid rating '%s' in database", row [6] );
 	}
-	if(sscanf(row [7], "%d", &m_length) !=1)
+
+	if( row[7] && sscanf( row[7], "%d", &m_length) != 1 )
 	{
-	  mgError("Invalid duration '%s' in database", row [7]);
+	  mgError( "Invalid duration '%s' in database", row [7]);
 	}
+
     }
     m_retrieved = true;
     return true;
@@ -1392,6 +1395,9 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.24  2004/07/25 21:33:35  lvw
+ * Removed bugs in finding track files and playlist indexing.
+ *
  * Revision 1.23  2004/07/06 00:20:51  MountainMan
  * loading and saving playlists
  *

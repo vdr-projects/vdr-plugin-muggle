@@ -1,8 +1,8 @@
 /*! \file  mg_content_interface.c
  *  \brief  Data Objects for content (e.g. mp3 files, movies) for the vdr muggle plugin
  *
- * \version $Revision: 1.5 $
- * \date    $Date: 2004/05/28 15:29:18 $
+ * \version $Revision: 1.6 $
+ * \date    $Date: 2004/07/25 21:33:35 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  Responsible author: $Author: lvw $
  *
@@ -104,7 +104,6 @@ void mgTracklist::sortBy(int col, bool direction)
  ****************************************************************************/
 void mgTracklist::setDisplayColumns(vector<int> cols)
 {    
-
   m_columns = cols;
 }
 
@@ -124,36 +123,38 @@ unsigned int mgTracklist::getNumColumns()
  * \brief creates the label string for an item
  * 
  * The list can create a label with different fields (columns).
- * The fields used in the list and their order is set by the function
-  using the function setDisplayColumns
- * function getLabel().
+ * The fields used in the list and their order is set using the function setDisplayColumns
+ * 
  * This function creates a string from these columns, separated by the string
  * 'separator'
  * in the label and their order
  ****************************************************************************/
 string mgTracklist::getLabel(unsigned int position, const string separator)
 {
-    string label ="";
+    string label = "";
     mgContentItem* item;
 
-    if(position >= m_list.size())
+    if( position >= m_list.size() )
+      {
 	return "";
-
+      }
     else 
-    {
-	item = *(m_list.begin()+position);
-    }
-     
+      {
+	item = *( m_list.begin() + position );
+      }     
+
+    mgDebug( 1, "mgTracklist::getLabel: Starting to iterate columns." );
    
     for( vector<int>::iterator iter = m_columns.begin();
 	 iter != m_columns.end(); iter++ )
-    {
+      {
 	if( iter != m_columns.begin() )
-	{
+	  {
 	    label += separator;
-	}
+	  }
+	mgDebug( 1, "mgTracklist::getLabel: obtaining label from item %d", *iter );
 	label += item->getLabel(*iter);
-    }
+      }
     return label;
 }
   
@@ -302,6 +303,9 @@ string mgSelectionTreeNode::getRestrictions()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: mg_content_interface.c,v $
+ * Revision 1.6  2004/07/25 21:33:35  lvw
+ * Removed bugs in finding track files and playlist indexing.
+ *
  * Revision 1.5  2004/05/28 15:29:18  lvw
  * Merged player branch back on HEAD branch.
  *

@@ -2,12 +2,12 @@
  * \file   vdr_menu.c
  * \brief  Implements menu handling for browsing media libraries within VDR
  *
- * \version $Revision: 1.23 $
- * \date    $Date: 2004/07/09 12:22:00 $
+ * \version $Revision: 1.24 $
+ * \date    $Date: 2004/07/25 21:33:35 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: LarsAC $
+ * \author  Responsible author: $Author: lvw $
  *
- * $Id: vdr_menu.c,v 1.23 2004/07/09 12:22:00 LarsAC Exp $
+ * $Id: vdr_menu.c,v 1.24 2004/07/25 21:33:35 lvw Exp $
  */
 
 #include <string>
@@ -17,6 +17,8 @@
 
 #include <menuitems.h>
 #include <tools.h>
+#include <config.h>
+#include <plugin.h>
 
 #include "vdr_menu.h"
 #include "vdr_player.h"
@@ -56,7 +58,7 @@ void mgMenuTreeItem::Set()
 // ----------------------- mgMainMenu ----------------------
 
 mgMainMenu::mgMainMenu(mgMedia *media, mgSelectionTreeNode *root, 
-		       mgPlaylist *playlist, cCommands playlist_commands)
+		       mgPlaylist *playlist, cCommands *playlist_commands)
   : cOsdMenu( "" ), m_media(media), m_root(root), 
      m_current_playlist(playlist), m_playlist_commands(playlist_commands)
 {
@@ -135,11 +137,7 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	    {
 	    case kOk:
 	      {
-		mgDebug( 1,  "mgMainMenu: expand and descend" );
-
 		m_history.push_back( Current() );
-		mgDebug( 1, "Remember current node #%i", Current() );
-
 		mgSelectionTreeNode *child = CurrentNode();		
 		DisplayTree( child );
 
@@ -340,7 +338,7 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 		state = osContinue;
 	      };
 	    }
-	 }
+	}
     }
   else if( m_state == PLAYLIST_SUBMENU )
     {
@@ -375,25 +373,35 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 		state = osContinue;
 	      } break;
 	    }
-	  else if( m_state == PLAYLIST_COMMANDS )
-	    {
-	      if( state == osUnknown )
-		{
-		  switch( key )
-		    {
-		    kOk:
-		      {
-			state = Execute();
-		      }
-		    }
-		}
-	    }
 	}
       else if( state == osBack )
 	{
 	  m_state = PLAYLIST;
 	  DisplayPlaylist( m_last_osd_index );
-
+	  
+	  state = osContinue;	  
+	}
+    }
+  else if( m_state == PLAYLIST_COMMANDS )
+    {
+      if( state == osUnknown )
+	{
+	  switch( key )
+	    {
+	    case kOk:
+	      {
+		state = ExecutePlaylistCommand( Current() );
+	      } break;
+	    default:
+	      {
+	      }
+	    }
+	}
+      else if( state == osBack )
+	{
+	  m_state = PLAYLIST_SUBMENU;
+	  DisplayPlaylistSubmenu();
+	  
 	  state = osContinue;	  
 	}
     }
@@ -480,10 +488,7 @@ void mgMainMenu::DisplayTree( mgSelectionTreeNode* node, int select )
       SetButtons();
 
       m_node = node;
-      mgDebug( 1,  "mgBrowseMenu::DisplaySelection: node %s received", node->getLabel().c_str() );
       vector<mgSelectionTreeNode*> children = node->getChildren();
-      
-      mgDebug( 1, "mgBrowseMenu::DisplaySelection: %d elements received", children.size() );
       
       for( vector<mgSelectionTreeNode*>::iterator iter = children.begin();
 	   iter != children.end();
@@ -513,10 +518,7 @@ void mgMainMenu::DisplayTreeSubmenu()
   m_state = TREE_SUBMENU;
 
   Clear();
-  
-  mgDebug( 1, "Creating Muggle tree view submenu" );
   SetButtons();
-
   SetTitle( strcat("Muggle - ",tr("Tree View Commands") ) );
 
   // Add items
@@ -573,6 +575,7 @@ eOSState mgMainMenu::TreeSubmenuAction( int n )
 
 void mgMainMenu::DisplayPlaylist( int index_current )
 {
+  mgDebug( 1,  "mgMainMenu::DisplayPlaylist: entering." );
   m_state = PLAYLIST;
 
   // make sure we have a current playlist
@@ -585,7 +588,7 @@ void mgMainMenu::DisplayPlaylist( int index_current )
                      list->size() ,
                      tr("items") );
   SetTitle( titlestr ); 
-  
+
   for( unsigned int i = 0; i < m_current_playlist->getNumItems(); i++)
     {
       string label =  m_current_playlist->getLabel( i, "   " );
@@ -687,7 +690,7 @@ void mgMainMenu::DisplayPlaylistCommands()
   Display();
 }
 
-eOSState cMenuCommands::ExecutePlaylistCommand( int current, char *parameters )
+eOSState mgMainMenu::ExecutePlaylistCommand( int current )
 {
   cCommand *command = m_playlist_commands->Get( current );
   if( command )
@@ -700,18 +703,17 @@ eOSState cMenuCommands::ExecutePlaylistCommand( int current, char *parameters )
 	  confirmed = Interface->Confirm( buffer );
 	  free( buffer );
         }
-     if( confirmed )
+      if( confirmed )
        {
 	 asprintf( &buffer, "%s...", command->Title() );
 	 Interface->Status( buffer );
 	 Interface->Flush();
 	 free( buffer );
 
-	 char *tmp_m3u_file = AddDirectory( cPlugin::ConfigDirectory("muggle"), "current.m3u" );
+	 string tmp_m3u_file = (char *) AddDirectory( cPlugin::ConfigDirectory("muggle"), "current.m3u" );
 	 m_current_playlist->exportM3U( tmp_m3u_file );
-	 free( tmp_m3u_file );
 
-	 const char *result = command->Execute( tmp_m3u_file );
+	 char *result = (char *)command->Execute( tmp_m3u_file.c_str() );
 
 	 /* What to do? Recode cMenuText (not much)?
 	 if( result )
@@ -719,6 +721,9 @@ eOSState cMenuCommands::ExecutePlaylistCommand( int current, char *parameters )
 	     return AddSubMenu( new cMenuText( command->Title(), result ) );
 	   }
 	 */
+	 
+	 free( result );
+
 	 return osEnd;
        }
     }
@@ -780,9 +785,8 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
       }
     case 5:
       {
-	char *m3u_file = AddDirectory( cPlugin::ConfigDirectory("muggle"), m_current_playlist->getListname() );
+	string m3u_file = AddDirectory( cPlugin::ConfigDirectory("muggle"), m_current_playlist->getListname().c_str() );
 	m_current_playlist->exportM3U( m3u_file );
-	free( m3u_file );
       }
     case 6:
       {
@@ -906,6 +910,9 @@ void mgMainMenu::Play(mgPlaylist *plist)
 /************************************************************
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.24  2004/07/25 21:33:35  lvw
+ * Removed bugs in finding track files and playlist indexing.
+ *
  * Revision 1.23  2004/07/09 12:22:00  LarsAC
  * Untested extensions for exporting plalists
  *
