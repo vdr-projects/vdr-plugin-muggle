@@ -24,7 +24,6 @@
 
 mgSetup the_setup;
 
-char *readline(FILE *f);
 std::string GdFindFile( std::string mp3file, std::string ToplevelDir );
 
 // --- mgMenuSetup -----------------------------------------------------------
@@ -102,23 +101,8 @@ mgSetup::getFilename( std::string basename )
     }
   else
     {
-      return string( ToplevelDir ) + basename;
+      return std::string( ToplevelDir ) + basename;
     }
-}
-
-#define MAXPARSEBUFFER 1024
-
-char *readline(FILE *f)
-{
-  static char buffer[MAXPARSEBUFFER];
-  if (fgets(buffer, sizeof(buffer), f) > 0) 
-    {
-      int l = strlen(buffer) - 1;
-      if (l >= 0 && buffer[l] == '\n')
-        buffer[l] = 0;
-      return buffer;
-    }
-  return NULL;
 }
 
 #define FINDCMD      "cd '%s' && find -follow -name '%s' 2> /dev/null"
@@ -127,7 +111,7 @@ std::string GdFindFile( std::string mp3file, std::string tld )
 {
   std::string fullname = "";
   char *cmd = NULL;
-  asprintf( &cmd, FINDCMD, ToplevelDir.c_str(), mp3file.c_str() );
+  asprintf( &cmd, FINDCMD, tld.c_str(), mp3file.c_str() );
   FILE *p = popen( cmd, "r" );
   if (p) 
     {
