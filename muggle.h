@@ -45,8 +45,6 @@ class mgMuggle:public cPlugin
 
         mgMuggle (void);
 
-        virtual ~ mgMuggle ();
-
         virtual const char *Version (void);
 
         virtual const char *Description (void);
@@ -58,6 +56,8 @@ class mgMuggle:public cPlugin
         virtual bool Initialize (void);
 
         virtual bool Start (void);
+
+        virtual void  Stop (void);
 
         virtual void Housekeeping (void);
 

@@ -59,8 +59,10 @@ mgMuggle::mgMuggle (void)
     the_setup.ToplevelDir = strdup ("/mnt/music/");
 }
 
+#if VDRVERSNUM >= 0321
 
-mgMuggle::~mgMuggle ()
+void
+mgMuggle::Stop (void)
 {
     if (main) main->SaveState();
     free(the_setup.DbHost);
@@ -70,6 +72,7 @@ mgMuggle::~mgMuggle ()
     free(the_setup.ToplevelDir);
 }
 
+#endif
 
 const char *
 mgMuggle::CommandLineHelp (void)
