@@ -889,6 +889,8 @@ mgOrder::clean()
 	// remove double entries:
 	keyvector::iterator i;
 	keyvector::iterator j;
+	bool collection_found = false;	
+	bool collitem_found = false;	
 	bool album_found = false;	
 	bool tracknb_found = false;	
 	bool title_found = false;	
@@ -896,10 +898,13 @@ mgOrder::clean()
 	for (i = Keys.begin () ; i != Keys.end (); ++i)
 	{
 		mgKeyNormal* k = dynamic_cast<mgKeyNormal*>(*i);
+		collection_found |= (k->Type()==keyCollection);
+		collitem_found |= (k->Type()==keyCollectionItem);
 		album_found |= (k->Type()==keyAlbum);
 		tracknb_found |= (k->Type()==keyTrack);
 		title_found |= (k->Type()==keyTitle);
-		is_unique = tracknb_found || (album_found && title_found);
+		is_unique = tracknb_found || (album_found && title_found)
+			|| (collection_found && collitem_found);
 		if (is_unique)
 		{
 			for (j = i+1 ; j !=Keys.end(); ++j)
@@ -1120,7 +1125,7 @@ ktName(const mgKeyTypes kt)
 mgKeyTypes
 ktValue(const char * name)
 {
-	for (int kt=int(mgKeyTypesLow);kt<int(mgKeyTypesHigh);kt++)
+	for (int kt=int(mgKeyTypesLow);kt<=int(mgKeyTypesHigh);kt++)
 		if (!strcmp(name,ktName(mgKeyTypes(kt))))
 				return mgKeyTypes(kt);
 	mgError("ktValue(%s): unknown name",name);
