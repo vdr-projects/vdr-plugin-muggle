@@ -3,7 +3,12 @@
 
 DROP DATABASE IF EXISTS GiantDisc;
 CREATE DATABASE GiantDisc;
+
 use GiantDisc;
-grant all privileges on GiantDisc.* to vdr@'%';
+
+/* The first line is useful for granting access to user vdr on all computers in a network. */
+/* grant all privileges on GiantDisc.* to vdr@'%'; */
+
+/* Grant access to user vdr on the local machine */
 grant all privileges on GiantDisc.* to vdr@localhost;
 

@@ -1,7 +1,7 @@
 #
 # Makefile for a Video Disk Recorder plugin
 #
-# $Id: Makefile,v 1.9 2004/05/28 15:29:18 lvw Exp $
+# $Id: Makefile,v 1.10 2004/08/29 14:39:33 lvw Exp $
 
 # The official name of this plugin.
 # This name will be used in the '-P...' option of VDR to load the plugin.
@@ -44,6 +44,7 @@ INCLUDES += -I$(VDRDIR) -I$(VDRDIR)/include -I$(DVBDIR)/include -I/usr/include/m
 
 DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
 
+MIFLAGS += -I/usr/include/taglib -ltag -lmysqlclient
 ### The object files (add further files here):
 
 OBJS = $(PLUGIN).o i18n.o vdr_menu.o mg_database.o mg_content_interface.o gd_content_interface.o mg_tools.o mg_media.o mg_filters.o mg_playlist.o vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o vdr_setup.o
@@ -72,6 +73,9 @@ libvdr-$(PLUGIN).so: $(OBJS)
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LIBS) -o $@
 	@cp $@ $(LIBDIR)/$@.$(VDRVERSION)
 
+mugglei: mg_tools.o mugglei.o
+	$(CXX) $(CXXFLAGS) $(MIFLAGS) -o $^
+
 dist: clean
 	@-rm -rf $(TMPDIR)/$(ARCHIVE)
 	@mkdir $(TMPDIR)/$(ARCHIVE)
@@ -82,5 +86,3 @@ dist: clean
 
 clean:
 	@-rm -f $(OBJS) $(BINOBJS) $(DEPFILE) *.so *.tgz core* *~
-	@-rm -f sh_muggle sh_muggle2
-
