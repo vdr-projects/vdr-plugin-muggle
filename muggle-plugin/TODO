@@ -10,11 +10,20 @@
   \section urgent Urgent issues
 
     \subsection bugs Bugs and testing needed
-    
+
+    - Playlist indexing not correct    
+      - Player jumps e.g. from track 1 to track 3
+      - Make sure jumping beyond the end of the list is not permitted 
     - Test execution of playlist commands
-    - Test Save/Rename/Load of playlist
     - Plugin crashes when selecting entries with special characters
       - Escape query strings correctly
+    - Plugin crashes when deleting playlist while playing
+      - should stop playing immediately
+    - Check deletion of entries while playing
+      - only allowed, if item is not currently played
+      - adapt index in playlist
+      - adapt playlist display
+    - Possible to resume play instead of restarting list from the beginning
     - Do not allow playlist deletion while playing or stop or similar
     - Keep this? Test mgPCMPlayer::getSourceFile() for GD case (find)
 
@@ -222,5 +231,7 @@
 			and made concrete in subclasses (mgGdTrack)
 		- mgDecoders::findDecoder: extend decoder detection
 		- Check compatibility for 1.3.12 (DONE)
+        - Test Save/Rename/Load of playlist (DONE)
+
       
 */
