@@ -543,6 +543,7 @@ mgSelection::tracks () const
     p.fields.push_back("tracks.length");
     p.fields.push_back("tracks.samplerate");
     p.fields.push_back("tracks.channels");
+    p.fields.push_back("tracks.lang");
     p.tables.push_back("tracks");
     p.tables.push_back("album");
     for (unsigned int i = m_level; i<order.size(); i++)

@@ -68,6 +68,9 @@ class mgContentItem
 //! \brief returns the name of genre
         string getGenre () const;
 
+//! \brief returns the name of the language
+        string getLanguage () const;
+
 //! \brief returns the bitrate
         string getBitrate () const;
 
@@ -100,6 +103,8 @@ class mgContentItem
         string m_genre1;
         string m_genre2;
         string m_bitrate;
+        string m_language_id;
+        string m_language;
         int m_year;
         int m_rating;
         int m_duration;
