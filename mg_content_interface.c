@@ -2,9 +2,9 @@
  *  \brief  Data Objects for content (e.g. mp3 files, movies) for the vdr muggle plugin
  *
  * \version $Revision: 1.6 $
- * \date    $Date: 2004/07/25 21:33:35 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  *
  * Implements main classes of for content items and interfaces to SQL databases
  *
@@ -22,7 +22,7 @@
 #define DUMMY
 
 /* constructor */
-mgContentItem mgContentItem::UNDEFINED =  mgContentItem();
+mgContentItem mgContentItem::UNDEFINED = mgContentItem();
 
 using namespace std;
 
@@ -37,7 +37,7 @@ mgTracklist::mgTracklist()
 }
 
 /*!
- * \brief destrucor
+ * \brief destructor
  *
  *  Deletes all items in the tracklist and removes the list itself
  */
@@ -46,7 +46,7 @@ mgTracklist::~mgTracklist()
   mgContentItem* ptr;
   vector<mgContentItem*>::iterator iter;
   
-  for(iter = m_list.begin(); iter != m_list.end();iter++)
+  for( iter = m_list.begin(); iter != m_list.end(); iter++ )
   {
     ptr = *iter;
     delete ptr;
@@ -191,10 +191,8 @@ bool mgTracklist::remove(unsigned int position)
 }
 
 /*!
- *****************************************************************************
  * \brief remove all occurences of item
- * 
- ****************************************************************************/
+ */
 int mgTracklist::remove(mgContentItem* item) 
 {
     int retval = 0;
@@ -211,13 +209,6 @@ int mgTracklist::remove(mgContentItem* item)
     return retval;
 }
 
-
-
-/*=================================================================*/
-/*                                                                 */
-/*  class mgSelectionTreeNode                                      */
-/*                                                                 */
-/*=================================================================*/
 mgSelectionTreeNode::mgSelectionTreeNode(MYSQL db, int view)
 {
     m_db = db;
@@ -239,7 +230,7 @@ mgSelectionTreeNode::mgSelectionTreeNode(mgSelectionTreeNode* parent, string id,
     m_expanded = false;
 }
 
-    /*==== destructor ====*/
+/*==== destructor ====*/
 mgSelectionTreeNode::~mgSelectionTreeNode() 
 {
   collapse();
@@ -275,7 +266,7 @@ vector<mgSelectionTreeNode*> &mgSelectionTreeNode::getChildren()
   return m_children;
 }
 
-// access data in  current node
+// access data in current node
 string mgSelectionTreeNode::getID()
 {
     return m_id;

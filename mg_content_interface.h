@@ -1,13 +1,10 @@
-/*******************************************************************/
 /*! \file  mg_content_interface.h
  *  \brief data Objects for content (e.g. mp3 files, movies) for the vdr muggle plugin
  *
- ******************************************************************** 
- *
  *  \version $Revision: 1.4 $
- *  \date    $Date: 2004/05/28 15:29:18 $
+ *  \date    $Date$
  *  \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- *  \author  file owner: $Author: lvw $
+ *  \author  file owner: $Author$
  * 
  *  Declares generic classes of for content items and interfaces to SQL databases
  *
@@ -16,9 +13,7 @@
  *   - mgContentItem
  *   - mgTracklist
  *   - mgSelectionTreeNode
- *
  */
-/*******************************************************************/
 
 /* makes sure we dont parse the same declarations twice */
 #ifndef _CONTENT_INTERFACE_H
@@ -115,14 +110,15 @@ class mgContentItem
       return mgMediaPlayer();
     }
 
-  /*! \brief get the "file" (or URL) that is passed to the player
+  //@{
+
+  /*! \brief return a specific label
    */
-  virtual std::string getSourceFile()
+  virtual std::string getLabel(int col = 0)
     {
       return "";
     }
 
-  // ============ data access =================
   /*! \brief return the title
    */
   virtual std::string getTitle()
@@ -130,9 +126,9 @@ class mgContentItem
       return "";
     }
 
-  /*! \brief return a specific label
+  /*! \brief get the "file" (or URL) that is passed to the player
    */
-  virtual std::string getLabel(int col = 0)
+  virtual std::string getSourceFile()
     {
       return "";
     }
@@ -144,24 +140,60 @@ class mgContentItem
       return "";
     }
 
-  virtual std::vector<mgFilter*> *getTrackInfo()
-    {
-      return NULL;
-    }
-
-  virtual bool updateTrackInfo(std::vector<mgFilter*>*)
-    {
-      return false;
-    }
-
+  /*! \brief obtain the genre to which the track belongs
+   */
   virtual std::string getGenre()
     {
       return "";
     }
 
+  /*! \brief obtain the rating of the title
+   */
   virtual int getRating()
     {
       return 0;
+    }
+
+  /*! \brief obtain the samplerate of the track
+   */
+  virtual int getSampleRate()
+    {
+      return 0;
+    }
+
+  /*! \brief obtain the length of the track (in seconds)
+   */
+  virtual int getLength()
+    {
+      return 0;
+    }
+
+  /*! \brief obtain the number of audio channels of the track
+   */
+  virtual int getChannels()
+    {
+      return 0;
+    }
+
+  /*! \brief obtain the bitrate of the track
+   */
+  virtual string getBitrate()
+    {
+      return "";
+    }
+
+  /*! \brief obtain track information in aggregated form
+   */
+  virtual std::vector<mgFilter*> *getTrackInfo()
+    {
+      return NULL;
+    }
+
+  //@}
+
+  virtual bool updateTrackInfo(std::vector<mgFilter*>*)
+    {
+      return false;
     }
 
   virtual bool operator == (mgContentItem o)
@@ -206,7 +238,10 @@ class mgTracklist
   virtual bool remove(unsigned int position);    // remove item at position
 };
 
-
+/*!
+ *  \brief represent a node in a tree of selections
+ *  \ingroup muggle
+ */
 class  mgSelectionTreeNode
 {
 
