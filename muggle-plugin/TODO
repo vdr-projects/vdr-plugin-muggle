@@ -10,46 +10,11 @@
   \section urgent Urgent/Short-term issues
 
     \subsection bugs Bugs and testing needed
-        - Crashes in filter selections?
-        - Keep this? Test mgPCMPlayer::getSourceFile() for GD case (find)
 
     \subsection urgentosd OSD-related Issues
-        - Rename playlist
-
-    \subsection urgentplayer Player extensions
-	- Display covers
-          - Import filename
-          - Show image during replay
-	- Add FLAC decoder
-	- Determine max. framecount (needed for rewinding?)
-	- Init scale/level/normalize?
-	  - The max. level should be recognized during play
-	  - Store max. level in the database
-
-    \subsection urgentcontent Content handling    
-        - Think, whether type (mp3, ogg, flac) should be stored in database
-          - could be used in searching/structuring as well
-	- Handle shuffle mode in mgPlaylist
-	  - shuffle mode on
-	    - for next file:
-	      - generate a set of random numbers as long as the playlist
-              - re-generate when removing or adding entries 
-              - in mgPlaylist::getCurrent use this additional set as a mapping
-        - Party mode (see iTunes)
-          - initialization
-            - find 15 titles according to the scheme below
-          - playing 
-            - before entering next title perform track selection
-          - track selection
-  	    - generate a random uid
-	    - if file exists:
-	      - determine maximum playcount of all tracks
-	      - generate a random number n
-	        - if n < playcount / max. playcount
-	          - add the file to the end of the list
-
 
     \subsection urgentcode Code polishing
+
         - Clean up coding style and documentation in general
         - Logging
           - extend mgLog with static logging methods
@@ -60,18 +25,45 @@
           - use dotty/gv for state machines of player
           - make available online
         - Clean up mugglei (abstract code where possible)
+	- extend mgSelection with all SQL code needed by mugglei.c, maybe something like mgSelection.SyncWithPath(const char *path, options)
+	- then remove all SQL code from mugglei.c
         - Check for memory leaks
-          - Why do filters use pointers?
         - Check for (reasonably) consistent usage of char pointers and strings
-        - mgDatabase class is not used
-	  - should handle a static object with a MySQL connection
-	  - execute queries
-          - escape query strings
 	- mgPlayer used what for?
 	  - Could save IP/host name and associate last playlist/index loaded
-        - Move differences 1.3.7+- to link level
 
-   \subsection deploy Deployment
+    \subsection urgentcontent Content handling    
+        - Save on exit
+	- Think, whether type (mp3, ogg, flac) should be stored in database
+          - could be used in searching/structuring as well
+        - Party mode (see iTunes)
+          - initialization
+            - find 15 titles according to the scheme below
+          - playing 
+            - before entering next title perform track selection
+	    - do not increment the playcount
+	    - if more than 5 titles are found, make sure the same title is not directly repeated
+          - track selection
+  	    - generate a random uid
+	    - if file exists:
+	      - determine maximum playcount of all tracks
+	      - generate a random number n
+	        - if n < playcount / max. playcount
+	          - add the file to the end of the list
+
+    \subsection urgentplayer Player extensions
+        - Possible to resume play instead of restarting list from the beginning?
+	- Display covers
+          - Import filename
+          - Show image during replay
+	- Add FLAC decoder
+	- Determine max. framecount (needed for rewinding?)
+	- Init scale/level/normalize?
+	  - The max. level should be recognized during play
+	  - Store max. level in the database
+        - Display covers
+
+    \subsection deploy Deployment
 
     - Script to publish a version
       - make dist
@@ -118,7 +110,7 @@
       - Cover text
 
     - Tracks
-      - Language (?)
+      - Language (?) - encoded by what standard?
       - Rating?
       - Modified, created
       - Lyrics
@@ -128,23 +120,27 @@
 
     \subsection midcode Code issues
     
-	- really abstract from specific queries etc.
-	- mgDatabase should completely abstract database (mySQL) stuff!?
-          - initialization
-          - read/write queries
-          - return results (needs an abstract representation of results?)
-		
-    \subsection midosd OSD-related issues
-	
+	\subsection midosd OSD-related issues
+        - can mgMenu and mgMainMenu be combined into one class?	
+	- can mgActions inherit from cOsdItem?
 	- Incremental search 
           - Type numbers to enter characters and jump to first title accordingly
 	- Check whether submenus (as implemented in VDR) are more suitable
 	    - do not permit jumping to arbitrary menus though
 
-    \subsection midcontent Content issues
-	
-	- Save/load filter sets
-	- Apply filter set as dynamic playlist (i.e. show filters when loading playlists)
+	\subsection midcontent filter issues
+
+        - new OSD list for filters. Only ONE filter can be active at any time
+	- filters can be defined recursively, different filters can share subfilters
+	- Save/load filter set
+	  - table filters and filterrules
+	    - filters: id, name, created, author. Uses id 0 from filterrules.
+	    - filterrules: PRIMARY(filterid, id), negate, operator, op1, op2, 
+	    - if operator is AND or OR, op1 and op2 are filterrule ids
+	- filters are always applied, even to "instant play" and "now playing"
+
+	\subsection midcontent Content issues
+
 	- Handle ratings (increase/decrease during replay)
 	    - Keys to directly increase
 	    - handle a playcounter
@@ -153,12 +149,12 @@
 	        - when playfrequency reaches upper level y from above: decrease rating
 	        - when playfrequency reaches upper level y from below: increase rating
 
-    \subsection midplayer Player issues
+	\subsection midplayer Player issues
 	
         - Use single CD files with cuesheets in metadata for FLAC
 	- Handle recoding samplerate, limiter etc correctly
     
-    \section vision Long term ideas and visions
+	\section vision Long term ideas and visions
 
 	- daapd integration?
 	- netjuke integration?
@@ -237,16 +233,5 @@
     - Toggle detail/progress view (green)
       - Track view: all metadata
       - Playlist view: all tracks (past three, upcoming ones)
-    - BUG: Red key does not work in Browser submenu
-    - Test execution of playlist commands    
-    - Resume play instead of restarting list from the beginning when terminating play with blue instead of back
-    - Save current playlist on exit and restore on start
-    - Save on exit
-      - implement storePlaylistAs( string name ) in gdPlaylist
-        - find id of playlist called name or create it
-        - delete all entries
-        - store current entries
-    - Handle loop mode in mgPlaylist
-    - Track/progress view settings are now saved in the setup
-    - BUG: could not delete first track of a playlist
+
 */

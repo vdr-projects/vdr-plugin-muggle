@@ -1,4 +1,4 @@
-/*! 
+/*!
  * \file   muggle.h
  * \ingroup vdr
  * \brief  Implements a plugin for browsing media libraries within VDR
@@ -26,7 +26,7 @@
  * \defgroup muggle    Main muggle business
  *    The core of the plugin is an abstract representation of information
  *    organized in trees (thus suitable for OSD navigation) as well as
- *    means to organize 
+ *    means to organize
  */
 
 #ifndef _MUGGLE_H
@@ -34,53 +34,38 @@
 #include <string>
 #include <plugin.h>
 
-class mgMedia;
-class mgSelectionTreeNode;
-class mgPlaylist;
+class mgMainMenu;
 
-class cCommands;
-
-class mgMuggle : public cPlugin
+class mgMuggle:public cPlugin
 {
-public:
+    public:
 
-  mgMuggle(void);
+        mgMuggle (void);
 
-  virtual ~mgMuggle();
+        virtual ~ mgMuggle ();
 
-  virtual const char *Version(void);
+        virtual const char *Version (void);
 
-  virtual const char *Description(void);
+        virtual const char *Description (void);
 
-  virtual const char *CommandLineHelp(void);
+        virtual const char *CommandLineHelp (void);
 
-  virtual bool ProcessArgs(int argc, char *argv[]);
+        virtual bool ProcessArgs (int argc, char *argv[]);
 
-  virtual bool Initialize(void);
+        virtual bool Initialize (void);
 
-  virtual bool Start(void);
+        virtual bool Start (void);
 
-  virtual void Housekeeping(void);
+        virtual void Housekeeping (void);
 
-  virtual const char *MainMenuEntry(void);
+        virtual const char *MainMenuEntry (void);
 
-  virtual cOsdObject *MainMenuAction(void);
+        virtual cOsdObject *MainMenuAction (void);
 
-  virtual cMenuSetupPage *SetupMenu(void);
+        virtual cMenuSetupPage *SetupMenu (void);
 
-  virtual bool SetupParse(const char *Name, const char *Value);
+        virtual bool SetupParse (const char *Name, const char *Value);
 
-  static void setResumeIndex( unsigned index );
-
-  static unsigned getResumeIndex( );
-
-private:
-
-  mgMedia             *m_media;
-  mgSelectionTreeNode *m_root;
-  mgPlaylist          *m_playlist;
-  cCommands           *m_playlist_commands;
-
+	mgMainMenu *main;
 };
-
 #endif

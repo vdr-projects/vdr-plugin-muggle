@@ -10,7 +10,7 @@
  *
  * $Id$
  *
- * Adapted from 
+ * Adapted from
  * MP3/MPlayer plugin to VDR (C++)
  * (C) 2001,2002 Stefan Huelswitt <huels@iname.com>
  */
@@ -29,143 +29,142 @@ class mgContentItem;
 
 // --------From decoder_core.h ------------------------------------
 
-/*! 
+/*!
  * \brief The current status of the decoder
  * \ingroup vdr
  */
 enum eDecodeStatus
-  { 
-    dsOK=0, dsPlay, dsSkip, dsEof, dsError, dsSoftError 
-  };
+{
+    dsOK = 0, dsPlay, dsSkip, dsEof, dsError, dsSoftError
+};
 
 // ----------------------------------------------------------------
 
-/*! 
+/*!
  * \brief A data structure to put decoded PCM data
  * \ingroup vdr
  */
 struct mgDecode
 {
-  eDecodeStatus status;
-  int index;
-  struct mad_pcm *pcm;
+    eDecodeStatus status;
+    int index;
+    struct mad_pcm *pcm;
 };
 
 // ----------------------------------------------------------------
 
-/*! 
+/*!
  * \brief Information about ???
  * \ingroup vdr
  */
 class mgPlayInfo
 {
-public:
-  int m_index, m_total;
+    public:
+        int m_index, m_total;
 };
 
 // ----------------------------------------------------------------
 
-/*! 
+/*!
  * \brief Media types
  * \ingroup vdr
  */
 enum mgMediaType
 {
-  MT_MP3, MT_MP3_STREAM, MT_OGG, MT_FLAC, MT_UNKNOWN
+    MT_MP3, MT_MP3_STREAM, MT_OGG, MT_FLAC, MT_UNKNOWN
 };
 
-/*! 
+/*!
  * \brief A generic decoder class to handle conversion into PCM format
  * \ingroup vdr
  */
 class mgDecoder
 {
-protected:
+    protected:
 
-  /*! \brief database handle to the track being decoded */
-  mgContentItem *m_item;
+/*! \brief database handle to the track being decoded */
+        mgContentItem * m_item;
 
-  /*! \brief The currently playing file */
-  std::string m_filename;
+/*! \brief The currently playing file */
+        std::string m_filename;
 
-  /*! \brief Mutexes to coordinate threads */
-  cMutex m_lock, m_locklock;
-  int    m_locked;
-  bool   m_urgentLock;
-  
-  /*! \brief Whether the decoder is currently active */
-  bool m_playing;
+/*! \brief Mutexes to coordinate threads */
+        cMutex m_lock, m_locklock;
+        int m_locked;
+        bool m_urgentLock;
 
-  /*! \brief ??? */
-  mgPlayInfo m_playinfo;
+/*! \brief Whether the decoder is currently active */
+        bool m_playing;
 
-  /*! \brief Place a lock */
-  virtual void lock( bool urgent = false );
+/*! \brief ??? */
+        mgPlayInfo m_playinfo;
 
-  /*! \brief Release a lock */
-  virtual void unlock(void);
+/*! \brief Place a lock */
+        virtual void lock (bool urgent = false);
 
-  /*! \brief Try to obtain a lock */
-  virtual bool tryLock(void);
+/*! \brief Release a lock */
+        virtual void unlock (void);
 
-public:
+/*! \brief Try to obtain a lock */
+        virtual bool tryLock (void);
 
-  //@{
-  /*! \brief The constructor */
-  mgDecoder( mgContentItem *item );
+    public:
 
-  /*! \brief The destructor */
-  virtual ~mgDecoder();
-  //@}
+//@{
+/*! \brief The constructor */
+        mgDecoder (mgContentItem * item);
 
-  /*! \brief Whether a decoder instance is able to play the given file */
-  virtual bool valid() = 0;
+/*! \brief The destructor */
+        virtual ~ mgDecoder ();
+//@}
 
-  /*! \brief Whether a stream (i.e. from the network is being decoded */
-  virtual bool isStream() 
-    { 
-      return false; 
-    }
+/*! \brief Whether a decoder instance is able to play the given file */
+        virtual bool valid () = 0;
 
-  /*! \brief Start decoding */
-  virtual bool start() = 0;
+/*! \brief Whether a stream (i.e. from the network is being decoded */
+        virtual bool isStream ()
+        {
+            return false;
+        }
 
-  /*! \brief Stop decoding */
-  virtual bool stop() = 0;
+/*! \brief Start decoding */
+        virtual bool start () = 0;
 
-  /*! \brief Skip an amount of time. Impossible by default */
-  virtual bool skip( int seconds, int avail, int rate) 
-    { 
-      return false;
-    }
+/*! \brief Stop decoding */
+        virtual bool stop () = 0;
 
-  /*! \brief Return decoded data */
-  virtual struct mgDecode *decode() = 0;
+/*! \brief Skip an amount of time. Impossible by default */
+        virtual bool skip (int seconds, int avail, int rate)
+        {
+            return false;
+        }
 
-  /*! \brief Information about the current playback status */
-  virtual mgPlayInfo *playInfo() 
-    { 
-      return 0;
-    }
+/*! \brief Return decoded data */
+        virtual struct mgDecode *decode () = 0;
+
+/*! \brief Information about the current playback status */
+        virtual mgPlayInfo *playInfo ()
+        {
+            return 0;
+        }
 };
-  
+
 // ----------------------------------------------------------------
 
-/*! 
+/*!
  * \brief A generic decoder manager class to handle different decoders
  */
 class mgDecoders
 {
-public:
-  
-  /*! \brief Try to find a valid decoder for a file 
-   */
-  static mgDecoder *findDecoder( mgContentItem *item );
+    public:
 
-  /*! \brief determine the media type for a given source
-   */
-  static mgMediaType getMediaType( std::string filename );
+/*! \brief Try to find a valid decoder for a file
+ */
+        static mgDecoder *findDecoder (mgContentItem * item);
+
+/*! \brief determine the media type for a given source
+ */
+        static mgMediaType getMediaType (std::string filename);
 
 };
-
-#endif //___DECODER_H
+#endif                                            //___DECODER_H

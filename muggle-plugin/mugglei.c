@@ -5,7 +5,7 @@
  * \author  Lars von Wedel
  */
 
-#define VERBOSE
+// #define VERBOSE
 #include <string>
 
 #include <stdlib.h>
@@ -14,7 +14,13 @@
 #include <sys/time.h>
 #include <mysql/mysql.h>
 #include <getopt.h>
-#include <unistd.h>
+/*extern "C"
+{*/
+  #include <stdarg.h>
+  #include <stdio.h>
+/*}
+*/
+#include <stdlib.h>
 
 #include <tag.h>
 #include <fileref.h>
@@ -25,6 +31,40 @@ MYSQL *db;
 
 std::string host, user, pass, dbname, sck;
 bool import_assorted, delete_mode;
+
+#define  MAX_QUERY_BUFLEN  2048
+static char querybuf[MAX_QUERY_BUFLEN];
+
+MYSQL_RES* mgSqlReadQuery(MYSQL *db, const char *fmt, ...)
+{
+  va_list ap;
+  va_start( ap, fmt );  
+  vsnprintf( querybuf, MAX_QUERY_BUFLEN-1, fmt, ap );
+  
+  if( mysql_query(db, querybuf) )
+    {
+      mgError( "SQL error in MUGGLE:\n%s\n", querybuf );
+    }
+  
+  MYSQL_RES *result = mysql_store_result(db);
+  
+  va_end(ap);
+  return result;
+}
+
+void mgSqlWriteQuery(MYSQL *db, const char *fmt, ...)
+{
+  va_list ap;
+  va_start(ap, fmt);
+  vsnprintf(querybuf, MAX_QUERY_BUFLEN-1, fmt, ap);
+  
+  if( mysql_query(db, querybuf) )
+    {
+      mgError( "SQL error in MUGGLE:\n%s\n", querybuf );
+    }
+  
+  va_end(ap);
+}
 
 int init_database()
 {
@@ -280,13 +320,13 @@ void update_db( long uid, std::string filename )
 
 #ifdef VERBOSE
 	    std::cout << "-- TAG --" << std::endl;
-	    std::cout << "title   - \"" << tag->title()   << "\"" << std::endl;
-	    std::cout << "artist  - \"" << tag->artist()  << "\"" << std::endl;
-	    std::cout << "album   - \"" << tag->album()   << "\"" << std::endl;
-	    std::cout << "year    - \"" << tag->year()    << "\"" << std::endl;
-	    std::cout << "comment - \"" << tag->comment() << "\"" << std::endl;
-	    std::cout << "track   - \"" << tag->track()   << "\"" << std::endl;
-	    std::cout << "genre   - \"" << tag->genre()   << "\"" << std::endl;
+	    std::cout << "title   - '" << tag->title()   << "'" << std::endl;
+	    std::cout << "artist  - '" << tag->artist()  << "'" << std::endl;
+	    std::cout << "album   - '" << tag->album()   << "'" << std::endl;
+	    std::cout << "year    - '" << tag->year()    << "'" << std::endl;
+	    std::cout << "comment - '" << tag->comment() << "'" << std::endl;
+	    std::cout << "track   - '" << tag->track()   << "'" << std::endl;
+	    std::cout << "genre   - '" << tag->genre()   << "'" << std::endl;
 #endif
 	}
     }
@@ -348,7 +388,7 @@ void evaluate_file( std::string filename )
   long uid = find_file_in_database( db, filename );
   if( uid >= 0 )
     {	  
-      // currently only update database, do not consider writing changes from the db back
+      // currently only update database, do not consider writing changes from the db back to tags
       /*
       // determine modification times in database and on filesystem
       time_t db_time = get_db_modification_time( uid );
@@ -455,6 +495,11 @@ int main( int argc, char *argv[] )
             delete_mode = true;
           } break;
 	}
+    }
+
+  if( filename.length() > 255 )
+    {
+      std::cerr << "Warning: length of file exceeds database field capacity: " << filename << std::endl;
     }
 
   // init random number generator

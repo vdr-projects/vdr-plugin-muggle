@@ -9,7 +9,7 @@
  *
  * $Id$
  *
- * Adapted from 
+ * Adapted from
  * MP3/MPlayer plugin to VDR (C++)
  * (C) 2001,2002 Stefan Huelswitt <huels@iname.com>
  */
@@ -37,79 +37,78 @@ class mgContentItem;
 /*!
  * \brief A class to decode mp3 songs into PCM using libmad
  */
-class mgMP3Decoder : public mgDecoder
+class mgMP3Decoder:public mgDecoder
 {
-private:
-  struct mgDecode m_ds;
+    private:
+        struct mgDecode m_ds;
 
-  //
-  struct mad_stream m_madstream;
-  struct mad_frame *m_madframe;
-  struct mad_synth *m_madsynth;
-  mad_timer_t m_playtime, m_skiptime;
+//
+        struct mad_stream m_madstream;
+        struct mad_frame *m_madframe;
+        struct mad_synth *m_madsynth;
+        mad_timer_t m_playtime, m_skiptime;
 
-  //
-  struct FrameInfo
-  {
-    unsigned long long Pos;
-    mad_timer_t Time;
-  } *m_frameinfo;
+//
+        struct FrameInfo
+        {
+            unsigned long long Pos;
+            mad_timer_t Time;
+        } *m_frameinfo;
 
-  int m_framenum, m_framemax, m_errcount, m_mute;
+        int m_framenum, m_framemax, m_errcount, m_mute;
 
-  void init();
+        void init ();
 
-  void clean();
+        void clean ();
 
-  struct mgDecode *done( eDecodeStatus status );
+        struct mgDecode *done (eDecodeStatus status);
 
-  virtual mgPlayInfo *playInfo();
+        virtual mgPlayInfo *playInfo ();
 
-  eDecodeStatus decodeError(bool hdr);
-  
-  void makeSkipTime(mad_timer_t *skiptime, mad_timer_t playtime,
-		    int secs, int avail, int dvbrate);
+        eDecodeStatus decodeError (bool hdr);
 
-protected:
-  mgStream *m_stream;
-  bool m_isStream;
+        void makeSkipTime (mad_timer_t * skiptime, mad_timer_t playtime,
+            int secs, int avail, int dvbrate);
 
-public:
+    protected:
+        mgStream * m_stream;
+        bool m_isStream;
 
-  /*! 
-   * \brief construct a decoder from a filename
-   */
-  mgMP3Decoder( mgContentItem *item, bool preinit = true );
+    public:
 
-  /*!
-   * \brief the destructor
-   */
-  virtual ~mgMP3Decoder();
+/*!
+ * \brief construct a decoder from a filename
+ */
+        mgMP3Decoder (mgContentItem * item, bool preinit = true);
 
-  /*!
-   * \brief check, whether the file contains useable MP3 content
-   */
-  virtual bool valid();
+/*!
+ * \brief the destructor
+ */
+        virtual ~ mgMP3Decoder ();
 
-  /*!
-   * \brief start the decoding process
-   */
-  virtual bool start();
+/*!
+ * \brief check, whether the file contains useable MP3 content
+ */
+        virtual bool valid ();
 
-  /*!
-   * \brief stop the decoding process
-   */
-  virtual bool stop();
+/*!
+ * \brief start the decoding process
+ */
+        virtual bool start ();
 
-  /*!
-   * \brief skip an amount of seconds
-   */
-  virtual bool skip( int seconds, int avail, int rate );
+/*!
+ * \brief stop the decoding process
+ */
+        virtual bool stop ();
 
-  /*!
-   * \brief the actual decoding function (uses libmad)
-   */
-  virtual struct mgDecode *decode();
+/*!
+ * \brief skip an amount of seconds
+ */
+        virtual bool skip (int seconds, int avail, int rate);
+
+/*!
+ * \brief the actual decoding function (uses libmad)
+ */
+        virtual struct mgDecode *decode ();
 };
-
-#endif //___DECODER_MP3_H
+#endif                                            //___DECODER_MP3_H

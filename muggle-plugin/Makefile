@@ -16,7 +16,7 @@ VERSION = $(shell grep 'static const char \*VERSION *=' $(PLUGIN).c | awk '{ pri
 ### The C++ compiler and options:
 
 CXX      ?= g++-3.3
-CXXFLAGS ?= -fPIC -O2 -Wall -Woverloaded-virtual -Wno-deprecated -g
+CXXFLAGS ?= -fPIC -O0 -Wall -Woverloaded-virtual -Wno-deprecated -g 
 
 ### The directory environment:
 
@@ -51,14 +51,16 @@ DEFINES += -D_GNU_SOURCE
 MIFLAGS += -I/usr/include/taglib -lmysqlclient
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o i18n.o vdr_menu.o mg_database.o mg_content_interface.o gd_content_interface.o mg_tools.o mg_media.o mg_filters.o mg_playlist.o vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o vdr_setup.o vdr_decoder_ogg.o
+OBJS = $(PLUGIN).o i18n.o mg_db.o mg_actions.o vdr_menu.o mg_tools.o \
+	vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o \
+	vdr_setup.o vdr_decoder_ogg.o
 
 LIBS = -lmad -lmysqlclient -lvorbisfile -lvorbis
 MILIBS = -lmysqlclient -ltag
 
 ### Targets:
 
-all: libvdr-$(PLUGIN).so mugglei
+all: libvdr-$(PLUGIN).so
 
 # Dependencies:
 
@@ -80,11 +82,10 @@ libvdr-$(PLUGIN).so: $(OBJS)
 
 mugglei: mg_tools.o mugglei.o
 	$(CXX) $(CXXFLAGS) $^ $(MILIBS) -o $@
-
 install:
 	@cp ../../lib/libvdr-muggle*.so.* /usr/lib/vdr/
 	@cp mugglei /usr/local/bin/
-	@install -m 755 mugglei /usr/local/bin/
+#	@install -m 755 mugglei /usr/local/bin/
 
 dist: clean
 	@-rm -rf $(TMPDIR)/$(ARCHIVE)
