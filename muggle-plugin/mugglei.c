@@ -11,11 +11,12 @@ using namespace std;
 
 MYSQL *db;
 
-char host[255], user[32], pass[32], dbname[32];
+char *host, *user, *pass, *dbname;
 
 int init_database()
 {
-  if( mysql_init(db) == NULL )
+  db = mysql_init(NULL);
+  if( db == NULL )
     {	
       return -1;
     }
@@ -70,16 +71,23 @@ void update_db( long uid, string filename )
   char title[1024], album[1024], year[5], artist[1024], cddbid[20], trackno[5];
   ID3_Tag filetag( filename.c_str() );
 
+  printf( "ID3 tag created.\n" );  
+
   // obtain album value
   ID3_Frame* album_frame = filetag.Find( ID3FID_ALBUM );
+  printf( "Album frame obtained.\n" );  
   if( NULL != album_frame )
     {      
-      album_frame->Field ( ID3FN_TEXT ).Get ( album, 1024 );
+      album_frame->Field( ID3FN_TEXT ).Get( album, 1024 );
+      printf( "Field obtained.\n" );  
     }
   else
     {
-      strcpy( "Unassigned", album );
+      printf( "No album info found.\n" );  
+      strncpy( album, "Unassigned", 1023 );
     }
+
+  printf( "Album frame evaluated.\n" );  
 
   // obtain title value
   ID3_Frame* title_frame = filetag.Find( ID3FID_TITLE );
@@ -89,8 +97,11 @@ void update_db( long uid, string filename )
     }
   else
     {
-      strcpy( "Unknown title", title );
+      printf( "No title info found.\n" );  
+      strncpy( title, "Unknown title", 1023);
     }
+
+  printf( "Title frame evaluated.\n" );  
 
   // obtain year value (ID3FID_YEAR)
   ID3_Frame* year_frame = filetag.Find( ID3FID_YEAR );
@@ -100,8 +111,11 @@ void update_db( long uid, string filename )
     }
   else
     {
-      strcpy( "0", title );
+      printf( "No year info found.\n" );  
+      strncpy( title, "0", 1023);
     }
+
+  printf( "Year frame evaluated.\n" );  
 
   // obtain artist value (ID3FID_LEADARTIST)
   ID3_Frame* artist_frame = filetag.Find( ID3FID_LEADARTIST );
@@ -111,8 +125,11 @@ void update_db( long uid, string filename )
     }
   else
     {
-      strcpy( "Unknown artist", artist );
+      printf( "No artist info found.\n" );  
+      strncpy( artist, "Unknown artist", 1023);
     }
+
+  printf( "Artist frame evaluated.\n" );  
 
   // obtain track number ID3FID_TRACKNUM
   ID3_Frame* trackno_frame = filetag.Find( ID3FID_TRACKNUM );
@@ -122,8 +139,12 @@ void update_db( long uid, string filename )
     }
   else
     {
-      strcpy( "0", trackno );
+      strncpy( trackno, "0", 5);
     }
+
+  printf( "Trackno frame evaluated.\n" );  
+
+  printf( "ID3 frames/fields read.\n" );  
 
   // obtain associated album or create
   if( NULL == album_frame )
@@ -135,6 +156,7 @@ void update_db( long uid, string filename )
       MYSQL_RES *result = mgSqlReadQuery( db, "SELECT cddbid FROM album WHERE title='%s' AND artist='%s'", 
 					  album, artist );
       MYSQL_ROW row = mysql_fetch_row( result );
+      printf( "\nAlbum query set.\n" );  
 
       // num rows == 0 ?
       int nrows   = mysql_num_rows(result);
@@ -211,10 +233,18 @@ void evaluate_file( string filename )
 
 int main( int argc, char *argv[] )
 {
+  host   = "127.0.0.1";
+  user   = "music";
+  dbname = "GiantDisc";
+  pass   = NULL;
+
   int res = init_database();
+
+  printf( "Database initialized.\n" );
 
   if( !res )
     {
+      printf( "Evaluating %s\n", argv[1] );
       update_db( 0, string( argv[1] ) );
     }
   else
