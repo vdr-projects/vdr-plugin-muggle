@@ -2,12 +2,12 @@
  * \file   vdr_menu.c
  * \brief  Implements menu handling for browsing media libraries within VDR
  *
- * \version $Revision: 1.25 $
- * \date    $Date: 2004/07/26 20:02:38 $
+ * \version $Revision: 1.26 $
+ * \date    $Date: 2004/07/27 06:57:35 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author: LarsAC $
  *
- * $Id: vdr_menu.c,v 1.25 2004/07/26 20:02:38 lvw Exp $
+ * $Id: vdr_menu.c,v 1.26 2004/07/27 06:57:35 LarsAC Exp $
  */
 
 #include <string>
@@ -741,7 +741,6 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
       {
 	LoadPlaylist();
 	Interface->Flush();
-
 	// jump to playlist view from here?
       } break;
     case 1:
@@ -782,7 +781,7 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
 	// confirmation
 	Interface->Status( "Entry removed" );
 	Interface->Flush();	
-      }
+      } break;
     case 5:
       {
 	string m3u_file = AddDirectory( cPlugin::ConfigDirectory("muggle"), m_current_playlist->getListname().c_str() );
@@ -910,6 +909,9 @@ void mgMainMenu::Play(mgPlaylist *plist)
 /************************************************************
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.26  2004/07/27 06:57:35  LarsAC
+ * Inserted missing break
+ *
  * Revision 1.25  2004/07/26 20:02:38  lvw
  * Bug in handling playlist menu removed
  *
