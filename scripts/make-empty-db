@@ -13,7 +13,7 @@ echo "reading languages"
 echo "use GiantDisc; load data local infile 'languages.txt' into table language;" | mysql -u root --local-infile=1
 
 echo "reading musictypes"
-echo "use GiantDisc; load data local infile 'musictypes.txt' into table language;" | mysql -u root --local-infile=1
+echo "use GiantDisc; load data local infile 'musictypes.txt' into table musictype;" | mysql -u root --local-infile=1
 
 echo "reading sources"
-echo "use GiantDisc; load data local infile 'sources.txt' into table language;" | mysql -u root --local-infile=1
+echo "use GiantDisc; load data local infile 'sources.txt' into table source;" | mysql -u root --local-infile=1
