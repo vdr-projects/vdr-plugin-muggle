@@ -52,6 +52,7 @@ public:
   bool GdCompatibility;
   char *ToplevelDir;
 
+  int visible;
   int trackview;
   int progressview;
 
