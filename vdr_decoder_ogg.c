@@ -51,7 +51,7 @@ class mgOggFile // : public mgFileInfo
 
   int stream(short *buffer, int samples);
   
-  bool canSeek(); // { return m_canSeek; }
+  bool canSeek() { return m_canSeek; }
 
   long long indexMs(void);
 };
@@ -324,7 +324,7 @@ struct mgDecode *mgOggDecoder::decode(void)
 	return done(dsEof);
       }
 
-    // TODO
+    // should be done during initialization
     m_pcm->samplerate = m_item->getSampleRate();  // from database
     m_pcm->channels   = m_item->getChannels();    // from database
 
