@@ -3,10 +3,10 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.9 $
- * \date    $Date: 2004/02/09 22:07:44 $
+ * \version $Revision: 1.10 $
+ * \date    $Date: 2004/02/09 23:21:33 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: RaK $
+ * \author  file owner: $Author: MountainMan $
  *
  * DUMMY
  * Implements main classes of for content items and interfaces to SQL databases
@@ -79,11 +79,11 @@ vector<string> *GdGetStoredPlaylists(MYSQL db)
 gdFilterSets::gdFilterSets()
 {
   mgFilter* filter;
-  
+  vector<mgFilter*>* set;
   m_titles.push_back("Track Search");
 
   // create an initial set of filters with empty values
-  vector<mgFilter*>* set = new vector<mgFilter*>();
+  set = new vector<mgFilter*>();
  
   // title
   filter = new mgFilterString("title", ""); set->push_back(filter);
@@ -100,9 +100,9 @@ gdFilterSets::gdFilterSets()
 
   m_sets.push_back(set);
   
-  set->clear();
   m_titles.push_back("Album Search");
   
+  set = new vector<mgFilter*>();
   // title
   filter = new mgFilterString("album title", ""); set->push_back(filter);
   // artist
@@ -149,19 +149,19 @@ string gdFilterSets::computeRestriction(int *viewPrt)
         {
           if(strcmp((*iter)->getName(), "title") == 0 )
           {
-            sql_str = sql_str + " AND tracks.title like ' " 
+            sql_str = sql_str + " AND tracks.title like '" 
   	      + (*iter)->getStrVal() + "'";
           }
           else if(strcmp((*iter)->getName(), "artist") == 0 )
           { 
-            sql_str = sql_str + " AND tracks.artist like ''" 
+            sql_str = sql_str + " AND tracks.artist like '" 
 	      + (*iter)->getStrVal() + "'";
           }
           else if(strcmp((*iter)->getName(), "genre") == 0 )
           { 
-            sql_str = sql_str + " AND (genre1.genre like ''" 
+            sql_str = sql_str + " AND (genre1.genre like '" 
 	      + (*iter)->getStrVal() + "'";
-            sql_str = sql_str + " OR genre2.genre like ''" 
+            sql_str = sql_str + " OR genre2.genre like '" 
 	      + (*iter)->getStrVal() + "')";
           }
           else if(strcmp((*iter)->getName(), "year (from)") == 0 )
@@ -197,14 +197,14 @@ string gdFilterSets::computeRestriction(int *viewPrt)
           }
           else if(strcmp((*iter)->getName(), "album artist") == 0 )
           { 
-            sql_str = sql_str + " AND album.artist like ''" 
+            sql_str = sql_str + " AND album.artist like '" 
 	      + (*iter)->getStrVal() + "'";
           }
           else if(strcmp((*iter)->getName(), "genre") == 0 )
           { 
-            sql_str = sql_str + " AND (genre1.genre like ''" 
+            sql_str = sql_str + " AND (genre1.genre like '" 
 	      + (*iter)->getStrVal() + "'";
-            sql_str = sql_str + " OR genre2.genre like ''" 
+            sql_str = sql_str + " OR genre2.genre like '" 
 	      + (*iter)->getStrVal() + "')";
           }
           else if(strcmp((*iter)->getName(), "year (from)") == 0 )
@@ -1143,8 +1143,8 @@ bool GdTreeNode::expand()
              sprintf(sqlbuff,
                       "SELECT CONCAT(tracks.artist,' - ',tracks.title),tracks.id"
                       "  FROM tracks,genre as genre1,genre as genre2,album"
-                      "  WHERE (genre.id=tracks.genre1) AND"
-                      "        (genre.id=tracks.genre2) AND"
+                      "  WHERE (genre1.id=tracks.genre1 OR"
+                      "        genre2.id=tracks.genre2) AND"
                       "        (album.cddbid=tracks.sourceid) AND"
                       "         %s"
                       "  ORDER BY CONCAT(tracks.artist,' - ',tracks.title)"
@@ -1158,9 +1158,9 @@ bool GdTreeNode::expand()
                          "SELECT DISTINCT"
                          "    CONCAT(album.artist,' - ',album.title) as title,"
                          "    album.cddbid"
-                         "  FROM album,genre as genre1, genre as genre2"
-                         "  WHERE (genre.id=tracks.genre1) AND"
-                         "        (genre.id=tracks.genre2) AND"
+                         "  FROM tracks,album,genre as genre1, genre as genre2"
+                         "  WHERE (genre1.id=tracks.genre1 OR"
+                         "        genre2.id=tracks.genre2) AND"
                          "         %s"
                          "  ORDER BY CONCAT(album.artist,' - ',album.title)"
                          , m_restriction.c_str());
@@ -1169,8 +1169,8 @@ bool GdTreeNode::expand()
                sprintf(sqlbuff,
                          "SELECT tracks.title,tracks.id"
                          "  FROM tracks,genre as genre1,genre as genre2,album"
-                         "  WHERE (genre.id=tracks.genre1) AND"
-                         "        (genre.id=tracks.genre2) AND"
+                         "  WHERE (genre1.id=tracks.genre1 OR"
+                         "        genre2.id=tracks.genre2) AND"
                          "        (album.cddbid=tracks.sourceid) AND"
                          "         %s"
                          "  ORDER BY tracks.tracknb"
@@ -1333,6 +1333,9 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.10  2004/02/09 23:21:33  MountainMan
+ * partial bug fixes
+ *
  * Revision 1.9  2004/02/09 22:07:44  RaK
  * secound filter set (album search incl. special view #101
  *
