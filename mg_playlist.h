@@ -107,7 +107,7 @@ public:
    *
    *  \param pos - the index of the track to be removed
    */
-  //  bool remove( int pos );
+  bool remove( unsigned int pos );
 
   /* ====  access tracks ==== */
   
