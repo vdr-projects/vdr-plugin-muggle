@@ -49,15 +49,15 @@ mgMuggle::mgMuggle (void)
 {
     main = NULL;
 // defaults for database arguments
-    the_setup.DbHost = strdup ("localhost");
-    the_setup.DbSocket = NULL;
+    the_setup.DbHost = 0;
+    the_setup.DbSocket = 0;
     the_setup.DbPort = 0;
     the_setup.DbName = strdup ("GiantDisc");
-    the_setup.DbUser = strdup ("");
-    the_setup.DbPass = strdup ("");
+    the_setup.DbUser = 0;
+    the_setup.DbPass = 0;
     the_setup.GdCompatibility = false;
     the_setup.ToplevelDir = strdup ("/mnt/music/");
-#ifndef HAVE_SERVER
+#ifndef HAVE_ONLY_SERVER
     char *buf;
     asprintf(&buf,"%s/.muggle",getenv("HOME"));
     set_datadir(buf);
@@ -85,25 +85,40 @@ mgMuggle::CommandLineHelp (void)
 {
 // Return a string that describes all known command line options.
     return
+#ifdef HAVE_ONLY_SERVER
         "  -h HHHH,  --host=HHHH     specify database host (default is localhost)\n"
-        "  -s SSSS   --socket=PATH   specify database socket (default is TCP connection)\n"
+#else
+        "  -h HHHH,  --host=HHHH     specify database host (default is mysql embedded)\n"
+#endif
+        "  -s SSSS   --socket=PATH   specify database socket\n"
         "  -n NNNN,  --name=NNNN     specify database name (overridden by -g)\n"
         "  -p PPPP,  --port=PPPP     specify port of database server (default is )\n"
         "  -u UUUU,  --user=UUUU     specify database user (default is )\n"
         "  -w WWWW,  --password=WWWW specify database password (default is empty)\n"
         "  -t TTTT,  --toplevel=TTTT specify toplevel directory for music (default is /mnt/music)\n"
-#ifndef HAVE_SERVER
+#ifndef HAVE_ONLY_SERVER
         "  -d DIRN,  --datadir=DIRN  specify directory for embedded sql data (default is $HOME/.muggle)\n"
 #endif
         "  -g,       --giantdisc     enable full Giantdisc compatibility mode\n"
-        "  -v,       --verbose       specify debug level. The higher the more. Default is 1\n";
+        "  -v,       --verbose       specify debug level. The higher the more. Default is 1\n"
+	"\n"
+	"if the specified host is localhost, sockets will be used if possible.\n"
+	"Otherwise the -s parameter will be ignored";
 }
 
 
 bool mgMuggle::ProcessArgs (int argc, char *argv[])
 {
     mgSetDebugLevel (1);
-    mgDebug (1, "mgMuggle::ProcessArgs");
+    char b[1000];
+    sprintf(b,"mgMuggle::ProcessArgs ");
+    for (int i=1;i<argc;i++)
+    {
+	if (strlen(b)+strlen(argv[i]+2)>1000) break;;
+    	strcat(b,"  ");
+    	strcat(b,argv[i]);
+    }
+    mgDebug(1,b);
 
 // Implement command line argument processing here if applicable.
     static struct option
@@ -115,7 +130,7 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
         {"port", required_argument, NULL, 'p'},
         {"user", required_argument, NULL, 'u'},
         {"password", required_argument, NULL, 'w'},
-#ifndef HAVE_SERVER
+#ifndef HAVE_ONLY_SERVER
         {"datadir", required_argument, NULL, 'd'},
 #endif
         {"toplevel", required_argument, NULL, 't'},
@@ -127,7 +142,7 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
         c,
         option_index = 0;
     while ((c =
-#ifndef HAVE_SERVER
+#ifndef HAVE_ONLY_SERVER
         getopt_long (argc, argv, "gh:s:n:p:t:u:w:d:v:", long_options,
 #else
         getopt_long (argc, argv, "gh:s:n:p:t:u:w:v:", long_options,
@@ -166,7 +181,7 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
                 the_setup.DbPass = strcpyrealloc (the_setup.DbPass, optarg);
             }
             break;
-#ifndef HAVE_SERVER
+#ifndef HAVE_ONLY_SERVER
             case 'd':
             {
 	        set_datadir(optarg);

@@ -14,10 +14,10 @@ PLUGIN = muggle
 # HAVE_VORBISFILE=1
 # HAVE_FLAC=1
 
-#if you want to use a dedicated Mysql server instead of the embedded code,
+#if you do not want to compile in code for embedded sql,
 #define this in $VDRDIR/Make.config:
-# HAVE_SERVER=1
-#
+# HAVE_ONLY_SERVER=1
+
 ### The version number of this plugin (taken from the main source file):
 
 VERSION = $(shell grep 'static const char \*VERSION *=' $(PLUGIN).c | awk '{ print $$6 }' | sed -e 's/[";]//g')
@@ -51,24 +51,24 @@ PACKAGE = vdr-$(ARCHIVE)
 ### Includes and Defines (add further entries here):
 
 INCLUDES += -I$(VDRDIR) -I$(VDRDIR)/include -I$(DVBDIR)/include \
-	-I/usr/include/mysql/ -I/usr/include/taglib
+	$(shell mysql_config --cflags) $(shell taglib-config --cflags)
 
-DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
+DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DMYSQLCLIENTVERSION='"$(shell mysql_config --version)"'
 
 ### The object files (add further files here):
 
 OBJS = $(PLUGIN).o i18n.o mg_valmap.o mg_mysql.o mg_sync.o mg_order.o mg_content.o mg_selection.o vdr_actions.o vdr_menu.o mg_tools.o \
-	vdr_decoder_mp3.o vdr_decoder_ogg.o vdr_decoder_flac.o vdr_stream.o vdr_decoder.o vdr_player.o \
+	vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o \
 	vdr_setup.o mg_setup.o
 
-LIBS = -lmad -ltag
-MILIBS =  -ltag
+LIBS = -lmad $(shell taglib-config --libs)
+MILIBS =  $(shell taglib-config --libs)
 
-ifdef HAVE_SERVER
-SQLLIBS =  `mysql_config --libs`
-DEFINES += -DHAVE_SERVER
+ifdef HAVE_ONLY_SERVER
+SQLLIBS =  $(shell mysql_config --libs)
+DEFINES += -DHAVE_ONLY_SERVER
 else
-SQLLIBS = `mysql_config --libmysqld-libs` -L/lib
+SQLLIBS = $(shell mysql_config --libmysqld-libs) -L/lib
 endif
 
 ifdef HAVE_VORBISFILE
@@ -115,7 +115,7 @@ install:
 	@cp mugglei /usr/local/bin/
 #	@install -m 755 mugglei /usr/local/bin/
 
-dist: clean
+dist: clean mg_tables.h
 	@-rm -rf $(TMPDIR)/$(ARCHIVE)
 	@mkdir $(TMPDIR)/$(ARCHIVE)
 	@cp -a * $(TMPDIR)/$(ARCHIVE)

@@ -82,7 +82,6 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - GD compatibility added
 - Many bugfixes and usability improvements
 
-2005-02-07: Version 0.1.2-BETA
 - Die Organisation der Dateien kann nun vom Benutzer verändert werden.
   Zudem können neue Bäume erstellt werden (zB mag ich
   Decade > Genre > Track sehr gern).
@@ -162,3 +161,19 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
   exist (debian: Package iso-codes)
 - add all genres listed by id3 -L. Fix spellings.
 - lots of bug fixes, as usual
+
+2005-03-XX: Version 0.1.5-BETA
+- add include files like stdio.h, needed in some environments
+- fix genre import
+- if you have mysql embedded 4.1.11 or better, you can access embedded
+  and external data bases with the same binary. If you omit the -h
+  parameter, embedded is used. Without embedded support compiled in,
+  the default for -h is still localhost
+- renamed the Makefile conditional HAVE_SERVER to HAVE_ONLY_SERVER. This
+  better reflects the new functionality.
+- if you want to connect to the local server using sockets, you now
+  do that with -h localhost. Up to now you had to specify -s. This is
+  no longer needed. This better reflects the mysql C API. As a con-
+  sequence, up to now not giving any argument to muggle called the
+  server on localhost using TCP, now it uses the faster sockets. You
+  can still request TCP by using -h 127.0.0.1

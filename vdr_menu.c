@@ -608,9 +608,6 @@ mgSubmenu::BuildOsd ()
     AddAction(actClearCollection,on);
     AddAction(actChooseOrder,on);
     AddAction(actExportTracklist,on);
-#if 0
-    AddAction(actSync,on);
-#endif
     cCommand *command;
     if (osd()->external_commands)
     {
@@ -685,6 +682,20 @@ eOSState
 mgMenu::Process (eKeys key)
 {
     return ExecuteButton(key);
+}
+
+eOSState
+mgTree::Process (eKeys key)
+{
+	eOSState result = osUnknown;
+	if (key!=kNone)
+		mgDebug(1,"mgTree::Process(%d)",key);
+	switch (key)
+	{
+		case k0:mgDebug(1,"ich bin k0");break;
+		default: result = mgMenu::Process(key);
+	}
+	return result;
 }
 
 void
