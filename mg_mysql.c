@@ -20,10 +20,12 @@ static bool needGenre2_set;
 
 char *db_cmds[] = 
 {
-  "DROP DATABASE IF EXISTS GiantDisc; CREATE DATABASE GiantDisc;",
+  "DROP DATABASE IF EXISTS GiantDisc",
+  "CREATE DATABASE GiantDisc",
   "grant all privileges on GiantDisc.* to vdr@localhost;",
   "use GiantDisc;",
-  "drop table if exists album; CREATE TABLE album ( "
+  "drop table if exists album;",
+  "CREATE TABLE album ( "
 	  "artist varchar(255) default NULL, "
 	  "title varchar(255) default NULL, "
 	  "cddbid varchar(20) NOT NULL default '', "
@@ -37,25 +39,29 @@ char *db_cmds[] =
 	  "KEY genre (genre), "
 	  "KEY modified (modified)) "
 	  "TYPE=MyISAM;",
-  "drop table if exists genre; CREATE TABLE genre ("
+  "drop table if exists genre;",
+  "CREATE TABLE genre ("
 	  "id varchar(10) NOT NULL default '', "
 	  "id3genre smallint(6) default NULL, "
 	  "genre varchar(255) default NULL, "
 	  "freq int(11) default NULL, "
 	  "PRIMARY KEY (id)) "
 	  "TYPE=MyISAM;",
-  "drop table if exists language; CREATE TABLE language ("
+  "drop table if exists language;",
+  "CREATE TABLE language ("
 	  "id varchar(4) NOT NULL default '', "
 	  "language varchar(40) default NULL, "
 	  "freq int(11) default NULL, "
 	  "PRIMARY KEY  (id)) "
 	  "TYPE=MyISAM;",
-  "drop table if exists musictype; CREATE TABLE musictype ("
+  "drop table if exists musictype;",
+  "CREATE TABLE musictype ("
 	  "musictype varchar(40) default NULL, "
 	  "id tinyint(3) unsigned NOT NULL auto_increment, "
 	  "PRIMARY KEY  (id)) "
 	  "TYPE=MyISAM;",
-  "drop table if exists player;CREATE TABLE player ( "
+  "drop table if exists player;",
+  "CREATE TABLE player ( "
 	  "ipaddr varchar(255) NOT NULL default '', "
 	  "uichannel varchar(255) NOT NULL default '', "
 	  "logtarget int(11) default NULL, "
@@ -66,7 +72,8 @@ char *db_cmds[] =
 	  "id int(11) NOT NULL default '0', "
 	  "PRIMARY KEY  (id)) "
 	  "TYPE=MyISAM;",
-  "drop table if exists playerstate;CREATE TABLE playerstate ( "
+  "drop table if exists playerstate;",
+  "CREATE TABLE playerstate ( "
 	  "playerid int(11) NOT NULL default '0', "
 	  "playertype int(11) NOT NULL default '0', "
 	  "snddevice varchar(255) default NULL, "
@@ -83,7 +90,8 @@ char *db_cmds[] =
 	  "anchortime bigint(20) default NULL, "
 	  "PRIMARY KEY  (playerid,playertype)) "
 	  "TYPE=HEAP;",
-  "drop table if exists playlist;CREATE TABLE playlist ( "
+  "drop table if exists playlist;",
+  "CREATE TABLE playlist ( "
 	  "title varchar(255) default NULL, "
 	  "author varchar(255) default NULL, "
 	  "note varchar(255) default NULL, "
@@ -91,19 +99,22 @@ char *db_cmds[] =
 	  "id int(10) unsigned NOT NULL auto_increment, "
 	  "PRIMARY KEY  (id)) "
 	  "TYPE=MyISAM;",
-  "drop table if exists playlistitem;CREATE TABLE playlistitem ( "
+  "drop table if exists playlistitem;",
+  "CREATE TABLE playlistitem ( "
 	  "playlist int(11) NOT NULL default '0', "
 	  "tracknumber mediumint(9) NOT NULL default '0', "
 	  "trackid int(11) default NULL, "
 	  "PRIMARY KEY  (playlist,tracknumber)) "
 	  "TYPE=MyISAM;",
-  "drop table if exists playlog;CREATE TABLE playlog ( "
+  "drop table if exists playlog;",
+  "CREATE TABLE playlog ( "
 	  "trackid int(11) default NULL, "
 	  "played date default NULL, "
 	  "id tinyint(3) unsigned NOT NULL auto_increment, "
 	  "PRIMARY KEY  (id)) "
 	  "TYPE=MyISAM;",
-  "drop table if exists recordingitem;CREATE TABLE recordingitem ( "
+  "drop table if exists recordingitem;",
+  "CREATE TABLE recordingitem ( "
 	  "trackid int(11) default NULL, "
 	  "recdate date default NULL, "
 	  "rectime time default NULL, "
@@ -117,19 +128,22 @@ char *db_cmds[] =
 	  "id int(11) NOT NULL default '0', "
 	  "PRIMARY KEY  (id)) "
 	  "TYPE=MyISAM;",
-  "drop table if exists source; CREATE TABLE source ( "
+  "drop table if exists source",
+	  "CREATE TABLE source ( "
 	  "source varchar(40) default NULL, "
 	  "id tinyint(3) unsigned NOT NULL auto_increment, "
 	  "PRIMARY KEY  (id)) "
 	  "TYPE=MyISAM;",
-  "drop table if exists tracklistitem;CREATE TABLE tracklistitem ( "
+  "drop table if exists tracklistitem;",
+  "CREATE TABLE tracklistitem ( "
 	  "playerid int(11) NOT NULL default '0', "
 	  "listtype smallint(6) NOT NULL default '0', "
 	  "tracknb int(11) NOT NULL default '0', "
 	  "trackid int(11) NOT NULL default '0', "
 	  "PRIMARY KEY  (playerid,listtype,tracknb)) "
 	  "TYPE=MyISAM;",
-  "drop table if exists tracks;CREATE TABLE tracks ( "
+  "drop table if exists tracks;",
+  "CREATE TABLE tracks ( "
 	  "artist varchar(255) default NULL, "
 	  "title varchar(255) default NULL, "
 	  "genre1 varchar(10) default NULL, "
@@ -178,6 +192,7 @@ char *db_cmds[] =
 mgmySql::mgmySql() 
 {
 	m_db = 0;
+	m_database_found=false;
 	m_hasfolderfields=false;
 	Connect();
 }
@@ -197,7 +212,7 @@ mgmySql::exec_sql( string query)
 {
   if (!m_db || query.empty())
 	  return 0;
-  mgDebug(3,"exec_sql(%X,%s)",m_db,query.c_str());
+  mgDebug(4,"exec_sql(%X,%s)",m_db,query.c_str());
   if (mysql_query (m_db, (query + ';').c_str ()))
   {
     mgError("SQL Error in %s: %s",query.c_str(),mysql_error (m_db));
@@ -235,11 +250,14 @@ mgmySql::exec_count( const string query)
 void mgmySql::Create()
 {
   // create database and tables
+  mgDebug(1,"Dropping and recreating database %s",the_setup.DbName);
   int len = sizeof( db_cmds ) / sizeof( char* );
   for( int i=0; i < len; i ++ )
     {
       exec_sql( string( db_cmds[i] ) );
     }
+  m_database_found=true;
+  Use();
 }
 
 string
@@ -282,6 +300,12 @@ mgmySql::sql_Cstring( const char *s, char *buf)
   return b;
 }
 
+bool
+mgmySql::Connected () const
+{
+	return m_database_found;
+}
+
 void
 mgmySql::Connect ()
 {
@@ -297,31 +321,29 @@ mgmySql::Connect ()
     bool success;
     if (the_setup.DbSocket != NULL)
     {
-      mgDebug(1,"Using socket %s for connecting to Database %s as user %s.",
+      mgDebug(1,"Using socket %s for connecting to server as user %s.",
 		      the_setup.DbSocket,
-		      the_setup.DbName,
 		      the_setup.DbUser);
       mgDebug(3,"DbPassword is: '%s'",the_setup.DbPass);
       success = (mysql_real_connect( m_db,
 			      "",
 			      the_setup.DbUser,       
 			      the_setup.DbPass, 
-			      the_setup.DbName,
+			      0,
 			      0,
 			      the_setup.DbSocket, 0 ) != 0 );
     }
     else
     {
-      mgDebug(1,"Using TCP-%s for connecting to Database %s as user %s.",
+      mgDebug(1,"Using TCP for connecting to server %s as user %s.",
 		      the_setup.DbHost,
-		      the_setup.DbName,
 		      the_setup.DbUser);
       mgDebug(3,"DbPassword is: '%s'",the_setup.DbPass);
       success = ( mysql_real_connect( m_db,
 			      the_setup.DbHost, 
 			      the_setup.DbUser,       
 			      the_setup.DbPass, 
-			      the_setup.DbName,
+			      0,
 			      the_setup.DbPort,
 			      0, 0 ) != 0 );
     }
@@ -332,12 +354,40 @@ mgmySql::Connect ()
         mysql_close (m_db);
 	m_db = 0;
     }
-    if (!needGenre2_set && m_db)
+    if (m_db)
+    {
+	    mysql_query(m_db,"SHOW DATABASES");
+	    MYSQL_RES * rows = mysql_store_result(m_db);
+	    if (rows)
+	    {
+		MYSQL_ROW row;
+                while ((row = mysql_fetch_row (rows)) != 0)
+			if (!strcmp(row[0],the_setup.DbName))
+			{
+				m_database_found=true;
+				break;
+			}
+	    }
+	    if (m_database_found)
+		    Use();
+	    else
+		    mgWarning("Database %s does not exist",the_setup.DbName);
+    }
+    if (!needGenre2_set && Connected())
     {
 	needGenre2_set=true;
 	needGenre2=exec_count("SELECT COUNT(DISTINCT genre2) from tracks")>1;
     }
     return;
+}
+
+void
+mgmySql::Use()
+{
+	char b[100];
+	sprintf(b,"USE %s;",the_setup.DbName);
+	mysql_query(m_db,b);
+	mgDebug(1,"found database %s",the_setup.DbName);
 }
 
 void

@@ -55,15 +55,17 @@ class mgmySql
 
   long thread_id() { return mysql_thread_id(m_db);}
   long affected_rows() { return mysql_affected_rows(m_db);}
-  bool Connected() const { return m_db;}
+  bool Connected() const;
   bool HasFolderFields() const { return m_hasfolderfields;}
   void Connect();
+  void Use();
   //! \brief create database and tables
   void Create();
   void CreateFolderFields();
 
  private:
   MYSQL *m_db;
+  bool m_database_found;
   bool m_hasfolderfields;
 };
 

@@ -302,14 +302,6 @@ class mgSelection
  */
         string exportM3U ();
 
-	/*! import/export tags like
-	 * \par path can be a file or a directory. If directory, 
-	 * sync all files within 
-	 * \par assorted see mugglei -h
-	 * \par delete_missing if the file does not exist, delete the
-	 * data base entry. If the file is unreadable, do not delete.
-	 */
-	void Sync(const char * path, bool assorted=false,bool delete_missing=false);
 
 /*! \brief go to a position in the current level. If we are at the
  * most detailled level this also sets the track position since

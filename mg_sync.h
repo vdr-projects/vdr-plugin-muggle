@@ -23,14 +23,17 @@ class mgSync
 	public:
 		mgSync();
 		~mgSync();
-		/*! import/export tags like
+		//! \brief drop and create the data base GiantDisc
+		void Create();
+
+		/*! \brief import/export tags like
 	 	 * \par path can be a file or a directory. If directory, 
 	 	 * sync all files within 
 	 	 * \par assorted see mugglei -h
 	 	 * \par delete_missing if the file does not exist, delete the
 	 	 * data base entry. If the file is unreadable, do not delete.
 	 	 */
-		void Sync(const char * path, bool delete_missing=false);
+		void Sync(char * const * path_argv, bool delete_missing=false);
 
 	private:
 		mgmySql m_db;

@@ -687,7 +687,7 @@ class mgSync : public mgCommand
 void
 mgSync::Execute()
 {
-	selection()->Sync(".");
+	// selection()->Sync(".");
 }
 
 //! \brief sets the default collection selection

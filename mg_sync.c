@@ -132,7 +132,9 @@ mgSync::getAlbum(const char *c_album,const char *c_artist,const char *c_director
 
 mgSync::mgSync()
 {
-      	m_genre_rows = m_db.exec_sql ("SELECT id,genre from genre");
+      	if (!m_db.Connected())
+		return;
+	m_genre_rows = m_db.exec_sql ("SELECT id,genre from genre");
  	MYSQL_ROW rx;
 	while ((rx = mysql_fetch_row (m_genre_rows)) != 0)
 		m_Genres[rx[1]]=rx[0];
@@ -281,7 +283,7 @@ mgSync::SyncFile(const char *filename)
 }
 
 void
-mgSync::Sync(const char * path, bool delete_missing)
+mgSync::Sync(char * const * path_argv, bool delete_missing)
 {
 	if (!m_db.Connected())
 	{
@@ -297,21 +299,27 @@ mgSync::Sync(const char * path, bool delete_missing)
 	chdir(the_setup.ToplevelDir);
 	FTS *fts;
 	FTSENT *ftsent;
-	const char * paths[2];
-	paths[0]=path;
-	paths[1]=0;
-	fts = fts_open( const_cast<char *const *>(paths), FTS_LOGICAL, 0);
-	while ( (ftsent = fts_read(fts)) != NULL)
+	fts = fts_open( path_argv, FTS_LOGICAL, 0);
+	if (fts)
 	{
-		if (!((ftsent->fts_statp->st_mode)||S_IFREG))
-			continue;
-      		char *extension = strrchr(ftsent->fts_path,'.');
-      		if (!extension)
-	      		continue;
-		strcpy(c_extension,extension+1);
-      		lower(c_extension);
-		if (!strcmp(c_extension,"flac") || !strcmp(c_extension,"ogg") || !strcmp(c_extension,"mp3"))
-			SyncFile(ftsent->fts_path);
+		while ( (ftsent = fts_read(fts)) != NULL)
+		{
+			if (!((ftsent->fts_statp->st_mode)||S_IFREG))
+				continue;
+      			char *extension = strrchr(ftsent->fts_path,'.');
+      			if (!extension)
+	      			continue;
+			strcpy(c_extension,extension+1);
+      			lower(c_extension);
+			if (!strcmp(c_extension,"flac") || !strcmp(c_extension,"ogg") || !strcmp(c_extension,"mp3"))
+				SyncFile(ftsent->fts_path);
+		}
+		fts_close(fts);
 	}
-	fts_close(fts);
+}
+
+void
+mgSync::Create()
+{
+	m_db.Create();
 }

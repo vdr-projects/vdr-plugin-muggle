@@ -74,13 +74,18 @@ int main( int argc, char *argv[] )
     {
       exit(1);
     }
-  char *filename;
       
   if( argc < 2 )
     { // we need at least a filename!
       std::cout << "mugglei -- import helper for Muggle VDR plugin" << std::endl;
       std::cout << "(C) Lars von Wedel" << std::endl;
       std::cout << "This is free software; see the source for copying conditions." << std::endl;
+      std::cout << "" << std::endl;
+      std::cout << "Usage: mugglei [OPTION]... [FILE]..." << std::endl;
+      std::cout << "" << std::endl;
+      std::cout << "  all FILE arguments will be imported. If they are directories, their content is imported"<< std::endl;
+      std::cout << "" << std::endl;
+      std::cout << "Only files ending in .flac, .mp3, .ogg (ignoring case) will be imported" << std::endl;
       std::cout << "" << std::endl;
       std::cout << "Options:" << std::endl;
       std::cout << "  -h <hostname>       - specify host of mySql database server (default is 'localhost')" << std::endl;
@@ -89,9 +94,10 @@ int main( int argc, char *argv[] )
       std::cout << "  -u <username>       - specify user of mySql database (default is empty)" << std::endl;
       std::cout << "  -p <password>       - specify password of user (default is empty password)" << std::endl;
       std::cout << "  -t <topleveldir>    - name of music top level directory" << std::endl;
-      std::cout << "  -f <filename>       - name of music file or directory to import or update relative to topleveldir" << std::endl;
       std::cout << "  -z                  - scan all database entries and delete entries for files not found" << std::endl;
-      std::cout << "  -c                  - create a new database entry deleting existing entries" << std::endl;
+      std::cout << "                        -z is not yet implemented" << std::endl;
+      std::cout << "  -c                  - delete the entire database and recreate a new empty one" << std::endl;
+      std::cout << "  -v                  - the wanted log level, the higher the more. Default is 1" << std::endl;
 
       exit( 1 );
     }
@@ -100,12 +106,11 @@ int main( int argc, char *argv[] )
   import_assorted = false;
   delete_mode = false;
   create_mode = false;
-  filename = "";
 
   // parse command line options
   while( 1 )
     {
-      int c = getopt(argc, argv, "h:s:n:u:p:t:f:z");
+      int c = getopt(argc, argv, "h:s:n:u:p:t:zcv:");
 
       if (c == -1)
 	break;
@@ -140,10 +145,6 @@ int main( int argc, char *argv[] )
 	  {
 	    the_setup.ToplevelDir = optarg;
 	  } break;
-	case 'f':
-	  {
-	    filename = optarg;
-	  } break;
         case 'z':
           {
             delete_mode = true;
@@ -152,11 +153,18 @@ int main( int argc, char *argv[] )
           {
             create_mode = true;
           } break;
+        case 'v':
+          {
+	    mgSetDebugLevel(atol(optarg));
+          } break;
 	}
     }
 
   mgSync sync;
-  sync.Sync(filename,false);
+  if (create_mode)
+	  sync.Create();
+  if (optind<argc)
+	  sync.Sync(argv+optind,delete_mode);
   return 0;
 }
 
