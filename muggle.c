@@ -3,11 +3,11 @@
  * \brief  Implements a plugin for browsing media libraries within VDR
  *
  * \version $Revision: 1.10 $
- * \date    $Date: 2004/07/29 06:18:07 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  *
- *  $Id: muggle.c,v 1.10 2004/07/29 06:18:07 lvw Exp $
+ *  $Id$
  */
 
 #include <getopt.h>
@@ -93,7 +93,7 @@ bool mgMuggle::ProcessArgs(int argc, char *argv[])
     };
 
   int c, option_index = 0;
-  while( ( c = getopt_long( argc, argv, "h:p:u:w:g:", long_options, &option_index ) ) != -1 ) 
+  while( ( c = getopt_long( argc, argv, "h:p:u:n:t:w:g:", long_options, &option_index ) ) != -1 ) 
     {
       switch (c) 
 	{
@@ -104,7 +104,7 @@ bool mgMuggle::ProcessArgs(int argc, char *argv[])
 	case 'n':
 	  {
 	    the_setup.DbName = optarg;
-	  }
+	  } break;
 	case 'p': 
 	  {
 	    the_setup.DbPort = atoi( optarg );
