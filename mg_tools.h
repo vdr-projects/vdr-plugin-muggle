@@ -32,10 +32,15 @@ MYSQL_RES* mgSqlReadQuery(  MYSQL *db, const char *fmt, ... );
  *
  *  \todo Could be a member of mgDatabase?
  */
-void       mgSqlWriteQuery( MYSQL *db, const char *fmt, ... );
+void mgSqlWriteQuery( MYSQL *db, const char *fmt, ... );
 
 
-/*!  \brief Logging utilities */
+/*!  
+ * \brief Logging utilities 
+ * 
+ * \todo these could be static members in the mgLog class
+ * \todo code of these functions should be compiled conditionally
+ */
 //@{
 void mgSetDebugLevel(int new_level);
 void mgDebug(int level, const char *fmt, ...);
@@ -92,24 +97,4 @@ class mgLog
 
 };
 
-/* -------------------- begin CVS log ---------------------------------
- * $Log: mg_tools.h,v $
- * Revision 1.4  2004/08/30 14:31:43  LarsAC
- * Documentation added
- *
- * Revision 1.3  2004/05/28 15:29:18  lvw
- * Merged player branch back on HEAD branch.
- *
- * Revision 1.2.2.2  2004/04/18 14:08:41  lvw
- * Added some more logging/debugging code
- *
- * Revision 1.2.2.1  2004/04/09 16:14:48  lvw
- * Added further code for logging/debugging.
- *
- * Revision 1.2  2004/02/02 22:48:04  MountainMan
- *  added CVS $Log
- *
- *
- * --------------------- end CVS log ----------------------------------
- */
 #endif /*  _MUGGLE_TOOLS_H */

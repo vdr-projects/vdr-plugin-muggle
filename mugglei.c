@@ -1,3 +1,9 @@
+/*!
+ * \file mugglei.c
+ * \brief implement a small utility for importing files
+ *
+ * \author  Lars von Wedel
+ */
 
 #include <string>
 using namespace std;
@@ -176,10 +182,18 @@ void update_db( long uid, string filename )
 
 	      if( import_assorted )
 		{ // in this case, the album author is "Various Artists"
-		  mgSqlWriteQuery( db, "INSERT INTO album (artist,title,cddbid) VALUES (\"Various Artists\", \"%s\", \"%s\")", album.toCString(), cddbid.toCString() );		}
+		  mgSqlWriteQuery( db, 
+				   "INSERT INTO album (artist,title,cddbid) "
+				   "VALUES (\"Various Artists\", \"%s\", \"%s\")", 
+				   album.toCString(), cddbid.toCString() );		
+		}
 	      else
 		{
-		  mgSqlWriteQuery( db, "INSERT INTO album (artist,title,cddbid) VALUES (\"%s\", \"%s\", \"%s\")", artist.toCString(), album.toCString(), cddbid.toCString() );		}
+		  mgSqlWriteQuery( db, 
+				   "INSERT INTO album (artist,title,cddbid) "
+				   "VALUES (\"%s\", \"%s\", \"%s\")", 
+				   artist.toCString(), album.toCString(), cddbid.toCString() );		
+		}
 	    }
 	  else
 	    { // use first album found as source id for the track
@@ -187,34 +201,35 @@ void update_db( long uid, string filename )
 	    }
 	}
       
-     // update tracks table
+      // update tracks table
       if( uid > 0 )
 	{ // the entry is known to exist already, hence update it
-
+	  
 	  mgSqlWriteQuery( db,	"UPDATE tracks SET artist=\"%s\", title=\"%s\", year=\"%s\","
-							"sourceid=\"%s\", mp3file=\"%s\", length=%d, bitrate=\"%d\","
-							"samplerate=%d, channels=%d WHERE id=%d", 
-							artist.toCString(), title.toCString(), year, 
-							cddbid.toCString(), filename.c_str(), len, bitrate,
-							sample, channels, uid );
+			   "sourceid=\"%s\", mp3file=\"%s\", length=%d, bitrate=\"%d\","
+			   "samplerate=%d, channels=%d WHERE id=%d", 
+			   artist.toCString(), title.toCString(), year, 
+			   cddbid.toCString(), filename.c_str(), len, bitrate,
+			   sample, channels, uid );
 	}
       else
 	{ // the entry does not exist, create it
-		mgSqlWriteQuery( db,"INSERT INTO tracks (artist,title,genre1,genre2,year,"
-							"sourceid,tracknb,mp3file,length,bitrate,samplerate,channels)"
-							" VALUES (\"%s\", \"%s\", \"\", \"\", %d, \"%s\", %d, \"%s\", %d, \"%d\", %d, %d)",
-							artist.toCString(), title.toCString(), year, cddbid.toCString(), 
-							trackno, filename.c_str(), len, bitrate, sample, channels );
-	  /*
-	  cout << "-- TAG --" << endl;
-	  cout << "title   - \"" << tag->title()   << "\"" << endl;
-	  cout << "artist  - \"" << tag->artist()  << "\"" << endl;
-	  cout << "album   - \"" << tag->album()   << "\"" << endl;
-	  cout << "year    - \"" << tag->year()    << "\"" << endl;
-	  cout << "comment - \"" << tag->comment() << "\"" << endl;
-	  cout << "track   - \"" << tag->track()   << "\"" << endl;
-	  cout << "genre   - \"" << tag->genre()   << "\"" << endl;
-	  */
+	  mgSqlWriteQuery( db,"INSERT INTO tracks (artist,title,genre1,genre2,year,"
+			   "sourceid,tracknb,mp3file,length,bitrate,samplerate,channels)"
+			   " VALUES (\"%s\", \"%s\", \"\", \"\", %d, \"%s\", %d, \"%s\", %d, \"%d\", %d, %d)",
+			   artist.toCString(), title.toCString(), year, cddbid.toCString(), 
+			   trackno, filename.c_str(), len, bitrate, sample, channels );
+
+#ifdef VERBOSE
+	    cout << "-- TAG --" << endl;
+	    cout << "title   - \"" << tag->title()   << "\"" << endl;
+	    cout << "artist  - \"" << tag->artist()  << "\"" << endl;
+	    cout << "album   - \"" << tag->album()   << "\"" << endl;
+	    cout << "year    - \"" << tag->year()    << "\"" << endl;
+	    cout << "comment - \"" << tag->comment() << "\"" << endl;
+	    cout << "track   - \"" << tag->track()   << "\"" << endl;
+	    cout << "genre   - \"" << tag->genre()   << "\"" << endl;
+#endif
 	}
     }
 }
