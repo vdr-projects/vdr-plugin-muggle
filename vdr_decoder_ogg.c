@@ -21,7 +21,7 @@
 
 #include "vdr_setup.h"
 
-#include "mg_db.h"
+#include "mg_content.h"
 
 // --- mgOggFile ----------------------------------------------------------------
 

@@ -21,7 +21,7 @@
 #include <sys/stat.h>
 #include <sys/vfs.h>
 
-#include "mg_db.h"
+#include "mg_selection.h"
 
 #include <videodir.h>
 #include <interface.h>

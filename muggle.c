@@ -15,7 +15,7 @@
 #include "vdr_menu.h"
 #include "vdr_setup.h"
 #include "mg_tools.h"
-#include "mg_db.h"
+#include "mg_selection.h"
 
 #include "i18n.h"
 #include <getopt.h>
