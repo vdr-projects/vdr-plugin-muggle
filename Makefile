@@ -21,7 +21,8 @@ CXXFLAGS ?= -O2 -Wall -Woverloaded-virtual -Wno-deprecated -g
 ### The directory environment:
 
 DVBDIR = ../../../../DVB
-VDRDIR = /usr/local/src/VDR
+VDRDIR = ../../../
+# /usr/local/src/VDR
 LIBDIR = ../../lib
 TMPDIR = /tmp
 
@@ -54,7 +55,8 @@ LIBS = -lmad -lmysqlclient -lvorbisfile -lvorbis
 
 ### Targets:
 
-all: libvdr-$(PLUGIN).so mugglei
+all: libvdr-$(PLUGIN).so 
+# mugglei
 
 # Dependencies:
 
