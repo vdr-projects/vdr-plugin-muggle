@@ -69,6 +69,7 @@ char *db_cmds[] =
   "drop table if exists tracks;CREATE TABLE tracks ( artist varchar(255) default NULL, title varchar(255) default NULL, genre1 varchar(10) default NULL, genre2 varchar(10) default NULL, year smallint(5) unsigned default NULL, lang varchar(4) default NULL, type tinyint(3) unsigned default NULL, rating tinyint(3) unsigned default NULL, length smallint(5) unsigned default NULL, source tinyint(3) unsigned default NULL, sourceid varchar(20) default NULL, tracknb tinyint(3) unsigned default NULL, mp3file varchar(255) default NULL, condition tinyint(3) unsigned default NULL, voladjust smallint(6) default '0', lengthfrm mediumint(9) default '0', startfrm mediumint(9) default '0', bpm smallint(6) default '0', lyrics mediumtext, bitrate varchar(10) default NULL, created date default NULL, modified date default NULL, backup tinyint(3) unsigned default NULL, samplerate int(7) unsigned default NULL, channels   tinyint(3) unsigned default NULL,  id int(11) NOT NULL auto_increment, PRIMARY KEY  (id), KEY title (title(10)), KEY mp3file (mp3file(10)), KEY genre1 (genre1), KEY genre2 (genre2), KEY year (year), KEY lang (lang), KEY type (type), KEY rating (rating), KEY sourceid (sourceid), KEY artist (artist(10))) TYPE=MyISAM;"
 };
 
+bool folderfields;
 
 std::string host, user, pass, dbname, sck;
 bool import_assorted, delete_mode, create_mode;
@@ -80,6 +81,28 @@ void showmessage(const char *msg)
 {
 }
 
+void
+init_folderfields()
+{
+  folderfields=false;
+  mysql_query(db,"DESCRIBE tracks folder1");
+  MYSQL_RES *rows = mysql_store_result(db);
+  if (rows)
+    {
+      folderfields = mysql_num_rows(rows)>0;
+      mysql_free_result(rows);
+      if (!folderfields)
+      {
+	      folderfields = !mysql_query(db,
+	              "alter table tracks add column folder1 varchar(255),"
+		      "add column folder2 varchar(255),"
+		      "add column folder3 varchar(255),"
+		      "add column folder4 varchar(255)");
+
+      }
+    }
+}
+
 MYSQL_RES* mgSqlReadQuery(MYSQL *db, const char *fmt, ...)
 {
   va_list ap;
@@ -88,7 +111,7 @@ MYSQL_RES* mgSqlReadQuery(MYSQL *db, const char *fmt, ...)
   
   if( mysql_query(db, querybuf) )
     {
-      mgError( "SQL error in MUGGLE:\n%s\n", querybuf );
+      mgError( "SQL error in MUGGLE:\n%s: %s\n", querybuf,mysql_error(db) );
     }
   
   MYSQL_RES *result = mysql_store_result(db);
@@ -105,7 +128,7 @@ void mgSqlWriteQuery(MYSQL *db, const char *fmt, ...)
   
   if( mysql_query(db, querybuf) )
     {
-      mgError( "SQL error in MUGGLE:\n%s\n", querybuf );
+      mgError( "SQL error in MUGGLE:\n%s %s\n", querybuf,mysql_error(db) );
     }
   
   va_end(ap);
@@ -342,7 +365,7 @@ void update_db( long uid, std::string filename )
 	    }
 	  else
 	    { // use first album found as source id for the track
-	      cddbid = row[0];
+	      cddbid = escape_string(db,row[0]);
 	    }
 	}
       else
@@ -389,7 +412,7 @@ void update_db( long uid, std::string filename )
 	    }
 	  else
 	    { // use first album found as source id for the track
-	      cddbid = row[0];
+	      cddbid = escape_string(db,row[0]);
 	    }
 	}
       
@@ -406,7 +429,58 @@ void update_db( long uid, std::string filename )
 	}
       else
 	{ // the entry does not exist, create it
-	  mgSqlWriteQuery( db,
+	  if (folderfields)
+	  {
+	    char *path = strdup(filename.c_str());
+	    char *folder1="";
+	    char *folder2="";
+	    char *folder3="";
+	    char *folder4="";
+	    char *p=path;
+	    char *slash;
+	    slash=strchr(p,'/');
+	    if (slash)
+	    {
+	    	folder1=p;
+		*slash=0;
+		p=slash+1;
+	    	slash=strchr(p,'/');
+	    	if (slash)
+	    	{
+	    		folder2=p;
+	    		*slash=0;
+			p=slash+1;
+	    		slash=strchr(p,'/');
+	    		if (slash)
+	    		{
+	    			folder3=p;
+	    			*slash=0;
+				p=slash+1;
+	    			slash=strchr(p,'/');
+	    			if (slash)
+	    			{
+	    				folder4=p;
+	    				*slash=0;
+				}
+			}
+		}
+	    }
+  	    TagLib::String f1 = escape_string( db, folder1 );
+  	    TagLib::String f2 = escape_string( db, folder2 );
+  	    TagLib::String f3 = escape_string( db, folder3 );
+  	    TagLib::String f4 = escape_string( db, folder4 );
+	    mgSqlWriteQuery( db,
+			   "INSERT INTO tracks "
+			   "(artist, title,  year,sourceid,tracknb,mp3file,length,bitrate,samplerate,channels,genre1,genre2,lang,folder1,folder2,folder3,folder4) VALUES"
+			   "(\"%s\", \"%s\", %d,  \"%s\",  %d,     \"%s\", %d,    \"%d\", %d,        %d,      \"%s\",\"\",\"%s\","
+			   	"\"%s\",\"%s\",\"%s\",\"%s\")",
+			   artist.toCString(), title.toCString(), year, cddbid.toCString(), 
+			   trackno, filename.c_str(), len, bitrate, sample, channels, gid.toCString(),
+			   language.toCString(),f1.toCString(),f2.toCString(),f3.toCString(),f4.toCString());
+	    free(path);
+	  }
+	  else
+	    mgSqlWriteQuery( db,
 			   "INSERT INTO tracks "
 			   "(artist, title,  year,sourceid,tracknb,mp3file,length,bitrate,samplerate,channels,genre1,genre2,lang) VALUES"
 			   "(\"%s\", \"%s\", %d,  \"%s\",  %d,     \"%s\", %d,    \"%d\", %d,        %d,      \"%s\",\"\",\"%s\")",
@@ -618,6 +692,7 @@ int main( int argc, char *argv[] )
 
   if( 0 == init_database() )
     {  
+      init_folderfields();
       if( delete_mode )
 	{
 	  update_tags( -1 );

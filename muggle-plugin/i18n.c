@@ -999,13 +999,64 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {
-        "Genre 1",
-        "Genre 1",
+        "Folder1",
+        "Ordner1",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "Genre 1",                                // TODO
+        "Folder1",                                // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {
+        "Folder2",
+        "Ordner2",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "Folder2",                                // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {
+        "Folder3",
+        "Ordner3",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "Folder3",                                // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {
+        "Folder4",
+        "Ordner4",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "Folder4",                                // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO

@@ -57,7 +57,7 @@ MIFLAGS += -I/usr/include/taglib -lmysqlclient
 
 OBJS = $(PLUGIN).o i18n.o mg_valmap.o mg_order.o mg_db.o mg_actions.o vdr_menu.o mg_tools.o \
 	vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o \
-	vdr_setup.o
+	vdr_setup.o mg_setup.o
 
 LIBS = -lmad -lmysqlclient 
 MILIBS = -lmysqlclient -ltag

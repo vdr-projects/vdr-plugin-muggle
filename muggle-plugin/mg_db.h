@@ -178,12 +178,6 @@ class mgSelection
  */
         mgSelection (const mgSelection* s);
 
-/*! \brief the assignment operator. Does a deep copy.
- * Some of the data base content will only be retrieved by the
- * new mgSelection as needed, so some data base
- * overhead is involved
- */
-	const mgSelection& operator=(const mgSelection& s);
 
 //! \brief initializes from a map.
 	void InitFrom(mgValmap& nv);
@@ -397,6 +391,16 @@ class mgSelection
  */
         string exportM3U ();
 
+	/*! import/export tags like
+	 * \par path can be a file or a directory. If directory, 
+	 * sync all files within but by default non recursive
+	 * \par recursive recurse into all directories beneath path
+	 * \par assorted see mugglei -h
+	 * \par delete_missing if the file does not exist, delete the
+	 * data base entry. If the file is unreadable, do not delete.
+	 */
+	void Sync(string path, bool recursive=false,bool assorted=false,bool delete_missing=false);
+
 /*! \brief go to a position in the current level. If we are at the
  * most detailled level this also sets the track position since
  * they are identical.
@@ -530,7 +534,7 @@ class mgSelection
         mgOrder order;
 	bool UsedBefore (mgOrder *o,const mgKeyTypes kt, unsigned int level) const;
         void InitSelection ();
-        void InitDatabase ();
+        void Connect ();
 	/*! \brief returns the SQL command for getting all values. 
 	 * For the leaf level, all values are returned. For upper
 	 * levels, every distinct value is returned only once.
