@@ -140,7 +140,7 @@ bool mgPlaylist::remove( unsigned pos )
 {
   bool result = false;
 
-  if( pos > 0 && pos != m_current_idx )
+  if( pos != m_current_idx )
     {
       result = mgTracklist::remove( pos );
       
