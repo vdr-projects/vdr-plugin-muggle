@@ -227,10 +227,10 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	    }
 	  else
 	    {
-	      // Back pressed on root level... Go back to Main VDR menu
-	      
-	      // state = osBack;
-	      state = osContinue;
+	      // Back pressed on root level... Go back to Main VDR menu	      
+	      state = osBack;
+
+	      // state = osContinue;
 	    }
 	}      
     }
