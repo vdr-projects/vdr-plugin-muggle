@@ -5,6 +5,7 @@ using namespace std;
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 
 #include <mysql/mysql.h>
 
@@ -73,16 +74,15 @@ long find_file_in_database( string filename )
 void update_db( long uid, string filename )
 {
   // char title[1024], album[1024], year[5], artist[1024], cddbid[20], trackno[5];
-  TagLib::String title, album, artist, genre;
+  TagLib::String title, album, artist, genre, cddbid;
   uint trackno, year;
-  string cddbid;
 
   //  ID3_Tag filetag( filename.c_str() );
   TagLib::FileRef f( filename.c_str() );
 
   if( !f.isNull() && f.tag() ) 
     {
-      cout << "Evaluating " << filename << endl;
+      //      cout << "Evaluating " << filename << endl;
       TagLib::Tag *tag = f.tag();
 
       // obtain tag information
@@ -116,10 +116,10 @@ void update_db( long uid, string filename )
 	      long id = random();
 	      char *buf;
 	      asprintf( &buf, "%d-%s", id, album.toCString() );
-	      cddbid = buf;
+	      cddbid = TagLib::String( buf ).substr( 0, 20 );
 	      free( buf );
 	  
-	      mgSqlWriteQuery( db, "INSERT INTO album (artist,title,cddbid) VALUES (\"%s\", \"%s\", \"%s\")", artist.toCString(), album.toCString(), cddbid.c_str() );
+	      mgSqlWriteQuery( db, "INSERT INTO album (artist,title,cddbid) VALUES (\"%s\", \"%s\", \"%s\")", artist.toCString(), album.toCString(), cddbid.toCString() );
 	    }
 	  else
 	    { // use first album found as source id for the track
@@ -131,33 +131,26 @@ void update_db( long uid, string filename )
       if( uid > 0 )
 	{ // the entry is known to exist already, hence update it
 	  mgSqlWriteQuery( db, "UPDATE tracks SET artist=\"%s\", title=\"%s\", year=\"%s\", sourceid=\"%s\", mp3file=\"%s\""
-			   "WHERE id=%d", artist.toCString(), title.toCString(), year, cddbid.c_str(), filename.c_str(), uid );
+			   "WHERE id=%d", artist.toCString(), title.toCString(), year, cddbid.toCString(), filename.c_str(), uid );
 	}
       else
 	{ // the entry does not exist, create it
 	  // int t = title.find( "'" );
 	  // int a = artist.find( "'" );
-	      mgSqlWriteQuery( db, 
-			       "INSERT INTO tracks (artist,title,year,sourceid,tracknb,mp3file)"
-			       " VALUES (\"%s\", \"%s\", %d, \"%s\", %d, \"%s\")",
-			       artist.toCString(), title.toCString(), year, cddbid.c_str(), trackno, filename.c_str() );
-	      /*
-      	  if( !( t > 0 || a > 0 ) )
-	    {
-	    }
-	  else
-	    {
-	      cout << filename << " skipped." << endl;
-	      cout << "-- TAG --" << endl;
-	      cout << "title   - \"" << tag->title()   << "\"" << endl;
-	      cout << "artist  - \"" << tag->artist()  << "\"" << endl;
-	      cout << "album   - \"" << tag->album()   << "\"" << endl;
-	      cout << "year    - \"" << tag->year()    << "\"" << endl;
-	      cout << "comment - \"" << tag->comment() << "\"" << endl;
-	      cout << "track   - \"" << tag->track()   << "\"" << endl;
-	      cout << "genre   - \"" << tag->genre()   << "\"" << endl;
-	    }
-	      */
+	  mgSqlWriteQuery( db, 
+			   "INSERT INTO tracks (artist,title,year,sourceid,tracknb,mp3file)"
+			   " VALUES (\"%s\", \"%s\", %d, \"%s\", %d, \"%s\")",
+			   artist.toCString(), title.toCString(), year, cddbid.toCString(), trackno, filename.c_str() );
+	  /*
+	  cout << "-- TAG --" << endl;
+	  cout << "title   - \"" << tag->title()   << "\"" << endl;
+	  cout << "artist  - \"" << tag->artist()  << "\"" << endl;
+	  cout << "album   - \"" << tag->album()   << "\"" << endl;
+	  cout << "year    - \"" << tag->year()    << "\"" << endl;
+	  cout << "comment - \"" << tag->comment() << "\"" << endl;
+	  cout << "track   - \"" << tag->track()   << "\"" << endl;
+	  cout << "genre   - \"" << tag->genre()   << "\"" << endl;
+	  */
 	}
     }
 }
@@ -215,6 +208,11 @@ int main( int argc, char *argv[] )
   dbname = "GiantDisc";
   pass   = NULL;
   */
+
+  struct timeval tv;
+  struct timezone tz;
+  gettimeofday( &tv, &tz );
+  srandom( tv.tv_usec );
 
   int res = init_database();
 
