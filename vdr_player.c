@@ -2,12 +2,12 @@
  * \file vdr_player.c
  * \brief A generic PCM player for a VDR media plugin (muggle)
  *
- * \version $Revision: 1.6 $
- * \date    $Date: 2004/07/26 22:20:55 $
+ * \version $Revision: 1.7 $
+ * \date    $Date: 2004/07/27 20:50:54 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  Responsible author: $Author: lvw $
  *
- * $Id: vdr_player.c,v 1.6 2004/07/26 22:20:55 lvw Exp $
+ * $Id: vdr_player.c,v 1.7 2004/07/27 20:50:54 lvw Exp $
  *
  * Adapted from 
  * MP3/MPlayer plugin to VDR (C++)
@@ -247,7 +247,7 @@ void mgPCMPlayer::Activate(bool on)
 	  Lock();
 
 	  m_playlist->initialize();
-	  NextFile();
+	  m_current = m_playlist->getCurrent();
 	  Play();
 
 	  Unlock();
@@ -1050,6 +1050,9 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 /************************************************************
  *
  * $Log: vdr_player.c,v $
+ * Revision 1.7  2004/07/27 20:50:54  lvw
+ * Playlist indexing now working
+ *
  * Revision 1.6  2004/07/26 22:20:55  lvw
  * Reworked playlist indexing
  *
