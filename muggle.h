@@ -1,24 +1,19 @@
-/*******************************************************************/
-/*! \file   muggle.h
- *  \brief  Implements a plugin for browsing media libraries within VDR
- ******************************************************************** 
- * \version $Revision: 1.4 $
- * \date    $Date: 2004/02/03 19:28:46 $
+/*! 
+ * \file   muggle.h
+ * \brief  Implements a plugin for browsing media libraries within VDR
+ *
+ * \version $Revision: 1.5 $
+ * \date    $Date: 2004/05/28 15:29:18 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: lvw $
+ *
+ *  $Id: muggle.h,v 1.5 2004/05/28 15:29:18 lvw Exp $
  */
-/*******************************************************************/
 
 #ifndef _MUGGLE_H
 #define _MUGGLE_H
 
-#undef SHELL_TEST
-
-#ifdef SHELL_TEST
-  #include "shell_plugin.h"
-#else
-  #include <plugin.h>
-#endif
+#include <plugin.h>
 
 class mgMedia;
 class mgSelectionTreeNode;

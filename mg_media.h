@@ -1,15 +1,14 @@
-/*******************************************************************/
-/*! \file  mgmedia.h
+/*! 
+ * \file  mgmedia.h
  * \brief  Top level access to media in vdr plugin muggle
- * for the vdr muggle plugindatabase
- ******************************************************************** 
- * \version $Revision: 1.10 $
- * \date    $Date: 2004/02/12 09:15:07 $
+ *
+ * \version $Revision: 1.11 $
+ * \date    $Date: 2004/05/28 15:29:18 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  Responsible author: $Author: lvw $
  */
-/*******************************************************************/
-/* makes sure we dont use parse the same declarations twice */
+
+// makes sure we dont use parse the same declarations twice
 #ifndef _MG_MEDIA_H
 #define _MG_MEDIA_H
 
@@ -25,63 +24,61 @@ class mgFilter;
 class mgFilterSets;
 
 /*! 
- *******************************************************************
  * \class mgFilterSets
  *
- * Represents one or several sets of filters to set and memorize
- * search constraint 
- ********************************************************************/
-class mgFilterSets {
+ * Represents one or several sets of filters to set and memorize search constraint 
+ */
+class mgFilterSets 
+{
  protected:
   int m_activeSetId;
-   std::vector<mgFilter*> *m_activeSet;   // pointer to the active filter set
+  std::vector<mgFilter*> *m_activeSet;   // pointer to the active filter set
   
-   std::vector< std::vector<mgFilter*>*> m_sets;
   // stores name-value pairs, even if a different set is active
+  std::vector< std::vector<mgFilter*>*> m_sets;
 
-   std::vector<std::string>             m_titles;
   // stores the titles for all filters
+  std::vector<std::string>             m_titles;
 
  public:
-  mgFilterSets();
   // constructor, constracts a number >=1 of filter sets
   // the first set (index 0 ) is active by default
+  mgFilterSets();
 
-  virtual ~mgFilterSets();
   // destructor
+  virtual ~mgFilterSets();
 
-  int numSets(); 
   // returns the number of available sets
+  int numSets(); 
 
-  void nextSet();
   // proceeds to the next one in a circular fashion
+  void nextSet();
 
-  void select(int n);
   // activates a specific set by index
+  void select(int n);
 
-  virtual void clear();
   // restores the default values for all filter values in the active set
   // normally, the default values represent 'no restrictions'
+  virtual void clear();
 
-  void accept();
   // stores the current filter values
+  void accept();
 
-   std::vector<mgFilter*> *getFilters();
   // returns the active set to the application
   // the application may temporarily modify the filter values 
   // accept() needs to be called to memorize the changed values
+  std::vector<mgFilter*> *getFilters();
 
-  virtual  std::string computeRestriction(int *viewPrt)=0;
   // computes the (e.g. sql-) restrictions specified by the active filter set
   // and returns the index of the appropriate defualt view in viewPrt
+  virtual  std::string computeRestriction(int *viewPrt)=0;
 
-  std::string getTitle();
   // returns title of active filter set
+  std::string getTitle();
 };
 
 
 /*! 
- *******************************************************************
  * \class mgMedia
  *
  * \brief main class to access content in the vdr plugin muggle
@@ -90,7 +87,7 @@ class mgFilterSets {
  * where the data type is explicitelymentioned. 
  * The class provides a set of objects that abstract from the data
  * type and source
- ********************************************************************/
+ */
 class mgMedia
 {
  
@@ -149,6 +146,18 @@ class mgMedia
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: mg_media.h,v $
+ * Revision 1.11  2004/05/28 15:29:18  lvw
+ * Merged player branch back on HEAD branch.
+ *
+ * Revision 1.10  2004/02/12 09:15:07  LarsAC
+ * Moved filter classes into separate files
+ *
+ * Revision 1.9.2.2  2004/05/25 00:10:45  lvw
+ * Code cleanup and added use of real database source files
+ *
+ * Revision 1.9.2.1  2004/03/02 07:05:50  lvw
+ * Initial adaptations from MP3 plugin added (untested)
+ *
  * Revision 1.10  2004/02/12 09:15:07  LarsAC
  * Moved filter classes into separate files
  *

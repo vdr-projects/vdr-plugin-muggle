@@ -1,24 +1,23 @@
-/*******************************************************************/
-/*! \file   gd_content_interface.h
- *  \brief  Data Objects for content (e.g. mp3 files, movies)
- *          for the vdr muggle plugindatabase
- ******************************************************************** 
- * \version $Revision: 1.6 $
- * \date    $Date: 2004/02/23 15:41:21 $
+/*! 
+ * \file   gd_content_interface.h
+ * \brief  Data objects for content (e.g. mp3 files, movies)
+ *         for the vdr muggle plugin database
+ *          
+ * \version $Revision: 1.7 $
+ * \date    $Date: 2004/05/28 15:29:18 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: RaK $
+ * \author  Responsible author: $Author: lvw $
  * 
- * Declares main classes of for content items and interfaces to SQL databases
+ * Declares main classes for content items and interfaces to SQL databases
  *
  * This file defines the following classes 
- * - mgPlaylist    a playlist
- * - mgGdTrack     a single track (content item). e.g. an mp3 file
- * - mgSelection   a set of tracks (e.g. a database subset matching certain criteria)
+ *  - gdFilterSets
+ *  - mgGdTrack     a single track (content item). e.g. an mp3 file
+ *  - mgSelection   a set of tracks (e.g. a database subset matching certain criteria)
  *
  */
-/*******************************************************************/
 
-/* makes sure we dont use parse the same declarations twice */
+/* makes sure we dont use the same declarations twice */
 #ifndef _GD_CONTENT_INTERFACE_H
 #define _GD_CONTENT_INTERFACE_H
 
@@ -29,75 +28,158 @@
 
 #include "mg_content_interface.h"
 #include "mg_media.h"
-#include "mg_filters.h"
 
+#include "mg_playlist.h"
+#include "mg_filters.h"
 #include "i18n.h"
 
-// non-member function
+// non-member functions
 int GdInitDatabase(MYSQL *db);
 std::vector<std::string> *GdGetStoredPlaylists(MYSQL db);
 
+/*! 
+ * \brief A set of filters to search for content
+ */
 class gdFilterSets : public mgFilterSets 
 {
 
  public:
+
+  /*!
+   * \brief the default constructor
+   *
+   * Constructs a number ( >= 1 ) of filter sets where
+   * the first (index 0) is active by default.
+   */
   gdFilterSets();
-  // constructor, constracts a number >=1 of filter sets
-  // the first set (index 0 ) is active by default
 
+  /*!
+   * \brief the destructor
+   */
   virtual ~gdFilterSets();
-  // destructor
 
+  /*!
+   * \brief compute restriction w.r.t active filters
+   *
+   * Computes the (e.g. sql) restrictions specified by
+   * the active filter sets.
+   *
+   * \param viewPort - after call, contains the index of the appropriate default view in  
+   */
   virtual  std::string computeRestriction(int *viewPrt);
-  // computes the (e.g. sql-) restrictions specified by the active filter set
-  // and returns the index of the appropriate defualt view in viewPrt
-
 };
 
 
 /*! 
- *******************************************************************
- * \class mgGdTrack
- *
  * \brief represents a a single track 
+ 
  * This may be any content item. e.g. a mp3 fileselection
- * 
  * The object is initially created with a database identifier.
  * The actual data is only read when a content field is accessed for
- * The first time
- ********************************************************************/
+ * the first time. For subsequent access, cached values are used.
+ */
 class  mgGdTrack : public mgContentItem
 {
 
 private:
+
+	/*! 
+	 * \brief the database in which the track resides 
+	 * */
   MYSQL m_db;
-  bool m_retrieved; // false if content field values have not yet been 
-                   // retrieved from database. This is done on demand
+  
+  /*!
+   * \brief a dirty flag
+   *
+   * false, if content field values have not yet been retrieved
+   * from the database. Set to true when contents are retrieved
+   * (on demand only).
+   */
+  bool m_retrieved;
 
   // content fields
+  /*!
+   * \brief the artist name
+   */
   std::string m_artist;
+
+  /*! 
+   * \brief the track title
+   */
   std::string m_title;
+
+  /*!
+   * \brief the filename
+   */
   std::string m_mp3file;
+
+  /*!
+   * \brief The album to which the file belongs
+   */
   std::string m_album;
+
+  /*!
+   * \brief The genre of the music
+   */
   std::string m_genre; 
+  
+  /*!
+   * \brief The year in which the track appeared
+   */
   int m_year; 
+  
+  /*!
+   * \brief The rating by the user
+   */
   int m_rating;
+  
+  /*!
+   * \brief The length of the file in bytes.
+   * \todo TODO: is this true? Or what length are we talking about?
+   */
   int m_length;
 
+  /*!
+   * \brief Access the data of the item from the database
+   */
   bool readData();
 
  public:
-
  
-   /* constructor */
-  mgGdTrack(){ m_uniqID = -1;} // creates invalid item
-  mgGdTrack(int sqlIdentifier, MYSQL dbase);
+  /*!
+   * \brief a constructor 
+   * 
+   * Creates an invalid item.
+   *
+   * \todo does this make sense?
+   */
+  mgGdTrack()
+  { 
+    m_uniqID = -1;
+  }  
+  
+  /*!
+   * \brief a constructor for a specific item
+   *
+   * The constructor creates a specific item in a given database
+   *
+   * \param sqlIdentifier - a unique ID of the item which will be represented
+   * \param dbase - the database in which the item exists
+   */
+  mgGdTrack( int sqlIdentifier, MYSQL dbase );
+
+  /*!
+   * \brief a copy constructor
+   */
   mgGdTrack(const mgGdTrack&);
 
-  /* destructor */
+  /*!
+   * \brief the destructor 
+   */
   virtual ~mgGdTrack();
   
   virtual mgContentItem::contentType getContentType(){return mgContentItem::GD_AUDIO;}
+  
   virtual mgMediaPlayer getPlayer()
     {
       return mgMediaPlayer();
@@ -106,13 +188,17 @@ private:
   /* data acess */
   //virtual functions of the base class 
   virtual std::string getSourceFile();
+  
   virtual std::string getTitle();
-  virtual std::string getLabel(int col);
+  
+  virtual std::string getLabel(int col = 0);
 
   virtual std::vector<mgFilter*> *getTrackInfo();
+  
   virtual bool setTrackInfo(std::vector<mgFilter*>*);
 
   virtual std::string getGenre();
+  
   virtual int getRating();
 
   // additional class-specific functions
@@ -221,12 +307,41 @@ public:
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.h,v $
+ * Revision 1.7  2004/05/28 15:29:18  lvw
+ * Merged player branch back on HEAD branch.
+ *
+ *
  * Revision 1.6  2004/02/23 15:41:21  RaK
  * - first i18n attempt
  *
  * Revision 1.5  2004/02/12 09:15:07  LarsAC
  * Moved filter classes into separate files
  *
+ * Revision 1.4.2.6  2004/05/25 00:10:45  lvw
+ * Code cleanup and added use of real database source files
+ *
+ * Revision 1.4.2.5  2004/04/01 21:35:32  lvw
+ * Minor corrections, some debugging aid.
+ *
+ * Revision 1.4.2.4  2004/03/14 17:57:30  lvw
+ * Linked against libmad. Introduced config options into code.
+ *
+ * Revision 1.4.2.3  2004/03/10 13:11:24  lvw
+ * Added documentation
+ *
+ * Revision 1.4.2.2  2004/03/08 07:14:27  lvw
+ * Preliminary changes to muggle player
+ *
+ * Revision 1.4.2.1  2004/03/02 07:05:50  lvw
+ * Initial adaptations from MP3 plugin added (untested)
+ *
+ * Revision 1.6  2004/02/23 15:41:21  RaK
+ * - first i18n attempt
+ *
+ * Revision 1.5  2004/02/12 09:15:07  LarsAC
+ * Moved filter classes into separate files
+ *
+>>>>>>> 1.4.2.6
  * Revision 1.4  2004/02/09 19:27:52  MountainMan
  * filter set implemented
  *

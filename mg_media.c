@@ -1,20 +1,21 @@
-/*******************************************************************/
 /*! \file   mg_media.c
  *  \brief  Top level access to media in vdr plugin muggle
- *          for the vdr muggle plugindatabase
- ******************************************************************** 
- * \version $Revision: 1.12 $
- * \date    $Date: 2004/02/23 16:30:58 $
+ *
+ * \version $Revision: 1.13 $
+ * \date    $Date: 2004/05/28 15:29:18 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: RaK $
+ * \author  Responsible author: $Author: lvw $
  */
-/*******************************************************************/
 
 /* makes sure we dont parse the same declarations twice */
 #include "mg_media.h"
+
 #include "mg_tools.h"
 #include "mg_content_interface.h"
+
 #include "gd_content_interface.h"
+
+#include "vdr_setup.h"
 
 using namespace std;
 
@@ -22,19 +23,16 @@ using namespace std;
 //        mgFilterSets
 //-------------------------------------------------------------------
 /*! 
- *******************************************************************
-  * \brief constructor
-  *
-  * constructor of the base class
- ********************************************************************/
+ * \brief constructor
+ *
+ * constructor of the base class
+ */
+
 mgFilterSets::mgFilterSets()
 {
   // nothing to be done in the base class
 }
- /*! 
- *******************************************************************
- * \brief destructor
- ********************************************************************/
+
 mgFilterSets::~mgFilterSets()
 {
   vector<mgFilter*> *set;
@@ -52,7 +50,7 @@ mgFilterSets::~mgFilterSets()
   }
   m_sets.clear();
 }
- /*! 
+/*! 
  *******************************************************************
  * \brief returns the number of available sets
  ********************************************************************/
@@ -139,9 +137,8 @@ void mgFilterSets::select(int n)
 
 
 /*! 
- *******************************************************************
  * \brief return title of the active filter set
- ********************************************************************/
+ */
 string mgFilterSets::getTitle()
 {
   if(m_activeSetId < (int) m_titles.size())
@@ -156,15 +153,11 @@ string mgFilterSets::getTitle()
   }
 }
 
-//-------------------------------------------------------------------
-//        mgFilterSets
-//-------------------------------------------------------------------
 /*! 
- *******************************************************************
  * \class mgMedia
  *
  * \brief mein class to access content in the vdr plugin muggle
- ********************************************************************/
+ */
 mgMedia::mgMedia(contentType mediatype)
 {
     int errval = 0;
@@ -180,7 +173,7 @@ mgMedia::mgMedia(contentType mediatype)
 	case GD_MP3:
 	{
 	    errval = GdInitDatabase(&m_db);
-	    mgDebug(3, "Successfully conntected to sql database 'GiantDisc'"); 
+	    mgDebug(3, "Successfully conntected to sql database %s", the_setup.DbName ); 
 	}
     }
     if(errval < 0)
@@ -193,8 +186,8 @@ mgMedia::mgMedia(contentType mediatype)
     {
 	case GD_MP3:
 	{
-	    errval = GdInitDatabase(&m_db);
-	    mgDebug(3, "Successfully conntected to sql database 'GiantDisc'"); 
+	  errval = GdInitDatabase( &m_db ); // TODO: why duplicate this? LVW 
+	  mgDebug(3, "Successfully conntected to sql database %s", the_setup.DbName ); 
 	}
     }
 }
@@ -220,7 +213,9 @@ string mgMedia::getMediaTypeName()
     switch(m_mediatype)
     {
 	case GD_MP3:
+	  {
 	    return "GiantDisc";
+	  } break;
     }	    
     mgError("implementation Error"); // we should never get here
     return "";
@@ -429,6 +424,24 @@ mgSelectionTreeNode *mgMedia::applyActiveFilter()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: mg_media.c,v $
+ * Revision 1.13  2004/05/28 15:29:18  lvw
+ * Merged player branch back on HEAD branch.
+ *
+ * Revision 1.12  2004/02/23 16:30:58  RaK
+ * - album search error because of i18n corrected
+ *
+ * Revision 1.11  2004/02/12 09:15:07  LarsAC
+ * Moved filter classes into separate files
+ *
+ * Revision 1.10.2.3  2004/05/25 00:10:45  lvw
+ * Code cleanup and added use of real database source files
+ *
+ * Revision 1.10.2.2  2004/03/14 17:57:30  lvw
+ * Linked against libmad. Introduced config options into code.
+ *
+ * Revision 1.10.2.1  2004/03/02 07:05:50  lvw
+ * Initial adaptations from MP3 plugin added (untested)
+ *
  * Revision 1.12  2004/02/23 16:30:58  RaK
  * - album search error because of i18n corrected
  *
@@ -451,8 +464,5 @@ mgSelectionTreeNode *mgMedia::applyActiveFilter()
  * Revision 1.7  2004/02/02 22:48:04  MountainMan
  *  added CVS $Log
  *
- *
  * --------------------- end CVS log ----------------------------------
  */
-
-

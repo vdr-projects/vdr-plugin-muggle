@@ -3,10 +3,10 @@
  *  \brief  Top level access to media in vdr plugin muggle
  *          for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.1 $
- * \date    $Date: 2004/02/12 09:15:07 $
+ * \version $Revision: 1.2 $
+ * \date    $Date: 2004/05/28 15:29:18 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: lvw $
  */
 /*******************************************************************/
 

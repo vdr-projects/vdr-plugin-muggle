@@ -1,33 +1,35 @@
-/*******************************************************************/
-/*! \file   vdr_menu.c
- *  \brief  Implements menu handling for browsing media libraries within VDR
- ******************************************************************** 
- * \version $Revision: 1.19 $
- * \date    $Date: 2004/02/23 17:03:24 $
- * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: RaK $
+/*! 
+ * \file   vdr_menu.c
+ * \brief  Implements menu handling for browsing media libraries within VDR
  *
- * $Id: vdr_menu.c,v 1.19 2004/02/23 17:03:24 RaK Exp $
+ * \version $Revision: 1.20 $
+ * \date    $Date: 2004/05/28 15:29:19 $
+ * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
+ * \author  Responsible author: $Author: lvw $
+ *
+ * $Id: vdr_menu.c,v 1.20 2004/05/28 15:29:19 lvw Exp $
  */
-/*******************************************************************/
+
+#include <string>
+#include <vector>
+
+#include <mysql/mysql.h>
 
 #include <menuitems.h>
 #include <tools.h>
-#include <mysql/mysql.h>
 
 #include "vdr_menu.h"
+#include "vdr_player.h"
+#include "i18n.h"
 
 #include "mg_content_interface.h"
+#include "mg_playlist.h"
+#define DEBUG
 #include "mg_tools.h"
 #include "mg_media.h"
 #include "mg_filters.h"
 
 #include "gd_content_interface.h"
-
-#include "i18n.h"
-
-#include <string>
-#include <vector>
 
 using namespace std;
 
@@ -51,9 +53,6 @@ void mgMenuTreeItem::Set()
   SetText( buffer, false );  
 }
 
-// ----------------------- mgMenuTrackItem ------------------
-
-
 // ----------------------- mgMainMenu ----------------------
 
 mgMainMenu::mgMainMenu(mgMedia *media, mgSelectionTreeNode *root, mgPlaylist *playlist)
@@ -63,28 +62,6 @@ mgMainMenu::mgMainMenu(mgMedia *media, mgSelectionTreeNode *root, mgPlaylist *pl
   
   SetTitle( tr("Muggle Media Database") );
   SetButtons();
-
-  m_filtername = new char[32];
-  strcpy( m_filtername, "none" );
-
-  m_title = new char[32];
-  strcpy( m_title, "none" );
-
-  m_interpret = new char[32];
-  strcpy( m_interpret, "none" );
-
-  m_album = new char[32];
-  strcpy( m_album, "none" );
-
-  m_playlist = new char[32];
-  strcpy( m_playlist, "none" );
-
-  m_year_min   = 1900;
-  m_year_max   = 2100;
-
-  m_filter     = 0;
-
-  m_tracklist = NULL;
 
   DisplayTree( m_root );
 }
@@ -110,17 +87,17 @@ void mgMainMenu::SetButtons(  )
     {
       SetHelp( tr("Add"), tr("Cycle tree"), tr("Playlist"), tr("Submenu") );
     }
+  else if( m_state == TREE_SUBMENU )
+    {
+      SetHelp( tr("Instant Play"), tr("2"), tr("3"), tr("Mainmenu") );
+    }
   else if( m_state == PLAYLIST )
     {
-      SetHelp( tr("Edit PL"), tr("Track info"), tr("Filter"), tr("Submenu") );
+      SetHelp( tr("Play"), tr("Move"), tr("Filter"), tr("Submenu") );
     }
-  else if( m_state == PLAYLIST_TRACKINFO )
+  else if( m_state == PLAYLIST_SUBMENU )
     {
-      SetHelp( tr("Edit PL?"), tr("Album info"), tr("Filter"), tr("Submenu") );
-    }
-  else if( m_state == PLAYLIST_ALBUMINFO )
-    {
-      SetHelp( tr("Edit PL?"), tr("Playlist"), tr("Filter"), tr("Submenu") );
+      SetHelp( tr("Load"), tr("Save"), tr("Delete"), tr("Mainmenu") );
     }
   else if( m_state == FILTER )
     {
@@ -132,9 +109,17 @@ void mgMainMenu::SetButtons(  )
     }  
 }
 
+void mgMainMenu::Move( int from, int to )
+{
+  m_current_playlist->move( from, to );
+
+  cOsdMenu::Move( from, to );
+  Display();
+}
+
 eOSState mgMainMenu::ProcessKey(eKeys key)
 {
-  mgDebug( 1,  "mgMainMenu::ProcessKey" );
+  MGLOG( "mgMainMenu::ProcessKey" );
   eOSState state = cOsdMenu::ProcessKey(key);
 
   if( m_state == TREE )
@@ -169,10 +154,10 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 
 		    if( tracks )
 		      {
-			m_current_playlist->appendList(tracks);
 			
 			char buffer[256];
 			sprintf( buffer, "%d tracks sent to current playlist", (int) tracks->size() );
+			m_current_playlist->appendList(tracks);
 			Interface->Status( buffer );
 			Interface->Flush();
 		      }
@@ -201,8 +186,7 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	      } break;
 	    case kBlue:
 	      {
-		mgDebug( 1,  "mgMainMenu: submenu (todo)" );
-
+		m_last_osd_index = Current();
 		DisplayTreeSubmenu();
 
 		state = osContinue;
@@ -248,17 +232,24 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	    {
 	    case k0 ... k9:
 	      {
-		int n = key - k0;
-		
+		int n = key - k0;		
 		TreeSubmenuAction( n );
 		
 		state = osContinue;
-	      }
+	      } break;
+	    case kBlue:
+	      {
+		m_state = TREE;
+		
+		// restore last selected entry
+		int last = m_history.back();		
+		DisplayTree( m_node, last );
+
+		state = osContinue;
+	      } break;
 	    case kOk:
 	      {
-		TreeSubmenuAction( Current() );
-		
-		state = osContinue;
+		state = TreeSubmenuAction( Current() );
 	      } break;
 	    default:
 	      {
@@ -268,11 +259,10 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	}
       else if( state == osBack )
 	{
-	  mgDebug( 1,  "mgMainMenu: return from tree view submenu" );
-	  
+	  m_state = TREE;
+
 	  // restore last selected entry
 	  int last = m_history.back();
-	  
 	  DisplayTree( m_node, last );
 	  
 	  state = osContinue;	  
@@ -280,65 +270,91 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
     }
   else if( m_state == PLAYLIST )
     {
-      mgDebug( 1,  "mgMainMenu: in state PLAYLIST" );
       if( state == osUnknown )
 	{
 	  switch( key )
 	    {
 	    case kOk:
 	      {
-		mgDebug( 1,  "mgMainMenu: playlist ok" );
+		// show some more information?
 		state = osContinue;
 	      } break;
 	    case kRed:
 	      {
-		mgDebug( 1,  "mgMainMenu: edit playlist" );
-		Mark(); // Mark (to move), moving done by VDR, calls Move
-	      }
+		// TODO: what happens if the user presses play and the player is already active?
+		Play( m_current_playlist );
+		state = osEnd;
+	      } break;
 	    case kGreen:
 	      {
-		if( m_state == PLAYLIST )
-		  {
-		    mgDebug( 1,  "mgMainMenu: switch to TrackInfo" );
-		    DisplayTrackInfo();
-		  }
-		else if( m_state == PLAYLIST_TRACKINFO )
-		  {
-		    mgDebug( 1,  "mgMainMenu: switch to AlbumInfo" );
-		    DisplayAlbumInfo();
-		  }
-		else if( m_state == PLAYLIST_ALBUMINFO )
-		  {
-		    mgDebug( 1,  "mgMainMenu: switch to Playlist" );
-		    DisplayPlaylist();
-		  }
+		Mark();
+
 		state = osContinue;
 	      } break;
 	    case kYellow:
 	      {
-		mgDebug( 1,  "mgMainMenu: cycle playlist to  filter" );
 		DisplayFilter();
 		state = osContinue;
 	      } break;
 	    case kBlue: 
 	      {
 		// Submenu
-		mgDebug( 1,  "mgMainMenu: playlist submenu (todo)" );
-
+		m_last_osd_index = Current();
+		DisplayPlaylistSubmenu();
+		
 		state = osContinue;
 	      } break;
 	    default:
 	      {
-		mgDebug( 1,  "mgMainMenu: default" );
 		state = osContinue;
 	      };
 	    }
 	 }
     }
+  else if( m_state == PLAYLIST_SUBMENU )
+    {
+      if( state == osUnknown )
+	{
+	  switch( key )
+	    {
+	    case k0 ... k9:
+	      {
+		int n = key - k0;
+		PlaylistSubmenuAction( n );
+		
+		state = osContinue;
+	      } break;
+	    case kYellow:
+	      {
+		PlaylistSubmenuAction( 3 );
+	      } break;
+	    case kBlue:
+	      {
+		m_state = PLAYLIST;
+		DisplayPlaylist( m_last_osd_index );
+
+		state = osContinue;
+	      } break;
+	    case kOk:
+	      {
+		state = PlaylistSubmenuAction( Current() );
+	      } break;
+	    default:
+	      {
+		state = osContinue;
+	      } break;
+	    }
+	}
+      else if( state == osBack )
+	{
+	  m_state = PLAYLIST;
+	  DisplayPlaylist( m_last_osd_index );
+
+	  state = osContinue;	  
+	}
+    }
   else if( m_state == FILTER )
     {
-      mgDebug( 1,  "mgMainMenu: in state FILTER" );
-      
       if( state == osUnknown )
 	{
 	  switch( key )
@@ -399,8 +415,7 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
   else
     {
       mgDebug(1, "Process key: else");
-      mgDebug(1, "Process key: %d", (int) state);
-      
+      mgDebug(1, "Process key: %d", (int) state);      
     }
   
   return state;
@@ -461,22 +476,43 @@ void mgMainMenu::DisplayTreeSubmenu()
   SetTitle( strcat("Muggle - ",tr("Tree View Commands") ) );
 
   // Add items
-  Add( new cOsdItem( "1 - Test1" ) );
+  Add( new cOsdItem( "1 - Instant play" ) );
   Add( new cOsdItem( "9 - Test9" ) );
   Add( new cOsdItem( "0 - Test0" ) );
 
   Display();
 }
 
-void mgMainMenu::TreeSubmenuAction( int n )
+eOSState mgMainMenu::TreeSubmenuAction( int n )
 {
   mgDebug( "mgMainMenu: TreeSubmenuAction( %d )", n );
+  eOSState state = osContinue;
   
   switch( n )
     {
     case 0:
       {
-	// action 0
+	// action 0: instant play of current node, might need a security question
+	
+	mgSelectionTreeNode *current = CurrentNode();
+	if( current )
+	  {
+	    // clear playlist
+	    m_current_playlist->clear();
+
+	    // append current node
+	    vector<mgContentItem*> *tracks = current->getTracks();
+
+	    if( tracks )
+	      {
+		m_current_playlist->appendList( tracks );
+		
+		// play
+		Play( m_current_playlist );
+		
+		state = osEnd;
+	      }	
+	  }
       } break;
     case 1:
       {
@@ -487,16 +523,16 @@ void mgMainMenu::TreeSubmenuAction( int n )
 	// undefined action
       } break;
     }
+
+  return state;
 }
 
-void mgMainMenu::DisplayPlaylist()
+void mgMainMenu::DisplayPlaylist( int index_current )
 {
   m_state = PLAYLIST;
-  mgDebug( 1,  "mgBrowseMenu::DisplayPlaylist");
 
   // make sure we have a current playlist
   Clear();
-  
   SetButtons();
 
   vector<mgContentItem*>* list = m_current_playlist-> getAll();
@@ -506,68 +542,109 @@ void mgMainMenu::DisplayPlaylist()
                      tr("items") );
   SetTitle( titlestr ); 
   
-  mgDebug( 1, "mgBrowseMenu::DisplayPlaylist: %d elements received", 
-	   list->size() );
-
   for( unsigned int i = 0; i < m_current_playlist->getNumItems(); i++)
     {
       string label =  m_current_playlist->getLabel( i, "   " );
       Add( new cOsdItem( label.c_str() ) );
     }
+
+  if( index_current >= 0 )
+    {
+      cOsdItem *item = Get( m_last_osd_index );
+      SetCurrent( item );
+      RefreshCurrent();
+      DisplayCurrent( true );
+    }
     
   Display();
 }
 
-void mgMainMenu::DisplayTrackInfo()
+void mgMainMenu::DisplayPlaylistSubmenu()
 {
-  m_state = PLAYLIST_TRACKINFO;
-  SetButtons();
+  m_state = PLAYLIST_SUBMENU;
 
-  // show info of the currently playing track
+  Clear();
+  SetButtons();
+  SetTitle( "Muggle - Playlist View Commands" );
+
+  // Add items
+  Add( new cOsdItem( "1 - Load playlist" ) );
+  Add( new cOsdItem( "2 - Save playlist" ) );
+  Add( new cOsdItem( "3 - Clear playlist" ) );
+  Add( new cOsdItem( "4 - Remove entry from list" ) );
+
+  Display();
 }
 
-void mgMainMenu::DisplayAlbumInfo()
+eOSState mgMainMenu::PlaylistSubmenuAction( int n )
 {
-  m_state = PLAYLIST_ALBUMINFO;
-  SetButtons();
-
-  // show info of the currently playing album
-}
-
-void mgMainMenu::Move( int from, int to )
-{
-  // check current view, perform move in the content view
-  if( m_state == PLAYLIST )
+  cout << "mgMainMenu::PlaylistSubmenuAction: " << n << endl << flush;
+  eOSState state = osContinue;
+  
+  switch( n )
     {
-      // resort
+    case 0:
+      {
+	Interface->Status( "Load not yet implemented" );
+	Interface->Flush();
+      } break;
+    case 1:
+      {
+	Interface->Status( "Save not yet implemented" );
+	Interface->Flush();
+      } break;
+    case 2:
+      {	// clear playlist
+	m_current_playlist->clear();
+
+	// confirmation
+	Interface->Status( "Playlist cleared" );
+	Interface->Flush();
+
+	state = osContinue;	
+      } break;
+    case 3:
+      { // remove selected title
+	m_current_playlist->remove( m_last_osd_index );
+	if( m_last_osd_index > 0 )
+	  {
+	    m_last_osd_index --;
+	  }
+	DisplayPlaylist( m_last_osd_index );
+
+	// confirmation
+	Interface->Status( "Entry removed" );
+	Interface->Flush();	
+      }
+    default:
+      {
+	// undefined action
+      } break;
     }
 
-  // what now?
+  return state;
 }
 
 void mgMainMenu::DisplayFilter()
 {
   m_state = FILTER;
-  Clear();
-  
-  mgDebug( 1, "Creating Muggle filter view" );
+
+  Clear();  
   SetButtons();
 
   SetTitle( m_media->getActiveFilterTitle().c_str() );
-  mgDebug( 1, "filter view2" );
-
   vector<mgFilter*> *filter_list = m_media->getActiveFilters();
   
-  mgDebug( 1, "filter view3" );
   int i=0;
   for( vector<mgFilter*>::iterator iter = filter_list->begin();
        iter != filter_list->end();
        iter ++ )
     {
-	  mgDebug( 1, "Filter %d/%dint filter %s='%s'",
-		   i, filter_list->size(),
-		   (*iter)->getName(), 
-		   (*iter)->getStrVal().c_str());
+      mgDebug( 1, "Filter %d/%dint filter %s='%s'",
+	       i, filter_list->size(),
+	       (*iter)->getName(), 
+	       (*iter)->getStrVal().c_str());
+
       switch( (*iter)->getType() )
 	{
 	case mgFilter::INT:
@@ -637,9 +714,29 @@ void mgMainMenu::DisplayFilterSelector()
   // show available filters, load on OK?
 }
 
+void mgMainMenu::Play(mgPlaylist *plist)
+{
+  MGLOG( "mgMainMenu::Play" );
+  cControl *control = cControl::Control();
+
+  if( control && typeid(*control) == typeid(mgPlayerControl) ) 
+    { // is there a running MP3 player?
+      cout << "mgMainMenu::Play: signal new playlist to existing control" << endl;
+      static_cast<mgPlayerControl*>(control)->NewPlaylist(plist); // signal the running player to load the new playlist
+    }
+  else
+    {
+      cout << "mgMainMenu::Play: starting new control" << endl;
+      cControl::Launch( new mgPlayerControl(plist) );
+    }
+}
+
 /************************************************************
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.20  2004/05/28 15:29:19  lvw
+ * Merged player branch back on HEAD branch.
+ *
  * Revision 1.19  2004/02/23 17:03:24  RaK
  * - error in filter view while trying to switch or using the colour keys
  *   workaround: first filter criteria is inttype. than it works, dont ask why ;-(
@@ -660,6 +757,42 @@ void mgMainMenu::DisplayFilterSelector()
  *
  * Revision 1.14  2004/02/12 09:08:48  LarsAC
  * Added handling of filter choices (untested)
+ *
+ * Revision 1.13.2.12  2004/05/27 07:58:38  lvw
+ * Removed bugs in moving and removing tracks from playlists
+ *
+ * Revision 1.13.2.11  2004/05/26 14:31:04  lvw
+ * Added submenu for playlist view
+ *
+ * Revision 1.13.2.10  2004/05/25 21:58:45  lvw
+ * Handle submenus for views
+ *
+ * Revision 1.13.2.9  2004/05/25 00:10:45  lvw
+ * Code cleanup and added use of real database source files
+ *
+ * Revision 1.13.2.8  2004/05/11 06:35:16  lvw
+ * Added debugging while hunting stop bug.
+ *
+ * Revision 1.13.2.7  2004/05/04 16:51:53  lvw
+ * Debugging aids added.
+ *
+ * Revision 1.13.2.6  2004/04/29 06:48:21  lvw
+ * Output statements to aid debugging added
+ *
+ * Revision 1.13.2.5  2004/04/25 18:44:07  lvw
+ * Removed bugs in menu handling
+ *
+ * Revision 1.13.2.4  2004/03/14 12:30:56  lvw
+ * Menu now calls player
+ *
+ * Revision 1.13.2.3  2004/03/11 07:22:32  lvw
+ * Added setup menu
+ *
+ * Revision 1.13.2.2  2004/03/08 22:28:40  lvw
+ * Added documentation headers.
+ *
+ * Revision 1.13.2.1  2004/03/02 07:07:27  lvw
+ * Initial adaptations from MP3 plugin added (untested)
  *
  * Revision 1.13  2004/02/09 19:27:52  MountainMan
  * filter set implemented

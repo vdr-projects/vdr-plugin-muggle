@@ -1,19 +1,16 @@
-/*******************************************************************/
 /*! \file  content_interface.cpp
- * \brief  Data Objects for content (e.g. mp3 files, movies)
- * for the vdr muggle plugindatabase
- ******************************************************************** 
- * \version $Revision: 1.21 $
- * \date    $Date: 2004/02/23 17:03:24 $
- * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: RaK $
+ *  \brief  Data Objects for content (e.g. mp3 files, movies) for the vdr muggle plugindatabase
  *
- * DUMMY
+ * \version $Revision: 1.22 $
+ * \date    $Date: 2004/05/28 15:29:18 $
+ * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
+ * \author  Responsible author: $Author: lvw $
+ *
  * Implements main classes of for content items and interfaces to SQL databases
  *
  * This file implements the following classes 
  * - GdPlaylist    a playlist
- * - mgGdTrack       a single track (content item). e.g. an mp3 file
+ * - mgGdTrack     a single track (content item). e.g. an mp3 file
  * - mgSelection   a set of tracks (e.g. a database subset matching certain criteria)
  *
  */
@@ -21,8 +18,10 @@
 #define DEBUG
 
 #include "gd_content_interface.h"
+
 #include "mg_tools.h"
 #include "i18n.h"
+#include "vdr_setup.h"
 
 using namespace std;
 
@@ -35,16 +34,23 @@ using namespace std;
 // non-member function
 int GdInitDatabase(MYSQL *db)
 {
-    if(mysql_init(db) == NULL)
+    if( mysql_init(db) == NULL )
     {	
 	return -1;
     }
     
-    if(mysql_real_connect(db,"localhost","root","",
-			  "GiantDisc",0,NULL,0) == NULL)
-    {
+    //    if(mysql_real_connect( db, "localhost", "root", "",
+    //			   "GiantDisc2", 0, NULL, 0) == NULL)
+    if( mysql_real_connect( db,
+			    the_setup.DbHost, 
+			    the_setup.DbUser, 
+			    the_setup.DbPass, 
+			    the_setup.DbName,
+			    the_setup.DbPort,
+			    NULL, 0 ) == NULL )
+      {
 	return -2;
-    }
+      }
     return 0;
 }
 
@@ -63,20 +69,12 @@ vector<string> *GdGetStoredPlaylists(MYSQL db)
     return list;
 }
 
-//------------------------------------------------------------------
-//------------------------------------------------------------------
-//                
-//            class gdTrackFilters                 
-//                
-//------------------------------------------------------------------
-//------------------------------------------------------------------
-
 /*! 
- *******************************************************************
+ *
  * \brief constructor, constracts a number >=1 of filter sets
  *
  * the first set (index 0 ) is active by default
- ********************************************************************/
+ */
 gdFilterSets::gdFilterSets()
 {
   mgFilter* filter;
@@ -102,8 +100,9 @@ gdFilterSets::gdFilterSets()
   filter = new mgFilterString(tr("artist"), ""); set->push_back(filter);
   // genre
   filter = new mgFilterString(tr("genre"), ""); set->push_back(filter);
-  // rating
-  filter = new mgFilterChoice(tr("rating"), 1, rating); set->push_back(filter);
+
+  // rating. TODO: Currently buggy. LVW
+  //  filter = new mgFilterChoice(tr("rating"), 1, rating); set->push_back(filter);
 
   m_sets.push_back(set);
   
@@ -170,7 +169,8 @@ string gdFilterSets::computeRestriction(int *viewPrt)
 {
   string sql_str = "1";
 
-  switch (m_activeSetId) {
+  switch (m_activeSetId) 
+    {
     case 0:
       *viewPrt =  100; // tracks (flatlist for mountain man ;-))
       break;
@@ -261,7 +261,7 @@ string gdFilterSets::computeRestriction(int *viewPrt)
 //------------------------------------------------------------------
 //------------------------------------------------------------------
 //                
-//          class mgTack      
+//          class mgTrack      
 //                
 //------------------------------------------------------------------
 //------------------------------------------------------------------
@@ -269,7 +269,7 @@ mgGdTrack mgGdTrack::UNDEFINED =  mgGdTrack();
 
 /*!
  *****************************************************************************
- * \brief Constructor: creates a mgGdTrack obect
+ * \brief Constructor: creates a mgGdTrack object
  *
  * \param sqlIdentifier identifies a unique row in the track database
  * \param dbase  database which stores the track table
@@ -296,16 +296,15 @@ mgGdTrack::mgGdTrack(const mgGdTrack& org)
   m_db    = org.m_db;
   m_retrieved = org.m_retrieved;
   if(m_retrieved)
-  {
-   m_artist = org.m_artist;
-   m_title = org.m_title;
-   m_mp3file = org.m_mp3file;
-   m_album = org.m_album;
-   m_genre = org.m_genre; 
-   m_year = org.m_year; 
-   m_rating = org.m_rating;  
-  }
-
+    {
+      m_artist = org.m_artist;
+      m_title = org.m_title;
+      m_mp3file = org.m_mp3file;
+      m_album = org.m_album;
+      m_genre = org.m_genre; 
+      m_year = org.m_year; 
+      m_rating = org.m_rating;  
+    }
 }
   
 
@@ -459,6 +458,7 @@ vector<mgFilter*> *mgGdTrack::getTrackInfo()
 {
   return new vector<mgFilter*>();
 }
+
 bool mgGdTrack::setTrackInfo(vector<mgFilter*> *info)
 {
   return false;
@@ -766,7 +766,7 @@ GdPlaylist::GdPlaylist(unsigned int sql_identifier, MYSQL db_handle)
 	m_listname  = row[0];
 	m_author = row[1];
  	m_sqlId = sql_identifier;
-	// now read allentries of the playlist and 
+	// now read all entries of the playlist and 
 	// write them into the tracklist
  	insertDataFromSQL();
    }
@@ -1391,6 +1391,10 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.22  2004/05/28 15:29:18  lvw
+ * Merged player branch back on HEAD branch.
+ *
+ *
  * Revision 1.21  2004/02/23 17:03:24  RaK
  * - error in filter view while trying to switch or using the colour keys
  *   workaround: first filter criteria is inttype. than it works, dont ask why ;-(
@@ -1415,6 +1419,43 @@ mgContentItem* GdTreeNode::getSingleTrack()
  * Revision 1.15  2004/02/12 09:15:07  LarsAC
  * Moved filter classes into separate files
  *
+ * Revision 1.14.2.4  2004/05/26 14:34:58  lvw
+ * Formatting changed
+ *
+ * Revision 1.14.2.3  2004/05/25 00:10:45  lvw
+ * Code cleanup and added use of real database source files
+ *
+ * Revision 1.14.2.2  2004/03/14 17:57:30  lvw
+ * Linked against libmad. Introduced config options into code.
+ *
+ * Revision 1.14.2.1  2004/03/02 07:05:50  lvw
+ * Initial adaptations from MP3 plugin added (untested)
+ *
+ * Revision 1.21  2004/02/23 17:03:24  RaK
+ * - error in filter view while trying to switch or using the colour keys
+ *   workaround: first filter criteria is inttype. than it works, dont ask why ;-(
+ *
+ * Revision 1.20  2004/02/23 16:30:58  RaK
+ * - album search error because of i18n corrected
+ *
+ * Revision 1.19  2004/02/23 15:56:19  RaK
+ * - i18n
+ *
+ * Revision 1.18  2004/02/23 15:17:51  RaK
+ * - i18n
+ *
+ * Revision 1.17  2004/02/23 15:41:21  RaK
+ * - first i18n attempt
+ *
+ * Revision 1.16  2004/02/14 22:02:45  RaK
+ * - mgFilterChoice Debuged
+ *   fehlendes m_type = CHOICE in mg_filters.c
+ *   falscher iterator in vdr_menu.c
+ *
+ * Revision 1.15  2004/02/12 09:15:07  LarsAC
+ * Moved filter classes into separate files
+ *
+>>>>>>> 1.14.2.4
  * Revision 1.14  2004/02/12 07:56:46  RaK
  * - SQL Fehler bei der Playlist Search korrigiert
  *

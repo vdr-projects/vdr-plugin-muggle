@@ -2,10 +2,10 @@
 /*! \file   mg_filters.c
  *  \brief  
  ******************************************************************** 
- * \version $Revision: 1.2 $
- * \date    $Date: 2004/02/14 22:02:45 $
+ * \version $Revision: 1.3 $
+ * \date    $Date: 2004/05/28 15:29:18 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: RaK $
+ * \author  file owner: $Author: lvw $
  */
 /*******************************************************************/
 
@@ -284,14 +284,14 @@ void mgFilterChoice::restore()
 void mgFilterChoice::clear()
 {
   m_stored_val =  m_default_val;
-  m_selval       =  m_default_val;
+  m_selval     =  m_default_val;
 }
 
 bool mgFilterChoice::isSet()
 {
   if(m_stored_val == m_default_val)
-  {
-    return false;
-  }
+    {
+      return false;
+    }
   return true;
 }
