@@ -3,9 +3,9 @@
  * \brief  Top level access to media in vdr plugin muggle
  *
  * \version $Revision: 1.11 $
- * \date    $Date: 2004/05/28 15:29:18 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  */
 
 // makes sure we dont use parse the same declarations twice
@@ -41,39 +41,66 @@ class mgFilterSets
   std::vector<std::string>             m_titles;
 
  public:
-  // constructor, constracts a number >=1 of filter sets
-  // the first set (index 0 ) is active by default
+
+  /*!
+   * \brief a  constructor
+   * 
+   * constracts a number >=1 of filter sets the first set (index 0 ) is active by default
+   */
   mgFilterSets();
 
-  // destructor
+  /*! 
+   * \brief the destructor
+   */
   virtual ~mgFilterSets();
 
-  // returns the number of available sets
+  /*!
+   * \brief  returns the number of available sets
+   */
   int numSets(); 
 
-  // proceeds to the next one in a circular fashion
+  /*!
+   * \brief proceeds to the next one in a circular fashion
+   */
   void nextSet();
 
-  // activates a specific set by index
+  /*!
+   * \brief  activates a specific set by index
+   */
   void select(int n);
 
-  // restores the default values for all filter values in the active set
-  // normally, the default values represent 'no restrictions'
+  /*!
+   * \brief restore empty state
+   *
+   * Restores the default values for all filter values in the active set
+   * normally, the default values represent 'no restrictions'
+   */
   virtual void clear();
 
-  // stores the current filter values
+  /*! 
+   * \brief stores the current filter values
+   */
   void accept();
 
-  // returns the active set to the application
-  // the application may temporarily modify the filter values 
-  // accept() needs to be called to memorize the changed values
+  /*!
+   * \brief  returns the active set to the application
+   *
+   * The application may temporarily modify the filter values 
+   * accept() needs to be called to memorize the changed values
+   */
   std::vector<mgFilter*> *getFilters();
 
-  // computes the (e.g. sql-) restrictions specified by the active filter set
-  // and returns the index of the appropriate defualt view in viewPrt
-  virtual  std::string computeRestriction(int *viewPrt)=0;
+  /*!
+   * \brief compute restrictions
+   *
+   * computes the (e.g. sql-) restrictions specified by the active filter set
+   * and returns the index of the appropriate defualt view in viewPrt
+   */
+  virtual std::string computeRestriction(int *viewPrt) = 0;
 
-  // returns title of active filter set
+  /*!
+   * \brief returns title of active filter set
+   */
   std::string getTitle();
 };
 
@@ -112,10 +139,12 @@ class mgMedia
     
     mgSelectionTreeNode* getSelectionRoot();
     
-    // playlist management
+    /*! \brief  playlist management */
+    //@{
     mgPlaylist* createTemporaryPlaylist();
     mgPlaylist* loadPlaylist( std::string name );
     std::vector<std::string> *getStoredPlaylists();
+    //@}
     
     std::vector<int> getDefaultCols();
     mgTracklist* getTracks();
