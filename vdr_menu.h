@@ -2,12 +2,12 @@
 /*! \file   vdr_menu.h
  *  \brief  Implements menu handling for broswing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.7 $
- * \date    $Date: 2004/02/03 19:28:46 $
+ * \version $Revision: 1.8 $
+ * \date    $Date: 2004/02/08 10:48:44 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: LarsAC $
  *
- * $Id: vdr_menu.h,v 1.7 2004/02/03 19:28:46 LarsAC Exp $
+ * $Id: vdr_menu.h,v 1.8 2004/02/08 10:48:44 LarsAC Exp $
  *
  */
 /*******************************************************************/
@@ -63,21 +63,25 @@ class mgMainMenu : public cOsdMenu
 
   enum MuggleStatus
     { 
-      TREE, FILTER, TRACKS,
+      TREE, TREE_SUBMENU,
       PLAYLIST, PLAYLIST_TRACKINFO, PLAYLIST_ALBUMINFO, 
+      FILTER
     };
 
-  // To be rewritten mode dependent 
   void SetButtons();
 
+  // Tree view handling
   void DisplayTree( mgSelectionTreeNode *node, int select = 0 );
   void DisplayTreeViewSelector();
+  void DisplayTreeSubmenu();
+  void TreeSubmenuAction( int n );
 
+  // Filter view handling
   void DisplayFilter();
   void DisplayFilterSelector();
 
+  // Playlist view handling
   void DisplayPlaylist();
-  void DisplayTracklist();
   void DisplayTrackInfo();
   void DisplayAlbumInfo();  
 
@@ -89,7 +93,7 @@ class mgMainMenu : public cOsdMenu
   mgSelectionTreeNode *m_node;
   mgPlaylist          *m_current_playlist;
   mgTracklist         *m_tracklist;
-
+ 
   // filter items
   char *m_title, *m_interpret, *m_album, *m_playlist, *m_filtername;
   int   m_year_min, m_year_max, m_filter;
@@ -104,6 +108,9 @@ class mgMainMenu : public cOsdMenu
 /************************************************************
  *
  * $Log: vdr_menu.h,v $
+ * Revision 1.8  2004/02/08 10:48:44  LarsAC
+ * Made major revisions in OSD behavior
+ *
  * Revision 1.7  2004/02/03 19:28:46  LarsAC
  * Playlist now created in plugin instead of in menu.
  *
