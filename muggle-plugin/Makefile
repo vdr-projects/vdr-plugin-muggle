@@ -1,7 +1,7 @@
 #
 # Makefile for a Video Disk Recorder plugin
 #
-# $Id: Makefile,v 1.5 2004/02/09 19:27:52 MountainMan Exp $
+# $Id: Makefile,v 1.6 2004/02/09 22:07:44 RaK Exp $
 
 # The official name of this plugin.
 # This name will be used in the '-P...' option of VDR to load the plugin.
@@ -51,10 +51,9 @@ OBJS = $(PLUGIN).o vdr_menu.o mg_database.o mg_content_interface.o gd_content_in
 BINOBJS = mg_database.o mg_content_interface.o gd_content_interface.o mg_tools.o mg_media.o
 #BINOBJS = sh_console_osd.o muggle.o vdr_menu.o content_interface.o gd_content_interface.o muggle_tools.o mgmedia.o
 
-### Implicit rules:
+### Targets:
 
-%.o: %.c
-	$(CXX) $(CXXFLAGS) -c $(DEFINES) $(INCLUDES) $<
+all: libvdr-$(PLUGIN).so
 
 # Dependencies:
 
@@ -65,9 +64,10 @@ $(DEPFILE): Makefile
 
 -include $(DEPFILE)
 
-### Targets:
+### Implicit rules:
 
-all: libvdr-$(PLUGIN).so
+%.o: %.c %.h
+	$(CXX) $(CXXFLAGS) -c $(DEFINES) $(INCLUDES) $<
 
 libvdr-$(PLUGIN).so: $(OBJS)
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) -lmysqlclient -o $@

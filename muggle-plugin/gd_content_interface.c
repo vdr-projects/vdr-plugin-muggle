@@ -3,10 +3,10 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.8 $
- * \date    $Date: 2004/02/09 19:27:52 $
+ * \version $Revision: 1.9 $
+ * \date    $Date: 2004/02/09 22:07:44 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: MountainMan $
+ * \author  file owner: $Author: RaK $
  *
  * DUMMY
  * Implements main classes of for content items and interfaces to SQL databases
@@ -80,31 +80,44 @@ gdFilterSets::gdFilterSets()
 {
   mgFilter* filter;
   
-  m_titles.push_back("Trackfilter");
+  m_titles.push_back("Track Search");
 
   // create an initial set of filters with empty values
   vector<mgFilter*>* set = new vector<mgFilter*>();
  
   // title
-  filter = new mgFilterString("title", "");
-  set->push_back(filter);
+  filter = new mgFilterString("title", ""); set->push_back(filter);
   // artist
-  filter = new mgFilterString("artist", "");
-  set->push_back(filter);
+  filter = new mgFilterString("artist", ""); set->push_back(filter);
   // genre
-  filter = new mgFilterString("genre", "");
-  set->push_back(filter);
+  filter = new mgFilterString("genre", ""); set->push_back(filter);
   // year-from
-  filter = new mgFilterInt("year (from)", 0);
-  set->push_back(filter);
+  filter = new mgFilterInt("year (from)", 0); set->push_back(filter);
   // year-to
-  filter = new mgFilterInt("year (to)", 9999);
-  set->push_back(filter);
+  filter = new mgFilterInt("year (to)", 9999); set->push_back(filter);
  // rating
-  filter = new mgFilterInt("rating", 0);
-  set->push_back(filter);
+  filter = new mgFilterInt("rating", 0); set->push_back(filter);
 
   m_sets.push_back(set);
+  
+  set->clear();
+  m_titles.push_back("Album Search");
+  
+  // title
+  filter = new mgFilterString("album title", ""); set->push_back(filter);
+  // artist
+  filter = new mgFilterString("album artist", ""); set->push_back(filter);
+  // genre
+  filter = new mgFilterString("genre", ""); set->push_back(filter);
+  // year-from
+  filter = new mgFilterInt("year (from)", 0); set->push_back(filter);
+  // year-to
+  filter = new mgFilterInt("year (to)", 9999); set->push_back(filter);
+  // rating
+  filter = new mgFilterInt("rating", 0); set->push_back(filter);
+
+  m_sets.push_back(set);
+  
   m_activeSetId = 0;
   m_activeSet = set;
 }
@@ -127,46 +140,97 @@ gdFilterSets::~gdFilterSets()
 string gdFilterSets::computeRestriction(int *viewPrt)
 {
   string sql_str = "1";
-
-  for(vector<mgFilter*>::iterator iter = m_activeSet->begin();
-      iter != m_activeSet->end(); iter++)
-  {
-    if((*iter)->isSet())
-    {
-      if(strcmp((*iter)->getName(), "title") == 0 )
+  switch (m_activeSetId) {
+    case 0:
+      for(vector<mgFilter*>::iterator iter = m_activeSet->begin();
+          iter != m_activeSet->end(); iter++)
       {
-	sql_str = sql_str + " AND tracks.title like ' " 
-	  + (*iter)->getStrVal() + "'";
+        if((*iter)->isSet())
+        {
+          if(strcmp((*iter)->getName(), "title") == 0 )
+          {
+            sql_str = sql_str + " AND tracks.title like ' " 
+  	      + (*iter)->getStrVal() + "'";
+          }
+          else if(strcmp((*iter)->getName(), "artist") == 0 )
+          { 
+            sql_str = sql_str + " AND tracks.artist like ''" 
+	      + (*iter)->getStrVal() + "'";
+          }
+          else if(strcmp((*iter)->getName(), "genre") == 0 )
+          { 
+            sql_str = sql_str + " AND (genre1.genre like ''" 
+	      + (*iter)->getStrVal() + "'";
+            sql_str = sql_str + " OR genre2.genre like ''" 
+	      + (*iter)->getStrVal() + "')";
+          }
+          else if(strcmp((*iter)->getName(), "year (from)") == 0 )
+          { 
+	    sql_str = sql_str + " AND tracks.year >= " + (*iter)->getStrVal();
+          }
+          else if(strcmp((*iter)->getName(), "year (to)") == 0 )
+          { 
+	    sql_str = sql_str + " AND tracks.year <= " + (*iter)->getStrVal();
+          }
+          else if(strcmp((*iter)->getName(), "rating") == 0 )
+          { 
+	    sql_str = sql_str + " AND tracks.rating >= " + (*iter)->getStrVal();
+          }
+          else
+          {
+	    mgWarning("Ignoring unknown filter %s", (*iter)->getName());
+          }  
+        }
       }
-      else if(strcmp((*iter)->getName(), "artist") == 0 )
-      { 
-	sql_str = sql_str + " AND tracks.artist like ''" 
-	  + (*iter)->getStrVal() + "'";
-      }
-      else if(strcmp((*iter)->getName(), "genre") == 0 )
-      { 
-	sql_str = sql_str + " AND genre.name like ''" 
-	  + (*iter)->getStrVal() + "'";
-      }
-      else if(strcmp((*iter)->getName(), "year (from)") == 0 )
-      { 
-	sql_str = sql_str + " AND tracks.year >= " + (*iter)->getStrVal();
-      }
-      else if(strcmp((*iter)->getName(), "year (to)") == 0 )
-      { 
-	sql_str = sql_str + " AND tracks.year <= " + (*iter)->getStrVal();
-      }
-      else if(strcmp((*iter)->getName(), "rating") == 0 )
-      { 
-	sql_str = sql_str + " AND tracks.rating >= " + (*iter)->getStrVal();
-      }
-      else
+      *viewPrt =  100; // tracks (flatlist for mountain man ;-))
+      break;
+    case 1:
+      for(vector<mgFilter*>::iterator iter = m_activeSet->begin();
+          iter != m_activeSet->end(); iter++)
       {
-	mgWarning("Ignoring unknown filter %s", (*iter)->getName());
-      }  
-    }
+        if((*iter)->isSet())
+        {
+          if(strcmp((*iter)->getName(), "album title") == 0 )
+          {
+            sql_str = sql_str + " AND album.title like ' " 
+  	      + (*iter)->getStrVal() + "'";
+          }
+          else if(strcmp((*iter)->getName(), "album artist") == 0 )
+          { 
+            sql_str = sql_str + " AND album.artist like ''" 
+	      + (*iter)->getStrVal() + "'";
+          }
+          else if(strcmp((*iter)->getName(), "genre") == 0 )
+          { 
+            sql_str = sql_str + " AND (genre1.genre like ''" 
+	      + (*iter)->getStrVal() + "'";
+            sql_str = sql_str + " OR genre2.genre like ''" 
+	      + (*iter)->getStrVal() + "')";
+          }
+          else if(strcmp((*iter)->getName(), "year (from)") == 0 )
+          { 
+	    sql_str = sql_str + " AND tracks.year >= " + (*iter)->getStrVal();
+          }
+          else if(strcmp((*iter)->getName(), "year (to)") == 0 )
+          { 
+	    sql_str = sql_str + " AND tracks.year <= " + (*iter)->getStrVal();
+          }
+          else if(strcmp((*iter)->getName(), "rating") == 0 )
+          { 
+	    sql_str = sql_str + " AND tracks.rating >= " + (*iter)->getStrVal();
+          }
+          else
+          {
+	    mgWarning("Ignoring unknown filter %s", (*iter)->getName());
+          }  
+        }
+      }
+      *viewPrt =  101; // album -> tracks
+      break;
+    default:
+      mgWarning("Ignoring Filter Set %i", m_activeSetId);
+      break;
   }
-  *viewPrt =  1; // artist -> album -> title
   mgDebug(1, "Applying sql string %s (view=%d)",sql_str.c_str(), *viewPrt); 
   return sql_str;
 }
@@ -1074,28 +1138,44 @@ bool GdTreeNode::expand()
                 return false;
 	      }
 	   break;
-         case 100: // Albumsearch result
+         case 100:
+           if (m_level == 1) {
+             sprintf(sqlbuff,
+                      "SELECT CONCAT(tracks.artist,' - ',tracks.title),tracks.id"
+                      "  FROM tracks,genre as genre1,genre as genre2,album"
+                      "  WHERE (genre.id=tracks.genre1) AND"
+                      "        (genre.id=tracks.genre2) AND"
+                      "        (album.cddbid=tracks.sourceid) AND"
+                      "         %s"
+                      "  ORDER BY CONCAT(tracks.artist,' - ',tracks.title)"
+                      , m_restriction.c_str());
+             idfield = "tracks.id";
+           }
+           break;
+         case 101: // Albumsearch result
            if (m_level == 1) {
              sprintf(sqlbuff,
                          "SELECT DISTINCT"
                          "    CONCAT(album.artist,' - ',album.title) as title,"
                          "    album.cddbid"
-                         "  FROM album,genre"
-                         "  WHERE "
+                         "  FROM album,genre as genre1, genre as genre2"
+                         "  WHERE (genre.id=tracks.genre1) AND"
+                         "        (genre.id=tracks.genre2) AND"
                          "         %s"
-                         "  ORDER BY title"
+                         "  ORDER BY CONCAT(album.artist,' - ',album.title)"
                          , m_restriction.c_str());
              idfield = "tracks.sourceid";
            } else if (m_level == 2) {
-                 sprintf(sqlbuff,
+               sprintf(sqlbuff,
                          "SELECT tracks.title,tracks.id"
-                         "  FROM tracks,genre,album"
+                         "  FROM tracks,genre as genre1,genre as genre2,album"
                          "  WHERE (genre.id=tracks.genre1) AND"
+                         "        (genre.id=tracks.genre2) AND"
                          "        (album.cddbid=tracks.sourceid) AND"
                          "         %s"
                          "  ORDER BY tracks.tracknb"
                          , m_restriction.c_str());
-                 idfield = "tracks.id";
+               idfield = "tracks.id";
            } else {
                  mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
                  m_expanded = false;
@@ -1253,6 +1333,9 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.9  2004/02/09 22:07:44  RaK
+ * secound filter set (album search incl. special view #101
+ *
  * Revision 1.8  2004/02/09 19:27:52  MountainMan
  * filter set implemented
  *
