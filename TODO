@@ -3,8 +3,16 @@ TODO File for Muggle
 
 Ogg/Vorbis decoder integration
 ==============================
-- cOggFile needed? equivalence in Mp3?
-- cOggInfo/cSongInfo to be replaced by DB information
+- cOggFile kept
+- cOggInfo dismissed in favor of obtaining info from DB
+- coding conventions adapted
+
+- mugglei.c: Store audio properties in DB (most notably samplerate, no. channels
+- mgOggDecoder: obtain audio properties from DB
+- in mgPCMPlayer/vdr_player.c:
+  - pass m_playing to decoder (instead of filename)
+  - getSourceFile to be moved to mgTrack class and subclasses
+
 
 Deployment
 ==========
@@ -15,6 +23,7 @@ Deployment
    - generate documentation
    - copy into web directory
    - sync with web
+
 - How to track bugs and feature requests?
 
 Testing/bugs

@@ -219,6 +219,10 @@ CREATE TABLE tracks (
   created date default NULL,
   modified date default NULL,
   backup tinyint(3) unsigned default NULL,
+
+  samplerate int(7) unsigned default NULL,
+  channels   tinyint(3) unsigned default NULL,
+
   id int(11) NOT NULL auto_increment,
   PRIMARY KEY  (id),
   KEY title (title(10)),

@@ -106,6 +106,12 @@ void update_db( long uid, string filename )
       trackno = tag->track();
       genre   = tag->genre();
 
+      AudioProperties *ap = f.audioProperties();
+      int len      = ap->length();  // tracks.length
+      int bitrate  = ap->bitrate(); // 
+      int sample   = ap->sampleRate();
+      int channels = ap->channels();
+
       title  = escape_string( db, title );
       album  = escape_string( db, album );
       artist = escape_string( db, artist );

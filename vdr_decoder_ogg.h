@@ -16,37 +16,43 @@
 
 #ifdef HAVE_VORBISFILE
 
-#include <mad.h>
-#include <vorbis/vorbisfile.h>
-
 #include "vdr_decoder.h"
 
 // ----------------------------------------------------------------
 
-class cOggDecoder : public cDecoder {
-private:
-  cOggFile file;
-  cOggInfo info;
-  struct Decode ds;
-  struct mad_pcm *pcm;
-  unsigned long long index;
+class mgOggFile;
+
+class mgOggDecoder : public mgDecoder 
+{
+ private:
+
+  mgOggFile *m_file;
+  struct mgDecode m_ds;
+  struct mad_pcm *m_pcm;
+  unsigned long long m_index;
+  
   //
-  void Init(void);
-  bool Clean(void);
-  bool GetInfo(bool keepOpen);
-  struct Decode *Done(eDecodeStatus status);
-public:
-  cOggDecoder(const char *Filename);
-  ~cOggDecoder();
-  virtual bool Valid(void);
-  virtual cFileInfo *FileInfo(void);
-  virtual cSongInfo *SongInfo(bool get);
-  virtual cPlayInfo *PlayInfo(void);
-  virtual bool Start(void);
-  virtual bool Stop(void);
-  virtual bool Skip(int Seconds, int Avail, int Rate);
-  virtual struct Decode *Decode(void);
-  };
+  void init(void);
+  bool clean(void);
+  struct mgDecode *done( eDecodeStatus status );
+
+ public:
+
+  mgOggDecoder( std::string filename );
+  ~mgOggDecoder();
+
+  virtual mgPlayInfo *playInfo();
+
+  virtual bool valid();
+
+  virtual bool start();
+
+  virtual bool stop();
+
+  virtual bool skip(int Seconds, int Avail, int Rate);
+
+  virtual struct mgDecode *decode(void);
+};
 
 // ----------------------------------------------------------------
 
