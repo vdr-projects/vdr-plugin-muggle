@@ -3,10 +3,10 @@
  * \brief  Top level access to media in vdr plugin muggle
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.8 $
- * \date    $Date: 2004/02/09 19:27:52 $
+ * \version $Revision: 1.9 $
+ * \date    $Date: 2004/02/09 22:07:44 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: MountainMan $
+ * \author  file owner: $Author: RaK $
  * 
  *
  */
@@ -253,7 +253,7 @@ class mgMedia
   std::string getMediaTypeName();
 
   mgSelectionTreeNode* getSelectionRoot();
-
+  
   // playlist management
   mgPlaylist* createTemporaryPlaylist();
   mgPlaylist* loadPlaylist( std::string name );
@@ -290,6 +290,9 @@ class mgMedia
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: mg_media.h,v $
+ * Revision 1.9  2004/02/09 22:07:44  RaK
+ * secound filter set (album search incl. special view #101
+ *
  * Revision 1.8  2004/02/09 19:27:52  MountainMan
  * filter set implemented
  *
