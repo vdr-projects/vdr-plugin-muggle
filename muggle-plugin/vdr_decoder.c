@@ -21,20 +21,18 @@
 #include <sys/stat.h>
 #include <sys/vfs.h>
 
-#include <videodir.h>
-#include <interface.h>
-
 #include "vdr_decoder.h"
 #include "vdr_decoder_mp3.h"
 #include "vdr_decoder_ogg.h"
 
 #include "mg_content_interface.h"
 
-using namespace std;
+#include <videodir.h>
+#include <interface.h>
 
 // --- mgDecoders ---------------------------------------------------------------
 
-mgMediaType mgDecoders::getMediaType( string s )
+mgMediaType mgDecoders::getMediaType( std::string s )
 {
   mgMediaType mt = MT_UNKNOWN;
 
@@ -62,7 +60,7 @@ mgDecoder *mgDecoders::findDecoder( mgContentItem *item )
 {
   mgDecoder *decoder = 0;
 
-  string filename = item->getSourceFile();
+  std::string filename = item->getSourceFile();
 
   switch( getMediaType( filename ) ) 
     {

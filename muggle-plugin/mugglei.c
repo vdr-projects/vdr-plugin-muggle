@@ -4,9 +4,8 @@
  *
  * \author  Lars von Wedel
  */
-
+//#define VERBOSE
 #include <string>
-using namespace std;
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -22,7 +21,7 @@ using namespace std;
 
 MYSQL *db;
 
-string host, user, pass, dbname, socket;
+std::string host, user, pass, dbname, socket;
 bool import_assorted;
 
 int init_database()
@@ -31,7 +30,7 @@ int init_database()
 
   if( db == NULL )
     {	
-      cout << "mysql_init failed." << endl;
+      std::cout << "mysql_init failed." << std::endl;
       return -1;
     }
 
@@ -42,7 +41,7 @@ int init_database()
 			      0, socket.c_str(), 0 ) == NULL )
 
 	{
-	  cout << "mysql_real_connect using sockets failed." << endl;
+	  std::cout << "mysql_real_connect using sockets failed." << std::endl;
 	  return -2;
 	}
     }
@@ -51,7 +50,7 @@ int init_database()
       if( mysql_real_connect( db, host.c_str(), user.c_str(), pass.c_str(), dbname.c_str(),
 			      0, NULL, 0 ) == NULL )
 	{
-	  cout << "mysql_real_connect via TCP failed." << endl;
+	  std::cout << "mysql_real_connect via TCP failed." << std::endl;
 	  return -2;
 	}
     }
@@ -59,7 +58,7 @@ int init_database()
   return 0;
 }
 
-time_t get_fs_modification_time( string filename )
+time_t get_fs_modification_time( std::string filename )
 {
   struct stat *buf = (struct stat*) malloc( sizeof( struct stat ) );
   
@@ -79,7 +78,7 @@ time_t get_db_modification_time( long uid )
   MYSQL_RES *result = mgSqlReadQuery( db, "SELECT modification_time FROM tracks WHERE id=\"%d\"", uid );
   MYSQL_ROW row     = mysql_fetch_row( result );
   
-  string mod_time = row[0];
+  std::string mod_time = row[0];
   mt = (time_t) atol( mod_time.c_str() );
 
   return mt;
@@ -95,7 +94,7 @@ TagLib::String escape_string( MYSQL *db, TagLib::String s )
   return TagLib::String( escbuf );
 }
 
-long find_file_in_database( MYSQL *db, string filename )
+long find_file_in_database( MYSQL *db, std::string filename )
 {
   TagLib::String file = TagLib::String( filename.c_str() );
   file = escape_string( db, file );
@@ -108,7 +107,7 @@ long find_file_in_database( MYSQL *db, string filename )
 }
 
 // read tags from the mp3 file and store them into the corresponding database entry
-void update_db( long uid, string filename )
+void update_db( long uid, std::string filename )
 {
   TagLib::String title, album, artist, genre, cddbid;
   uint trackno, year;
@@ -118,7 +117,7 @@ void update_db( long uid, string filename )
 
   if( !f.isNull() && f.tag() ) 
     {
-      //      cout << "Evaluating " << filename << endl;
+      //      std::cout << "Evaluating " << filename << std::endl;
       TagLib::Tag *tag = f.tag();
 
       // obtain tag information
@@ -220,7 +219,7 @@ void update_db( long uid, string filename )
       if( uid > 0 )
 	{ // the entry is known to exist already, hence update it
 	  
-	  mgSqlWriteQuery( db,	"UPDATE tracks SET artist=\"%s\", title=\"%s\", year=\"%s\","
+	  mgSqlWriteQuery( db,	"UPDATE tracks SET artist=\"%s\", title=\"%s\", year=\"%d\","
 			   "sourceid=\"%s\", mp3file=\"%s\", length=%d, bitrate=\"%d\","
 			   "samplerate=%d, channels=%d WHERE id=%d", 
 			   artist.toCString(), title.toCString(), year, 
@@ -236,25 +235,25 @@ void update_db( long uid, string filename )
 			   trackno, filename.c_str(), len, bitrate, sample, channels );
 
 #ifdef VERBOSE
-	    cout << "-- TAG --" << endl;
-	    cout << "title   - \"" << tag->title()   << "\"" << endl;
-	    cout << "artist  - \"" << tag->artist()  << "\"" << endl;
-	    cout << "album   - \"" << tag->album()   << "\"" << endl;
-	    cout << "year    - \"" << tag->year()    << "\"" << endl;
-	    cout << "comment - \"" << tag->comment() << "\"" << endl;
-	    cout << "track   - \"" << tag->track()   << "\"" << endl;
-	    cout << "genre   - \"" << tag->genre()   << "\"" << endl;
+	    std::cout << "-- TAG --" << std::endl;
+	    std::cout << "title   - \"" << tag->title()   << "\"" << std::endl;
+	    std::cout << "artist  - \"" << tag->artist()  << "\"" << std::endl;
+	    std::cout << "album   - \"" << tag->album()   << "\"" << std::endl;
+	    std::cout << "year    - \"" << tag->year()    << "\"" << std::endl;
+	    std::cout << "comment - \"" << tag->comment() << "\"" << std::endl;
+	    std::cout << "track   - \"" << tag->track()   << "\"" << std::endl;
+	    std::cout << "genre   - \"" << tag->genre()   << "\"" << std::endl;
 #endif
 	}
     }
 }
 
-void update_tags( long uid, string filename )
+void update_tags( long uid, std::string filename )
 {
   
 }
 
-void evaluate_file( MYSQL *db, string filename )
+void evaluate_file( MYSQL *db, std::string filename )
 {
   if( 0 == init_database() )
     {  
@@ -293,22 +292,22 @@ void evaluate_file( MYSQL *db, string filename )
 int main( int argc, char *argv[] )
 {
   int option_index;
-  string filename;
+  std::string filename;
 
   if( argc < 2 )
     { // we need at least a filename!
-      cout << "mugglei -- import helper for Muggle VDR plugin" << endl;
-      cout << "(C) Lars von Wedel" << endl;
-      cout << "This is free software; see the source for copying conditions." << endl;
-      cout << "" << endl;
-      cout << "Options:" << endl;
-      cout << "  -h <hostname>       - specify host of mySql database server (default is 'localhost')" << endl;
-      cout << "  -s <socket>         - specify a socket for mySQL communication (default is TCP)" << endl;
-      cout << "  -n <database>       - specify database name (default is 'GiantDisc')" << endl;
-      cout << "  -u <username>       - specify user of mySql database (default is empty)" << endl;
-      cout << "  -p <password>       - specify password of user (default is empty password)" << endl;
-      cout << "  -f <filename>       - name of music file to import" << endl;
-      cout << "  -a                  - import track as if it was on an assorted album" << endl;
+      std::cout << "mugglei -- import helper for Muggle VDR plugin" << std::endl;
+      std::cout << "(C) Lars von Wedel" << std::endl;
+      std::cout << "This is free software; see the source for copying conditions." << std::endl;
+      std::cout << "" << std::endl;
+      std::cout << "Options:" << std::endl;
+      std::cout << "  -h <hostname>       - specify host of mySql database server (default is 'localhost')" << std::endl;
+      std::cout << "  -s <socket>         - specify a socket for mySQL communication (default is TCP)" << std::endl;
+      std::cout << "  -n <database>       - specify database name (default is 'GiantDisc')" << std::endl;
+      std::cout << "  -u <username>       - specify user of mySql database (default is empty)" << std::endl;
+      std::cout << "  -p <password>       - specify password of user (default is empty password)" << std::endl;
+      std::cout << "  -f <filename>       - name of music file to import" << std::endl;
+      std::cout << "  -a                  - import track as if it was on an assorted album" << std::endl;
 
       exit( 1 );
     }
@@ -381,7 +380,7 @@ int main( int argc, char *argv[] )
     }
   else
     {
-      cout << "Database initialization failed. Exiting.\n" << endl;
+      std::cout << "Database initialization failed. Exiting.\n" << std::endl;
     }
   
   return res;

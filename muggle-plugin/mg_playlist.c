@@ -13,13 +13,13 @@
  * making it persistent in some database.
  */
 
+#include <stdio.h>
 #include "mg_playlist.h"
 #include "mg_tools.h"
 
 #include <vector>
 #include <iostream>
 
-using namespace std;
 
 /* ==== constructors ==== */
 
@@ -33,7 +33,7 @@ mgPlaylist::mgPlaylist()
   m_listname = buffer;
 }
 
-mgPlaylist::mgPlaylist(string listname)
+mgPlaylist::mgPlaylist(std::string listname)
 {
   m_current_idx = -1;
   m_listname = listname;
@@ -67,9 +67,9 @@ void mgPlaylist::append(mgContentItem* item)
 }
 
 /* append a list of tracks at the end of the playlist */
-void mgPlaylist::appendList( vector<mgContentItem*> *tracks )
+void mgPlaylist::appendList( std::vector<mgContentItem*> *tracks )
 {
-  vector<mgContentItem*>::iterator iter;
+  std::vector<mgContentItem*>::iterator iter;
   
   mgDebug( 3, "Adding %d tracks to the playlist", tracks->size() ); 
   
@@ -116,7 +116,7 @@ void mgPlaylist::clear()
 {
   // TODO: who takes care of memory allocation/deallocation of mgItems?
   
-  vector<mgContentItem*>::iterator iter;
+  std::vector<mgContentItem*>::iterator iter;
   
   for( iter = m_list.begin(); iter != m_list.end(); iter++ )
     { // delete each item in the list
@@ -132,8 +132,8 @@ void mgPlaylist::clear()
 
 void mgPlaylist::move( int from, int to )
 {
-  vector<mgContentItem*>::iterator from_iter = m_list.begin() + from;  
-  vector<mgContentItem*>::iterator to_iter   = m_list.begin() + to;
+  std::vector<mgContentItem*>::iterator from_iter = m_list.begin() + from;  
+  std::vector<mgContentItem*>::iterator to_iter   = m_list.begin() + to;
 
   m_list.insert( to_iter, *from_iter);
   m_list.erase( from_iter );
@@ -149,12 +149,12 @@ void mgPlaylist::move( int from, int to )
 }
 
 /*====  access tracks ====*/
-string mgPlaylist::getListname() 
+std::string mgPlaylist::getListname() 
 { 
   return m_listname; 
 }
 
-void mgPlaylist::setListname(string name)
+void mgPlaylist::setListname(std::string name)
 { 
   m_listname = name;
 }
@@ -239,9 +239,9 @@ mgContentItem* mgPlaylist::sneakNext()
     }
 }
 
-bool mgPlaylist::exportM3U( string m3u_file )
+bool mgPlaylist::exportM3U( std::string m3u_file )
 {
-  vector<mgContentItem*>::iterator iter;
+  std::vector<mgContentItem*>::iterator iter;
   bool result = true;
 
   // open a file for writing

@@ -15,10 +15,10 @@
  */
 #define DEBUG
 
+#include <algorithm>
 #include "mg_content_interface.h"
 #include "mg_tools.h"
 
-using namespace std;
 
 //! \brief a special item representing an undefined state
 mgContentItem mgContentItem::UNDEFINED = mgContentItem();
@@ -31,7 +31,7 @@ mgTracklist::mgTracklist()
 mgTracklist::~mgTracklist()
 {
   mgContentItem* ptr;
-  vector<mgContentItem*>::iterator iter;
+  std::vector<mgContentItem*>::iterator iter;
   
   for( iter = m_list.begin(); iter != m_list.end(); iter++ )
   {
@@ -41,7 +41,7 @@ mgTracklist::~mgTracklist()
   m_list.clear();
 }
 
-vector<mgContentItem*> *mgTracklist::getAll()
+std::vector<mgContentItem*> *mgTracklist::getAll()
 {
   return &m_list;
 }
@@ -60,7 +60,7 @@ void mgTracklist::sortBy(int col, bool direction)
 {
 }
 
-void mgTracklist::setDisplayColumns(vector<int> cols)
+void mgTracklist::setDisplayColumns(std::vector<int> cols)
 {    
   m_columns = cols;
 }
@@ -70,9 +70,9 @@ unsigned int mgTracklist::getNumColumns()
   return m_columns.size();
 }
 
-string mgTracklist::getLabel(unsigned int position, const string separator)
+std::string mgTracklist::getLabel(unsigned int position, const std::string separator)
 {
-    string label = "";
+    std::string label = "";
     mgContentItem* item;
 
     if( position >= m_list.size() )
@@ -84,7 +84,7 @@ string mgTracklist::getLabel(unsigned int position, const string separator)
 	item = *( m_list.begin() + position );
       }     
 
-    for( vector<int>::iterator iter = m_columns.begin();
+    for( std::vector<int>::iterator iter = m_columns.begin();
 	 iter != m_columns.end(); iter++ )
       {
 	if( iter != m_columns.begin() )
@@ -111,7 +111,7 @@ bool mgTracklist::remove(unsigned int position)
 
   if( position < m_list.size() ) 
     {
-      vector<mgContentItem*>::iterator iter;
+      std::vector<mgContentItem*>::iterator iter;
       
       iter = m_list.begin() + position;
       m_list.erase(iter);
@@ -125,7 +125,7 @@ bool mgTracklist::remove(unsigned int position)
 int mgTracklist::remove(mgContentItem* item) 
 {
   int retval = 0;
-  vector<mgContentItem*>::iterator iter;
+  std::vector<mgContentItem*>::iterator iter;
   
   for( iter = m_list.begin(); iter != m_list.end (); iter++ )
     {
@@ -149,7 +149,7 @@ mgSelectionTreeNode::mgSelectionTreeNode(MYSQL db, int view)
     m_label = "ROOT";
     m_expanded = false;
 }
-mgSelectionTreeNode::mgSelectionTreeNode(mgSelectionTreeNode* parent, string id, string label)
+mgSelectionTreeNode::mgSelectionTreeNode(mgSelectionTreeNode* parent, std::string id, std::string label)
 {
     m_parent = parent;
     m_level  = m_parent->m_level+1;
@@ -181,7 +181,7 @@ mgSelectionTreeNode*  mgSelectionTreeNode::getParent()
 
 void mgSelectionTreeNode::collapse() // removes all children (recursively)
 {
-  vector <mgSelectionTreeNode*>::iterator iter;
+  std::vector <mgSelectionTreeNode*>::iterator iter;
   mgSelectionTreeNode* ptr;
 
   for(iter = m_children.begin(); iter != m_children.end();iter++)
@@ -193,23 +193,23 @@ void mgSelectionTreeNode::collapse() // removes all children (recursively)
   m_children.clear();
 }
 
-vector<mgSelectionTreeNode*> &mgSelectionTreeNode::getChildren()
+std::vector<mgSelectionTreeNode*> &mgSelectionTreeNode::getChildren()
 {
   // mgDebug(5," returning %d children", m_children.size());
   return m_children;
 }
 
-string mgSelectionTreeNode::getID()
+std::string mgSelectionTreeNode::getID()
 {
   return m_id;
 }
 
-string mgSelectionTreeNode::getLabel()
+std::string mgSelectionTreeNode::getLabel()
 {
   return m_label;
 }
 
-string mgSelectionTreeNode::getLabel(int n)
+std::string mgSelectionTreeNode::getLabel(int n)
 {
   mgSelectionTreeNode* node = this;
   int d = m_level;
@@ -223,7 +223,7 @@ string mgSelectionTreeNode::getLabel(int n)
   return node->m_label;
 } 
 
-string mgSelectionTreeNode::getRestrictions()
+std::string mgSelectionTreeNode::getRestrictions()
 {
   return m_restriction;
 }

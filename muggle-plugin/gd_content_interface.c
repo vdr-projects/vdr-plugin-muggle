@@ -26,7 +26,6 @@
 
 #include "i18n.h"
 
-using namespace std;
 
 #define GD_PLAYLIST_TYPE 0 //< listtype for giant disc db
 
@@ -83,9 +82,9 @@ int GdInitDatabase( MYSQL *db )
   return 0;
 }
 
-vector<string> *GdGetStoredPlaylists(MYSQL db)
+std::vector<std::string> *GdGetStoredPlaylists(MYSQL db)
 {
-    vector<string>* list = new  vector<string>();
+    std::vector<std::string>* list = new  std::vector<std::string>();
     MYSQL_RES	*result;
     MYSQL_ROW	row;
 
@@ -101,13 +100,13 @@ vector<string> *GdGetStoredPlaylists(MYSQL db)
 gdFilterSets::gdFilterSets()
 {
   mgFilter* filter;
-  vector<mgFilter*>* set;
-  vector<string>* rating;
+  std::vector<mgFilter*>* set;
+  std::vector<std::string>* rating;
   m_titles.push_back( tr("Track Search") );
 
   // create an initial set of filters with empty values
-  set = new vector<mgFilter*>();
-  rating = new vector<string>();
+  set = new std::vector<mgFilter*>();
+  rating = new std::vector<std::string>();
   rating->push_back("-");
   rating->push_back("O");
   rating->push_back("+");
@@ -135,7 +134,7 @@ gdFilterSets::gdFilterSets()
   
   m_titles.push_back(tr("Album Search"));
   
-  set = new vector<mgFilter*>();
+  set = new std::vector<mgFilter*>();
   // year-from
   filter = new mgFilterInt(tr("year (from)"), 1901, 1900, 2100); set->push_back(filter);
   // year-to
@@ -153,7 +152,7 @@ gdFilterSets::gdFilterSets()
   
   m_titles.push_back(tr("Playlist Search"));
   
-  set = new vector<mgFilter*>();
+  set = new std::vector<mgFilter*>();
   // year-from
   filter = new mgFilterInt(tr("year (from)"), 1901, 1900, 2100); set->push_back(filter);
   // year-to
@@ -182,9 +181,9 @@ gdFilterSets::~gdFilterSets()
   // everything is done in the destructor of the base class
 }
 
-string gdFilterSets::computeRestriction(int *viewPrt)
+std::string gdFilterSets::computeRestriction(int *viewPrt)
 {
-  string sql_str = "1";
+  std::string sql_str = "1";
 
   switch( m_activeSetId )
     {
@@ -209,7 +208,7 @@ string gdFilterSets::computeRestriction(int *viewPrt)
       }	break;
   }
 
-  for( vector<mgFilter*>::iterator iter = m_activeSet->begin();
+  for( std::vector<mgFilter*>::iterator iter = m_activeSet->begin();
        iter != m_activeSet->end(); 
        iter++ )
     {
@@ -285,7 +284,7 @@ string gdFilterSets::computeRestriction(int *viewPrt)
 	    }  
 	}
     }  
-  mgDebug(1, "Applying sql string %s (view=%d)", sql_str.c_str(), *viewPrt ); 
+  mgDebug(1, "Applying sql std::string %s (view=%d)", sql_str.c_str(), *viewPrt ); 
   return sql_str;
 }
 
@@ -358,7 +357,7 @@ bool mgGdTrack::readData()
 	m_artist  = row[0];
 	m_album   = row[1];
 	m_title   = row[2];
-	m_mp3file = string( the_setup.ToplevelDir ) + row[3];
+	m_mp3file = std::string( the_setup.ToplevelDir ) + row[3];
 	m_genre   = row[4];
 	
 	if( sscanf( row[5], "%d", &m_year) != 1 )
@@ -393,7 +392,7 @@ bool mgGdTrack::readData()
     return true;
 }
 
-string mgGdTrack::getSourceFile()
+std::string mgGdTrack::getSourceFile()
 {
   if( !m_retrieved )
     {
@@ -402,7 +401,7 @@ string mgGdTrack::getSourceFile()
   return m_mp3file;
 }
 
-string mgGdTrack::getTitle()
+std::string mgGdTrack::getTitle()
 {
   if( !m_retrieved )
     {
@@ -411,7 +410,7 @@ string mgGdTrack::getTitle()
   return m_title;
 }
 
-string mgGdTrack::getArtist()
+std::string mgGdTrack::getArtist()
 {
     if(!m_retrieved)
     {
@@ -430,7 +429,7 @@ int mgGdTrack::getLength()
 }
 
 
-string mgGdTrack::getLabel(int col)
+std::string mgGdTrack::getLabel(int col)
 {
   if( !m_retrieved )
     {
@@ -451,17 +450,17 @@ string mgGdTrack::getLabel(int col)
     }
 }
 
-vector<mgFilter*> *mgGdTrack::getTrackInfo()
+std::vector<mgFilter*> *mgGdTrack::getTrackInfo()
 {
-  return new vector<mgFilter*>();
+  return new std::vector<mgFilter*>();
 }
 
-bool mgGdTrack::setTrackInfo(vector<mgFilter*> *info)
+bool mgGdTrack::setTrackInfo(std::vector<mgFilter*> *info)
 {
   return false;
 }
 
-string mgGdTrack::getAlbum()
+std::string mgGdTrack::getAlbum()
 {
   if( !m_retrieved )
     {
@@ -470,7 +469,7 @@ string mgGdTrack::getAlbum()
   return m_album;
 }
   
-string mgGdTrack::getGenre()
+std::string mgGdTrack::getGenre()
 {
     if(!m_retrieved)
     {
@@ -524,7 +523,7 @@ int mgGdTrack::getChannels()
     return m_channels;
 }
 
-string mgGdTrack::getBitrate()
+std::string mgGdTrack::getBitrate()
 {
     if(!m_retrieved)
     {
@@ -533,27 +532,27 @@ string mgGdTrack::getBitrate()
     return m_bitrate;
 }
 
-string mgGdTrack::getImageFile()
+std::string mgGdTrack::getImageFile()
 {
     return "dummyImg.jpg";
 }
 
-void mgGdTrack::setTitle(string new_title)
+void mgGdTrack::setTitle(std::string new_title)
 {
     m_title = new_title;
 }
 
-void mgGdTrack::setArtist(string new_artist)
+void mgGdTrack::setArtist(std::string new_artist)
 {
     m_artist =  new_artist;
 }
 
-void mgGdTrack::setAlbum(string new_album)
+void mgGdTrack::setAlbum(std::string new_album)
 {
     m_album = new_album;
 }
 
-void mgGdTrack::setGenre(string new_genre)
+void mgGdTrack::setGenre(std::string new_genre)
 {
     m_genre = new_genre;
 }
@@ -578,7 +577,7 @@ bool mgGdTrack::writeData()
   return true;
 }
 
-GdTracklist::GdTracklist(MYSQL db_handle, string restrictions)
+GdTracklist::GdTracklist(MYSQL db_handle, std::string restrictions)
 {
     MYSQL_RES	*result;
     MYSQL_ROW	row;
@@ -603,7 +602,7 @@ GdTracklist::GdTracklist(MYSQL db_handle, string restrictions)
       }
 }
 
-GdPlaylist::GdPlaylist(string listname, MYSQL db_handle)
+GdPlaylist::GdPlaylist(std::string listname, MYSQL db_handle)
 {
     MYSQL_RES	*result;
     MYSQL_ROW	row;
@@ -707,7 +706,7 @@ int GdPlaylist::insertDataFromSQL()
 
 bool GdPlaylist::storePlaylist()
 {
-    vector<mgContentItem*>::iterator iter;
+    std::vector<mgContentItem*>::iterator iter;
     int num;
     MYSQL_RES	*result;
     MYSQL_ROW	row;
@@ -792,7 +791,7 @@ int GdPlaylist::getPlayTimeRemaining()
 /*!
  * \brief constructor
  */
-GdTreeNode::GdTreeNode(MYSQL db, int view, string filters)
+GdTreeNode::GdTreeNode(MYSQL db, int view, std::string filters)
   :  mgSelectionTreeNode(db, view)
 {
   // create a root node
@@ -803,9 +802,9 @@ GdTreeNode::GdTreeNode(MYSQL db, int view, string filters)
 }
 
 GdTreeNode::GdTreeNode( mgSelectionTreeNode* parent,
-			string id, 
-			string label, 
-			string restriction )
+			std::string id, 
+			std::string label, 
+			std::string restriction )
   :  mgSelectionTreeNode(parent, id, label)
 {
   m_restriction = restriction;
@@ -908,14 +907,14 @@ bool GdTreeNode::expand()
     char idbuf[255];
     int numchild;
 
-    string labelfield;            // human readable db field for the column to be expanded
-    string idfield;               // unique id field for the column to be expanded
-    string new_restriction_field; // field to be restricted by the new level
-    string new_restriction;       // complete restriction str for the current child
-    string new_label;
+    std::string labelfield;            // human readable db field for the column to be expanded
+    std::string idfield;               // unique id field for the column to be expanded
+    std::string new_restriction_field; // field to be restricted by the new level
+    std::string new_restriction;       // complete restriction str for the current child
+    std::string new_label;
     GdTreeNode* new_child;
 
-    string tables;  // stores the db tables used
+    std::string tables;  // stores the db tables used
     
 #define  FROMJOIN " FROM tracks, genre as genre1, genre as genre2, album WHERE tracks.sourceid=album.cddbid AND genre1.id=tracks.genre1 AND genre2.id=tracks.genre2 AND %s "
     
@@ -1215,8 +1214,8 @@ bool GdTreeNode::expand()
 	    // diese die den Filterkriterien entsprechen.
 	    // das betrifft nur die Search Views!
 
-	    string row0 = mgDB::escape_string( &m_db, string( row[0] ) );
-	    string row1 = mgDB::escape_string( &m_db, string( row[1] ) );
+	    std::string row0 = mgDB::escape_string( &m_db, std::string( row[0] ) );
+	    std::string row1 = mgDB::escape_string( &m_db, std::string( row[1] ) );
 
 	    if( m_view < 100 ) 
 	      {
@@ -1229,7 +1228,7 @@ bool GdTreeNode::expand()
 	      }
 	    
 	    new_child = new GdTreeNode(this, // parent
-				       (string) idbuf, // id
+				       (std::string) idbuf, // id
 				       // row[0], // label,
 				       row0,
 				       new_restriction);
@@ -1282,16 +1281,16 @@ bool GdTreeNode::expand()
 /*!
  * \brief iterate all children recursively to find the tracks
  */
-vector<mgContentItem*>* GdTreeNode::getTracks()
+std::vector<mgContentItem*>* GdTreeNode::getTracks()
 {
     MYSQL_ROW	row;
     MYSQL_RES	*result;
     int	nrows;
     int	nfields;
-    vector<mgContentItem*>* retlist;
+    std::vector<mgContentItem*>* retlist;
     int trackid;
 
-    retlist = new  vector<mgContentItem*>();
+    retlist = new std::vector<mgContentItem*>();
     
     // get all tracks satisying the restrictions of this node
     mgDebug(5, "getTracks(): query '%s'", m_restriction.c_str());

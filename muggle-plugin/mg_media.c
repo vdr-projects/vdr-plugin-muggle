@@ -17,7 +17,6 @@
 
 #include "vdr_setup.h"
 
-using namespace std;
 
 //-------------------------------------------------------------------
 //        mgFilterSets
@@ -35,12 +34,12 @@ mgFilterSets::mgFilterSets()
 
 mgFilterSets::~mgFilterSets()
 {
-  vector<mgFilter*> *set;
-  for(vector<vector<mgFilter*>*>::iterator iter1 = m_sets.begin();
+  std::vector<mgFilter*> *set;
+  for(std::vector<std::vector<mgFilter*>*>::iterator iter1 = m_sets.begin();
       iter1 != m_sets.end(); iter1++)
   {
     set = *iter1;
-    for(vector<mgFilter*>::iterator iter2 = set->begin();
+    for(std::vector<mgFilter*>::iterator iter2 = set->begin();
       iter2 != set->end(); iter2++)
     {
       delete (*iter2);
@@ -99,7 +98,7 @@ void mgFilterSets::select(int n)
  ********************************************************************/
  void mgFilterSets::clear()
 {
-  for(vector<mgFilter*>::iterator iter = m_activeSet->begin();
+  for(std::vector<mgFilter*>::iterator iter = m_activeSet->begin();
       iter != m_activeSet->end(); iter++)
   {
     (*iter)->clear();
@@ -111,7 +110,7 @@ void mgFilterSets::select(int n)
  ********************************************************************/
  void mgFilterSets::accept()
 {
-  for(vector<mgFilter*>::iterator iter = m_activeSet->begin();
+  for(std::vector<mgFilter*>::iterator iter = m_activeSet->begin();
       iter != m_activeSet->end(); iter++)
   {
     (*iter)->store();
@@ -125,9 +124,9 @@ void mgFilterSets::select(int n)
  * the application may temporarily modify the filter values 
  * accept() needs to be called to memorize the changed values
  ********************************************************************/
- vector<mgFilter*> *mgFilterSets::getFilters()
+ std::vector<mgFilter*> *mgFilterSets::getFilters()
 {
-  for(vector<mgFilter*>::iterator iter = m_activeSet->begin();
+  for(std::vector<mgFilter*>::iterator iter = m_activeSet->begin();
       iter != m_activeSet->end(); iter++)
   {
     (*iter)->restore();
@@ -139,7 +138,7 @@ void mgFilterSets::select(int n)
 /*! 
  * \brief return title of the active filter set
  */
-string mgFilterSets::getTitle()
+std::string mgFilterSets::getTitle()
 {
   if(m_activeSetId < (int) m_titles.size())
   {
@@ -147,7 +146,7 @@ string mgFilterSets::getTitle()
   }
   else
   {
-    mgWarning("Implementation error: No title string for filter set %d",
+    mgWarning("Implementation error: No title std::string for filter set %d",
 	      m_activeSetId);
     return "NO-TITLE";
   }
@@ -200,7 +199,7 @@ mgMedia::~mgMedia()
     }
 }
   
-string mgMedia::getMediaTypeName()
+std::string mgMedia::getMediaTypeName()
 {
     switch(m_mediatype)
     {
@@ -226,11 +225,11 @@ mgSelectionTreeNode* mgMedia::getSelectionRoot()
 
 mgPlaylist* mgMedia::createTemporaryPlaylist()
 {
-    string tmpname = "current";
+    std::string tmpname = "current";
     return loadPlaylist( tmpname );
 }
 
-mgPlaylist* mgMedia::loadPlaylist(string name)
+mgPlaylist* mgMedia::loadPlaylist(std::string name)
 {
     mgPlaylist *list;
     switch( m_mediatype )
@@ -250,7 +249,7 @@ mgPlaylist* mgMedia::loadPlaylist(string name)
 /*! 
  * \brief Obtain a list of stored playlists
  */
-vector<string> *mgMedia::getStoredPlaylists()
+std::vector<std::string> *mgMedia::getStoredPlaylists()
 {
     switch(m_mediatype)
     {
@@ -260,15 +259,15 @@ vector<string> *mgMedia::getStoredPlaylists()
 	  } break;
     }	 
     mgError("implementation Error"); // we should never get here
-    return new vector<string>();
+    return new std::vector<std::string>();
 }
 
 /*! 
  * \brief obtain the indices of columns which are presented by default
  */
-vector<int> mgMedia::getDefaultCols()
+std::vector<int> mgMedia::getDefaultCols()
 {
-    vector<int> cols;
+    std::vector<int> cols;
     switch(m_mediatype)
     {
 	case GD_MP3:
@@ -324,7 +323,7 @@ void mgMedia::initFilterSet(int num)
  *
  *  Note: Modifications become only effective by calling applyActiveFilter()
  ********************************************************************/
-vector<mgFilter*> *mgMedia::getActiveFilters()
+std::vector<mgFilter*> *mgMedia::getActiveFilters()
 {
   if(!m_filters)
   {
@@ -336,7 +335,7 @@ vector<mgFilter*> *mgMedia::getActiveFilters()
 /*! 
  * \brief returns title of the active filter set
  */
-string mgMedia::getActiveFilterTitle()
+std::string mgMedia::getActiveFilterTitle()
 {
 
     switch(m_mediatype)

@@ -3,17 +3,17 @@
  *  \brief  
  ******************************************************************** 
  * \version $Revision: 1.3 $
- * \date    $Date: 2004/05/28 15:29:18 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: lvw $
+ * \author  file owner: $Author$
  */
 /*******************************************************************/
 
 /* makes sure we dont parse the same declarations twice */
+#include <stdio.h>
 #include "mg_filters.h"
 #include "mg_tools.h"
 
-using namespace std;
 
 //-------------------------------------------------------------------
 //                         mgFilter
@@ -54,12 +54,12 @@ mgFilterInt::~mgFilterInt()
 {
 }
 
-string mgFilterInt::getStrVal()
+std::string mgFilterInt::getStrVal()
 {
   char buffer[20];
   sprintf(buffer, "%d", m_intval);
 
-  return (string)buffer;
+  return (std::string)buffer;
 }
 
 int mgFilterInt::getIntVal()
@@ -109,7 +109,7 @@ bool mgFilterInt::isSet()
 //       mgFilterString
 //-------------------------------------------------------------------
 mgFilterString::mgFilterString(const char *name, const char* value,
-			       int maxlen, string allowedchar)
+			       int maxlen, std::string allowedchar)
   : mgFilter(name)
 {
   m_type = STRING;
@@ -132,14 +132,14 @@ int mgFilterString::getMaxLength()
   return m_maxlen;
 } 
 
-string mgFilterString::getAllowedChars()
+std::string mgFilterString::getAllowedChars()
 {
   return m_allowedchar;
 }
-string mgFilterString::getStrVal()
+std::string mgFilterString::getStrVal()
 {
  
-  return (string) m_strval;
+  return (std::string) m_strval;
 }
 void mgFilterString::store()
 {
@@ -172,7 +172,7 @@ bool mgFilterString::isSet()
 //        mgFilterBool
 //-------------------------------------------------------------------
 mgFilterBool::mgFilterBool(const char *name, bool value,
-			   string truestr, string falsestr)
+			   std::string truestr, std::string falsestr)
   : mgFilter(name)
 {
   m_type = BOOL;
@@ -188,7 +188,7 @@ mgFilterBool::~mgFilterBool()
 {
 }
 
-string mgFilterBool::getStrVal()
+std::string mgFilterBool::getStrVal()
 {
   if(m_bval)
     return "true";
@@ -201,12 +201,12 @@ int mgFilterBool::getIntVal()
   return (int) m_bval;
 }
 
-string mgFilterBool::getTrueString()
+std::string mgFilterBool::getTrueString()
 {
   return m_truestr;
 }
 
-string mgFilterBool::getFalseString()
+std::string mgFilterBool::getFalseString()
 {
   return m_falsestr;
 }
@@ -243,7 +243,7 @@ bool mgFilterBool::isSet()
 //-------------------------------------------------------------------
 //        mgFilterChoice
 //-------------------------------------------------------------------
-mgFilterChoice::mgFilterChoice(const char *name, int value, vector<string> *choices)
+mgFilterChoice::mgFilterChoice(const char *name, int value, std::vector<std::string> *choices)
   : mgFilter(name)
 {
   m_type = CHOICE;
@@ -260,7 +260,7 @@ mgFilterChoice::~mgFilterChoice()
   m_choices.clear();
 }
 
-string mgFilterChoice::getStrVal()
+std::string mgFilterChoice::getStrVal()
 {
   if( m_selval < 0 || m_selval >= (int) m_choices.size() )
   {
@@ -268,7 +268,7 @@ string mgFilterChoice::getStrVal()
   }
   return m_choices[m_selval];
 }
-vector<string> &mgFilterChoice::getChoices()
+std::vector<std::string> &mgFilterChoice::getChoices()
 {
   return m_choices;
 }

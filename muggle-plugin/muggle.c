@@ -10,10 +10,6 @@
  *  $Id$
  */
 
-#include <getopt.h>
-
-#include <config.h>
-
 #include "muggle.h"
 
 #include "vdr_menu.h"
@@ -23,12 +19,13 @@
 #include "mg_media.h"
 
 #include "i18n.h"
+#include <getopt.h>
+#include <config.h>
 
 static const char *VERSION        = "0.0.4";
 static const char *DESCRIPTION    = "Media juggle plugin for VDR";
 static const char *MAINMENUENTRY  = "Muggle";
 
-using namespace std;
 
 const char* mgMuggle::Version(void)
 { 
@@ -128,7 +125,7 @@ bool mgMuggle::ProcessArgs(int argc, char *argv[])
  	  {
 	    if (optarg[strlen(optarg) - 1] != '/')
 	      {
-		string res = string(optarg) + "/";
+		std::string res = std::string(optarg) + "/";
 		the_setup.ToplevelDir = strdup( res.c_str() );
 	      }
 	    else
