@@ -10,17 +10,13 @@
   \section urgent Urgent/Short-term issues
 
     \subsection bugs Bugs and testing needed
-
-        - Test execution of playlist commands    
         - Crashes in filter selections?
         - Keep this? Test mgPCMPlayer::getSourceFile() for GD case (find)
 
     \subsection urgentosd OSD-related Issues
-
         - Rename playlist
 
     \subsection urgentcode Code polishing
-
         - Clean up coding style and documentation in general
         - Logging
           - extend mgLog with static logging methods
@@ -44,6 +40,10 @@
 
     \subsection urgentcontent Content handling    
         - Save on exit
+          - implement storePlaylistAs( string name ) in gdPlaylist
+            - find id of playlist called name or create it
+            - delete all entries
+            - store current entries
 	- Think, whether type (mp3, ogg, flac) should be stored in database
           - could be used in searching/structuring as well
 	- Handle loop mode in mgPlaylist
@@ -67,7 +67,6 @@
 	          - add the file to the end of the list
 
     \subsection urgentplayer Player extensions
-        - Possible to resume play instead of restarting list from the beginning?
 	- Display covers
           - Import filename
           - Show image during replay
@@ -245,5 +244,7 @@
       - Track view: all metadata
       - Playlist view: all tracks (past three, upcoming ones)
     - BUG: Red key does not work in Browser submenu
+    - Test execution of playlist commands    
+    - Resume play instead of restarting list from the beginning when terminating play with blue instead of back
 
 */
