@@ -17,8 +17,6 @@
 
     \subsection urgentosd OSD-related Issues
 
-        - Possible to resume play instead of restarting list from the beginning?
-        - Save on exit
         - Rename playlist
 
     \subsection urgentcode Code polishing
@@ -44,6 +42,7 @@
 	  - Could save IP/host name and associate last playlist/index loaded
 
     \subsection urgentcontent Content handling    
+        - Save on exit
 	- Think, whether type (mp3, ogg, flac) should be stored in database
           - could be used in searching/structuring as well
 	- Handle loop mode in mgPlaylist
@@ -67,6 +66,7 @@
 	          - add the file to the end of the list
 
     \subsection urgentplayer Player extensions
+        - Possible to resume play instead of restarting list from the beginning?
 	- Display covers
           - Import filename
           - Show image during replay
@@ -110,6 +110,13 @@
   
     \subsection midimport Import stuff
     
+    - Handle updates in both directions
+      - Check modification date in DB/fstat
+      - if file is newer: update tags into db
+      - if DB is newer: update db into tags
+      - Second pass: check for all tracks, whether files do exist
+        - delete DB entry if not
+
     - Album
       - Cover images (based on filename or tag)
       - Genre
@@ -125,11 +132,6 @@
     - Import playlist from m3u
     - Run import/update from within OSD?
 
-    - Handle updates in both directions
-      - Check modification date in DB/fstat
-      - if file is newer: update tags into db
-      - if DB is newer: update db into tags
-    
     \subsection midcode Code issues
     
 	- really abstract from specific queries etc.
