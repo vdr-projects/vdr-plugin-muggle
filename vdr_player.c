@@ -2,12 +2,12 @@
  * \file vdr_player.c
  * \brief A generic PCM player for a VDR media plugin (muggle)
  *
- * \version $Revision: 1.2 $
- * \date    $Date: 2004/05/28 15:29:19 $
+ * \version $Revision: 1.3 $
+ * \date    $Date: 2004/07/12 11:06:23 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author: LarsAC $
  *
- * $Id: vdr_player.c,v 1.2 2004/05/28 15:29:19 lvw Exp $
+ * $Id: vdr_player.c,v 1.3 2004/07/12 11:06:23 LarsAC Exp $
  *
  * Adapted from 
  * MP3/MPlayer plugin to VDR (C++)
@@ -246,10 +246,7 @@ void mgPCMPlayer::Activate(bool on)
 
 	  Lock();
 	  m_playlist->initialize();
-	  if( NextFile() ) 
-	    { 
-	      Play();
-	    }
+	  Play();
 	  Unlock();
 	}
     }
@@ -1045,6 +1042,9 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
 /************************************************************
  *
  * $Log: vdr_player.c,v $
+ * Revision 1.3  2004/07/12 11:06:23  LarsAC
+ * No longer skip first file on playlist when starting replay.
+ *
  * Revision 1.2  2004/05/28 15:29:19  lvw
  * Merged player branch back on HEAD branch.
  *
