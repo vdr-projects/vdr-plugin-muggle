@@ -3,8 +3,8 @@
  * \brief  Top level access to media in vdr plugin muggle
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.2 $
- * \date    $Date: 2004/02/02 02:01:11 $
+ * \version $Revision: 1.3 $
+ * \date    $Date: 2004/02/02 17:57:53 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: MountainMan $
  * 
@@ -51,9 +51,10 @@ class mgFilterInt : public mgFilter
  private:
   int m_min;
   int m_max; 
-  int m_intval;
   
  public:
+  int m_intval;
+
   mgFilterInt(const char *name, int value, int min = 0, int max = INT_MAX);
   virtual ~mgFilterInt();
 
@@ -61,38 +62,33 @@ class mgFilterInt : public mgFilter
   int getMin();
   int getMax();
   virtual std::string getStrVal();
-
-  void setVal(int value);
 };  
   
 class mgFilterString : public mgFilter
 {
  private:
-  char* m_strval;
   
  public:
+  char* m_strval;
+
   mgFilterString(const char *name, const char* value);
   virtual ~mgFilterString();
 
-  const char* getVal();
   virtual std::string getStrVal();
-
-  void setVal(const char* val);
 };  
 
 class mgFilterBool : public mgFilter
 {
  private:
-  bool m_bval;
   
  public:
+  bool m_bval;
+
   mgFilterBool(const char *name, bool value);
   virtual ~mgFilterBool();
 
-  bool getVal();
   virtual std::string getStrVal();
 
-  void setVal(bool val);
 };  
 
 class mgTrackFilters
