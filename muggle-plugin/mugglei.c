@@ -79,7 +79,7 @@ void update_db( long uid, string filename )
   if( NULL != album_frame )
     {      
       album_frame->Field( ID3FN_TEXT ).Get( album, 1024 );
-      printf( "Field obtained.\n" );  
+      printf( "Field obtained: %s\n", album );  
     }
   else
     {
@@ -94,6 +94,7 @@ void update_db( long uid, string filename )
   if( NULL != title_frame )
     {      
       title_frame->Field ( ID3FN_TEXT ).Get ( title, 1024 ); 
+      printf( "Field obtained: %s\n", title);  
     }
   else
     {
@@ -108,6 +109,7 @@ void update_db( long uid, string filename )
   if( NULL != year_frame )
     {      
       year_frame->Field ( ID3FN_TEXT ).Get ( year, 5 ); 
+      printf( "Field obtained: %s\n", year );  
     }
   else
     {
@@ -121,7 +123,8 @@ void update_db( long uid, string filename )
   ID3_Frame* artist_frame = filetag.Find( ID3FID_LEADARTIST );
   if( NULL != artist_frame )
     {      
-      artist_frame->Field ( ID3FN_TEXT ).Get ( artist, 5 ); 
+      artist_frame->Field ( ID3FN_TEXT ).Get ( artist, 1023 ); 
+      printf( "Field obtained: \n" );  
     }
   else
     {
@@ -136,6 +139,7 @@ void update_db( long uid, string filename )
   if( NULL != trackno_frame )
     {      
       trackno_frame->Field ( ID3FN_TEXT ).Get ( trackno, 5 ); 
+      printf( "Field obtained: %s\n", trackno );  
     }
   else
     {
@@ -233,9 +237,15 @@ void evaluate_file( string filename )
 
 int main( int argc, char *argv[] )
 {
+  /*
   host   = "134.130.124.222";
   user   = "root";
   dbname = "giantdisc";
+  pass   = NULL;
+  */
+  host   = "localhost";
+  user   = "vdr";
+  dbname = "GiantDisc";
   pass   = NULL;
 
   int res = init_database();
