@@ -917,7 +917,7 @@ char *cMP3Player::LoadImage(const char *fullname)
 {
   size_t i, j = strlen (MP3Sources.GetSource()->BaseDir()) + 1;
   char imageFile[1024];
-+  static char mpgFile[1024];
+  static char mpgFile[1024];
   char *p, *q = NULL;
   char *imageSuffixes[] = { "png", "gif", "jpg" };
 

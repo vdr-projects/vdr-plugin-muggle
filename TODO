@@ -66,11 +66,12 @@
 	        - if n < playcount / max. playcount
 	          - add the file to the end of the list
 
-	\subsection urgentplayer Player extensions
-
+    \subsection urgentplayer Player extensions
 	- Display covers
+          - Import filename
+          - Show image during replay
 	- Add FLAC decoder
-	- Determine max. framecount (needed for rewinding)?
+	- Determine max. framecount (needed for rewinding?)
 	- Init scale/level/normalize?
 	  - The max. level should be recognized during play
 	  - Store max. level in the database

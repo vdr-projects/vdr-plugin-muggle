@@ -114,13 +114,13 @@ public:
    *  \param from - the item of the index to be moved
    *  \param to   - the target index of the item
    */
-  void move( int from, int to );
+  void move( unsigned from, unsigned to );
 
   /*! \brief remove a track from the playlist
    *
    *  \param pos - the index of the track to be removed
    */
-  bool remove( int pos );
+  bool remove( unsigned pos );
 
   //@}
 
@@ -137,7 +137,7 @@ public:
   //@{
 
   //! \brief returns current index in the playlist
-  int getIndex() const;
+  unsigned getIndex() const;
 
   //! \brief make playlist persistent
   virtual bool storePlaylist() = 0;
@@ -186,7 +186,7 @@ private:
 
   //! \brief current index in the playlist
   // TODO: should be a property of the player?
-  int m_current_idx;
+  unsigned m_current_idx;
 
   //! \brief the current loop mode
   LoopMode m_loop_mode;
