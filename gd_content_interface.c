@@ -3,10 +3,10 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.15 $
- * \date    $Date: 2004/02/12 09:15:07 $
+ * \version $Revision: 1.16 $
+ * \date    $Date: 2004/02/14 22:02:45 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: RaK $
  *
  * DUMMY
  * Implements main classes of for content items and interfaces to SQL databases
@@ -40,7 +40,7 @@ int GdInitDatabase(MYSQL *db)
     }
     
     if(mysql_real_connect(db,"localhost","root","",
-			  "GiantDisc2",0,NULL,0) == NULL)
+			  "GiantDisc",0,NULL,0) == NULL)
     {
 	return -2;
     }
@@ -80,23 +80,29 @@ gdFilterSets::gdFilterSets()
 {
   mgFilter* filter;
   vector<mgFilter*>* set;
+  vector<string>* rating;
   m_titles.push_back("Track Search");
 
   // create an initial set of filters with empty values
   set = new vector<mgFilter*>();
+  rating = new vector<string>();
+  rating->push_back("-");
+  rating->push_back("O");
+  rating->push_back("+");
+  rating->push_back("++");
  
   // title
   filter = new mgFilterString("title", ""); set->push_back(filter);
   // artist
-  filter = new mgFilterString("artist", "abba"); set->push_back(filter);
+  filter = new mgFilterString("artist", ""); set->push_back(filter);
   // genre
   filter = new mgFilterString("genre", ""); set->push_back(filter);
   // year-from
   filter = new mgFilterInt("year (from)", 1900); set->push_back(filter);
   // year-to
   filter = new mgFilterInt("year (to)", 2100); set->push_back(filter);
- // rating
-  filter = new mgFilterInt("rating", 0); set->push_back(filter);
+  // rating
+  filter = new mgFilterChoice("rating", 1, rating); set->push_back(filter);
 
   m_sets.push_back(set);
   
@@ -106,7 +112,7 @@ gdFilterSets::gdFilterSets()
   // title
   filter = new mgFilterString("album title", ""); set->push_back(filter);
   // artist
-  filter = new mgFilterString("album artist", "abba"); set->push_back(filter);
+  filter = new mgFilterString("album artist", ""); set->push_back(filter);
   // genre
   filter = new mgFilterString("genre", ""); set->push_back(filter);
   // year-from
@@ -114,7 +120,7 @@ gdFilterSets::gdFilterSets()
   // year-to
   filter = new mgFilterInt("year (to)", 2100); set->push_back(filter);
   // rating
-  filter = new mgFilterInt("rating", 0); set->push_back(filter);
+  filter = new mgFilterChoice("rating", 1, rating); set->push_back(filter);
 
   m_sets.push_back(set);
   
@@ -128,7 +134,7 @@ gdFilterSets::gdFilterSets()
   // title
   filter = new mgFilterString("title", ""); set->push_back(filter);
   // artist
-  filter = new mgFilterString("artist", "abba"); set->push_back(filter);
+  filter = new mgFilterString("artist", ""); set->push_back(filter);
   // genre
   filter = new mgFilterString("genre", ""); set->push_back(filter);
   // year-from
@@ -136,7 +142,7 @@ gdFilterSets::gdFilterSets()
   // year-to
   filter = new mgFilterInt("year (to)", 2100); set->push_back(filter);
   // rating
-  filter = new mgFilterInt("rating", 0); set->push_back(filter);
+  filter = new mgFilterChoice("rating", 1, rating); set->push_back(filter);
 
   m_sets.push_back(set);
   
@@ -162,150 +168,91 @@ gdFilterSets::~gdFilterSets()
 string gdFilterSets::computeRestriction(int *viewPrt)
 {
   string sql_str = "1";
+
   switch (m_activeSetId) {
     case 0:
-      for(vector<mgFilter*>::iterator iter = m_activeSet->begin();
-          iter != m_activeSet->end(); iter++)
-      {
-        if((*iter)->isSet())
-        {
-          if(strcmp((*iter)->getName(), "title") == 0 )
-          {
-            sql_str = sql_str + " AND tracks.title like '%%" 
-  	      + (*iter)->getStrVal() + "%%'";
-          }
-          else if(strcmp((*iter)->getName(), "artist") == 0 )
-          { 
-            sql_str = sql_str + " AND tracks.artist like '%%" 
-	      + (*iter)->getStrVal() + "%%'";
-          }
-          else if(strcmp((*iter)->getName(), "genre") == 0 )
-          { 
-            sql_str = sql_str + " AND (genre1.genre like '" 
-	      + (*iter)->getStrVal() + "'";
-            sql_str = sql_str + " OR genre2.genre like '" 
-	      + (*iter)->getStrVal() + "')";
-          }
-          else if(strcmp((*iter)->getName(), "year (from)") == 0 )
-          { 
-	    sql_str = sql_str + " AND tracks.year >= " + (*iter)->getStrVal();
-          }
-          else if(strcmp((*iter)->getName(), "year (to)") == 0 )
-          { 
-	    sql_str = sql_str + " AND tracks.year <= " + (*iter)->getStrVal();
-          }
-          else if(strcmp((*iter)->getName(), "rating") == 0 )
-          { 
-	    sql_str = sql_str + " AND tracks.rating >= " + (*iter)->getStrVal();
-          }
-          else
-          {
-	    mgWarning("Ignoring unknown filter %s", (*iter)->getName());
-          }  
-        }
-      }
       *viewPrt =  100; // tracks (flatlist for mountain man ;-))
       break;
     case 1:
-      for(vector<mgFilter*>::iterator iter = m_activeSet->begin();
-          iter != m_activeSet->end(); iter++)
-      {
-        if((*iter)->isSet())
-        {
-          if(strcmp((*iter)->getName(), "album title") == 0 )
-          {
-            sql_str = sql_str + " AND album.title like '%%" 
-  	      + (*iter)->getStrVal() + "%%'";
-          }
-          else if(strcmp((*iter)->getName(), "album artist") == 0 )
-          { 
-            sql_str = sql_str + " AND album.artist like '%%" 
-	      + (*iter)->getStrVal() + "%%'";
-          }
-          else if(strcmp((*iter)->getName(), "genre") == 0 )
-          { 
-            sql_str = sql_str + " AND (genre1.genre like '" 
-	      + (*iter)->getStrVal() + "'";
-            sql_str = sql_str + " OR genre2.genre like '" 
-	      + (*iter)->getStrVal() + "')";
-          }
-          else if(strcmp((*iter)->getName(), "year (from)") == 0 )
-          { 
-	    sql_str = sql_str + " AND tracks.year >= " + (*iter)->getStrVal();
-          }
-          else if(strcmp((*iter)->getName(), "year (to)") == 0 )
-          { 
-	    sql_str = sql_str + " AND tracks.year <= " + (*iter)->getStrVal();
-          }
-          else if(strcmp((*iter)->getName(), "rating") == 0 )
-          { 
-	    sql_str = sql_str + " AND tracks.rating >= " + (*iter)->getStrVal();
-          }
-          else
-          {
-	    mgWarning("Ignoring unknown filter %s", (*iter)->getName());
-          }  
-        }
-      }
       *viewPrt =  101; // album -> tracks
       break;
     case 2: // playlist -> tracks
-      for(vector<mgFilter*>::iterator iter = m_activeSet->begin();
-          iter != m_activeSet->end(); iter++)
-      {
-        if((*iter)->isSet())
-        {
-          if(strcmp((*iter)->getName(), "playlist title") == 0 )
-          {
-            sql_str = sql_str + " AND playlist.title like '%%" 
-  	      + (*iter)->getStrVal() + "%%'";
-          }
-          else if(strcmp((*iter)->getName(), "playlist author") == 0 )
-          {
-            sql_str = sql_str + " AND playlist.author like '%%" 
-  	      + (*iter)->getStrVal() + "%%'";
-          }
-          else if(strcmp((*iter)->getName(), "title") == 0 )
-          {
-            sql_str = sql_str + " AND tracks.title like '%%" 
-  	      + (*iter)->getStrVal() + "%%'";
-          }
-          else if(strcmp((*iter)->getName(), "artist") == 0 )
-          { 
-            sql_str = sql_str + " AND tracks.artist like '%%" 
-	      + (*iter)->getStrVal() + "%%'";
-          }
-          else if(strcmp((*iter)->getName(), "genre") == 0 )
-          { 
-            sql_str = sql_str + " AND (genre1.genre like '" 
-	      + (*iter)->getStrVal() + "'";
-            sql_str = sql_str + " OR genre2.genre like '" 
-	      + (*iter)->getStrVal() + "')";
-          }
-          else if(strcmp((*iter)->getName(), "year (from)") == 0 )
-          { 
-	    sql_str = sql_str + " AND tracks.year >= " + (*iter)->getStrVal();
-          }
-          else if(strcmp((*iter)->getName(), "year (to)") == 0 )
-          { 
-	    sql_str = sql_str + " AND tracks.year <= " + (*iter)->getStrVal();
-          }
-          else if(strcmp((*iter)->getName(), "rating") == 0 )
-          { 
-	    sql_str = sql_str + " AND tracks.rating >= " + (*iter)->getStrVal();
-          }
-          else
-          {
-	    mgWarning("Ignoring unknown filter %s", (*iter)->getName());
-          }  
-        }
-      }
       *viewPrt =  102; // playlist -> tracks
       break;
     default:
       mgWarning("Ignoring Filter Set %i", m_activeSetId);
       break;
   }
+
+  for(vector<mgFilter*>::iterator iter = m_activeSet->begin();
+      iter != m_activeSet->end(); iter++)
+  {
+    if((*iter)->isSet())
+    {
+      if(strcmp((*iter)->getName(), "playlist title") == 0 )
+      {
+        sql_str = sql_str + " AND playlist.title like '%%" 
+           + (*iter)->getStrVal() + "%%'";
+      }
+      else if(strcmp((*iter)->getName(), "playlist author") == 0 )
+      {
+        sql_str = sql_str + " AND playlist.author like '%%" 
+           + (*iter)->getStrVal() + "%%'";
+      }
+      else if(strcmp((*iter)->getName(), "album title") == 0 )
+      {
+        sql_str = sql_str + " AND album.title like '%%" 
+           + (*iter)->getStrVal() + "%%'";
+      }
+      else if(strcmp((*iter)->getName(), "album artist") == 0 )
+      { 
+        sql_str = sql_str + " AND album.artist like '%%" 
+         + (*iter)->getStrVal() + "%%'";
+      }
+      else if(strcmp((*iter)->getName(), "title") == 0 )
+      {
+        sql_str = sql_str + " AND tracks.title like '%%" 
+           + (*iter)->getStrVal() + "%%'";
+      }
+      else if(strcmp((*iter)->getName(), "artist") == 0 )
+      { 
+        sql_str = sql_str + " AND tracks.artist like '%%" 
+         + (*iter)->getStrVal() + "%%'";
+      }
+      else if(strcmp((*iter)->getName(), "genre") == 0 )
+      { 
+        sql_str = sql_str + " AND (genre1.genre like '" 
+         + (*iter)->getStrVal() + "'";
+        sql_str = sql_str + " OR genre2.genre like '" 
+         + (*iter)->getStrVal() + "')";
+      }
+      else if(strcmp((*iter)->getName(), "year (from)") == 0 )
+      { 
+        sql_str = sql_str + " AND tracks.year >= " + (*iter)->getStrVal();
+      }
+      else if(strcmp((*iter)->getName(), "year (to)") == 0 )
+      { 
+        sql_str = sql_str + " AND tracks.year <= " + (*iter)->getStrVal();
+      }
+      else if(strcmp((*iter)->getName(), "rating") == 0 )
+      { 
+        if ((*iter)->getStrVal() == "-") {
+          sql_str = sql_str + " AND tracks.rating >= 0 ";
+        } else if ((*iter)->getStrVal() == "O") {
+          sql_str = sql_str + " AND tracks.rating >= 1 ";
+        } else if ((*iter)->getStrVal() == "+") {
+          sql_str = sql_str + " AND tracks.rating >= 2 ";
+        } else if ((*iter)->getStrVal() == "++") {
+          sql_str = sql_str + " AND tracks.rating >= 3 ";
+        }
+      }
+      else
+      {
+        mgWarning("Ignoring unknown filter %s", (*iter)->getName());
+      }  
+    }
+  }
+
   mgDebug(1, "Applying sql string %s (view=%d)",sql_str.c_str(), *viewPrt); 
   return sql_str;
 }
@@ -1224,6 +1171,10 @@ bool GdTreeNode::expand()
                       "  ORDER BY CONCAT(tracks.artist,' - ',tracks.title)"
                       , m_restriction.c_str());
              idfield = "tracks.id";
+           } else {
+                 mgWarning("View #%d level %d' not yet implemented", m_view, m_level);
+                 m_expanded = false;
+                 return false;
            }
            break;
          case 101: // Albumsearch result
@@ -1438,6 +1389,11 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.16  2004/02/14 22:02:45  RaK
+ * - mgFilterChoice Debuged
+ *   fehlendes m_type = CHOICE in mg_filters.c
+ *   falscher iterator in vdr_menu.c
+ *
  * Revision 1.15  2004/02/12 09:15:07  LarsAC
  * Moved filter classes into separate files
  *

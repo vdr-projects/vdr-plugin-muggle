@@ -2,10 +2,10 @@
 /*! \file   mg_filters.c
  *  \brief  
  ******************************************************************** 
- * \version $Revision: 1.1 $
- * \date    $Date: 2004/02/12 09:15:07 $
+ * \version $Revision: 1.2 $
+ * \date    $Date: 2004/02/14 22:02:45 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: RaK $
  */
 /*******************************************************************/
 
@@ -246,6 +246,7 @@ bool mgFilterBool::isSet()
 mgFilterChoice::mgFilterChoice(const char *name, int value, vector<string> *choices)
   : mgFilter(name)
 {
+  m_type = CHOICE;
   m_choices = *choices;
   m_selval = value;
   m_default_val = value;
