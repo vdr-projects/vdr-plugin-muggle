@@ -95,6 +95,23 @@ void mgPlaylist::insert( mgContentItem* item, unsigned int position )
     }
 }
 
+bool mgPlaylist::remove( unsigned int pos )
+{
+  bool result = false;
+
+  if( pos != m_current_idx )
+    {
+      result = mgTracklist::remove( pos );
+
+      if( result && pos < m_current_idx )
+	{
+	  m_current_idx --;
+	}
+    }
+
+  return result;
+}
+
 void mgPlaylist::clear()
 {
   // TODO: who takes care of memory allocation/deallocation of mgItems?
@@ -170,7 +187,8 @@ void mgPlaylist::gotoPosition(unsigned int position)
 {
     if( position >= m_list.size() )
       {
-	m_current_idx = -1;
+	// go to end -- a safe bet
+	m_current_idx = m_list.size() - 1;
       }
     else
       {
@@ -184,13 +202,8 @@ void mgPlaylist::skipFwd()
   if( m_current_idx + 1 < m_list.size() ) // unless loop mode
     {
       m_current_idx ++;
-      cout << "mgPlaylist::skipFwd: " << m_current_idx << endl;
     }
-  else
-    {
-      // or goto 1 in case of loop mode
-      m_current_idx = -1;
-    }
+  // if we are already at the end -- just do nothing unless in loop mode
 }
 
 // goes back to the previous item
@@ -200,11 +213,7 @@ void mgPlaylist::skipBack()
     {
       m_current_idx --;
     }
-  else
-    {
-      // or goto last in case of loop mode
-      m_current_idx = -1;
-    }
+  // if we are at the beginning -- just do nothing unless in loop mode
 }
 
 // get next track, do not update data structures
