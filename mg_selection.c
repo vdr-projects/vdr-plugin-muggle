@@ -14,8 +14,6 @@
 #include "vdr_setup.h"
 #include "mg_tools.h"
 
-bool needGenre2;
-bool needGenre2_set;
 
 //! \brief adds string n to string s, using a comma to separate them
 static string comma (string & s, string n);
@@ -107,41 +105,6 @@ mgSelection::getKeyType (const unsigned int level) const
         return order.getKeyType(level);
 }
 
-MYSQL_RES*
-mgSelection::exec_sql(string query) const
-{
-	return ::exec_sql(m_db, query);
-}
-
-/*! \brief executes a query and returns the first columnu of the
- * first row.
- * \param query the SQL query string to be executed
- */
-string mgSelection::get_col0 (string query) const
-{
-    return ::get_col0(m_db, query);
-}
-
-
-unsigned long
-mgSelection::exec_count (string query) const
-{
-    return ::exec_count(m_db, query);
-}
-
-
-
-string
-mgSelection::sql_string (const string s) const
-{
-    char *buf = (char *) malloc (s.size () * 2 + 1);
-    mysql_real_escape_string (m_db, buf, s.c_str (), s.size ());
-    string result = "'" + std::string (buf) + "'";
-    free (buf);
-    return result;
-}
-
-
 mgContentItem *
 mgSelection::getTrack (unsigned int position)
 {
@@ -230,28 +193,28 @@ mgSelection::LoopMode mgSelection::toggleLoopMode ()
 unsigned int
 mgSelection::AddToCollection (const string Name)
 {
-    if (!m_db) return 0;
+    if (!m_db.Connected()) return 0;
     CreateCollection(Name);
-    string listid = sql_string (get_col0
-        ("SELECT id FROM playlist WHERE title=" + sql_string (Name)));
+    string listid = m_db.sql_string (m_db.get_col0
+        ("SELECT id FROM playlist WHERE title=" + m_db.sql_string (Name)));
     unsigned int tracksize = getNumTracks ();
 
     // this code is rather complicated but works in a multi user
     // environment:
  
     // insert a unique trackid:
-    string trackid = ltos(mysql_thread_id(m_db)+1000000);
-    exec_sql("INSERT INTO playlistitem SELECT "+listid+","
+    string trackid = ltos(m_db.thread_id()+1000000);
+    m_db.exec_sql("INSERT INTO playlistitem SELECT "+listid+","
 	   "MAX(tracknumber)+"+ltos(tracksize)+","+trackid+
 	   " FROM playlistitem WHERE playlist="+listid);
     
     // find tracknumber of the trackid we just inserted:
     string sql = string("SELECT tracknumber FROM playlistitem WHERE "
 		    "playlist=")+listid+" AND trackid="+trackid;
-    long first = atol(get_col0(sql).c_str()) - tracksize + 1;
+    long first = atol(m_db.get_col0(sql).c_str()) - tracksize + 1;
 
     // replace the place holder trackid by the correct value:
-    exec_sql("UPDATE playlistitem SET trackid="+ltos(m_tracks[tracksize-1].getId())+
+    m_db.exec_sql("UPDATE playlistitem SET trackid="+ltos(m_tracks[tracksize-1].getId())+
 		    " WHERE playlist="+listid+" AND trackid="+trackid);
     
     // insert all other tracks:
@@ -264,11 +227,11 @@ mgSelection::AddToCollection (const string Name)
 	comma(sql, item);
 	if ((i%100)==99)
 	{
-    		exec_sql (sql_prefix+sql);
+    		m_db.exec_sql (sql_prefix+sql);
 		sql = "";
 	}
     }
-    if (!sql.empty()) exec_sql (sql_prefix+sql);
+    if (!sql.empty()) m_db.exec_sql (sql_prefix+sql);
     if (inCollection(Name)) clearCache ();
     return tracksize;
 }
@@ -277,11 +240,11 @@ mgSelection::AddToCollection (const string Name)
 unsigned int
 mgSelection::RemoveFromCollection (const string Name)
 {
-    if (!m_db) return 0;
+    if (!m_db.Connected()) return 0;
     mgParts p = order.Parts(m_db,m_level,false);
     string sql = p.sql_delete_from_collection(id(keyCollection,Name));
-    exec_sql (sql);
-    unsigned int removed = mysql_affected_rows (m_db);
+    m_db.exec_sql (sql);
+    unsigned int removed = m_db.affected_rows ();
     if (inCollection(Name)) clearCache ();
     return removed;
 }
@@ -289,30 +252,30 @@ mgSelection::RemoveFromCollection (const string Name)
 
 bool mgSelection::DeleteCollection (const string Name)
 {
-    if (!m_db) return false;
+    if (!m_db.Connected()) return false;
     ClearCollection(Name);
-    exec_sql ("DELETE FROM playlist WHERE title=" + sql_string (Name));
+    m_db.exec_sql ("DELETE FROM playlist WHERE title=" + m_db.sql_string (Name));
     if (isCollectionlist()) clearCache ();
-    return (mysql_affected_rows (m_db) == 1);
+    return (m_db.affected_rows () == 1);
 }
 
 
 void mgSelection::ClearCollection (const string Name)
 {
-    if (!m_db) return;
+    if (!m_db.Connected()) return;
     string listid = id(keyCollection,Name);
-    exec_sql ("DELETE FROM playlistitem WHERE playlist="+sql_string(listid));
+    m_db.exec_sql ("DELETE FROM playlistitem WHERE playlist="+m_db.sql_string(listid));
     if (inCollection(Name)) clearCache ();
 }
 
 
 bool mgSelection::CreateCollection(const string Name)
 {
-    if (!m_db) return false;
-    string name = sql_string(Name);
-    if (exec_count("SELECT count(title) FROM playlist WHERE title = " + name)>0) 
+    if (!m_db.Connected()) return false;
+    string name = m_db.sql_string(Name);
+    if (m_db.exec_count("SELECT count(title) FROM playlist WHERE title = " + name)>0) 
 	return false;
-    exec_sql ("INSERT playlist VALUES(" + name + ",'VDR',NULL,NULL,NULL)");
+    m_db.exec_sql ("INSERT playlist VALUES(" + name + ",'VDR',NULL,NULL,NULL)");
     if (isCollectionlist()) clearCache ();
     return true;
 }
@@ -503,7 +466,7 @@ string mgSelection::ListFilename ()
 const vector < mgContentItem > &
 mgSelection::tracks () const
 {
-    if (!m_db) return m_tracks;
+    if (!m_db.Connected()) return m_tracks;
     if (!m_current_tracks.empty()) return m_tracks;
     mgParts p = order.Parts(m_db,m_level);
     p.fields.clear();
@@ -526,7 +489,7 @@ mgSelection::tracks () const
     	p += order.Key(i)->Parts(m_db,true);
      m_current_tracks = p.sql_select(false); 
      m_tracks.clear ();
-        MYSQL_RES *rows = exec_sql (m_current_tracks);
+        MYSQL_RES *rows = m_db.exec_sql (m_current_tracks);
         if (rows)
         {
         	MYSQL_ROW row;
@@ -541,7 +504,6 @@ mgSelection::tracks () const
 
 
 void mgSelection::InitSelection() {
-        setDB(0);
 	m_Directory=".";
     	m_level = 0;
     	m_position = 0;
@@ -563,7 +525,6 @@ void mgSelection::InitSelection() {
 mgSelection::mgSelection (const bool fall_through)
 {
     InitSelection ();
-    Connect();
     m_fall_through = fall_through;
 }
 
@@ -583,12 +544,6 @@ mgSelection::mgSelection (mgValmap& nv)
 }
 
 void
-mgSelection::setDB(MYSQL *db)
-{
-	m_db = db;
-}
-
-void
 mgSelection::setOrder(mgOrder* o)
 {
 	if (o)
@@ -603,7 +558,6 @@ void
 mgSelection::InitFrom(mgValmap& nv)
 {
 	InitSelection();
-        Connect();
 	m_fall_through = nv.getbool("FallThrough");
     	m_Directory = nv.getstr("Directory");
 	while (m_level < nv.getuint("Level"))
@@ -624,8 +578,6 @@ mgSelection::InitFrom(mgValmap& nv)
 
 mgSelection::~mgSelection ()
 {
-    if (m_db)
-    	mysql_close (m_db);
 }
 
 void mgSelection::InitFrom(const mgSelection* s)
@@ -640,7 +592,6 @@ void mgSelection::InitFrom(const mgSelection* s)
     m_position = s->m_position;
     m_trackid = s->m_trackid;
     m_tracks_position = s->m_tracks_position;
-    Connect();
     setShuffleMode (s->getShuffleMode ());
     setLoopMode (s->getLoopMode ());
 }
@@ -699,7 +650,7 @@ void
 mgSelection::refreshValues ()  const
 {
     assert(this);
-    if (!m_db)
+    if (!m_db.Connected())
 	return;
     if (m_current_values.empty())
     {
@@ -708,7 +659,7 @@ mgSelection::refreshValues ()  const
         values.strings.clear ();
         m_ids.clear ();
 	m_counts.clear();
-        MYSQL_RES *rows = exec_sql (m_current_values);
+        MYSQL_RES *rows = m_db.exec_sql (m_current_values);
         if (rows)
         {
                 unsigned int num_fields = mysql_num_fields(rows);
@@ -743,63 +694,6 @@ unsigned int
 mgSelection::count () const
 {
     return values.size ();
-}
-void
-mgSelection::Connect ()
-{
-    if (m_db) 
-    {
-       mysql_close (m_db);
-       setDB(0);
-    }
-    if (the_setup.DbHost == "") return;
-    setDB(mysql_init (0));
-    if (!m_db)
-        return;
-    bool success;
-    if (the_setup.DbSocket != NULL)
-    {
-      mgDebug(1,"Using socket %s for connecting to Database %s as user %s.",
-		      the_setup.DbSocket,
-		      the_setup.DbName,
-		      the_setup.DbUser);
-      mgDebug(3,"DbPassword is: '%s'",the_setup.DbPass);
-      success = (mysql_real_connect( m_db,
-			      "",
-			      the_setup.DbUser,       
-			      the_setup.DbPass, 
-			      the_setup.DbName,
-			      0,
-			      the_setup.DbSocket, 0 ) != 0 );
-    }
-    else
-    {
-      mgDebug(1,"Using TCP-%s for connecting to Database %s as user %s.",
-		      the_setup.DbHost,
-		      the_setup.DbName,
-		      the_setup.DbUser);
-      mgDebug(3,"DbPassword is: '%s'",the_setup.DbPass);
-      success = ( mysql_real_connect( m_db,
-			      the_setup.DbHost, 
-			      the_setup.DbUser,       
-			      the_setup.DbPass, 
-			      the_setup.DbName,
-			      the_setup.DbPort,
-			      0, 0 ) != 0 );
-    }
-    if (!success)
-    {
-	mgWarning("Failed to connect to host '%s' as User '%s', Password '%s': Error: %s",
-			    the_setup.DbHost,the_setup.DbUser,the_setup.DbPass,mysql_error(m_db));
-        mysql_close (m_db);
-	setDB(0);
-    }
-    if (!needGenre2_set && m_db)
-    {
-	needGenre2_set=true;
-	needGenre2=exec_count("SELECT COUNT(DISTINCT genre2) from tracks")>1;
-    }
-    return;
 }
 
 
@@ -1117,7 +1011,7 @@ mgSelection::loadvalues (mgKeyTypes kt) const
 	map<string,string>& valmap = map_values[kt];
 	char *b;
 	asprintf(&b,"select %s,%s from %s;",k->map_idfield().c_str(),k->map_valuefield().c_str(),k->map_valuetable().c_str());
-	MYSQL_RES *rows = exec_sql (string(b));
+	MYSQL_RES *rows = m_db.exec_sql (string(b));
 	free(b);
 	if (rows) 
 	{
@@ -1141,7 +1035,6 @@ static vector<int> keycounts;
 unsigned int
 mgSelection::keycount(mgKeyTypes kt)
 {
-	assert(strlen(m_db->host));
 	if (keycounts.size()==0)
 	{
 		for (unsigned int ki=int(mgKeyTypesLow);ki<=int(mgKeyTypesHigh);ki++)
@@ -1154,7 +1047,7 @@ mgSelection::keycount(mgKeyTypes kt)
 	{
 		mgKey* k = ktGenerate(kt);
 		if (k->Enabled(m_db))
-			count = exec_count(k->Parts(m_db,true).sql_count());
+			count = m_db.exec_count(k->Parts(m_db,true).sql_count());
 		else
 			count = 0;
 		delete k;

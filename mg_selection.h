@@ -12,7 +12,6 @@
 #ifndef _MG_SELECTION_H
 #define _MG_SELECTION_H
 #include <stdlib.h>
-#include <mysql/mysql.h>
 #include <string>
 #include <list>
 #include <vector>
@@ -73,9 +72,6 @@ class mgSelection
             LM_SINGLE,                            //!< \brief loop a single track
             LM_FULL                               //!< \brief loop the whole track list
         };
-
-//! \brief escapes special characters
-	string sql_string(const string s) const;
 
 /*! \brief the main constructor
  * \param fall_through if TRUE: If enter() returns a choice
@@ -449,15 +445,13 @@ class mgSelection
         ShuffleMode m_shuffle_mode;
         void Shuffle() const;
         LoopMode m_loop_mode;
-        MYSQL *m_db;
-	void setDB(MYSQL *db);
+        mutable mgmySql m_db;
         unsigned int m_level;
         long m_trackid;
 
         mgOrder order;
 	bool UsedBefore (mgOrder *o,const mgKeyTypes kt, unsigned int level) const;
         void InitSelection ();
-        void Connect ();
 	/*! \brief returns the SQL command for getting all values. 
 	 * For the leaf level, all values are returned. For upper
 	 * levels, every distinct value is returned only once.
@@ -471,19 +465,9 @@ class mgSelection
         string ListFilename ();
         string m_Directory;
         void loadgenres ();
-	MYSQL_RES * exec_sql(string query) const;
-        string get_col0 (string query) const;
 
 	void InitFrom(const mgSelection* s);
 
-/*! \brief executes a query and returns the integer value from
- * the first column in the first row. The query shold be a COUNT query
- * returning only one row.
- * \param query the SQL query to be executed
- */
-        unsigned long exec_count (string query) const;
-
-	
 };
 
 

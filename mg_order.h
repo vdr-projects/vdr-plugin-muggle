@@ -1,7 +1,6 @@
 #ifndef _MG_SQL_H
 #define _MG_SQL_H
 #include <stdlib.h>
-#include <mysql/mysql.h>
 #include <typeinfo>
 #include <string>
 #include <assert.h>
@@ -9,6 +8,7 @@
 #include <vector>
 #include <sstream>
 #include "mg_valmap.h"
+#include "mg_mysql.h"
 
 using namespace std;
 
@@ -79,7 +79,7 @@ private:
 class mgKey {
 	public:
 		virtual ~mgKey() {};
-		virtual mgParts Parts(MYSQL *db,bool orderby=false) const = 0;
+		virtual mgParts Parts(mgmySql &db,bool orderby=false) const = 0;
 		virtual string id() const = 0;
 		virtual string value () const = 0;
 		//!\brief translate field into user friendly string
@@ -88,8 +88,7 @@ class mgKey {
 		virtual string map_idfield() const { return ""; }
 		virtual string map_valuefield() const { return ""; }
 		virtual string map_valuetable() const { return ""; }
-		void setdb(MYSQL *db);
-		virtual bool Enabled(MYSQL *db) { return true; }
+		virtual bool Enabled(mgmySql &db) { return true; }
 };
 
 
@@ -125,13 +124,6 @@ private:
 	mgReferences ref;
 };
 
-string
-sql_string (MYSQL *db, const string s);
-
-MYSQL_RES * exec_sql (MYSQL *db,string query);
-string get_col0 (MYSQL *db,string query);
-long exec_count (MYSQL *db,string query);
-
 //! \brief converts long to string
 string itos (int i);
 
@@ -150,7 +142,7 @@ public:
 	~mgOrder();
 	void InitFrom(const mgOrder &from);
         void DumpState(mgValmap& nv, char *prefix) const;
-	mgParts Parts(MYSQL *db,unsigned int level,bool orderby=true) const;
+	mgParts Parts(mgmySql &db,const unsigned int level,bool orderby=true) const;
 	const mgOrder& operator=(const mgOrder& from);
 	mgKey*& operator[](unsigned int idx);
 	unsigned int size() const { return Keys.size(); }
