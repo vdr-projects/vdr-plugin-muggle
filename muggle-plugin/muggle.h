@@ -2,10 +2,10 @@
 /*! \file   muggle.h
  *  \brief  Implements a plugin for browsing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.2 $
- * \date    $Date: 2004/02/01 22:12:56 $
+ * \version $Revision: 1.3 $
+ * \date    $Date: 2004/02/03 00:13:24 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: RaK $
+ * \author  file owner: $Author: LarsAC $
  */
 /*******************************************************************/
 
@@ -17,7 +17,7 @@
 #ifdef SHELL_TEST
   #include "shell_plugin.h"
 #else
-  #include <vdr/plugin.h>
+  #include <plugin.h>
 #endif
 
 class mgMuggle : public cPlugin

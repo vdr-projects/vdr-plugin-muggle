@@ -2,17 +2,12 @@
 /*! \file   vdr_menu.h
  *  \brief  Implements menu handling for broswing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.4 $
- * \date    $Date: 2004/02/02 19:42:37 $
+ * \version $Revision: 1.5 $
+ * \date    $Date: 2004/02/03 00:13:24 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: LarsAC $
  *
- * $Log: vdr_menu.h,v $
- * Revision 1.4  2004/02/02 19:42:37  LarsAC
- * Added positioning of menubar when collapsing nodes.
- *
- * Revision 1.3  2004/02/02 19:17:44  LarsAC
- * Added generic filter handling to OSD
+ * $Id: vdr_menu.h,v 1.5 2004/02/03 00:13:24 LarsAC Exp $
  *
  */
 /*******************************************************************/
@@ -26,7 +21,7 @@
   #include "myosd.h"
   #include "mymenuitems.h"
 #else
-  #include <vdr/osd.h>
+  #include <osd.h>
 #endif
 
 #include <list>
@@ -105,3 +100,13 @@ class mgMainMenu : public cOsdMenu
 };
 
 #endif
+
+/************************************************************
+ *
+ * $Log: vdr_menu.h,v $
+ * Revision 1.5  2004/02/03 00:13:24  LarsAC
+ * Improved OSD handling of collapse/back
+ *
+ *
+ ************************************************************
+ */
