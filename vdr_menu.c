@@ -363,13 +363,15 @@ mgMainMenu::AddOrder()
 void
 mgMainMenu::DeleteOrder()
 {
+	mgOrder *o = orders[Current()];
+	delete o;
 	orders.erase(orders.begin()+Current());
 }
 
 void
 mgMainMenu::LoadOrders(mgValmap& nv)
 {
-	for (unsigned int idx=0;idx<10;idx++) 
+	for (unsigned int idx=0;idx<1000;idx++) 
 	{
 		char b[10];
 		sprintf(b,"order%u",idx);
@@ -377,7 +379,7 @@ mgMainMenu::LoadOrders(mgValmap& nv)
 		if (o->size()==0)
 		{
 			delete o;
-			continue;
+			break;
 		}
 		orders.push_back(o);
 	}
@@ -386,20 +388,20 @@ mgMainMenu::LoadOrders(mgValmap& nv)
 		m_current_order=0;
 	if (orders.size()>0) return;
 
-    	nv.put("order1.Keys.0.Type",keyArtist);
-    	nv.put("order1.Keys.1.Type",keyAlbum);
-    	nv.put("order1.Keys.2.Type",keyTrack);
+    	nv.put("order0.Keys.0.Type",keyArtist);
+    	nv.put("order0.Keys.1.Type",keyAlbum);
+    	nv.put("order0.Keys.2.Type",keyTrack);
 
-    	nv.put("order2.Keys.0.Type",keyAlbum);
-    	nv.put("order2.Keys.1.Type",keyTrack);
+    	nv.put("order1.Keys.0.Type",keyAlbum);
+    	nv.put("order1.Keys.1.Type",keyTrack);
 	
-    	nv.put("order3.Keys.0.Type",keyGenres);
-    	nv.put("order3.Keys.1.Type",keyArtist);
-    	nv.put("order3.Keys.2.Type",keyAlbum);
-    	nv.put("order3.Keys.3.Type",keyTrack);
+    	nv.put("order2.Keys.0.Type",keyGenres);
+    	nv.put("order2.Keys.1.Type",keyArtist);
+    	nv.put("order2.Keys.2.Type",keyAlbum);
+    	nv.put("order2.Keys.3.Type",keyTrack);
 
-    	nv.put("order4.Keys.0.Type",keyArtist);
-    	nv.put("order4.Keys.1.Type",keyTrack);
+    	nv.put("order3.Keys.0.Type",keyArtist);
+    	nv.put("order3.Keys.1.Type",keyTrack);
 	
     	nv.put("CurrentOrder",0);
 	LoadOrders(nv);

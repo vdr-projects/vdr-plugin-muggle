@@ -169,9 +169,9 @@ class mgKeyNormal : public mgKey {
 		string IdClause(string what,string::size_type start=0,string::size_type len=string::npos) const;
 		void AddIdClause(mgParts &result,string what) const;
 		string m_id;
+		string m_field;
 	private:
 		mgKeyTypes m_kt;
-		string m_field;
 		string m_table;
 		string m_value;
 };
@@ -181,6 +181,52 @@ class mgKeyTrack : public mgKeyNormal {
 		mgKeyTrack() : mgKeyNormal(keyTrack,"tracks","tracknb") {};
 		mgParts Parts(bool orderby=false) const;
 };
+
+class mgKeyFolder : public mgKeyNormal {
+	public:
+		mgKeyFolder(mgKeyTypes kt,const char *fname)
+			: mgKeyNormal(kt,"tracks",fname) { m_enabled=-1;};
+		bool Enabled();
+	private:
+		int m_enabled;
+};
+
+class mgKeyFolder1 : public mgKeyFolder {
+	public:
+		mgKeyFolder1() : mgKeyFolder(keyFolder1,"folder1") {};
+};
+class mgKeyFolder2 : public mgKeyFolder {
+	public:
+		mgKeyFolder2() : mgKeyFolder(keyFolder2,"folder2") {};
+};
+class mgKeyFolder3 : public mgKeyFolder {
+	public:
+		mgKeyFolder3() : mgKeyFolder(keyFolder3,"folder3") {};
+};
+class mgKeyFolder4 : public mgKeyFolder {
+	public:
+		mgKeyFolder4() : mgKeyFolder(keyFolder4,"folder4") {};
+};
+
+bool
+mgKeyFolder::Enabled()
+{
+    if (m_enabled<0)
+    {
+    	if (!m_db) 
+		return false;
+    	char *b;
+    	asprintf(&b,"DESCRIBE tracks %s",m_field.c_str());
+    	MYSQL_RES * rows = exec_sql (m_db, b);
+    	free(b);
+    	if (rows)
+	{
+		m_enabled = mysql_num_rows(rows);
+    		mysql_free_result (rows);
+	}
+    }
+    return (m_enabled==1);
+}
 
 class mgKeyGenres : public mgKeyNormal {
 	public:
@@ -956,6 +1002,10 @@ ktGenerate(const mgKeyTypes kt,MYSQL* db)
 		case keyGenre1:	result = new mgKeyGenre1;break;
 		case keyGenre2:	result = new mgKeyGenre2;break;
 		case keyGenre3:	result = new mgKeyGenre3;break;
+		case keyFolder1:result = new mgKeyFolder1;break;
+		case keyFolder2:result = new mgKeyFolder2;break;
+		case keyFolder3:result = new mgKeyFolder3;break;
+		case keyFolder4:result = new mgKeyFolder4;break;
 		case keyArtist: result = new mgKeyNormal(kt,"tracks","artist");break;
 		case keyTitle: result = new mgKeyNormal(kt,"tracks","title");break;
 		case keyTrack: result = new mgKeyTrack;break;
@@ -981,6 +1031,10 @@ ktName(const mgKeyTypes kt)
 		case keyGenre1: result = "Genre1";break;
 		case keyGenre2: result = "Genre2";break;
 		case keyGenre3: result = "Genre3";break;
+		case keyFolder1: result = "Folder1";break;
+		case keyFolder2: result = "Folder2";break;
+		case keyFolder3: result = "Folder3";break;
+		case keyFolder4: result = "Folder4";break;
 		case keyArtist: result = "Artist";break;
 		case keyTitle: result = "Title";break;
 		case keyTrack: result = "Track";break;

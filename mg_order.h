@@ -34,6 +34,10 @@ enum mgKeyTypes {
 	keyTrack,
 	keyLanguage,
 	keyRating,
+	keyFolder1,
+	keyFolder2,
+	keyFolder3,
+	keyFolder4,
 	keyCollection,
 	keyCollectionItem,
 };
@@ -84,6 +88,7 @@ class mgKey {
 		virtual string map_valuefield() const { return ""; }
 		virtual string map_valuetable() const { return ""; }
 		void setdb(MYSQL *db);
+		virtual bool Enabled() { return true; }
 	protected:
 		MYSQL *m_db;
 };

@@ -22,8 +22,6 @@
 #include "vdr_setup.h"
 #include "i18n.h"
 
-mgSetup the_setup;
-
 
 // --- mgMenuSetup -----------------------------------------------------------
 
@@ -75,18 +73,3 @@ mgMenuSetup::Store (void)
     SetupStore ("Only48kHz", the_setup.Only48kHz);
 }
 
-
-// --- mgSetup ---------------------------------------------------------------
-
-mgSetup::mgSetup ()
-{
-    InitLoopMode = 0;
-    InitShuffleMode = 0;
-    AudioMode = 1;
-    DisplayMode = 3;
-    BackgrMode = 1;
-    TargetLevel = DEFAULT_TARGET_LEVEL;
-    LimiterLevel = DEFAULT_LIMITER_LEVEL;
-    Only48kHz = 0;
-    ToplevelDir = "/mnt/music/";
-}

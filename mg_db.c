@@ -740,8 +740,8 @@ mgContentItem::mgContentItem (const mgSelection* sel,const MYSQL_ROW row)
 };
 
 void mgSelection::InitSelection() {
+        setDB(0);
 	m_Directory=".";
-	InitDatabase();
     	m_level = 0;
     	m_position = 0;
     	m_tracks_position = 0;
@@ -750,18 +750,13 @@ void mgSelection::InitSelection() {
     	m_loop_mode = LoopMode(the_setup.InitLoopMode);
     	clearCache();
 	values.setOwner(this);
-	if (!needGenre2_set)
-	{
-		needGenre2_set=true;
-		needGenre2=exec_count("SELECT COUNT(DISTINCT genre2) from tracks")>1;
-	}
 }
 
 
 mgSelection::mgSelection (const bool fall_through)
 {
-    setDB(0);
     InitSelection ();
+    Connect();
     m_fall_through = fall_through;
 }
 
@@ -802,8 +797,8 @@ mgSelection::setOrder(mgOrder* o)
 void
 mgSelection::InitFrom(mgValmap& nv)
 {
-        setDB(0);
 	InitSelection();
+        Connect();
 	m_fall_through = nv.getbool("FallThrough");
     	m_Directory = nv.getstr("Directory");
 	while (m_level < nv.getuint("Level"))
@@ -830,7 +825,6 @@ mgSelection::~mgSelection ()
 
 void mgSelection::InitFrom(const mgSelection* s)
 {
-    setDB(0);
     InitSelection();
     m_fall_through = s->m_fall_through;
     m_Directory = s->m_Directory;
@@ -844,17 +838,8 @@ void mgSelection::InitFrom(const mgSelection* s)
     m_tracks_position = s->m_tracks_position;
     setShuffleMode (s->getShuffleMode ());
     setLoopMode (s->getLoopMode ());
+    Connect();
 }
-
-const mgSelection& mgSelection::operator=(const mgSelection &s)
-{
-    if (this==&s) {	// prevent s = s
-	    return *this;
-    }
-    InitFrom(&s);
-    return *this;
-}
-
 
 unsigned int
 mgSelection::ordersize ()
@@ -948,7 +933,7 @@ mgSelection::count () const
     return values.size ();
 }
 void
-mgSelection::InitDatabase ()
+mgSelection::Connect ()
 {
     if (m_db) 
     {
@@ -996,6 +981,11 @@ mgSelection::InitDatabase ()
 			    the_setup.DbHost,the_setup.DbUser,the_setup.DbPass,mysql_error(m_db));
         mysql_close (m_db);
 	setDB(0);
+    }
+    if (!needGenre2_set && m_db)
+    {
+	needGenre2_set=true;
+	needGenre2=exec_count("SELECT COUNT(DISTINCT genre2) from tracks")>1;
     }
     return;
 }
@@ -1347,7 +1337,10 @@ mgSelection::keycount(mgKeyTypes kt)
 	if (count==-1)
 	{
 		mgKey* k = ktGenerate(kt,m_db);
-		count = exec_count(k->Parts(true).sql_count());
+		if (k->Enabled())
+			count = exec_count(k->Parts(true).sql_count());
+		else
+			count = 0;
 		delete k;
 	}
 	return count;
@@ -1376,18 +1369,36 @@ mgSelection::choices(mgOrder *o,unsigned int level, unsigned int *current)
 			continue;
 		if (kt==keyDecade && UsedBefore(o,keyYear,level))
 			continue;
-		if (kt==keyGenre1 && UsedBefore(o,keyGenres,level))
-			continue;
-		if (kt==keyGenre2 && UsedBefore(o,keyGenres,level))
-			continue;
-		if (kt==keyGenre3 && UsedBefore(o,keyGenres,level))
-			continue;
-		if (kt==keyGenre1 && UsedBefore(o,keyGenre3,level))
-			continue;
-		if (kt==keyGenre2 && UsedBefore(o,keyGenre3,level))
-			continue;
-		if (kt==keyGenre1 && UsedBefore(o,keyGenre2,level))
-			continue;
+		if (kt==keyGenre1)
+		{
+			if (UsedBefore(o,keyGenre2,level)) continue;
+			if (UsedBefore(o,keyGenre3,level)) continue;
+			if (UsedBefore(o,keyGenres,level)) continue;
+		}
+		if (kt==keyGenre2)
+		{
+			if (UsedBefore(o,keyGenre3,level)) continue;
+			if (UsedBefore(o,keyGenres,level)) continue;
+		}
+		if (kt==keyGenre3)
+		{
+			if (UsedBefore(o,keyGenres,level)) continue;
+		}
+		if (kt==keyFolder1)
+		{
+		 	if (UsedBefore(o,keyFolder2,level)) continue;
+		 	if (UsedBefore(o,keyFolder3,level)) continue;
+		 	if (UsedBefore(o,keyFolder4,level)) continue;
+		}
+		if (kt==keyFolder2)
+		{
+		 	if (UsedBefore(o,keyFolder3,level)) continue;
+		 	if (UsedBefore(o,keyFolder4,level)) continue;
+		}
+		if (kt==keyFolder3)
+		{
+		 	if (UsedBefore(o,keyFolder4,level)) continue;
+		}
 		if (kt==keyCollection || kt==keyCollectionItem)
 			result.push_back(ktName(kt));
 		else if (keycount(kt)>1)
