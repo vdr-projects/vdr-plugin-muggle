@@ -841,6 +841,7 @@ void mgSelection::InitFrom(const mgSelection* s)
     map_values = s->map_values;
     map_ids = s->map_ids;
     order = s->order;
+    order.setDB(m_db);
     m_level = s->m_level;
     m_position = s->m_position;
     m_trackid = s->m_trackid;
