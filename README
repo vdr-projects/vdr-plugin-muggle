@@ -32,7 +32,7 @@ Thanks to all who have supported the development of this plugin. Special thanks 
 - eloy (member of vdrportal.de) for alpha testing
 - All beta testers at vdrportal.de and on the VDR mailing list
 - decembersoul (member of vdrportal.de) for finding out how to run muggle on LinVDR
-- Hulk (member of vdrportal.de) for submitting several patches and helping out
+- Hulk (member of vdrportal.de) for submitting several patches (especially for gLCD display)
 
 \section desc DESCRIPTION
 
@@ -159,13 +159,14 @@ It does not matter whether there are further subdirectories which organize files
 album or whatever. If this is not the case, you may want to take some time to do this. Read on before
 you start
 
-You probably do not want to import all files in one go: albums on which tracks of various artists are found
-(samplers) require different treatment than files of just one artist. What I did: all samplers are collected
-below a special subdirectory "Assorted". Import is then run separately for those tracks.
+You probably do not want to import all files in one go: albums on which tracks of various artists are
+found (samplers) require different treatment than albums containing files of just one artist. What I did:
+all samplers are collected below a special subdirectory "Assorted". Import is then run separately for those
+tracks.
 
 For now, let's assume your music tracks are located in /home/music and samplers are in /home/music/Assorted.
 
-First, import the files in Assorted. This requires the flag -a to mugglei. Further flags -h, -n, -u, and -p
+First, let's import the files in Assorted. This requires the flag -a to mugglei. Further flags -h, -n, -u, and -p
 specify database host, name, user and password, respectively. The filename to import is given using the -f
 directive. Using 'find' you can import all files for assorted albums with a command like:
 
@@ -196,7 +197,7 @@ Muggle uses a small set of command line parameters in order to control the inter
 Let's look at an example:
 
 \verbatim
-  -P'muggle -h localhost -u vdr -n GiantDisc -t/home/music'
+  vdr -P'muggle -h localhost -u vdr -n GiantDisc -t/home/music'
 \endverbatim
 
 The -h parameter specifies the database host, -u specifies the user, -n is the database name. The scripts mentioned
@@ -205,7 +206,7 @@ above do not make use of passwords, but restrict database acccess on a server ba
 The -t argument specifies the top level directory of the music files. On a local installation, this is the
 directory in which you executed the import steps (Chapter 4.2).
 
-\section use USING MUGGLE - OVERVIEW
+\section use USING MUGGLE - QUICK OVERVIEW
 
 Quick version: select Muggle on the OSD, browse titles (using up/down and Ok), add them using the red button.
 Then turn to the playlist view using yellow and start play using again the red function key.
@@ -296,8 +297,8 @@ and displaying information about the current track or playlist.
 - Down: Skip to the previous title
 - Ok: toggle display (progress or information view)
 
-- Red: When display shown: toggle between progress and information view
-- Green: When display shown: toggle between track and playlist view
+- Red: When display shown: toggle between progress and information view, otherwise toggle loop mode (not yet functional)
+- Green: When display shown: toggle between track and playlist view, otherwise toggle shuffle mode (not yet functional)
 - Yellow: Play/Pause
 - Blue: stop replay but remind resume index (so Play from browser view starts with the track played last)
 
