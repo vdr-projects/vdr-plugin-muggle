@@ -30,8 +30,10 @@ class mgFilter;
 class mgPlaylist;
 
 /*! 
- * \class mgMediaPlayer
  * \brief dummy player class
+ * \ingroup muggle
+ *
+ * \todo what to do with this
  */
 class mgMediaPlayer
 {
@@ -47,79 +49,101 @@ class mgMediaPlayer
 /*! 
  * \brief Generic class that represents a single content item.
  *
- * This is the parent class from which classes like mgGdTrack are derived
- *
+ * This is the parent class from which classes like mgGdTrack are derived.
+ * 
  */
 class mgContentItem
 {
  public:
+  
+  /*! 
+   * \brief defines the content type of the item
+   * \todo rethink this mechanism because adding new subclasses
+   * breaks existing ones (makes recompile cycle necessary).
+   */
   typedef enum contentType
     {
-      ABSTRACT =0,
-      GD_AUDIO,
-      EPG
+      ABSTRACT =0, //< an abstract item which cannot be used
+      GD_AUDIO,    //< a GiantDisc audio track
+      EPG          //< an EPG item (i.e. a TV show)
     };
 
  protected:
-  int m_uniqID;  // internal identifier to uniquely identify a content item;
+
+  /*! 
+   * \brief internal identifier to uniquely identify a content item;
+   */
+  int m_uniqID;  
   
  public:
-
-  /*! \brief default constructor 
+  
+  /*! 
+   * \brief default constructor 
    */
   mgContentItem()
     : m_uniqID( -1 )
     { }
 
-  /*! \brief constructor with explicit id
+  /*! 
+   * \brief constructor with explicit id
    */
   mgContentItem( int id )
     : m_uniqID( id )
     { }
 
-  /*! \brief copy constructor 
+  /*! 
+   * \brief copy constructor 
    */
   mgContentItem( const mgContentItem& org )
     : m_uniqID( org.m_uniqID )
     { }
 
-  /*! \brief destructor 
+  /*! 
+   * \brief the destructor 
    */
   virtual ~mgContentItem()
     { };
   
-  /*! \brief acess unique id 
+  /*! 
+   * \brief acess unique id 
    */
   int getId()
     { 
       return  m_uniqID;
     }
-
-  /*! \brief determine what type of content are we looking at (e.g. audio, video, epg)
+  
+  /*! 
+   * \brief determine what type of content are we looking at (e.g. audio, video, epg)
+   *
+   * The method should be overriden for concrete subclasses to return concrete a contentType.
    */
   virtual contentType getContentType()
     {
       return ABSTRACT;
     }
-
-  /*! \brief return a (global?) object that is used to play content items
-   *  \todo What for? Interesting properties? Last state, play info, ...?
+  
+  /*! 
+   * \brief return a (global?) object that is used to play content items
+   * \todo What for? Interesting properties? Last state, play info, ...?
    */
   virtual mgMediaPlayer getPlayer()
     {
       return mgMediaPlayer();
     }
 
+  //! \brief Access item data
   //@{
 
-  /*! \brief return a specific label
+  /*! 
+   * \brief return a specific label
    */
   virtual std::string getLabel(int col = 0)
     {
       return "";
     }
 
-  /*! \brief return the title
+  /*! 
+   * \brief return the title
    */
   virtual std::string getTitle()
     {
@@ -210,6 +234,9 @@ class mgContentItem
 };
 
 
+/*!
+ * \brief a list of content items
+ */
 class mgTracklist
 {
  protected:
@@ -218,23 +245,79 @@ class mgTracklist
   int sorting;
 
  public:
-  mgTracklist(); // creates empty tracklist;
+
+  /*!
+   * \brief constructor
+   *
+   * create an empty tracklist
+   */
+  mgTracklist();
  
+  /*!
+   * \brief the destructor
+   *
+   * Deletes all items in the tracklist and removes the list itself
+   */
   virtual ~mgTracklist();
 
+  /*!
+   * \brief returns a pointer to the list of elements
+   */
   std::vector<mgContentItem*> *getAll();
+
+  /*!
+   * \brief returns the number of elements in the list
+   */
   unsigned int getNumItems();
 
+  /*!
+   * \brief randomizes the order of the elements in the list 
+   */
   virtual void shuffle();
+
+  /*!
+   * \brief sorts the elements in the list by the nth column
+   */
   virtual void sortBy(int col, bool direction);
 
+  /*!
+   * \brief stores the ids of columns to be used in label creation
+   * 
+   * The list can create a label with different fields (columns) using the
+   * function getLabel(). This function defines the fields of the contentItems
+   * to be used in the label and their order.
+   */
   void setDisplayColumns(std::vector<int> cols);
+
+  /*!
+   * \brief returns the number of display columns 
+   */
   unsigned int getNumColumns();
+
+  /*!
+   * \brief creates the label string for an item
+   * 
+   * The list can create a label with different fields (columns).
+   * The fields used in the list and their order is set using the function setDisplayColumns.
+   * 
+   * This function creates a string from these columns, separated by the string
+   * 'separator' in the label and their order.
+   */
   virtual std::string getLabel(unsigned int position, const std::string separator);
   
+  /*!
+   * \brief returns an item from the list at the specified position
+   */
   virtual mgContentItem* mgTracklist::getItem(unsigned int position);
 
+  /*!
+   * \brief remove item at position
+   */
   virtual int remove(mgContentItem* item); // remove all occurences of item
+
+  /*!
+   * \brief remove all occurences of item
+   */
   virtual bool remove(unsigned int position);    // remove item at position
 };
 
@@ -302,49 +385,4 @@ public:
    virtual mgContentItem* getSingleTrack()=0;
 };
 
-/* -------------------- begin CVS log ---------------------------------
- * $Log: mg_content_interface.h,v $
- * Revision 1.4  2004/05/28 15:29:18  lvw
- * Merged player branch back on HEAD branch.
- *
- * Revision 1.3.2.4  2004/05/25 00:10:45  lvw
- * Code cleanup and added use of real database source files
- *
- * Revision 1.3.2.3  2004/04/01 21:35:32  lvw
- * Minor corrections, some debugging aid.
- *
- * Revision 1.3.2.2  2004/03/08 21:42:22  lvw
- * Added count method. Some comments for further todos added.
- *
- * Revision 1.3.2.1  2004/03/08 07:14:28  lvw
- * Preliminary changes to muggle player
- *
- * Revision 1.3  2004/02/09 19:27:52  MountainMan
- * filter set implemented
- *
- * Revision 1.2  2004/02/02 22:48:04  MountainMan
- *  added CVS $Log
- *
- *
- * --------------------- end CVS log ----------------------------------
- */
-
-#endif  /* END  _CONTENT_INTERFACE_H */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#endif
