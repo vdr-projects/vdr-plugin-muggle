@@ -304,4 +304,18 @@ and displaying information about the current track or playlist.
 
 - Back: stop replay (Play from browser will start from the beginning)
 
+Alternativ Key Settings:
+
+- Down: Pause
+- Up: Play
+- Right: Fast Forward
+- Left: Rewind
+
+- Ok: toggle Display (Progress View -> Information -> View -> Playlist View -> Off)
+
+- Red
+- Green: Skip to previous song.
+- Yellow: Skip to next song.
+- Blue: stop replay but remind resume index (so Play from browser view starts with the track played last)
+
 */
