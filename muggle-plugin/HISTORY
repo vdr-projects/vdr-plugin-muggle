@@ -138,7 +138,7 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 2005-03-06: Version 0.1.4-BETA
 - embedded mysql server as default. If you want to use an external server
   as before, read the README file
-- If the embedded version find the database missing, it offers to create
+- If the plugin finds the database missing, it offers to create
   it. It will then also import all from the top level music directory
   (as indicated with option -t)
 - new option -v for the plugin and mugglei sets the output debug level.
