@@ -85,12 +85,6 @@ mgmySql::~mgmySql()
 
 static char *db_cmds[] = 
 {
-  "DROP DATABASE IF EXISTS GiantDisc",
-  "CREATE DATABASE GiantDisc",
-#ifdef HAVE_SERVER
-  "grant all privileges on GiantDisc.* to vdr@localhost;",
-#endif
-  "use GiantDisc;",
   "drop table if exists album;",
   "CREATE TABLE album ( "
 	  "artist varchar(255) default NULL, "
@@ -365,13 +359,28 @@ void mgmySql::Create()
   createtime=time(0);
   // create database and tables
   mgDebug(1,"Dropping and recreating database %s",the_setup.DbName);
+  if (mysql_query(m_db,"DROP DATABASE IF EXISTS GiantDisc;"))
+  {
+  	mgWarning("Cannot drop existing database:%s",mysql_error (m_db));
+	return;
+  }
+  if (mysql_query(m_db,"CREATE DATABASE GiantDisc;"))
+  {
+  	mgWarning("Cannot create database:%s",mysql_error (m_db));
+	return;
+  }
+#ifdef HAVE_SERVER
+  mysql_query(m_db,"grant all privileges on GiantDisc.* to vdr@localhost;");
+  // ignore error. If we can create the data base, we can do everything
+  // with it anyway.
+#endif
+  mysql_query(m_db,"use GiantDisc;");
   int len = sizeof( db_cmds ) / sizeof( char* );
   for( int i=0; i < len; i ++ )
     {
   	if (mysql_query (m_db, db_cmds[i]))
   	{
-    		mgWarning("SQL Error in %s: %s",db_cmds[i],mysql_error (m_db));
-    		std::cout<<"ERROR in " << db_cmds[i] <<std::endl;
+    		mgWarning("%20s: %s",db_cmds[i],mysql_error (m_db));
   		mysql_query(m_db, "DROP DATABASE IF EXISTS GiantDisc;");	// clean up
 		return;
 	}
