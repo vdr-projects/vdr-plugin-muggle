@@ -880,6 +880,229 @@ bool mgPCMPlayer::getIndex( int &current, int &total, bool snaptoiframe )
   return false;
 }
 
+/*
+string mgPCMPlayer::CheckImage( string fileName, size_t j )
+{
+  static char tmpFile[1024];
+  char *tmp[2048];
+  char *result = NULL;
+  FILE *fp;
+
+  sprintf (tmpFile, "%s/%s", MP3Setup.ImageCacheDir, &fileName[j]); // ???
+  strcpy (strrchr (tmpFile, '.'), ".mpg");
+  d(printf("mp3[%d]: cache %s\n", getpid (), tmpFile))
+  if ((fp = fopen (tmpFile, "rb")))
+  {
+    fclose (fp);
+    result = tmpFile;    
+  }
+  else
+  {
+    if ((fp = fopen (fileName, "rb")))
+    {
+      fclose (fp);
+      d(printf("mp3[%d]: image %s found\n", getpid (), fileName))
+      sprintf ((char *) tmp, "image_convert.sh \"%s\" \"%s\"", fileName, tmpFile);
+      system ((const char*) tmp);
+      result = tmpFile;
+    }
+  }
+  fp = fopen ("/tmp/vdr_mp3_current_image.txt", "w");
+  fprintf (fp, "%s\n", fileName);
+  fclose (fp);
+  return result;
+}
+
+char *cMP3Player::LoadImage(const char *fullname)
+{
+  size_t i, j = strlen (MP3Sources.GetSource()->BaseDir()) + 1;
+  char imageFile[1024];
++  static char mpgFile[1024];
+  char *p, *q = NULL;
+  char *imageSuffixes[] = { "png", "gif", "jpg" };
+
+  d(printf("mp3[%d]: checking %s for images\n", getpid (), fullname))
+  strcpy (imageFile, fullname);
+  strcpy (mpgFile, "");
+  //
+  // track specific image, e.g. <song>.jpg
+  //
+  p = strrchr (imageFile, '.');
+  if (p)
+  {
+    for (i = 0; i < sizeof (imageSuffixes) / sizeof (imageSuffixes[0]); i++)
+    {
+      strcpy (p + 1, imageSuffixes[i]);
+      d(printf("mp3[%d]: %s\n", getpid (), imageFile))
+      q = CheckImage (imageFile, j);
+      if (q)
+      {
+        strcpy (mpgFile, q);
+      }
+    }
+  }
+  //
+  // album specific image, e.g. cover.jpg in song directory
+  //
+  if (!strlen (mpgFile))
+  {
+    p = strrchr (imageFile, '/');
+    if (p)
+    {
+      strcpy (p + 1, "cover.");
+      p += 6;
+      for (i = 0; i < sizeof (imageSuffixes) / sizeof (imageSuffixes[0]); i++)
+      {
+        strcpy (p + 1, imageSuffixes[i]);
+        d(printf("mp3[%d]: %s\n", getpid (), imageFile))
+        q = CheckImage (imageFile, j);
+        if (q)
+        {
+          strcpy (mpgFile, q);
+        }
+      }
+    }
+  }
+  //
+  // artist specific image, e.g. artist.jpg in artist directory
+  //
+  if (!strlen (mpgFile))
+  {
+    p = strrchr (imageFile, '/');
+    if (p)
+    {
+      *p = '\0';
+      p = strrchr (imageFile, '/');
+    }
+    if (p)
+    {
+      strcpy (p + 1, "artist.");
+      p += 7;
+      for (i = 0; i < sizeof (imageSuffixes) / sizeof (imageSuffixes[0]); i++)
+      {
+        strcpy (p + 1, imageSuffixes[i]);
+        d(printf("mp3[%d]: %s\n", getpid (), imageFile))
+        q = CheckImage (imageFile, j);
+        if (q)
+        {
+          strcpy (mpgFile, q);
+        }
+      }
+    }
+  }
+  //
+  // default background image
+  //
+  if (!strlen (mpgFile))
+  {
+    for (i = 0; i < sizeof (imageSuffixes) / sizeof (imageSuffixes[0]); i++)
+    {
+      sprintf (imageFile, "%s/background.%s", MP3Setup.ImageCacheDir, imageSuffixes[i]);
+      d(printf("mp3[%d]: %s\n", getpid (), imageFile))
+      q = CheckImage (imageFile, strlen(MP3Setup.ImageCacheDir) + 1);
+      if (q)
+      {
+        strcpy (mpgFile, q);
+      }
+    }
+  }
+  if (!strlen (mpgFile))
+  {
+    sprintf (mpgFile, "%s/background.mpg", MP3Setup.ImageCacheDir);
+  }
+  return mpgFile;
+}
+
+void mgPCMPlayer::ShowImage (char *file)
+{
+  uchar *buffer;
+  int fd;
+  struct stat st;
+  struct video_still_picture sp;
+
+  if ((fd = open (file, O_RDONLY)) >= 0)
+  {
+    d(printf("mp3[%d]: cover still picture %s\n", getpid (), file))
+    fstat (fd, &st);
+    sp.iFrame = (char *) malloc (st.st_size);
+    if (sp.iFrame)
+    {
+      sp.size = st.st_size;
+      if (read (fd, sp.iFrame, sp.size) > 0)
+      {
+        buffer = (uchar *) sp.iFrame;  
+        d(printf("mp3[%d]: new image frame (size %d)\n", getpid(), sp.size))
+        if(MP3Setup.UseDeviceStillPicture)
+          DeviceStillPicture (buffer, sp.size);
+        else
+        {
+          for (int i = 1; i <= 25; i++)
+          {
+            send_pes_packet (buffer, sp.size, i);
+          }
+        }
+      }
+      free (sp.iFrame);
+    }
+    else
+    {
+      esyslog ("mp3[%d]: cannot allocate memory (%d bytes) for still image",
+               getpid(), (int) st.st_size);
+    }
+    close (fd);
+  }
+  else
+  {
+    esyslog ("mp3[%d]: cannot open image file '%s'",
+             getpid(), file);
+  }
+}
+
+void mgPCMPlayer::send_pes_packet(unsigned char *data, int len, int timestamp)
+{
+#define PES_MAX_SIZE 2048
+    int ptslen = timestamp ? 5 : 1;
+    static unsigned char pes_header[PES_MAX_SIZE];
+
+    pes_header[0] = pes_header[1] = 0;
+    pes_header[2] = 1;
+    pes_header[3] = 0xe0;
+
+    while(len > 0)
+	{
+	    int payload_size = len;
+	    if(6 + ptslen + payload_size > PES_MAX_SIZE)
+		payload_size = PES_MAX_SIZE - (6 + ptslen);
+
+	    pes_header[4] = (ptslen + payload_size) >> 8;
+	    pes_header[5] = (ptslen + payload_size) & 255;
+
+	    if(ptslen == 5)
+		{
+		    int x;
+		    x = (0x02 << 4) | (((timestamp >> 30) & 0x07) << 1) | 1;
+		    pes_header[8] = x;
+		    x = ((((timestamp >> 15) & 0x7fff) << 1) | 1);
+		    pes_header[7] = x >> 8;
+		    pes_header[8] = x & 255;
+		    x = ((((timestamp) & 0x7fff) < 1) | 1);
+		    pes_header[9] = x >> 8;
+		    pes_header[10] = x & 255;
+	    } else
+		{
+		    pes_header[6] = 0x0f;
+		}
+
+	    memcpy(&pes_header[6 + ptslen], data, payload_size);
+	    PlayVideo(pes_header, 6 + ptslen + payload_size);
+
+	    len -= payload_size;
+	    data += payload_size;
+	    ptslen = 1;
+	}
+}
+*/
+
 // --- mgPlayerControl -------------------------------------------------------
 
 mgPlayerControl::mgPlayerControl( mgPlaylist *plist, int start )
