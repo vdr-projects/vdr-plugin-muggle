@@ -17,6 +17,7 @@
 using namespace std;
 
 void database_end();		// must be done explicitly
+void set_datadir(char *datadir);
 
 /*!
  * \brief an abstract database class

@@ -57,6 +57,12 @@ mgMuggle::mgMuggle (void)
     the_setup.DbPass = strdup ("");
     the_setup.GdCompatibility = false;
     the_setup.ToplevelDir = strdup ("/mnt/music/");
+#ifndef HAVE_SERVER
+    char *buf;
+    asprintf(&buf,"%s/.muggle",getenv("HOME"));
+    set_datadir(buf);
+    free(buf);
+#endif
 }
 
 #if VDRVERSNUM >= 0321
@@ -86,6 +92,9 @@ mgMuggle::CommandLineHelp (void)
         "  -u UUUU,  --user=UUUU     specify database user (default is )\n"
         "  -w WWWW,  --password=WWWW specify database password (default is empty)\n"
         "  -t TTTT,  --toplevel=TTTT specify toplevel directory for music (default is /mnt/music)\n"
+#ifndef HAVE_SERVER
+        "  -d DIRN,  --datadir=DIRN  specify directory for embedded sql data (default is $HOME/.muggle)\n"
+#endif
         "  -g,       --giantdisc     enable full Giantdisc compatibility mode\n"
         "  -v,       --verbose       specify debug level. The higher the more. Default is 1\n";
 }
@@ -106,6 +115,9 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
         {"port", required_argument, NULL, 'p'},
         {"user", required_argument, NULL, 'u'},
         {"password", required_argument, NULL, 'w'},
+#ifndef HAVE_SERVER
+        {"datadir", required_argument, NULL, 'd'},
+#endif
         {"toplevel", required_argument, NULL, 't'},
         {"giantdisc", no_argument, NULL, 'g'},
         {NULL}
@@ -115,7 +127,11 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
         c,
         option_index = 0;
     while ((c =
+#ifndef HAVE_SERVER
+        getopt_long (argc, argv, "gh:s:n:p:t:u:w:d:v:", long_options,
+#else
         getopt_long (argc, argv, "gh:s:n:p:t:u:w:v:", long_options,
+#endif
         &option_index)) != -1)
     {
         switch (c)
@@ -150,6 +166,13 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
                 the_setup.DbPass = strcpyrealloc (the_setup.DbPass, optarg);
             }
             break;
+#ifndef HAVE_SERVER
+            case 'd':
+            {
+	        set_datadir(optarg);
+            }
+	    break;
+#endif
             case 'v':
             {
     		mgSetDebugLevel (atol(optarg));

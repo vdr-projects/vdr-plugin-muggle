@@ -695,7 +695,6 @@ mgOrder::mgOrder(mgValmap& nv,char *prefix)
 		unsigned int v = nv.getuint(idx);
 		free(idx);
 		if (v==0) break;
-		mgDebug(1,"found %s:%d",idx,v);
         	setKey (mgKeyTypes(v) );
 	}
 	if (size()>0)

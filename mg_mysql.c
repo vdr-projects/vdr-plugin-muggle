@@ -25,22 +25,40 @@ class mysqlhandle_t {
 	public:
 		mysqlhandle_t();
 		~mysqlhandle_t();
-	private:
-		char *m_datadir;
 };
 
-char *server_args[] =
+#ifndef HAVE_SERVER
+static char *datadir;
+
+static char *server_args[] =
 {
 	"muggle",	
+	"--datadir=/tmp",	// stupid default
 	"--key_buffer_size=32M"
 };
-char *server_groups[] =
+static char *server_groups[] =
 {
 	"embedded",
 	"server",
 	"muggle_SERVER",
 	0
 };
+
+void
+set_datadir(char *dir)
+{
+	mgDebug(1,"setting datadir to %s",dir);
+	struct stat stbuf;
+	datadir=strdup(dir);
+	asprintf(&server_args[1],"--datadir=%s",datadir);
+	if (stat(datadir,&stbuf))
+		mkdir(datadir,0755);
+	if (stat(datadir,&stbuf))
+	{
+		mgError("Cannot access datadir %s: errno=%d",datadir,errno);
+	}
+}
+#endif
 
 mysqlhandle_t::mysqlhandle_t()
 {
@@ -57,7 +75,6 @@ mysqlhandle_t::~mysqlhandle_t()
 #ifndef HAVE_SERVER
   mgDebug(3,"calling mysql_server_end");
   	mysql_server_end();
-	free(m_datadir);
 #endif
 }
 
@@ -491,9 +508,9 @@ mgmySql::Connect ()
     }
 #else
     if (!mysql_real_connect(m_db, 0, 0, 0, 0, 0, 0, 0))
-	mgWarning("Failed to connect to embedded data base:%s ",mysql_error(m_db));
+	mgWarning("Failed to connect to embedded mysql in %s:%s ",datadir,mysql_error(m_db));
     else
-	mgDebug(1,"Connected to embedded mysql");
+	mgDebug(1,"Connected to embedded mysql in %s",datadir);
 #endif
     if (m_db)
     {
