@@ -223,45 +223,13 @@ mgSync::GetFileInfo(const char *filename)
         channels = ap->channels();   //tracks.channels
 	if (m_db.HasFolderFields())
 	{
-	    char *path = strdup(filename);
-	    char *folder1="";
-	    char *folder2="";
-	    char *folder3="";
-	    char *folder4="";
-	    char *p=path;
-	    char *slash;
-	    slash=strchr(p,'/');
-	    if (slash)
-	    {
-	    	folder1=p;
-		*slash=0;
-		p=slash+1;
-	    	slash=strchr(p,'/');
-	    	if (slash)
-	    	{
-	    		folder2=p;
-	    		*slash=0;
-			p=slash+1;
-	    		slash=strchr(p,'/');
-	    		if (slash)
-	    		{
-	    			folder3=p;
-	    			*slash=0;
-				p=slash+1;
-	    			slash=strchr(p,'/');
-	    			if (slash)
-	    			{
-	    				folder4=p;
-	    				*slash=0;
-				}
-			}
-		}
-	    }
-		sql_Cstring(folder1,c_folder1);
-		sql_Cstring(folder2,c_folder2);
-		sql_Cstring(folder3,c_folder3);
-		sql_Cstring(folder4,c_folder4);
-		free(path);
+	    char *folders[4];
+	    char *fbuf=SeparateFolders(filename,folders,4);
+	    sql_Cstring(folders[0],c_folder1);
+	    sql_Cstring(folders[1],c_folder2);
+	    sql_Cstring(folders[2],c_folder3);
+	    sql_Cstring(folders[3],c_folder4);
+	    free(fbuf);
 	}
 	return true;
 }
