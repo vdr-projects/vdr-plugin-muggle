@@ -435,6 +435,11 @@ class  GdPlaylist : public mgPlaylist
    */
   bool storePlaylist();
 
+  /*! 
+   * \brief store playlist under a different name
+   */
+  bool storeAs( std::string name );
+
  private:
 
   /*!

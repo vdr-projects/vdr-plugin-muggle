@@ -142,6 +142,9 @@ public:
   //! \brief make playlist persistent
   virtual bool storePlaylist() = 0;
 
+  //! \brief make playlist persistent under a different name
+  virtual bool storeAs( std::string name ) = 0;
+
   //! \brief obtain length of content already played
   unsigned long getCompletedLength();
 
