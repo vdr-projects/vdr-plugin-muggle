@@ -3,11 +3,11 @@
  * \brief  Implements menu handling for browsing media libraries within VDR
  *
  * \version $Revision: 1.27 $
- * \date    $Date: 2004/07/27 20:50:54 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  *
- * $Id: vdr_menu.c,v 1.27 2004/07/27 20:50:54 lvw Exp $
+ * $Id$
  */
 
 #include <string>
@@ -324,6 +324,8 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 		// load the selected playlist
 		
 		m_current_playlist -> clear();
+		delete m_current_playlist;
+
 		string selected = (*m_plists)[ Current() ];
 		m_current_playlist = m_media->loadPlaylist( selected.c_str() );
 
@@ -523,8 +525,6 @@ void mgMainMenu::DisplayTreeSubmenu()
 
   // Add items
   Add( new cOsdItem( "1 - Instant play" ) );
-  Add( new cOsdItem( "9 - Test9" ) );
-  Add( new cOsdItem( "0 - Test0" ) );
 
   Display();
 }
@@ -575,7 +575,6 @@ eOSState mgMainMenu::TreeSubmenuAction( int n )
 
 void mgMainMenu::DisplayPlaylist( int index_current )
 {
-  mgDebug( 1,  "mgMainMenu::DisplayPlaylist: entering." );
   m_state = PLAYLIST;
 
   // make sure we have a current playlist
@@ -656,16 +655,16 @@ void mgMainMenu::DisplayPlaylistSubmenu()
   SetTitle( "Muggle - Playlist View Commands" );
 
   // Add items
-  Add( new cOsdItem( "1 - Load playlist" ) );
-  Add( new cOsdItem( "2 - Save playlist" ) );
-  Add( new cOsdItem( "3 - Rename playlist" ) );
-  Add( new cOsdItem( "4 - Clear playlist" ) );
-  Add( new cOsdItem( "5 - Remove entry from list" ) );
-  Add( new cOsdItem( "6 - Export playlist" ) );
+  Add( new cOsdItem( "Load playlist" ) );
+  Add( new cOsdItem( "Save playlist" ) );
+  Add( new cOsdItem( "Rename playlist" ) );
+  Add( new cOsdItem( "Clear playlist" ) );
+  Add( new cOsdItem( "Remove entry from list" ) );
+  Add( new cOsdItem( "Export playlist" ) );
 
   if( m_playlist_commands )
     {
-      Add( new cOsdItem( "7 - External playlist commands" ) );
+      Add( new cOsdItem( "External playlist commands" ) );
     }
 
   Display();

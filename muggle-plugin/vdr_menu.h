@@ -3,11 +3,11 @@
  * \brief  Implements menu handling for broswing media libraries within VDR
  *
  * \version $Revision: 1.13 $
- * \date    $Date: 2004/07/25 21:33:35 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  *
- *  $Id: vdr_menu.h,v 1.13 2004/07/25 21:33:35 lvw Exp $
+ *  $Id$
  */
 
 #ifndef _VDR_MENU_H
@@ -107,7 +107,7 @@ class mgMainMenu : public cOsdMenu
   mgSelectionTreeNode *m_root;
   mgSelectionTreeNode *m_node;
   mgPlaylist          *m_current_playlist;
-  std::vector<std::string>      *m_plists;
+  std::vector<std::string> *m_plists;
 
   MuggleStatus m_state;
   std::list<int> m_history;

@@ -55,20 +55,16 @@ mgTracklist::~mgTracklist()
 }
 
 /*!
- *****************************************************************************
  * \brief returns a pointer to the list of elements
- *
- ****************************************************************************/
+ */
 vector<mgContentItem*> *mgTracklist::getAll()
 {
   return &m_list;
 }
 
 /*!
- *****************************************************************************
  * \brief returns the number of elements in the list
- *
- ****************************************************************************/
+ */
 unsigned int mgTracklist::getNumItems()
 {
   return m_list.size();

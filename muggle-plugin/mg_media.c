@@ -2,9 +2,9 @@
  *  \brief  Top level access to media in vdr plugin muggle
  *
  * \version $Revision: 1.14 $
- * \date    $Date: 2004/07/29 06:17:40 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  */
 
 /* makes sure we dont parse the same declarations twice */
@@ -173,7 +173,7 @@ mgMedia::mgMedia(contentType mediatype)
 	case GD_MP3:
 	{
 	    errval = GdInitDatabase(&m_db);
-	    mgDebug(3, "Successfully conntected to sql database %s", the_setup.DbName ); 
+	    mgDebug(3, "Successfully connected to sql database %s", the_setup.DbName ); 
 	}
     }
     if(errval < 0)
@@ -192,10 +192,6 @@ mgMedia::mgMedia(contentType mediatype)
     }
 }
 	
-/*! 
- *******************************************************************
- * \brief 
- ********************************************************************/
 mgMedia::~mgMedia()
 {
   if( m_filters )
@@ -204,10 +200,6 @@ mgMedia::~mgMedia()
     }
 }
   
-/*! 
- *******************************************************************
- * \brief
- ********************************************************************/
 string mgMedia::getMediaTypeName()
 {
     switch(m_mediatype)
@@ -221,11 +213,6 @@ string mgMedia::getMediaTypeName()
     return "";
 }
   
-  
-/*! 
- *******************************************************************
- * \brief
- ********************************************************************/
 mgSelectionTreeNode* mgMedia::getSelectionRoot()
 {
     switch(m_mediatype)
@@ -237,21 +224,12 @@ mgSelectionTreeNode* mgMedia::getSelectionRoot()
     return NULL;
 }
 
-
-/*! 
- *******************************************************************
- * \brief
- ********************************************************************/
 mgPlaylist* mgMedia::createTemporaryPlaylist()
 {
     string tmpname = "current";
     return loadPlaylist( tmpname );
 }
 
-/*! 
- * \brief Load a playlist from the database
- *
- */
 mgPlaylist* mgMedia::loadPlaylist(string name)
 {
     mgPlaylist *list;
@@ -259,9 +237,9 @@ mgPlaylist* mgMedia::loadPlaylist(string name)
       {
       case GD_MP3:
 	{
-	  list =  new GdPlaylist(name, m_db);
+	  list = new GdPlaylist( name, m_db );
 	  list->setDisplayColumns(getDefaultCols());
-
+	  
 	  return list;
 	} break;
     }	 
