@@ -5,6 +5,7 @@ Code polishing
 ==============
 - check for memory leaks
 - check for (reasonably) consistent usage of char*/string
+- mg_database is not used
 
 Short term items
 ================
@@ -14,9 +15,6 @@ OSD
 - DisplayTrackInfo
 - DisplayAlbumInfo
 - Edit playlist (means moving tracks around?)
-- handle filters:
-    - create tracklist from filter
-    - create tree from filter
 - i18n
 
 Content
@@ -41,3 +39,9 @@ Visions
 - handle films
 - handle off-line media (CDs, DVDs)
 - handle EPG
+
+Already Done
+============
+- handle filters:
+    - create tracklist from filter
+    - create tree from filter

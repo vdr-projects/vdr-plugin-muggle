@@ -2,10 +2,10 @@
 /*! \file   muggle.c
  *  \brief  Implements a plugin for browsing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.3 $
- * \date    $Date: 2004/02/09 19:27:52 $
+ * \version $Revision: 1.4 $
+ * \date    $Date: 2004/02/23 15:41:21 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: MountainMan $
+ * \author  file owner: $Author: RaK $
  */
 /*******************************************************************/
 
@@ -21,6 +21,7 @@ static const char *MAINMENUENTRY  = "Muggle";
 #include "mg_content_interface.h"
 #include "mg_media.h"
 
+#include "i18n.h"
 
 const char* mgMuggle::Version(void)
 { 

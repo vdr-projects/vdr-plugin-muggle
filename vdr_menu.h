@@ -2,12 +2,12 @@
 /*! \file   vdr_menu.h
  *  \brief  Implements menu handling for broswing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.8 $
- * \date    $Date: 2004/02/08 10:48:44 $
+ * \version $Revision: 1.9 $
+ * \date    $Date: 2004/02/23 15:41:21 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  file owner: $Author: LarsAC $
+ * \author  file owner: $Author: RaK $
  *
- * $Id: vdr_menu.h,v 1.8 2004/02/08 10:48:44 LarsAC Exp $
+ * $Id: vdr_menu.h,v 1.9 2004/02/23 15:41:21 RaK Exp $
  *
  */
 /*******************************************************************/
@@ -25,6 +25,8 @@
 #endif
 
 #include <list>
+
+#include "i18n.h"
 
 class mgMedia;
 class mgSelectionTreeNode;
@@ -108,6 +110,9 @@ class mgMainMenu : public cOsdMenu
 /************************************************************
  *
  * $Log: vdr_menu.h,v $
+ * Revision 1.9  2004/02/23 15:41:21  RaK
+ * - first i18n attempt
+ *
  * Revision 1.8  2004/02/08 10:48:44  LarsAC
  * Made major revisions in OSD behavior
  *

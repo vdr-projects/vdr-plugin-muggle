@@ -3,8 +3,8 @@
  * \brief  Data Objects for content (e.g. mp3 files, movies)
  * for the vdr muggle plugindatabase
  ******************************************************************** 
- * \version $Revision: 1.3 $
- * \date    $Date: 2004/02/10 23:47:23 $
+ * \version $Revision: 1.4 $
+ * \date    $Date: 2004/02/23 15:41:21 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: RaK $
  *
@@ -320,7 +320,7 @@ mgContentItem* mgPlaylist::sneakNext()
 mgSelectionTreeNode::mgSelectionTreeNode(MYSQL db, int view)
 {
     m_db = db;
-    m_parent=NULL;
+    m_parent = NULL;
     m_level = 0;
     m_view = view;
     m_id = "";
@@ -347,7 +347,11 @@ mgSelectionTreeNode::~mgSelectionTreeNode()
 
 mgSelectionTreeNode*  mgSelectionTreeNode::getParent()
 {
+  if (m_view < 100 || m_level > 1) {
     return  m_parent;
+  } else {
+    return NULL;
+  }
 }
 
 void mgSelectionTreeNode::collapse() // removes all children (recursively)
@@ -398,6 +402,9 @@ string mgSelectionTreeNode::getRestrictions()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: mg_content_interface.c,v $
+ * Revision 1.4  2004/02/23 15:41:21  RaK
+ * - first i18n attempt
+ *
  * Revision 1.3  2004/02/10 23:47:23  RaK
  * - views konsitent gemacht. siehe FROMJOIN
  * - isLeafNode angepasst fuer neue views 4,5,100,101
