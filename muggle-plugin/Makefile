@@ -9,14 +9,10 @@
 #
 PLUGIN = muggle
 
-#if you want ogg / flac support, remove the trailing x in those two
-#definitions:
-define have_vorbisfile
-1
-endef
-define have_flac
-1
-endef
+#if you want ogg / flac support, define HAVE_VORBISFILE and/or HAVE_FLAC
+#in $VDRDIR/Make.config like this:
+#  HAVE_VORBISFILE=1
+#  HAVE_FLAC=1
 
 ### The version number of this plugin (taken from the main source file):
 
@@ -66,12 +62,12 @@ OBJS = $(PLUGIN).o i18n.o mg_valmap.o mg_order.o mg_db.o mg_actions.o vdr_menu.o
 LIBS = -lmad -lmysqlclient 
 MILIBS = -lmysqlclient -ltag
 
-ifdef have_vorbisfile
+ifdef HAVE_VORBISFILE
 DEFINES += -DHAVE_VORBISFILE
 OBJS += vdr_decoder_ogg.o
 LIBS += -lvorbisfile -lvorbis
 endif
-ifdef have_flac
+ifdef HAVE_FLAC
 DEFINES += -DHAVE_FLAC
 OBJS += vdr_decoder_flac.o
 LIBS += -lFLAC++
