@@ -81,7 +81,7 @@ int main( int argc, char *argv[] )
       std::cout << "                        -z is not yet implemented" << std::endl;
       std::cout << "  -c                  - delete the entire database and recreate a new empty one" << std::endl;
 #ifndef HAVE_SERVER
-      std::cout << "  -d                  - the data directory for the embedded mysql server. Defaults to ./.muggle" << std::endl;
+      std::cout << "  -d <datadir>        - the data directory for the embedded mysql server. Defaults to ./.muggle" << std::endl;
 #endif
       std::cout << "  -v                  - the wanted log level, the higher the more. Default is 1" << std::endl;
 
