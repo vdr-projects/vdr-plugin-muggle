@@ -19,6 +19,7 @@
 
 // #include <osd.h>
 #include <menuitems.h>
+#include <string>
 
 #define MAX_STRING_LEN 128
 
@@ -56,6 +57,8 @@ class mgSetup
 
     public:
         mgSetup (void);
+
+	std::string getFilename( std::string basename );
 };
 
 extern mgSetup the_setup;

@@ -409,9 +409,9 @@ mgPCMPlayer::Action (void)
 
                     if (m_playing)
                     {
-                        std::string filename = m_playing->getSourceFile ();
-mgDebug( 1, "mgPCMPlayer::Action: music file is %s", filename.c_str() );
-
+		      std::string filename = the_setup.getFilename( m_playing->getSourceFile () );
+		      mgDebug( 1, "mgPCMPlayer::Action: music file is %s", filename.c_str() );
+			
                         if ((m_decoder = mgDecoders::findDecoder (m_playing))
                             && m_decoder->start ())
                         {
