@@ -1,11 +1,11 @@
 /*! 
  * \file   mg_playlist.c
- * \brief  defines functions to be executed on playlists for the vdr muggle plugindatabase
+ * \brief  defines functions to be executed on playlists for the vdr muggle plugin
  *
  * \version $Revision: 1.6 $
- * \date    $Date: 2004/07/27 20:50:54 $
+ * \date    $Date$
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author$
  *
  * This file implements the class mgPlaylist which maintains a playlist
  * and supports editing (e.g. adding or moving tracks), navigating it
@@ -17,6 +17,7 @@
 #include "mg_tools.h"
 
 #include <vector>
+#include <iostream>
 
 using namespace std;
 
@@ -84,14 +85,14 @@ void mgPlaylist::appendList( vector<mgContentItem*> *tracks )
 /* add a song after 'position' */
 void mgPlaylist::insert( mgContentItem* item, unsigned int position )
 {
-    if( position >= m_list.size() )
-      {
-	m_list.push_back(item);
-      }
-    else
-      {
-	m_list.insert( m_list.begin() + position, item );
-      }
+  if( position >= m_list.size() )
+    {
+      m_list.push_back(item);
+    }
+  else
+    {
+      m_list.insert( m_list.begin() + position, item );
+    }
 }
 
 void mgPlaylist::clear()
@@ -107,6 +108,9 @@ void mgPlaylist::clear()
   
   // finally clear the list itself
   m_list.clear();
+
+  // reset index
+  m_current_idx = 0;
 }
 
 void mgPlaylist::move( int from, int to )
@@ -116,6 +120,15 @@ void mgPlaylist::move( int from, int to )
 
   m_list.insert( to_iter, *from_iter);
   m_list.erase( from_iter );
+
+  if( from < m_current_idx )
+    {
+      m_current_idx--;
+    }
+  if( to < m_current_idx )
+    {
+      m_current_idx++;
+    }
 }
 
 /*====  access tracks ====*/
@@ -135,18 +148,28 @@ int mgPlaylist::count()
   return m_list.size();
 }
 
-// returns the first item of the list
+// returns the current item of the list
 mgContentItem* mgPlaylist::getCurrent()
 {
-  return *( m_list.begin() + m_current_idx );
+  mgContentItem *result;
+
+  if( 0 <= m_current_idx && m_current_idx < m_list.size() )
+    {
+      result = *( m_list.begin() + m_current_idx );
+    }
+  else
+    {
+      result = &(mgContentItem::UNDEFINED);
+    }
+
+  return result;
 }
 
-// returns the  nth track from the playlist
+// returns the nth track from the playlist
 void mgPlaylist::gotoPosition(unsigned int position)
 {
     if( position >= m_list.size() )
       {
-	// TODO: why not return a NULL pointer? LVW
 	m_current_idx = -1;
       }
     else
@@ -160,7 +183,8 @@ void mgPlaylist::skipFwd()
 {
   if( m_current_idx + 1 < m_list.size() ) // unless loop mode
     {
-      m_current_idx ++;      
+      m_current_idx ++;
+      cout << "mgPlaylist::skipFwd: " << m_current_idx << endl;
     }
   else
     {
