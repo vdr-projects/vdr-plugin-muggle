@@ -40,14 +40,8 @@
         - Move differences 1.3.7+- to link level
 
     \subsection urgentcontent Content handling    
-        - Save on exit
-          - implement storePlaylistAs( string name ) in gdPlaylist
-            - find id of playlist called name or create it
-            - delete all entries
-            - store current entries
 	- Think, whether type (mp3, ogg, flac) should be stored in database
           - could be used in searching/structuring as well
-	- Handle loop mode in mgPlaylist
 	- Handle shuffle mode in mgPlaylist
 	  - shuffle mode on
 	    - for next file:
@@ -141,14 +135,14 @@
           - read/write queries
           - return results (needs an abstract representation of results?)
 		
-	\subsection midosd OSD-related issues
+    \subsection midosd OSD-related issues
 	
 	- Incremental search 
           - Type numbers to enter characters and jump to first title accordingly
 	- Check whether submenus (as implemented in VDR) are more suitable
 	    - do not permit jumping to arbitrary menus though
 
-	\subsection midcontent Content issues
+    \subsection midcontent Content issues
 	
 	- Save/load filter sets
 	- Apply filter set as dynamic playlist (i.e. show filters when loading playlists)
@@ -160,12 +154,12 @@
 	        - when playfrequency reaches upper level y from above: decrease rating
 	        - when playfrequency reaches upper level y from below: increase rating
 
-	\subsection midplayer Player issues
+    \subsection midplayer Player issues
 	
         - Use single CD files with cuesheets in metadata for FLAC
 	- Handle recoding samplerate, limiter etc correctly
     
-	\section vision Long term ideas and visions
+    \section vision Long term ideas and visions
 
 	- daapd integration?
 	- netjuke integration?
@@ -247,5 +241,11 @@
     - BUG: Red key does not work in Browser submenu
     - Test execution of playlist commands    
     - Resume play instead of restarting list from the beginning when terminating play with blue instead of back
+    - Save on exit
+      - implement storePlaylistAs( string name ) in gdPlaylist
+        - find id of playlist called name or create it
+        - delete all entries
+        - store current entries
+    - Handle loop mode in mgPlaylist
 
 */
