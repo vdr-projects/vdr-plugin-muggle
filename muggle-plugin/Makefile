@@ -40,11 +40,12 @@ PACKAGE = vdr-$(ARCHIVE)
 
 ### Includes and Defines (add further entries here):
 
-INCLUDES += -I$(VDRDIR) -I$(VDRDIR)/include -I$(DVBDIR)/include -I/usr/include/mysql/
+INCLUDES += -I$(VDRDIR) -I$(VDRDIR)/include -I$(DVBDIR)/include \
+	-I/usr/include/mysql/ -I/usr/include/taglib
 
 DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DHAVE_VORBISFILE
 
-MIFLAGS += -I/usr/include/taglib -ltag -lmysqlclient
+MIFLAGS += -I/usr/include/taglib -lmysqlclient
 ### The object files (add further files here):
 
 OBJS = $(PLUGIN).o i18n.o vdr_menu.o mg_database.o mg_content_interface.o gd_content_interface.o mg_tools.o mg_media.o mg_filters.o mg_playlist.o vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o vdr_setup.o vdr_decoder_ogg.o
@@ -53,7 +54,7 @@ LIBS = -lmad -lmysqlclient -lvorbisfile -lvorbis
 
 ### Targets:
 
-all: libvdr-$(PLUGIN).so
+all: libvdr-$(PLUGIN).so mugglei
 
 # Dependencies:
 
@@ -67,14 +68,14 @@ $(DEPFILE): Makefile
 ### Implicit rules:
 
 %.o: %.c %.h
-	$(CXX) $(CXXFLAGS) -c $(DEFINES) $(INCLUDES) $<
+	$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDES) -c $<
 
 libvdr-$(PLUGIN).so: $(OBJS)
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LIBS) -o $@
 	@cp $@ $(LIBDIR)/$@.$(VDRVERSION)
 
 mugglei: mg_tools.o mugglei.o
-	$(CXX) $(CXXFLAGS) $(MIFLAGS) -o $^
+	$(CXX) $(CXXFLAGS) $(LIBS) -ltag -o $@ $^
 
 dist: clean
 	@-rm -rf $(TMPDIR)/$(ARCHIVE)
@@ -86,3 +87,4 @@ dist: clean
 
 clean:
 	@-rm -f $(OBJS) $(BINOBJS) $(DEPFILE) *.so *.tgz core* *~
+
