@@ -3,10 +3,10 @@
  * \brief  Data objects for content (e.g. mp3 files, movies)
  *         for the vdr muggle plugin database
  *          
- * \version $Revision: 1.7 $
- * \date    $Date: 2004/05/28 15:29:18 $
+ * \version $Revision: 1.8 $
+ * \date    $Date: 2004/07/06 00:20:51 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author: MountainMan $
  * 
  * Declares main classes for content items and interfaces to SQL databases
  *
@@ -250,15 +250,14 @@ class  GdPlaylist : public mgPlaylist
      /*==== constructors ====*/
      GdPlaylist(std::string listname, MYSQL db_handle);
      /* opens existing or creates empty playlist */
-     
-     GdPlaylist(unsigned int sql_identifier, MYSQL db_handle);
-     /* construct  from the db by internal id*/
-  
+
      
      /*==== destructor ====*/
      virtual ~GdPlaylist();
      
-      
+     virtual void setListname(std::string name);
+     /* changes the listname of the playlist (and unset the sql id */
+
      int getPlayTime();
      /* returns the total duration of all songs in the list in seconds */
 
@@ -307,6 +306,9 @@ public:
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.h,v $
+ * Revision 1.8  2004/07/06 00:20:51  MountainMan
+ * loading and saving playlists
+ *
  * Revision 1.7  2004/05/28 15:29:18  lvw
  * Merged player branch back on HEAD branch.
  *

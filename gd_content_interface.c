@@ -1,10 +1,10 @@
 /*! \file  content_interface.cpp
  *  \brief  Data Objects for content (e.g. mp3 files, movies) for the vdr muggle plugindatabase
  *
- * \version $Revision: 1.22 $
- * \date    $Date: 2004/05/28 15:29:18 $
+ * \version $Revision: 1.23 $
+ * \date    $Date: 2004/07/06 00:20:51 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author: MountainMan $
  *
  * Implements main classes of for content items and interfaces to SQL databases
  *
@@ -709,6 +709,19 @@ GdPlaylist::GdPlaylist(string listname, MYSQL db_handle)
 			"");  // creates current time as timestamp
 	m_author = "VDR";
 	m_listname = listname;
+	
+	// now read thenew list to get the id
+	result=mgSqlReadQuery(&m_db, 
+		       "SELECT id,author FROM playlist where title=\"%s\"",
+			listname.c_str());
+	nrows   = mysql_num_rows(result);
+	row = mysql_fetch_row(result);
+	
+	if(sscanf(row [0], "%d", & m_sqlId) !=1)
+	{
+	  mgError("Invalid id '%s' in database", row [5]);
+	}
+	  
     }
     else // playlist exists, read data
     {
@@ -730,51 +743,6 @@ GdPlaylist::GdPlaylist(string listname, MYSQL db_handle)
 
 /*!
  *****************************************************************************
- * \brief Constructor: construct playlist object from existing sql playlist
- *
- * \param sql_identifier: sql internal identifier for the playlist 
- * \param db_handl database which stores the playlist
- *
- * This constructor is typically used when a playlist is selected from an
- * internal list of playlists 
- ****************************************************************************/
-GdPlaylist::GdPlaylist(unsigned int sql_identifier, MYSQL db_handle)
-{
-    MYSQL_RES	*result;
-    int	nrows;
-
-    m_db = db_handle;
-
-    // check, if the database really exists 
-    result = mgSqlReadQuery(&m_db, 
-			    "SELECT title,author FROM playlist where id=%d", 
-			    sql_identifier);
-    nrows   = mysql_num_rows(result);
-    if(nrows == 0)
-    {
-	mgDebug(3, "No playlist with id %d found. Creating new playlist\n", 
-		sql_identifier);
-	
-	// create new database entry
-	// DUMMY
-    }
-    else // playlist exists, read data
-    {
-	MYSQL_ROW	row;
-	row = mysql_fetch_row(result);
-	
-	m_listname  = row[0];
-	m_author = row[1];
- 	m_sqlId = sql_identifier;
-	// now read all entries of the playlist and 
-	// write them into the tracklist
- 	insertDataFromSQL();
-   }
-  m_listtype = GD_PLAYLIST_TYPE; // GiantDB list type for playlists 
-}
-
-/*!
- *****************************************************************************
  * \brief empty destructor
  *
  * Nothing to be done. Constructor of parent class takes care
@@ -783,7 +751,11 @@ GdPlaylist::~GdPlaylist()
 {
     
 }
-
+void GdPlaylist::setListname(std::string name)
+{
+  m_listname = name;
+  m_sqlId = -1;
+}
 /*!
  *****************************************************************************
  * \brief reads the track list from the sql database into a locallist
@@ -820,26 +792,55 @@ bool GdPlaylist::storePlaylist()
 {
     vector<mgContentItem*>::iterator iter;
     int num;
+    MYSQL_RES	*result;
+    MYSQL_ROW	row;
+    int	nrows;
 
 
-    if(m_listname =="")
+    if(m_listname ==" ")
     {
 	mgWarning("Can not store Tracklist without name");
 	return false;
     }
-    // remove old playlist items from db
-    mgSqlWriteQuery(&m_db, 
-		    "DELETE FROM playlistitem WHERE playlist = %d",
-		    m_sqlId);
-
+    if(m_sqlId >= 0)
+    {
+      // playlist alreay exists in SQL database
+      // remove old items first
+      cout << " GdPlaylist::storePlaylist: removing items from " << m_sqlId << flush;
+      // remove old playlist items from db
+      mgSqlWriteQuery(&m_db, 
+		      "DELETE FROM playlistitem WHERE playlist = %d",
+		      m_sqlId);
+    }
+    else
+    {
+      // create new database entry
+      mgSqlWriteQuery(&m_db, "INSERT into playlist "
+		      "SET title=\"%s\", author=\"%s\"",
+		      m_listname.c_str(), 
+		      "VDR", // default author
+		      "");  // creates current time as timestamp
+      m_author = "VDR";
+	
+      // now read thenew list to get the id
+      result=mgSqlReadQuery(&m_db, 
+			  "SELECT id,author FROM playlist where title=\"%s\"",
+			    m_listname.c_str());
+      nrows   = mysql_num_rows(result);
+      row = mysql_fetch_row(result);
+	
+      if(sscanf(row [0], "%d", & m_sqlId) !=1)
+      {
+	mgError("Invalid id '%s' in database", row [5]);
+      }
+    }
     // add new playlist items to db
    
     for(iter= m_list.begin(), num=0; iter != m_list.end(); iter++, num++)
     {
-
 	mgSqlWriteQuery(&m_db, 
 			"INSERT into playlistitem  "
-			"SET tracknumber=\"%s\", trackid=\"%s\", playlist=%d",
+			"SET tracknumber=\"%d\", trackid=\"%d\", playlist=%d",
 			num, (*iter)->getId(), m_sqlId);
     }
     return true;
@@ -1391,6 +1392,9 @@ mgContentItem* GdTreeNode::getSingleTrack()
 
 /* -------------------- begin CVS log ---------------------------------
  * $Log: gd_content_interface.c,v $
+ * Revision 1.23  2004/07/06 00:20:51  MountainMan
+ * loading and saving playlists
+ *
  * Revision 1.22  2004/05/28 15:29:18  lvw
  * Merged player branch back on HEAD branch.
  *

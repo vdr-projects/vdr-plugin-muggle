@@ -2,12 +2,12 @@
  * \file   vdr_menu.c
  * \brief  Implements menu handling for browsing media libraries within VDR
  *
- * \version $Revision: 1.21 $
- * \date    $Date: 2004/06/02 19:29:22 $
+ * \version $Revision: 1.22 $
+ * \date    $Date: 2004/07/06 00:20:51 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author: MountainMan $
  *
- * $Id: vdr_menu.c,v 1.21 2004/06/02 19:29:22 lvw Exp $
+ * $Id: vdr_menu.c,v 1.22 2004/07/06 00:20:51 MountainMan Exp $
  */
 
 #include <string>
@@ -313,6 +313,32 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	    }
 	 }
     }
+  else if( m_state == LOAD_PLAYLIST )
+    {
+      if( state == osUnknown )
+	{
+	  switch( key )
+	    {
+	    case kOk:
+	      {
+		// load the selected playlist
+		
+		m_current_playlist -> clear();
+		string selected = (*m_plists)[Current()];
+		m_current_playlist = m_media->loadPlaylist(selected.c_str());
+		// clean the list of playlist
+		m_plists->clear();
+		m_last_osd_index =0;
+		DisplayPlaylist(0);
+		state = osContinue;
+	      } break;
+	    default:
+	      {
+		state = osContinue;
+	      };
+	    }
+	 }
+    }
   else if( m_state == PLAYLIST_SUBMENU )
     {
       if( state == osUnknown )
@@ -561,6 +587,49 @@ void mgMainMenu::DisplayPlaylist( int index_current )
   Display();
 }
 
+void mgMainMenu::LoadPlaylist()
+{
+  m_state = LOAD_PLAYLIST;
+  static char titlestr[80];
+
+  // make sure we have a current playlist
+  Clear();
+  SetButtons();
+  sprintf( titlestr, "Muggle - %s %s ",tr("load"), tr("Playlist"));
+  SetTitle( titlestr ); 
+  
+  // retrieve list of available playlists
+  m_plists = m_media->getStoredPlaylists();
+  
+  for(vector<string>::iterator iter = m_plists->begin(); 
+      iter != m_plists->end() ; iter++)
+    {
+      
+      Add( new cOsdItem( iter->c_str() ) );
+    }
+
+   
+  Display();
+}
+
+void mgMainMenu::SavePlaylist()
+{
+  if(m_current_playlist->getListname() == "")
+  {
+    // create dummy listname with current date and time
+    time_t currentTime = time(NULL);
+    m_current_playlist->setListname(ctime(&currentTime));
+  }
+  m_current_playlist->storePlaylist();
+}
+
+void mgMainMenu::RenamePlaylist()
+{
+  // dummy function. USes current date as name
+  time_t currentTime = time(NULL);
+  m_current_playlist->setListname(ctime(&currentTime));
+}
+
 void mgMainMenu::DisplayPlaylistSubmenu()
 {
   m_state = PLAYLIST_SUBMENU;
@@ -572,8 +641,9 @@ void mgMainMenu::DisplayPlaylistSubmenu()
   // Add items
   Add( new cOsdItem( "1 - Load playlist" ) );
   Add( new cOsdItem( "2 - Save playlist" ) );
-  Add( new cOsdItem( "3 - Clear playlist" ) );
-  Add( new cOsdItem( "4 - Remove entry from list" ) );
+  Add( new cOsdItem( "3 - Rename playlist" ) );
+  Add( new cOsdItem( "4 - Clear playlist" ) );
+  Add( new cOsdItem( "5 - Remove entry from list" ) );
 
   Display();
 }
@@ -587,15 +657,27 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
     {
     case 0:
       {
-	Interface->Status( "Load not yet implemented" );
+	LoadPlaylist();
 	Interface->Flush();
       } break;
     case 1:
       {
-	Interface->Status( "Save not yet implemented" );
+	
+	SavePlaylist();
+	Interface->Status( "Playlist saved");
 	Interface->Flush();
       } break;
     case 2:
+      {	// renamer playlist
+	RenamePlaylist();
+
+	// confirmation
+	Interface->Status( "Playlist renamed (dummy)" );
+	Interface->Flush();
+
+	state = osContinue;	
+      } break;
+    case 3:
       {	// clear playlist
 	m_current_playlist->clear();
 
@@ -605,7 +687,7 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
 
 	state = osContinue;	
       } break;
-    case 3:
+    case 4:
       { // remove selected title
 	m_current_playlist->remove( m_last_osd_index );
 	if( m_last_osd_index > 0 )
@@ -736,6 +818,9 @@ void mgMainMenu::Play(mgPlaylist *plist)
 /************************************************************
  *
  * $Log: vdr_menu.c,v $
+ * Revision 1.22  2004/07/06 00:20:51  MountainMan
+ * loading and saving playlists
+ *
  * Revision 1.21  2004/06/02 19:29:22  lvw
  * Use asprintf to create messages
  *

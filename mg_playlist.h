@@ -2,10 +2,10 @@
  * \file   mg_playlist.c
  * \brief  defines functions to be executed on playlists for the vdr muggle plugindatabase
  *
- * \version $Revision: 1.2 $
- * \date    $Date: 2004/05/28 15:29:18 $
+ * \version $Revision: 1.3 $
+ * \date    $Date: 2004/07/06 00:20:51 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
- * \author  Responsible author: $Author: lvw $
+ * \author  Responsible author: $Author: MountainMan $
  *
  * This file implements the class mgPlaylist which maintains a playlist
  * and supports editing (e.g. adding or moving tracks), navigating it
@@ -116,7 +116,7 @@ public:
    *
    *  \param name - the new name of this list
    */
-  void setListname(std::string name);
+  virtual void setListname(std::string name);
  
   //! \brief returns the count of items in the list
   int count();
@@ -138,6 +138,7 @@ public:
  
   //! \brief obtain the next item without skipping the current position
   virtual mgContentItem* sneakNext(); 
+  virtual bool storePlaylist()=0;
 };
 
 #endif
