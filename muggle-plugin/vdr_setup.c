@@ -20,6 +20,7 @@
 #include <cstring>
 
 #include "vdr_setup.h"
+#include "vdr_actions.h"
 #include "i18n.h"
 
 
@@ -55,6 +56,12 @@ mgMenuSetup::mgMenuSetup ()
     Add (new
         cMenuEditIntItem (tr ("Setup.Muggle$Limiter level"),
         &m_data.LimiterLevel, MIN_LIMITER_LEVEL, 100));
+
+        mgAction *a = actGenerate(actSync);
+        const char *mn = a->MenuName();
+	a->SetText(mn);
+	free(const_cast<char*>(mn));
+	Add(dynamic_cast<cOsdItem*>(a));
 }
 
 

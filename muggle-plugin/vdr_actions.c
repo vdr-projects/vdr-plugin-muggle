@@ -29,6 +29,7 @@
 #define DEBUG
 #include "mg_tools.h"
 #include "mg_order.h"
+#include "mg_sync.h"
 
 static bool
 IsEntry(mgActions i)
@@ -677,17 +678,39 @@ mgToggleSelection::Execute ()
     osd()->newposition = selection ()->gotoPosition ();
 }
 
-class mgSync : public mgCommand
+class mgCmdSync : public mgOsdItem
 {
 	public:
+		bool Enabled(mgActions on) { return true; }
 		void Execute();
-		const char *ButtonName() { return tr("Synchronize"); }
+		eOSState ProcessKey(eKeys key);
+		const char *ButtonName() { return tr("Synchronize database"); }
 };
 
-void
-mgSync::Execute()
+
+static char *sync_args[] =
 {
-	// selection()->Sync(".");
+	".",
+	0
+};
+
+eOSState
+mgCmdSync::ProcessKey(eKeys key)
+{
+	if (key==kOk)
+		if (Interface->Confirm(tr("Synchronize database with track flles?")))
+	{
+		Execute();
+		return osContinue;
+	}
+	return osUnknown;
+}
+
+void
+mgCmdSync::Execute()
+{
+	mgSync s;
+	s.Sync(sync_args);
 }
 
 //! \brief sets the default collection selection
@@ -1228,7 +1251,7 @@ mgAction::Type()
 	if (t == typeid(mgCreateOrder)) return actCreateOrder;
 	if (t == typeid(mgDeleteOrder)) return actDeleteOrder;
 	if (t == typeid(mgEditOrder)) return actEditOrder;
-	if (t == typeid(mgSync)) return actSync;
+	if (t == typeid(mgCmdSync)) return actSync;
 	if (t == typeid(mgExternal0)) return actExternal0;
 	if (t == typeid(mgExternal1)) return actExternal1;
 	if (t == typeid(mgExternal2)) return actExternal2;
@@ -1290,7 +1313,7 @@ actGenerate(const mgActions action)
 		case actSetButton: result = new mgSetButton;break;
 		case actShowList: 		result = new mgShowList;break;
 		case actShowCommands: 		result = new mgShowCommands;break;
-		case actSync: 			result = new mgSync;break;
+		case actSync: 			result = new mgCmdSync;break;
 		case actSetDefaultCollection:	result = new mgSetDefaultCollection;break;
 		case actOrder: result = new mgActOrder;break;
 		case actUnused6: break;
