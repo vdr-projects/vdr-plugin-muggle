@@ -164,13 +164,12 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 			asprintf( &buffer, "%d tracks sent to current playlist", (int) tracks->size() );
 			m_current_playlist->appendList(tracks);
 #if VDRVERSNUM >= 10307
-      Skins.Message(mtInfo,buffer);
-      Skins.Flush();
+			Skins.Message(mtInfo,buffer);
+			Skins.Flush();
 #else
 			Interface->Status( buffer );
 			Interface->Flush();
-#endif
-      
+#endif      
 			free( buffer );
 		      }
 		    else
@@ -531,10 +530,14 @@ void mgMainMenu::DisplayTreeSubmenu()
 
   Clear();
   SetButtons();
-  SetTitle( strcat("Muggle - ",tr("Tree View Commands") ) );
+
+  char *buffer;
+  asprintf( &buffer, "Muggle - %s", tr("Tree View Commands") );
+  SetTitle( buffer );
+  free( buffer );
 
   // Add items
-  Add( new cOsdItem( "1 - Instant play" ) );
+  Add( new cOsdItem( "Instant play" ) );
 
   Display();
 }
@@ -567,7 +570,7 @@ eOSState mgMainMenu::TreeSubmenuAction( int n )
 		Play( m_current_playlist );
 		
 		state = osEnd;
-	      }	
+	      }
 	  }
       } break;
     case 1:
@@ -579,7 +582,7 @@ eOSState mgMainMenu::TreeSubmenuAction( int n )
 	// undefined action
       } break;
     }
-
+  
   return state;
 }
 
@@ -781,8 +784,8 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
 
 	// confirmation
 #if VDRVERSNUM >= 10307
-  Skins.Message(mtInfo,"Playlist renamed (dummy)");
-  Skins.Flush();
+	Skins.Message(mtInfo,"Playlist renamed (dummy)");
+	Skins.Flush();
 #else
 	Interface->Status( "Playlist renamed (dummy)" );
 	Interface->Flush();
@@ -793,21 +796,22 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
     case 3:
       {	// clear playlist
 	m_current_playlist->clear();
-
+	
 	// confirmation
 #if VDRVERSNUM >= 10307
-  Skins.Message(mtInfo,"Playlist cleared");
-  Skins.Flush();
+	Skins.Message(mtInfo,"Playlist cleared");
+	Skins.Flush();
 #else
 	Interface->Status( "Playlist cleared" );
 	Interface->Flush();
 #endif
-
+	
 	state = osContinue;	
       } break;
     case 4:
       { // remove selected title
-	m_current_playlist->remove( m_last_osd_index );
+	bool res = m_current_playlist->remove( m_last_osd_index );
+
 	if( m_last_osd_index > 0 )
 	  {
 	    m_last_osd_index --;
@@ -815,11 +819,13 @@ eOSState mgMainMenu::PlaylistSubmenuAction( int n )
 	DisplayPlaylist( m_last_osd_index );
 
 	// confirmation
+	string confirm = res? "Entry deleted": "Cannot delete entry";
+
 #if VDRVERSNUM >= 10307
-  Skins.Message(mtInfo,"Entry removed");
-  Skins.Flush();
+	Skins.Message( mtInfo, confirm.c_str() );
+	Skins.Flush();
 #else
-	Interface->Status( "Entry removed" );
+	Interface->Status( confirm.c_str() );
 	Interface->Flush();	
 #endif
       } break;
