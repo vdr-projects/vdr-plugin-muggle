@@ -209,7 +209,8 @@ mgSync::GetFileInfo(const char *filename)
 		*slash='\'';
 		*(slash+1)=0;
 	}
-	const char *genrename=tag->genre().toCString();
+	TagLib::String sgenre1=tag->genre();
+	const char *genrename=sgenre1.toCString();
 	const char *genreid=m_Genres[genrename].c_str();
 	sql_Cstring(genreid,c_genre1);
 	sql_Cstring(getlanguage(filename),c_lang);
