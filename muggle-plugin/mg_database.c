@@ -16,7 +16,7 @@ mgDB::mgDB()
 
 mgDB::mgDB(std::string host, std::string name, 
 	   std::string user, std::string pass,
-	   int port) 
+	   int port)
 {
 }
 
@@ -40,4 +40,35 @@ std::string mgDB::escape_string( MYSQL *db, std::string s )
   free( escbuf );
 
   return r;
+}
+
+MYSQL_RES* mgDB::read_query( const char *fmt, ...)
+{
+  va_list ap;
+  va_start( ap, fmt );  
+  vsnprintf( querybuf, MAX_QUERY_BUFLEN-1, fmt, ap );
+  
+  if( mysql_query( &m_dbase, querybuf) )
+    {
+      mgError( "SQL error in MUGGLE:\n%s\n", querybuf );
+    }
+  
+  MYSQL_RES *result = mysql_store_result( &m_dbase );
+  
+  va_end(ap);
+  return result;
+}
+
+void mgDB::write_query( const char *fmt, ... )
+{
+  va_list ap;
+  va_start( ap, fmt );
+  vsnprintf( querybuf, MAX_QUERY_BUFLEN-1, fmt, ap );
+  
+  if( mysql_query( &m_dbase, querybuf ) )
+    {
+      mgError( "SQL error in MUGGLE:\n%s\n", querybuf );
+    }
+  
+  va_end(ap);
 }

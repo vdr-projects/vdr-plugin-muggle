@@ -128,7 +128,10 @@ public:
   virtual void setListname(std::string name);
  
   //! \brief returns the count of items in the list
-  int count();
+  int getCount();
+
+  //! \brief returns current index in the playlist
+  int getIndex() const;
 
   /*! \brief returns the nth track from the playlist
    *

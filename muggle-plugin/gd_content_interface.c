@@ -73,7 +73,7 @@ int GdInitDatabase( MYSQL *db )
 			      the_setup.DbPass, 
 			      the_setup.DbName,
 			      the_setup.DbPort,
-			      "", 0 ) == NULL )
+			      NULL, 0 ) == NULL )
       {
         return -2;
       } // if mysql_real_connect

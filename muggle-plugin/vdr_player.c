@@ -35,6 +35,7 @@
 #include <ringbuffer.h>
 #include <tools.h>
 #include <recording.h>
+#include <status.h>
 
 #include "vdr_player.h"
 #include "vdr_decoder.h"
@@ -200,6 +201,7 @@ public:
 
   void NewPlaylist(mgPlaylist *plist);
   mgContentItem *GetCurrent () { return m_current; }  
+  mgPlaylist *GetPlaylist () { return m_playlist; }  
 };
 
 mgPCMPlayer::mgPCMPlayer(mgPlaylist *plist)
@@ -221,6 +223,7 @@ mgPCMPlayer::mgPCMPlayer(mgPlaylist *plist)
 
   m_index = 0; 
   m_playing = 0; 
+  m_current = 0; 
 }
 
 mgPCMPlayer::~mgPCMPlayer()
@@ -370,7 +373,7 @@ void mgPCMPlayer::Action(void)
 		    {
 		      std::string filename = m_playing->getSourceFile();
 		      // mgDebug( 1, "mgPCMPlayer::Action: music file is %s", filename.c_str() );
-
+        
 		      if( ( m_decoder = mgDecoders::findDecoder( m_playing ) ) && m_decoder->start() )
 		      {
 			levelgood = true; 
@@ -853,11 +856,12 @@ void mgPCMPlayer::SkipSeconds(int secs)
 
 bool mgPCMPlayer::GetIndex( int &current, int &total, bool snaptoiframe )
 {
-  bool res = false;
-  current = SecondsToFrames( m_index ); 
-  total = SecondsToFrames( m_current->getLength() );
-
-  return res;
+  if(m_current) {  
+    current = SecondsToFrames( m_index ); 
+    total = SecondsToFrames( m_current->getLength() );
+    return true;
+  }
+  return false;
 }
 
 // --- mgPlayerControl -------------------------------------------------------
@@ -872,10 +876,22 @@ mgPlayerControl::mgPlayerControl( mgPlaylist *plist )
 #endif
   m_visible = false;
   m_has_osd = false;
+
+  m_szLastShowStatusMsg = NULL;
+  // Notity all cStatusMonitor
+  StatusMsgReplaying();
 }
 
 mgPlayerControl::~mgPlayerControl()
 {
+  // Notify cleanup all cStatusMonitor
+  cStatus::MsgReplaying(this, NULL);
+  if( m_szLastShowStatusMsg )
+    {  
+      free(m_szLastShowStatusMsg);
+      m_szLastShowStatusMsg = NULL;
+    }
+
   Hide();
   Stop();
 }
@@ -970,6 +986,8 @@ void mgPlayerControl::NewPlaylist(mgPlaylist *plist)
 
 void mgPlayerControl::ShowProgress()
 {
+  StatusMsgReplaying();
+
   if( m_visible )
     {
       if( !m_has_osd )
@@ -1113,47 +1131,53 @@ eOSState mgPlayerControl::ProcessKey(eKeys key)
   return osContinue;
 }
 
-/************************************************************
- *
- * $Log: vdr_player.c,v $
- * Revision 1.7  2004/07/27 20:50:54  lvw
- * Playlist indexing now working
- *
- * Revision 1.6  2004/07/26 22:20:55  lvw
- * Reworked playlist indexing
- *
- * Revision 1.5  2004/07/26 20:03:00  lvw
- * Bug in initalizing playlist removed
- *
- * Revision 1.4  2004/07/25 21:33:35  lvw
- * Removed bugs in finding track files and playlist indexing.
- *
- * Revision 1.3  2004/07/12 11:06:23  LarsAC
- * No longer skip first file on playlist when starting replay.
- *
- * Revision 1.2  2004/05/28 15:29:19  lvw
- * Merged player branch back on HEAD branch.
- *
- * Revision 1.1.2.19  2004/05/26 14:30:27  lvw
- * Removed bug in finding correct mp3 file in GD mode
- *
- * Revision 1.1.2.18  2004/05/25 06:48:24  lvw
- * Documentation and code polishing.
- *
- * Revision 1.1.2.17  2004/05/25 00:10:45  lvw
- * Code cleanup and added use of real database source files
- *
- * Revision 1.1.2.16  2004/05/24 11:48:52  lvw
- * Debugging info added to find deadlock
- *
- * Revision 1.1.2.15  2004/05/12 22:38:37  lvw
- * Some cleanup
- *
- * Revision 1.1.2.14  2004/05/11 06:35:16  lvw
- * Added debugging while hunting stop bug.
- *
- * Revision 1.1.2.13  2004/05/07 06:46:41  lvw
- * Removed a bug in playlist deallocation. Added infrastructure to display information while playing.
- *
- *
- ***********************************************************/
+void mgPlayerControl::StatusMsgReplaying()
+{
+  char *szBuf=NULL;
+  if(m_player 
+      && m_player->GetCurrent() 
+      && m_player->GetCurrent()->isValid() 
+      && m_player->GetCurrent()->getContentType() == mgContentItem::GD_AUDIO
+      && m_player->GetPlaylist()) 
+    {
+      /* 
+	 if(m_player->GetCurrent()->getAlbum().length() > 0)
+	 {  
+	 asprintf(&szBuf,"[%c%c] (%d/%d) %s - %s",
+	 m_player->GetPlaylist()->isLoop()?'L':'.',
+	 m_player->GetPlaylist()->isShuffle()'S':'.',
+	 m_player->GetPlaylist()->getIndex() + 1,m_player->GetPlaylist()->getCount(),
+	 m_player->GetCurrent()->getTitle().c_str(),
+	 m_player->GetCurrent()->getAlbum().c_str());
+	 }
+	 else */
+      {  
+	asprintf(&szBuf,"[%c%c] (%d/%d) %s",
+		 /* TODO m_player->GetPlaylist()->isLoop()?'L':*/'.',
+		 /* TODO m_player->GetPlaylist()->isShuffle()'S':*/'.',
+		 m_player->GetPlaylist()->getIndex() + 1,m_player->GetPlaylist()->getCount(),
+		 m_player->GetCurrent()->getTitle().c_str());
+      }
+    }
+  else
+    {
+      asprintf(&szBuf,"[muggle]");
+    }
+  
+  if(szBuf 
+     && ( m_szLastShowStatusMsg == NULL 
+	  || 0 != strcmp(szBuf,m_szLastShowStatusMsg) ) )  
+    {  
+      cStatus::MsgReplaying(this,szBuf);
+
+      if(m_szLastShowStatusMsg)
+	{
+	  free(m_szLastShowStatusMsg);
+	}
+      m_szLastShowStatusMsg = szBuf;
+    }
+  else
+    {
+      free(szBuf);
+    }
+}

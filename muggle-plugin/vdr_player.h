@@ -15,8 +15,8 @@
  */
 
 
-#ifndef ___DVB_MP3_H
-#define ___DVB_MP3_H
+#ifndef ___VDR_PLAYER_H
+#define ___VDR_PLAYER_H
 
 #include <player.h>
 #if VDRVERSNUM >= 10307
@@ -40,7 +40,7 @@ class mgPlayerControl : public cControl
 {
 private:
 
-  //! \brief the reference to the player
+  //! \brief the reference to the player , don't rename it see cControl  
   mgPCMPlayer *m_player;
 
   //! \brief indicates, whether the osd should be visible
@@ -55,6 +55,9 @@ private:
   cOsd *osd;
   const cFont *font;
 #endif
+
+  //! \brief Last Message for Statusmonitor
+  char* m_szLastShowStatusMsg;
 
 public:
 
@@ -121,27 +124,10 @@ public:
 
   //! \brief process key events
   eOSState ProcessKey(eKeys key);
+
+protected:
+  //! \brief signal a played file to any cStatusMonitor inside vdr
+  void StatusMsgReplaying();
 };
 
-#endif //___DVB_MP3_H
-
-/************************************************************
- *
- * $Log: vdr_player.h,v $
- * Revision 1.2  2004/05/28 15:29:19  lvw
- * Merged player branch back on HEAD branch.
- *
- * Revision 1.1.2.9  2004/05/25 06:48:24  lvw
- * Documentation and code polishing.
- *
- * Revision 1.1.2.8  2004/05/25 00:10:45  lvw
- * Code cleanup and added use of real database source files
- *
- * Revision 1.1.2.7  2004/05/11 06:35:16  lvw
- * Added debugging while hunting stop bug.
- *
- * Revision 1.1.2.6  2004/05/07 06:46:41  lvw
- * Removed a bug in playlist deallocation. Added infrastructure to display information while playing.
- *
- *
- ***********************************************************/
+#endif //___VDR_PLAYER_H
