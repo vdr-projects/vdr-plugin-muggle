@@ -769,13 +769,17 @@ bool  GdPlaylist::storeAs( std::string name )
   int id;
   MYSQL_ROW row;
   MYSQL_RES *result;
+
+  mgDebug( 1, "GdPlaylist::storeAs" );
   
   result = mgSqlReadQuery( &m_db, 
-			   "SELECT id FROM playlist WHERE title=\"current\"" );
+			   "SELECT id FROM playlist WHERE title=\"%s\"",
+			   name.c_str() );
   
   if( mysql_num_rows(result) )
     {
       row = mysql_fetch_row( result );      
+      mgDebug( 1, "GdPlaylist::storeAs: found playlist" );
     }
   else
     {
@@ -786,9 +790,11 @@ bool  GdPlaylist::storeAs( std::string name )
       
       // now read the new list to get the id
       result = mgSqlReadQuery( &m_db, 
-			       "SELECT id,author FROM playlist where title=\"current\"");
+			       "SELECT id,author FROM playlist where title=\"%s\"",
+			       name.c_str() );
 
       row = mysql_fetch_row(result);
+      mgDebug( 1, "GdPlaylist::storeAs: created playlist" );
     }
 
   if( sscanf( row [0], "%d", &id ) !=1 )
@@ -811,10 +817,11 @@ bool  GdPlaylist::storeAs( std::string name )
 	   iter != m_list.end(); 
 	   iter++, num++)
 	{
+	  mgDebug( 1, "GdPlaylist::storeAs: inserting track" );
 	  mgSqlWriteQuery(&m_db, 
 			  "INSERT into playlistitem  "
 			  "SET tracknumber=\"%d\", trackid=\"%d\", playlist=%d",
-			  num, (*iter)->getId(), m_sqlId);
+			  num, (*iter)->getId(), id );
 	}
     }  
   return true;
