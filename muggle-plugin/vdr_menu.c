@@ -2,10 +2,15 @@
 /*! \file   vdr_menu.c
  *  \brief  Implements menu handling for broswing media libraries within VDR
  ******************************************************************** 
- * \version $Revision: 1.1 $
- * \date    $Date: 2004/02/01 18:22:53 $
+ * \version $Revision: 1.2 $
+ * \date    $Date: 2004/02/02 19:17:44 $
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  file owner: $Author: LarsAC $
+ *
+ * $Log: vdr_menu.c,v $
+ * Revision 1.2  2004/02/02 19:17:44  LarsAC
+ * Added generic filter handling to OSD
+ *
  */
 /*******************************************************************/
 
@@ -46,6 +51,16 @@ void mgMenuTreeItem::Set()
   char *buffer = 0;
   asprintf( &buffer, m_node->getLabel().c_str() );
   SetText( buffer, false );  
+}
+
+void mgMenuTreeItem::setChildIndex( int index )
+{
+  m_child_index = index;
+}
+
+int mgMenuTreeItem::getChildIndex( )
+{
+  return m_child_index;
 }
 
 // ----------------------- mgMenuTrackItem ------------------
@@ -94,6 +109,13 @@ mgSelectionTreeNode *mgMainMenu::CurrentNode()
 {
   mgMenuTreeItem *item = (mgMenuTreeItem *)Get( Current() );
   return item? item->Node(): 0;
+}
+
+mgMenuTreeItem *mgMainMenu::CurrentItem()
+{
+  mgMenuTreeItem *item = (mgMenuTreeItem *)Get( Current() );
+
+  return item;
 }
 
 void mgMainMenu::SetButtons(  )
@@ -202,7 +224,7 @@ eOSState mgMainMenu::ProcessKey(eKeys key)
 	      mgDebug( 1,  "mgMainMenu: create and apply filter" );
 	    } break;
 	  case kRed: // ???
-case kYellow:
+	  case kYellow:
 	    {
 	      // Yellow always goes to playlist view
 	      mgDebug( 1,  "mgMainMenu: switch to playlist" );
@@ -241,9 +263,12 @@ case kYellow:
 	    case kOk:
 	      {
 		mgDebug( 1,  "mgMainMenu: switch to filter" );
-		mgSelectionTreeNode *child = CurrentNode(); // m_node->getChildren()[ Current() ];		
+
+		m_indices.push_back( Current() );
+
+		mgSelectionTreeNode *child = CurrentNode();		
 		DisplayTree( child );
-		
+
 		state = osContinue;
 	      } break;
 	    case kRed:
@@ -308,8 +333,15 @@ case kYellow:
 	  if( parent )
 	    {
 	      mgDebug( 1,  "mgMainMenu: collapse current node" );
+	      
 	      m_node->collapse();
+
 	      DisplayTree( parent );
+
+	      // restore last selected entry
+	      cOsdItem *item = Get( m_indices.back() );
+	      m_indices.pop_back();
+	      SetCurrent( item );
 	    }
 	  state = osContinue;
 	}
@@ -502,17 +534,44 @@ void mgMainMenu::DisplayFilter()
 
   SetTitle( "Muggle Filter View" );
 
-  Add( new cMenuEditStrItem(  "Name     ", m_filtername, 32, alpha_num_keys ) );
-  Add( new cMenuEditBoolItem( "Filter   ", &m_filter, "Off", "On" ) );
-
-  // Separator???
+  vector<mgFilter*> *filter_list = m_media->getTrackFilters();
   
-  Add( new cMenuEditStrItem(  "Title    ", m_title, 32, alpha_num_keys ) );
-  Add( new cMenuEditStrItem(  "Interpret", m_interpret, 32, alpha_num_keys ) );
-  Add( new cMenuEditStrItem(  "Album    ", m_album, 32, alpha_num_keys ) );
-  Add( new cMenuEditStrItem(  "Playlist ", m_playlist, 32, alpha_num_keys ) );
-  Add( new cMenuEditIntItem(  "Year from", &m_year_min, 1600, 9999 ) );
-  Add( new cMenuEditIntItem(  "Year to  ", &m_year_max, 1600, 9999 ) );
+  for( vector<mgFilter*>::iterator iter = filter_list->begin();
+       iter != filter_list->end();
+       iter ++ )
+    {
+      switch( (*iter)->getType() )
+	{
+	case mgFilter::INT:
+	  {
+	    mgFilterInt *fi = (mgFilterInt *) (*iter);
+	    Add( new cMenuEditIntItem(  fi->getName(), 
+					&(fi->m_intval), 
+					fi->getMin(), fi->getMax() ) );
+	  } break;
+	case mgFilter::STRING:
+	  {
+	    mgFilterString *fs = (mgFilterString *) (*iter);
+	    /*
+	    Add( new cMenuEditStrItem( fs->getName(), &( fs->m_strval),
+				       fs->getMaxLength(), fs->getAllowedChars() );
+	    
+	    */
+	  } break;
+	case mgFilter::BOOL:
+	  {
+	    mgFilterBool *fb = (mgFilterBool *) (*iter);
+	    /*
+	    Add( new cMenuEditIntItem(  fb->getName(), &( fb->m_bval), 
+					fb->getTrueString(), fb->getFalseString() );
+	    */
+	  } break;
+	default:
+	case mgFilter::UNDEF:
+	  {
+	  } break;
+	}
+    }
 
   Display();
 }
