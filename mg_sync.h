@@ -21,8 +21,9 @@
 class mgSync
 {
 	public:
-		mgSync();
+                mgSync();
 		~mgSync();
+
 		//! \brief drop and create the data base GiantDisc
 		void Create();
 
@@ -33,8 +34,8 @@ class mgSync
 	 	 * \par delete_missing if the file does not exist, delete the
 	 	 * data base entry. If the file is unreadable, do not delete.
 	 	 */
-		void Sync(char * const * path_argv, bool delete_missing=false);
-
+		void Sync(char * const * path_argv, bool delete_missing = false);
+		
 	private:
 		mgmySql m_db;
 		char *sql_Cstring(TagLib::String s,char *buf=0);
@@ -47,6 +48,7 @@ class mgSync
 		void SyncFile(const char *filename);
 		map<string,string> m_Genres;
 		MYSQL_RES* m_genre_rows;
+
 
 		char c_album[520]; // at least 256 * 2 + 2 for VARCHAR(255), see sql_string()
 		char c_artist[520];

@@ -36,8 +36,8 @@ mgMenuSetup::mgMenuSetup ()
         cMenuEditBoolItem (tr ("Setup.Muggle$Initial loop mode"),
         &m_data.InitLoopMode));
     Add (new
-        cMenuEditBoolItem (tr ("Setup.Muggle$Initial shuffle mode"),
-        &m_data.InitShuffleMode));
+	 cMenuEditBoolItem (tr ("Setup.Muggle$Initial shuffle mode"),
+			    &m_data.InitShuffleMode));
     Add (new
         cMenuEditBoolItem (tr ("Setup.Muggle$Audio mode"), &m_data.AudioMode,
         tr ("Round"), tr ("Dither")));
@@ -56,12 +56,16 @@ mgMenuSetup::mgMenuSetup ()
     Add (new
         cMenuEditIntItem (tr ("Setup.Muggle$Limiter level"),
         &m_data.LimiterLevel, MIN_LIMITER_LEVEL, 100));
-
-        mgAction *a = actGenerate(actSync);
-        const char *mn = a->MenuName();
-	a->SetText(mn);
-	free(const_cast<char*>(mn));
-	Add(dynamic_cast<cOsdItem*>(a));
+    Add (new
+	 cMenuEditBoolItem (tr ("Setup.Muggle$Delete stale references"),
+			    &m_data.DeleteStaleReferences));
+    
+    
+    mgAction *a = actGenerate(actSync);
+    const char *mn = a->MenuName();
+    a->SetText(mn);
+    free(const_cast<char*>(mn));
+    Add(dynamic_cast<cOsdItem*>(a));
 }
 
 
@@ -78,5 +82,6 @@ mgMenuSetup::Store (void)
     SetupStore ("TargetLevel", the_setup.TargetLevel);
     SetupStore ("LimiterLevel", the_setup.LimiterLevel);
     SetupStore ("Only48kHz", the_setup.Only48kHz);
+    SetupStore ("DeleteStaleReferences", the_setup.DeleteStaleReferences);
 }
 

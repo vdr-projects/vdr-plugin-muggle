@@ -51,6 +51,8 @@ class mgSetup
 
         char PathPrefix[MAX_STRING_LEN];
 
+	int DeleteStaleReferences;
+
     public:
         mgSetup (void);
 

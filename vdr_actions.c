@@ -29,7 +29,7 @@
 #define DEBUG
 #include "mg_tools.h"
 #include "mg_order.h"
-#include "mg_sync.h"
+#include "mg_thread_sync.h"
 
 static bool
 IsEntry(mgActions i)
@@ -709,8 +709,11 @@ mgCmdSync::ProcessKey(eKeys key)
 void
 mgCmdSync::Execute()
 {
-	mgSync s;
-	s.Sync(sync_args);
+  mgThreadSync *s = mgThreadSync::get_instance();
+  if( s )
+    {
+      s->Sync( sync_args, (bool) the_setup.DeleteStaleReferences );
+    }
 }
 
 //! \brief sets the default collection selection
