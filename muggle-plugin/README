@@ -73,6 +73,8 @@ Establish a symlink as you would for other plugins:
    ln -s muggle-0.1.1 muggle
 \endverbatim
 
+Adapt the Makefile to your system. Define HAVE_VORBIS and/or HAVE_FLAC and adapt the LIBS variable accordingly.
+
 Within the VDR main directory (e.g. /usr/local/src/VDR) issue
 
 \verbatim
