@@ -15,7 +15,7 @@
 
 #include <iostream>
 #include <string>
-#include <mysql/mysql.h>
+#include <mysql.h>
 
 #define STANDALONE 1 // what's this?
 

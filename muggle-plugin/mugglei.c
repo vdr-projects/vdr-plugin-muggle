@@ -12,9 +12,7 @@ using namespace std;
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-
 #include <mysql/mysql.h>
-
 #include <getopt.h>
 
 #include <tag.h>
@@ -24,21 +22,38 @@ using namespace std;
 
 MYSQL *db;
 
-string host, user, pass, dbname;
+string host, user, pass, dbname, socket;
 bool import_assorted;
 
 int init_database()
 {
-  db = mysql_init(NULL);
+  db = mysql_init(0); // NULL?
+
   if( db == NULL )
     {	
+      cout << "mysql_init failed." << endl;
       return -1;
     }
-  
-  if( mysql_real_connect( db, host.c_str(), user.c_str(), pass.c_str(), dbname.c_str(),
-			  0, NULL, 0 ) == NULL )
+
+  // check for use of sockets
+  if( socket != "" )
     {
-      return -2;
+      if( mysql_real_connect( db, NULL, user.c_str(), pass.c_str(), dbname.c_str(),
+			      0, socket.c_str(), 0 ) == NULL )
+
+	{
+	  cout << "mysql_real_connect using sockets failed." << endl;
+	  return -2;
+	}
+    }
+  else
+    {
+      if( mysql_real_connect( db, host.c_str(), user.c_str(), pass.c_str(), dbname.c_str(),
+			      0, NULL, 0 ) == NULL )
+	{
+	  cout << "mysql_real_connect via TCP failed." << endl;
+	  return -2;
+	}
     }
   
   return 0;
@@ -288,6 +303,7 @@ int main( int argc, char *argv[] )
       cout << "" << endl;
       cout << "Options:" << endl;
       cout << "  -h <hostname>       - specify host of mySql database server (default is 'localhost')" << endl;
+      cout << "  -s <socket>         - specify a socket for mySQL communication (default is TCP)" << endl;
       cout << "  -n <database>       - specify database name (default is 'GiantDisc')" << endl;
       cout << "  -u <username>       - specify user of mySql database (default is empty)" << endl;
       cout << "  -p <password>       - specify password of user (default is empty password)" << endl;
@@ -302,12 +318,13 @@ int main( int argc, char *argv[] )
   dbname = "GiantDisc";
   user   = "";
   pass   = "";
+  socket = "";
   import_assorted = false;
 
   // parse command line options
   while( 1 )
     {
-      int c = getopt(argc, argv, "h:u:p:n:af:");
+      int c = getopt(argc, argv, "h:u:p:n:af:s:");
 
       if (c == -1)
 	break;
@@ -342,6 +359,10 @@ int main( int argc, char *argv[] )
 	  {
 	    filename = optarg;
 	  } break;
+        case 's':
+          {
+            socket = optarg;
+          } break;
 	}
     }
 
@@ -353,6 +374,7 @@ int main( int argc, char *argv[] )
 
   int res = init_database();
 
+  
   if( !res )
     {
       update_db( 0, filename );

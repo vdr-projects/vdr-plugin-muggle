@@ -56,8 +56,7 @@ LIBS = -lmad -lmysqlclient -lvorbisfile -lvorbis
 
 ### Targets:
 
-all: libvdr-$(PLUGIN).so 
-# mugglei
+all: libvdr-$(PLUGIN).so mugglei
 
 # Dependencies:
 
@@ -78,7 +77,7 @@ libvdr-$(PLUGIN).so: $(OBJS)
 	@cp $@ $(LIBDIR)/$@.$(VDRVERSION)
 
 mugglei: mg_tools.o mugglei.o
-	$(CXX) $(CXXFLAGS) $(LIBS) -ltag -o $@ $^
+	$(CXX) $(CXXFLAGS) $^ $(LIBS) -ltag -o $@
 
 dist: clean
 	@-rm -rf $(TMPDIR)/$(ARCHIVE)
