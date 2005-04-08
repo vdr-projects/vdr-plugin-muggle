@@ -4,8 +4,6 @@
 #include <stdio.h>
 #include <assert.h>
 
-mgListItem zeroitem;
-
 bool iskeyGenre(mgKeyTypes kt)
 {
 	return kt>=keyGenre1  && kt <= keyGenres;
@@ -100,50 +98,6 @@ ltos (long l)
 	return s.str ();
 }
 
-mgListItem::mgListItem()
-{
-	m_valid=false;
-	m_count=0;
-}
-
-mgListItem::mgListItem(string v,string i,unsigned int c)
-{
-	set(v,i,c);
-}
-
-void
-mgListItem::set(string v,string i,unsigned int c)
-{
-	m_valid=true;
-	m_value=v;
-	m_id=i;
-	m_count=c;
-}
-
-void 
-mgListItem::operator=(const mgListItem& from)
-{
-	m_valid=from.m_valid;
-	m_value=from.m_value;
-	m_id=from.m_id;
-	m_count=from.m_count;
-}
-
-void
-mgListItem::operator=(const mgListItem* from)
-{
-	m_valid=from->m_valid;
-	m_value=from->m_value;
-	m_id=from->m_id;
-	m_count=from->m_count;
-}
-
-bool
-mgListItem::operator==(const mgListItem& other) const
-{
-	return m_value == other.m_value
-		&& m_id == other.m_id;
-}
 
 class mgKeyNormal : public mgKey {
 	public:
@@ -930,6 +884,43 @@ next:
 	}
 	return result;
 }
+
+string
+mgOrder::GetContent(mgmySql &db,unsigned int level,vector < mgContentItem > &content) const
+{
+    mgParts p = Parts(db,level);
+    p.fields.clear();
+    p.fields.push_back("tracks.id");
+    p.fields.push_back("tracks.title");
+    p.fields.push_back("tracks.mp3file");
+    p.fields.push_back("tracks.artist");
+    p.fields.push_back("album.title");
+    p.fields.push_back("tracks.genre1");
+    p.fields.push_back("tracks.genre2");
+    p.fields.push_back("tracks.bitrate");
+    p.fields.push_back("tracks.year");
+    p.fields.push_back("tracks.rating");
+    p.fields.push_back("tracks.length");
+    p.fields.push_back("tracks.samplerate");
+    p.fields.push_back("tracks.channels");
+    p.fields.push_back("tracks.lang");
+    p.tables.push_back("tracks");
+    p.tables.push_back("album");
+    for (unsigned int i = level; i<size(); i++)
+    	p += Key(i)->Parts(db,true);
+     string result = p.sql_select(false); 
+     content.clear ();
+     MYSQL_RES *rows = db.exec_sql (result);
+     if (rows)
+     {
+     	MYSQL_ROW row;
+      	while ((row = mysql_fetch_row (rows)) != 0)
+	content.push_back (mgContentItem (row));
+        mysql_free_result (rows);
+     }
+     return result;
+}
+
 
 //! \brief right now thread locking should not be needed here
 mgReferences::mgReferences()

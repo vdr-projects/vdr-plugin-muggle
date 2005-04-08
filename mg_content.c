@@ -14,7 +14,55 @@
 #include "mg_selection.h"
 #include "mg_setup.h"
 #include "mg_tools.h"
+#include "mg_keymaps.h"
 
+
+mgListItem zeroitem;
+
+mgListItem::mgListItem()
+{
+	m_valid=false;
+	m_count=0;
+}
+
+mgListItem::mgListItem(string v,string i,unsigned int c)
+{
+	set(v,i,c);
+}
+
+void
+mgListItem::set(string v,string i,unsigned int c)
+{
+	m_valid=true;
+	m_value=v;
+	m_id=i;
+	m_count=c;
+}
+
+void 
+mgListItem::operator=(const mgListItem& from)
+{
+	m_valid=from.m_valid;
+	m_value=from.m_value;
+	m_id=from.m_id;
+	m_count=from.m_count;
+}
+
+void
+mgListItem::operator=(const mgListItem* from)
+{
+	m_valid=from->m_valid;
+	m_value=from->m_value;
+	m_id=from->m_id;
+	m_count=from->m_count;
+}
+
+bool
+mgListItem::operator==(const mgListItem& other) const
+{
+	return m_value == other.m_value
+		&& m_id == other.m_id;
+}
 
 mgListItem*
 mgContentItem::getKeyItem(mgKeyTypes kt)
@@ -197,7 +245,7 @@ mgContentItem::getSourceFile(bool AbsolutePath) const
 	return result;
 }
 
-mgContentItem::mgContentItem (const mgSelection* sel,const MYSQL_ROW row)
+mgContentItem::mgContentItem (const MYSQL_ROW row)
 {
     m_trackid = atol (row[0]);
     if (row[1])
@@ -219,14 +267,14 @@ mgContentItem::mgContentItem (const mgSelection* sel,const MYSQL_ROW row)
     if (row[5])
     {
 	m_genre1_id = row[5];
-    	m_genre1 = sel->value(keyGenres,row[5]);
+    	m_genre1 = KeyMaps.value(keyGenres,row[5]);
     }
     else
     	m_genre1 = "NULL";
     if (row[6])
     {
 	m_genre2_id = row[6];
-    	m_genre2 = sel->value(keyGenres,row[6]);
+    	m_genre2 = KeyMaps.value(keyGenres,row[6]);
     }
     else
     	m_genre2 = "NULL";
@@ -257,7 +305,7 @@ mgContentItem::mgContentItem (const mgSelection* sel,const MYSQL_ROW row)
     if (row[13])
     {
     	m_language_id = row[13];
-	m_language = sel->value(keyLanguage,row[13]);
+	m_language = KeyMaps.value(keyLanguage,row[13]);
     }
     else
     	m_language_id = "NULL";

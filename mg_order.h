@@ -8,6 +8,8 @@
 #include <sstream>
 #include "mg_valmap.h"
 #include "mg_mysql.h"
+#include "mg_content.h"
+#include "mg_tools.h"
 
 using namespace std;
 
@@ -17,34 +19,6 @@ strlist& operator+=(strlist&a, strlist b);
 
 //! \brief adds string n to string s, using string sep to separate them
 string& addsep (string & s, string sep, string n);
-
-enum mgKeyTypes {
-	keyGenre1=1, // the genre types must have exactly this order!
-	keyGenre2,
-	keyGenre3,
-	keyGenres,
-	keyDecade,
-	keyYear,
-	keyArtist,
-	keyAlbum,
-	keyTitle,
-	keyTrack,
-	keyLanguage,
-	keyRating,
-	keyFolder1,
-	keyFolder2,
-	keyFolder3,
-	keyFolder4,
-	keyCreated,
-	keyModified,
-	keyArtistABC,
-	keyTitleABC,
-	keyCollection,
-	keyCollectionItem,
-};
-const mgKeyTypes mgKeyTypesLow = keyGenre1;
-const mgKeyTypes mgKeyTypesHigh = keyCollectionItem;
-const unsigned int mgKeyTypesNr = keyCollectionItem;
 
 bool iskeyGenre(mgKeyTypes kt);
 
@@ -73,26 +47,6 @@ private:
 	bool Equal(unsigned int i,string table1, string table2) const;
 	mgParts FindConnectionBetween(string table1, string table2) const;
 	mgParts ConnectToTracks(string table) const;
-};
-
-class mgListItem
-{
-	public:
-		mgListItem();
-		mgListItem(string v,string i,unsigned int c=0);
-		void set(string v,string i,unsigned int c=0);
-		void operator=(const mgListItem& from);
-		void operator=(const mgListItem* from);
-		bool operator==(const mgListItem& other) const;
-		string value() const { return m_value; } 
-		string id() const { return m_id; } 
-		unsigned int count() const { return m_count; } 
-		bool valid() const { return m_valid; }
-	private:
-		bool m_valid;
-		string m_value;
-		string m_id;
-		unsigned int m_count;
 };
 
 class mgKey {
@@ -177,6 +131,7 @@ public:
 	string Name();
 	void setOrderByCount(bool orderbycount) { m_orderByCount = orderbycount;}
 	bool getOrderByCount() { return m_orderByCount; }
+	string GetContent(mgmySql &db,unsigned int level,vector < mgContentItem > &content) const;
 private:
 	bool m_orderByCount;
 	bool isCollectionOrder() const;
@@ -186,7 +141,5 @@ private:
 };
 
 bool operator==(const mgOrder& a,const mgOrder&b); //! \brief compares only the order, not the current key values
-
-extern mgListItem zeroitem;
 
 #endif               // _MG_SQL_H

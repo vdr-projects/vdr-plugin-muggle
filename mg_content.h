@@ -21,12 +21,31 @@ using namespace std;
 
 #include "mg_tools.h"
 #include "mg_valmap.h"
-#include "mg_order.h"
 
 typedef vector<string> strvector;
 
 
 class mgSelection;
+
+class mgListItem
+{
+	public:
+		mgListItem();
+		mgListItem(string v,string i,unsigned int c=0);
+		void set(string v,string i,unsigned int c=0);
+		void operator=(const mgListItem& from);
+		void operator=(const mgListItem* from);
+		bool operator==(const mgListItem& other) const;
+		string value() const { return m_value; } 
+		string id() const { return m_id; } 
+		unsigned int count() const { return m_count; } 
+		bool valid() const { return m_valid; }
+	private:
+		bool m_valid;
+		string m_value;
+		string m_id;
+		unsigned int m_count;
+};
 
 //! \brief represents a content item like an mp3 file.
 class mgContentItem
@@ -40,7 +59,7 @@ class mgContentItem
         mgContentItem(const mgContentItem* c);
 
 	//! \brief construct an item from an SQL row
-        mgContentItem (const mgSelection* sel, const MYSQL_ROW row);
+        mgContentItem (const MYSQL_ROW row);
 //! \brief returns track id
         long getTrackid () const
         {
@@ -112,4 +131,5 @@ class mgContentItem
         int m_channels;
 };
 
+extern mgListItem zeroitem;
 #endif

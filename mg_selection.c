@@ -17,6 +17,7 @@
 #include <assert.h>
 
 #include "i18n.h"
+#include "mg_keymaps.h"
 #include "mg_selection.h"
 #include "vdr_setup.h"
 #include "mg_tools.h"
@@ -302,7 +303,7 @@ mgSelection::RemoveFromCollection (const string Name)
 {
     if (!m_db.Connected()) return 0;
     mgParts p = order.Parts(m_db,m_level,false);
-    string sql = p.sql_delete_from_collection(id(keyCollection,Name));
+    string sql = p.sql_delete_from_collection(KeyMaps.id(keyCollection,Name));
     m_db.exec_sql (sql);
     unsigned int removed = m_db.affected_rows ();
     if (inCollection(Name)) clearCache ();
@@ -323,7 +324,7 @@ bool mgSelection::DeleteCollection (const string Name)
 void mgSelection::ClearCollection (const string Name)
 {
     if (!m_db.Connected()) return;
-    string listid = id(keyCollection,Name);
+    string listid = KeyMaps.id(keyCollection,Name);
     m_db.exec_sql ("DELETE FROM playlistitem WHERE playlist="+m_db.sql_string(listid));
     if (inCollection(Name)) clearCache ();
 }
@@ -528,36 +529,7 @@ mgSelection::tracks () const
 {
     if (!m_db.Connected()) return m_tracks;
     if (!m_current_tracks.empty()) return m_tracks;
-    mgParts p = order.Parts(m_db,m_level);
-    p.fields.clear();
-    p.fields.push_back("tracks.id");
-    p.fields.push_back("tracks.title");
-    p.fields.push_back("tracks.mp3file");
-    p.fields.push_back("tracks.artist");
-    p.fields.push_back("album.title");
-    p.fields.push_back("tracks.genre1");
-    p.fields.push_back("tracks.genre2");
-    p.fields.push_back("tracks.bitrate");
-    p.fields.push_back("tracks.year");
-    p.fields.push_back("tracks.rating");
-    p.fields.push_back("tracks.length");
-    p.fields.push_back("tracks.samplerate");
-    p.fields.push_back("tracks.channels");
-    p.fields.push_back("tracks.lang");
-    p.tables.push_back("tracks");
-    p.tables.push_back("album");
-    for (unsigned int i = m_level; i<order.size(); i++)
-    	p += order.Key(i)->Parts(m_db,true);
-     m_current_tracks = p.sql_select(false); 
-     m_tracks.clear ();
-        MYSQL_RES *rows = m_db.exec_sql (m_current_tracks);
-        if (rows)
-        {
-        	MYSQL_ROW row;
-           	while ((row = mysql_fetch_row (rows)) != 0)
-		  m_tracks.push_back (mgContentItem (this,row));
-            	mysql_free_result (rows);
-	}
+    m_current_tracks=order.GetContent(m_db,m_level,m_tracks);
     if (m_shuffle_mode!=SM_NONE)
     	Shuffle();
     return m_tracks;
@@ -671,8 +643,6 @@ void mgSelection::InitFrom(const mgSelection* s)
     InitSelection();
     m_fall_through = s->m_fall_through;
     m_Directory = s->m_Directory;
-    map_values = s->map_values;
-    map_ids = s->map_ids;
     order = s->order;
     m_level = s->m_level;
     m_position = s->m_position;
@@ -862,8 +832,8 @@ mgSelection::selectfrom(mgOrder& oldorder,mgContentItem* o)
 					&& iskeyGenre(old_kt)
 					&& iskeyGenre(new_kt))
 			{
-				string selid=id(new_kt,value(new_kt,oldorder.getKeyItem(i).id()));
-				selitem=mgListItem (value(new_kt,selid),selid);
+				string selid=KeyMaps.id(new_kt,KeyMaps.value(new_kt,oldorder.getKeyItem(i).id()));
+				selitem=mgListItem (KeyMaps.value(new_kt,selid),selid);
 			}
 			if (selitem.valid()) break;
 		}
@@ -892,33 +862,11 @@ mgSelection::selectfrom(mgOrder& oldorder,mgContentItem* o)
 	assert(m_level<ordersize());
 }
 
-string
-mgSelection::value(mgKeyTypes kt, string idstr) const
-{
-	if (loadvalues (kt))
-	{
-		map<string,string>& valmap = map_values[kt];
-		map<string,string>::iterator it;
-		it = valmap.find(idstr);
-		if (it!=valmap.end())
-		{
-			string r = it->second;
-			if (!r.empty())
-				return r;
-		}
-		map_ids[kt].clear();
-		loadvalues(kt);
-		it = valmap.find(idstr);
-		if (it!=valmap.end())
-			return valmap[idstr];
-	}
-	return idstr;
-}
 
 string
 mgSelection::value(mgKey* k, string idstr) const
 {
-	return value(k->Type(),idstr);
+	return KeyMaps.value(k->Type(),idstr);
 }
 
 string
@@ -927,26 +875,11 @@ mgSelection::value(mgKey* k) const
 	return value(k,k->id());
 }
 
-string
-mgSelection::id(mgKeyTypes kt, string val) const
-{
-	if (loadvalues (kt))
-	{
-		map<string,string>& idmap = map_ids[kt];
-		string v = idmap[val];
-		if (kt==keyGenre1) v=v.substr(0,1);
-		if (kt==keyGenre2) v=v.substr(0,2);
-		if (kt==keyGenre3) v=v.substr(0,3);
-		return v;
-	}
-	else
-		return val;
-}
 
 string
 mgSelection::id(mgKey* k, string val) const
 {
-	return id(k->Type(),val);
+	return KeyMaps.id(k->Type(),val);
 }
 
 string
@@ -1025,40 +958,6 @@ mgSelection::UsedKeyValues()
 		result[ch] = getCurrentValue();
 	}
 	return result;
-}
-
-bool
-mgSelection::loadvalues (mgKeyTypes kt) const
-{
-	if (map_ids.count(kt)>0) 
-		return true;
-	map<string,string>& idmap = map_ids[kt];
-	mgKey* k = ktGenerate(kt);
-	if (k->map_idfield().empty())
-	{
-		delete k;
-		return false;
-	}
-	map<string,string>& valmap = map_values[kt];
-	char *b;
-	asprintf(&b,"select %s,%s from %s;",k->map_idfield().c_str(),k->map_valuefield().c_str(),k->map_valuetable().c_str());
-	MYSQL_RES *rows = m_db.exec_sql (string(b));
-	free(b);
-	if (rows) 
-	{
-		MYSQL_ROW row;
-		while ((row = mysql_fetch_row (rows)) != 0)
-		{
-			if (row[0] && row[1])
-			{
-				valmap[row[0]] = row[1];
-				idmap[row[1]] = row[0];
-			}
-		}
-		mysql_free_result (rows);
-	}
-	delete k;
-	return true;
 }
 
 static vector<int> keycounts;
