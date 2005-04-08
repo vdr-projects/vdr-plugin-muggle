@@ -72,7 +72,6 @@ ktGenerate(const mgKeyTypes kt);
 
 const char * const ktName(const mgKeyTypes kt);
 mgKeyTypes ktValue(const char * name);
-vector < const char*> ktNames();
  
 typedef vector<mgKey*> keyvector;
 

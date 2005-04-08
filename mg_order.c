@@ -1069,13 +1069,3 @@ ktValue(const char * name)
 	return mgKeyTypes(0);
 }
 
-
-vector<const char*>
-ktNames()
-{
-	static vector<const char*> result;
-	for (unsigned int i = int(mgKeyTypesLow); i <= int(mgKeyTypesHigh); i++)
-		result.push_back(ktName(mgKeyTypes(i)));
-	return result;
-}
-
