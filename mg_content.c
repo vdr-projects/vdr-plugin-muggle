@@ -169,6 +169,7 @@ GdFindFile( const char* tld, string mp3file )
   string result = "";
   char *cmd = 0;
   asprintf( &cmd, FINDCMD, tld, mp3file.c_str() );
+  mgDebug(4,cmd);
   FILE *p = popen( cmd, "r" );
   if (p) 
     {

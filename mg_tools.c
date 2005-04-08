@@ -8,6 +8,8 @@
  * \author  file owner: $Author$
  */
 
+#include <tools.h>
+
 #include "mg_tools.h"
 
 /*extern "C"
@@ -42,16 +44,7 @@ mgDebug (int level, const char *fmt, ...)
         va_start (ap, fmt);
 
         vsnprintf (buffer, MAX_BUFLEN - 1, fmt, ap);
-        if (STANDALONE)
-        {
-            fprintf (stderr, "dbg %d: %s\n", level, buffer);
-        }
-        else
-        {
-#if !STANDALONE
-            isyslog ("%s\n", buffer);
-#endif
-        }
+        isyslog ("%s\n", buffer);
     }
     va_end (ap);
 }
@@ -74,16 +67,7 @@ mgWarning (const char *fmt, ...)
     va_start (ap, fmt);
     vsnprintf (buffer, MAX_BUFLEN - 1, fmt, ap);
 
-    if (STANDALONE)
-    {
-        fprintf (stderr, "warning: %s\n", buffer);
-    }
-    else
-    {
-#if !STANDALONE
-        isyslog ("Warning: %s\n", buffer);
-#endif
-    }
+    isyslog ("Warning: %s\n", buffer);
     extern void showmessage(const char*,int duration=0);
     showmessage(buffer);
     va_end (ap);
@@ -98,17 +82,7 @@ mgError (const char *fmt, ...)
     va_start (ap, fmt);
     vsnprintf (buffer, MAX_BUFLEN - 1, fmt, ap);
 
-    if (STANDALONE)
-    {
-        fprintf (stderr, "Error: %s\n", buffer);
-        exit (1);
-    }
-    else
-    {
-#if !STANDALONE
-        isyslog ("Error in Muggle: %s\n", buffer);
-#endif
-    }
+    isyslog ("Error in Muggle: %s\n", buffer);
 
     va_end (ap);
 }

@@ -17,8 +17,6 @@
 #include <string>
 #include <mysql.h>
 
-#define STANDALONE 1                              // what's this?
-
 /*!
  * \brief Logging utilities
  *
