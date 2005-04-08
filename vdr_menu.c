@@ -495,11 +495,11 @@ mgMainMenu::AddOrderActions(mgMenu* m)
 void
 mgMenu::AddSelectionItems (mgSelection *sel,mgActions act)
 {
-    for (unsigned int i = 0; i < sel->items.size (); i++)
+    for (unsigned int i = 0; i < sel->listitems.size (); i++)
     {
     	mgAction *a = GenerateAction(act, actEntry);
 	if (!a) continue;
-	const char *name = a->MenuName(i+1,sel->items[i]);
+	const char *name = a->MenuName(i+1,sel->listitems[i]);
 	// add incremental filter here
 #if 0
 	// example:

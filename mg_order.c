@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-mgSelItem zeroitem;
+mgListItem zeroitem;
 
 bool iskeyGenre(mgKeyTypes kt)
 {
@@ -100,19 +100,19 @@ ltos (long l)
 	return s.str ();
 }
 
-mgSelItem::mgSelItem()
+mgListItem::mgListItem()
 {
 	m_valid=false;
 	m_count=0;
 }
 
-mgSelItem::mgSelItem(string v,string i,unsigned int c)
+mgListItem::mgListItem(string v,string i,unsigned int c)
 {
 	set(v,i,c);
 }
 
 void
-mgSelItem::set(string v,string i,unsigned int c)
+mgListItem::set(string v,string i,unsigned int c)
 {
 	m_valid=true;
 	m_value=v;
@@ -121,7 +121,7 @@ mgSelItem::set(string v,string i,unsigned int c)
 }
 
 void 
-mgSelItem::operator=(const mgSelItem& from)
+mgListItem::operator=(const mgListItem& from)
 {
 	m_valid=from.m_valid;
 	m_value=from.m_value;
@@ -130,7 +130,7 @@ mgSelItem::operator=(const mgSelItem& from)
 }
 
 void
-mgSelItem::operator=(const mgSelItem* from)
+mgListItem::operator=(const mgListItem* from)
 {
 	m_valid=from->m_valid;
 	m_value=from->m_value;
@@ -139,7 +139,7 @@ mgSelItem::operator=(const mgSelItem* from)
 }
 
 bool
-mgSelItem::operator==(const mgSelItem& other) const
+mgListItem::operator==(const mgListItem& other) const
 {
 	return m_value == other.m_value
 		&& m_id == other.m_id;
@@ -153,15 +153,15 @@ class mgKeyNormal : public mgKey {
 		string value() const;
 		string id() const;
 		bool valid() const;
-		void set(mgSelItem& item);
-		mgSelItem& get();
+		void set(mgListItem& item);
+		mgListItem& get();
 		mgKeyTypes Type() const { return m_kt; }
 		virtual string expr() const { return m_table + "." + m_field; }
 		virtual string table() const { return m_table; }
 	protected:
 		string IdClause(mgmySql &db,string what,string::size_type start=0,string::size_type len=string::npos) const;
 		void AddIdClause(mgmySql &db,mgParts &result,string what) const;
-		mgSelItem m_item;
+		mgListItem m_item;
 		string m_field;
 	private:
 		mgKeyTypes m_kt;
@@ -404,12 +404,12 @@ mgKeyNormal::mgKeyNormal(const mgKeyTypes kt, string table, string field)
 }
 
 void
-mgKeyNormal::set(mgSelItem& item)
+mgKeyNormal::set(mgListItem& item)
 {
 	m_item=item;
 }
 
-mgSelItem&
+mgListItem&
 mgKeyNormal::get()
 {
 	return m_item;
@@ -802,7 +802,7 @@ mgOrder::getKeyType(unsigned int idx) const
 	return Keys[idx]->Type();
 }
 
-mgSelItem&
+mgListItem&
 mgOrder::getKeyItem(unsigned int idx) const
 {
 	assert(idx<Keys.size());

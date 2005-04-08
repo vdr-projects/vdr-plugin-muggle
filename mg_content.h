@@ -34,7 +34,7 @@ class mgContentItem
     public:
         mgContentItem ();
 
-	mgSelItem* getKeyItem(mgKeyTypes kt);
+	mgListItem* getKeyItem(mgKeyTypes kt);
 
 	//! \brief copy constructor
         mgContentItem(const mgContentItem* c);

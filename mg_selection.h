@@ -34,23 +34,23 @@ typedef vector<string> strvector;
  */
 class mgSelection
 {
-	class mgSelItems 
+	class mgListItems 
 	{
 		public:
-			mgSelItems() { m_sel=0; }
+			mgListItems() { m_sel=0; }
 			void setOwner(mgSelection* sel);
-			mgSelItem& operator[](unsigned int idx);
+			mgListItem& operator[](unsigned int idx);
 			string& id(unsigned int);
 			unsigned int count(unsigned int);
-			bool operator==(const mgSelItems&x) const;
+			bool operator==(const mgListItems&x) const;
 			size_t size() const;
         		unsigned int valindex (const string v) const;
         		unsigned int idindex (const string i) const;
 			void clear();
-			void push_back(mgSelItem& item) { m_items.push_back(item); }
+			void push_back(mgListItem& item) { m_items.push_back(item); }
 		private:
         		unsigned int index (const string s,bool val,bool second_try=false) const;
-			vector<mgSelItem> m_items;
+			vector<mgListItem> m_items;
 			mgSelection* m_sel;
 	};
     public:
@@ -109,14 +109,14 @@ class mgSelection
  * small overhead for building the SQL WHERE command. The items will
  * be reloaded when the SQL command changes
  */
-        mutable mgSelItems items;
+        mutable mgListItems listitems;
 
 /*! \brief returns the name of a key
  */
         mgKeyTypes getKeyType (const unsigned int level) const;
 
 //! \brief return the current value of this key
-        mgSelItem& getKeyItem (const unsigned int level) const;
+        mgListItem& getKeyItem (const unsigned int level) const;
 	
 /*! \brief returns the current item from the value() list
  */
@@ -181,7 +181,7 @@ class mgSelection
  */
         bool enter (const string value)
         {
-            return enter (items.valindex (value));
+            return enter (listitems.valindex (value));
         }
 
 	/*! \brief like enter but if we are at the leaf level simply select
@@ -189,12 +189,12 @@ class mgSelection
 	 */
         bool select (const string value)
         {
-            return select (items.valindex(value));
+            return select (listitems.valindex(value));
         }
 
 	bool selectid (const string i)
 	{
-	    return select(items.idindex(i));
+	    return select(listitems.idindex(i));
 	}
 
 	void selectfrom(mgOrder& oldorder,mgContentItem* o);
@@ -321,7 +321,7 @@ class mgSelection
  */
         void setPosition (const string value)
         {
-            setPosition (items.valindex (value));
+            setPosition (listitems.valindex (value));
         }
 
 /*! \brief go to a position in the track list

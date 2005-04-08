@@ -16,7 +16,7 @@
 #include "mg_tools.h"
 
 
-mgSelItem*
+mgListItem*
 mgContentItem::getKeyItem(mgKeyTypes kt)
 {
 	string val;
@@ -49,10 +49,10 @@ mgContentItem::getKeyItem(mgKeyTypes kt)
 				       free(fbuf);
 				       break;
 				}
-			default: return new mgSelItem;
+			default: return new mgListItem;
 		}
 	}
-	return new mgSelItem(val,id);
+	return new mgListItem(val,id);
 }
 
 

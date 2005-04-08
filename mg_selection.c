@@ -54,13 +54,13 @@ comma (string & s, string n)
 
 
 void
-mgSelection::mgSelItems::clear()
+mgSelection::mgListItems::clear()
 {
 	m_items.clear();
 }
 
 bool
-mgSelection::mgSelItems::operator==(const mgSelItems&x) const
+mgSelection::mgListItems::operator==(const mgListItems&x) const
 {
 	bool result = m_items.size()==x.m_items.size();
 	if (result)
@@ -70,47 +70,47 @@ mgSelection::mgSelItems::operator==(const mgSelItems&x) const
 }
 
 size_t
-mgSelection::mgSelItems::size() const
+mgSelection::mgListItems::size() const
 {
 	if (!m_sel)
-		mgError("mgSelItems: m_sel is 0");
+		mgError("mgListItems: m_sel is 0");
 	m_sel->refreshValues();
 	return m_items.size();
 }
 
-mgSelItem&
-mgSelection::mgSelItems::operator[](unsigned int idx)
+mgListItem&
+mgSelection::mgListItems::operator[](unsigned int idx)
 {
 	if (!m_sel)
-		mgError("mgSelItems: m_sel is 0");
+		mgError("mgListItems: m_sel is 0");
 	m_sel->refreshValues();
 	if (idx>=size()) return zeroitem;
 	return m_items[idx];
 }
 
 void
-mgSelection::mgSelItems::setOwner(mgSelection* sel)
+mgSelection::mgListItems::setOwner(mgSelection* sel)
 {
 	m_sel = sel;
 }
 
 unsigned int
-mgSelection::mgSelItems::valindex (const string v) const
+mgSelection::mgListItems::valindex (const string v) const
 {
 	return index(v,true);
 }
 
 unsigned int
-mgSelection::mgSelItems::idindex (const string i) const
+mgSelection::mgListItems::idindex (const string i) const
 {
 	return index(i,true);
 }
 
 unsigned int
-mgSelection::mgSelItems::index (const string s,bool val,bool second_try) const
+mgSelection::mgListItems::index (const string s,bool val,bool second_try) const
 {
     if (!m_sel)
-	mgError("mgSelItems::index(%s): m_sel is 0",s.c_str());
+	mgError("mgListItems::index(%s): m_sel is 0",s.c_str());
     m_sel->refreshValues();
     for (unsigned int i = 0; i < size (); i++)
     {
@@ -147,10 +147,10 @@ mgSelection::clearCache() const
 string
 mgSelection::getCurrentValue()
 {
-	return items[gotoPosition()].value();
+	return listitems[gotoPosition()].value();
 }
 
-mgSelItem&
+mgListItem&
 mgSelection::getKeyItem(const unsigned int level) const
 {
        return order.getKeyItem(level);
@@ -369,7 +369,7 @@ mgSelection::empty()
     if (m_level>= order.size ()-1)
 	return ( getNumTracks () == 0);
     else
-	return ( items.size () == 0);
+	return ( listitems.size () == 0);
 }
 
 void
@@ -403,7 +403,7 @@ mgSelection::gotoPosition ()
         return gotoTrackPosition();
     else
     {
-    	unsigned int itemsize = items.size();
+    	unsigned int itemsize = listitems.size();
     	if (itemsize==0)
 		m_position = 0;
     	else if (m_position >= itemsize)
@@ -579,7 +579,7 @@ void mgSelection::InitSelection() {
 	else
     		m_loop_mode = LM_NONE;
     	clearCache();
-	items.setOwner(this);
+	listitems.setOwner(this);
 }
 
 
@@ -691,7 +691,7 @@ mgSelection::ordersize ()
 unsigned int
 mgSelection::valcount (string value)
 {
-	return items[items.valindex(value)].count();
+	return listitems[listitems.valindex(value)].count();
 }
 
 void
@@ -704,7 +704,7 @@ mgSelection::refreshValues ()  const
     {
 	mgParts p =  order.Parts(m_db,m_level);
         m_current_values = p.sql_select();
-        items.clear ();
+        listitems.clear ();
         MYSQL_RES *rows = m_db.exec_sql (m_current_values);
         if (rows)
         {
@@ -716,7 +716,7 @@ mgSelection::refreshValues ()  const
 			string r0 = row[0];
 			if (!strcmp(row[0],"NULL")) // there is a genre NULL!
 				continue;
-			mgSelItem n;
+			mgListItem n;
 			if (num_fields==3)
 			{
 				if (!row[1]) continue;
@@ -724,7 +724,7 @@ mgSelection::refreshValues ()  const
 			}
 			else
                 		n.set(value(order.Key(m_level),r0),r0,atol(row[1]));
-			items.push_back(n);
+			listitems.push_back(n);
             	}
             	mysql_free_result (rows);
         }
@@ -734,7 +734,7 @@ mgSelection::refreshValues ()  const
 unsigned int
 mgSelection::count () const
 {
-    return items.size ();
+    return listitems.size ();
 }
 
 
@@ -746,12 +746,12 @@ bool mgSelection::enter (unsigned int position)
 	return false;
     setPosition (position);
     position = gotoPosition();		// reload adjusted position
-    if (items.size()==0)
+    if (listitems.size()==0)
 	return false;
-    mgSelItem item = items[position];
-    mgSelItems prev;
-    if (m_fall_through && items.size()<10)
-	    prev=items;
+    mgListItem item = listitems[position];
+    mgListItems prev;
+    if (m_fall_through && listitems.size()<10)
+	    prev=listitems;
     while (1)
     {
         if (m_level >= order.size () - 1)
@@ -765,12 +765,12 @@ bool mgSelection::enter (unsigned int position)
 	refreshValues();
 	if (count()==0)
 		break;
-	item=items[0];
+	item=listitems[0];
         if (!m_fall_through)
             break;
         if (m_level==order.size()-1)
 	    break;
-	if (count () > 1 && !(prev==items))
+	if (count () > 1 && !(prev==listitems))
             break;
     }
     return true;
@@ -783,7 +783,7 @@ bool mgSelection::select (unsigned int position)
     {
         if (getNumTracks () <= position)
             return false;
-        order[m_level]->set (items[position]);
+        order[m_level]->set (listitems[position]);
         m_level++;
         m_trackid = m_tracks[position].getTrackid ();
 
@@ -813,9 +813,9 @@ mgSelection::leave ()
 	setPosition(prevvalue);
         return true;
     }
-    mgSelItems prev;
-    if (m_fall_through && items.size()<10)
-	    prev=items;
+    mgListItems prev;
+    if (m_fall_through && listitems.size()<10)
+	    prev=listitems;
     while (1)
     {
         if (m_level < 1)
@@ -827,7 +827,7 @@ mgSelection::leave ()
 	clearCache();
         if (!m_fall_through)
             break;
-        if (count () > 1 && !(prev==items))
+        if (count () > 1 && !(prev==listitems))
             break;
     }
     setPosition(prevvalue);
@@ -847,7 +847,7 @@ void
 mgSelection::selectfrom(mgOrder& oldorder,mgContentItem* o)
 {
 	leave_all();
-	mgSelItem selitem;
+	mgListItem selitem;
 	assert(m_level==0);
 	for (unsigned int idx = 0; idx < ordersize(); idx++)
 	{
@@ -863,7 +863,7 @@ mgSelection::selectfrom(mgOrder& oldorder,mgContentItem* o)
 					&& iskeyGenre(new_kt))
 			{
 				string selid=id(new_kt,value(new_kt,oldorder.getKeyItem(i).id()));
-				selitem=mgSelItem (value(new_kt,selid),selid);
+				selitem=mgListItem (value(new_kt,selid),selid);
 			}
 			if (selitem.valid()) break;
 		}
@@ -1006,7 +1006,7 @@ void mgSelection::DumpState(mgValmap& nv) const
 		}
 	}
 	nv.put("TrackId",m_trackid);
-	nv.put("Position",items[m_position].value());
+	nv.put("Position",listitems[m_position].value());
 	if (m_level>=order.size()-1) 
 		nv.put("TrackPosition",getTrackPosition());
 }
