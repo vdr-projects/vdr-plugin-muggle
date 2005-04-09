@@ -165,11 +165,11 @@ mgSelection::getKeyType (const unsigned int level) const
 }
 
 mgContentItem *
-mgSelection::getTrack (unsigned int position)
+mgSelection::getItem (unsigned int position)
 {
-    if (position >= getNumTracks ())
+    if (position >= getNumItems ())
         return 0;
-    return &(m_tracks[position]);
+    return &(m_items[position]);
 }
 
 
@@ -189,19 +189,19 @@ mgSelection::setShuffleMode (mgSelection::ShuffleMode mode)
 void
 mgSelection::Shuffle() const
 {
-    unsigned int tracksize = getNumTracks();
+    unsigned int tracksize = getNumItems();
     if (tracksize==0) return;
     switch (m_shuffle_mode)
     {
         case SM_NONE:
         {
-    	    long trackid = m_tracks[getTrackPosition()].getTrackid ();
+    	    long id = m_items[getItemPosition()].getItemid ();
             m_current_tracks = "";                // force a reload
-            tracksize = getNumTracks();		  // getNumTracks also reloads
+            tracksize = getNumItems();		  // getNumItems also reloads
     	    for (unsigned int i = 0; i < tracksize; i++)
-        	if (m_tracks[i].getTrackid () == trackid)
+        	if (m_items[i].getItemid () == id)
     		{
-        		setTrackPosition(i);
+        		setItemPosition(i);
         		break;
     		}
         }
@@ -210,17 +210,17 @@ mgSelection::Shuffle() const
         case SM_NORMAL:
         {
 	    // play all, beginning with current track:
-            mgContentItem tmp = m_tracks[getTrackPosition()];
-	    m_tracks[getTrackPosition()]=m_tracks[0];
-	    m_tracks[0]=tmp;
-	    setTrackPosition(0);
+            mgContentItem tmp = m_items[getItemPosition()];
+	    m_items[getItemPosition()]=m_items[0];
+	    m_items[0]=tmp;
+	    setItemPosition(0);
 	    // randomize all other tracks
             for (unsigned int i = 1; i < tracksize; i++)
             {
                 unsigned int j = 1+randrange (tracksize-1);
-                tmp = m_tracks[i];
-                m_tracks[i] = m_tracks[j];
-                m_tracks[j] = tmp;
+                tmp = m_items[i];
+                m_items[i] = m_items[j];
+                m_items[j] = tmp;
             }
         } break;
 /*
@@ -256,7 +256,7 @@ mgSelection::AddToCollection (const string Name)
     CreateCollection(Name);
     string listid = m_db.sql_string (m_db.get_col0
         ("SELECT id FROM playlist WHERE title=" + m_db.sql_string (Name)));
-    unsigned int tracksize = getNumTracks ();
+    unsigned int tracksize = getNumItems ();
     if (tracksize==0)
 	    return 0;
 
@@ -275,7 +275,7 @@ mgSelection::AddToCollection (const string Name)
     long first = atol(m_db.get_col0(sql).c_str()) - tracksize + 1;
 
     // replace the place holder trackid by the correct value:
-    m_db.exec_sql("UPDATE playlistitem SET trackid="+ltos(m_tracks[tracksize-1].getTrackid())+
+    m_db.exec_sql("UPDATE playlistitem SET trackid="+ltos(m_items[tracksize-1].getItemid())+
 		    " WHERE playlist="+listid+" AND trackid="+trackid);
     
     // insert all other tracks:
@@ -284,7 +284,7 @@ mgSelection::AddToCollection (const string Name)
     for (unsigned int i = 0; i < tracksize-1; i++)
     {
 	string item = "(" + listid + "," + ltos (first + i) + "," +
-            ltos (m_tracks[i].getTrackid ()) + ")";
+            ltos (m_items[i].getItemid ()) + ")";
 	comma(sql, item);
 	if ((i%100)==99)
 	{
@@ -351,13 +351,13 @@ string mgSelection::exportM3U ()
     if (!listfile)
         return "";
     fprintf (listfile, "#EXTM3U\n");
-    unsigned int tracksize = getNumTracks ();
+    unsigned int tracksize = getNumItems ();
     for (unsigned i = 0; i < tracksize; i++)
     {
-        mgContentItem& t = m_tracks[i];
+        mgContentItem& t = m_items[i];
         fprintf (listfile, "#EXTINF:%d,%s\n", t.getDuration (),
             t.getTitle ().c_str ());
-	fprintf (listfile, "#MUGGLE:%ld\n", t.getTrackid());
+	fprintf (listfile, "#MUGGLE:%ld\n", t.getItemid());
         fprintf (listfile, "%s\n", t.getSourceFile (false).c_str ());
     }
     fclose (listfile);
@@ -368,7 +368,7 @@ bool
 mgSelection::empty()
 {
     if (m_level>= order.size ()-1)
-	return ( getNumTracks () == 0);
+	return ( getNumItems () == 0);
     else
 	return ( listitems.size () == 0);
 }
@@ -377,22 +377,22 @@ void
 mgSelection::setPosition (unsigned int position)
 {
     if (m_level == order.size())
-	setTrackPosition(position);
+	setItemPosition(position);
     else
     	m_position = position;
 }
 
 void
-mgSelection::setTrackPosition (unsigned int position) const
+mgSelection::setItemPosition (unsigned int position) const
 {
-	m_tracks_position = position;
+	m_items_position = position;
 }
 
 unsigned int
 mgSelection::getPosition ()  const
 {
     if (m_level == order.size())
-	    return getTrackPosition();
+	    return getItemPosition();
     else
 	    return m_position;
 }
@@ -401,7 +401,7 @@ unsigned int
 mgSelection::gotoPosition ()
 {
     if (m_level == order.size ())
-        return gotoTrackPosition();
+        return gotoItemPosition();
     else
     {
     	unsigned int itemsize = listitems.size();
@@ -414,35 +414,35 @@ mgSelection::gotoPosition ()
 }
 
 unsigned int
-mgSelection::getTrackPosition() const
+mgSelection::getItemPosition() const
 {
-    if (m_tracks_position>=m_tracks.size())
-	if (m_tracks.size()==0)
-		m_tracks_position=0;
+    if (m_items_position>=m_items.size())
+	if (m_items.size()==0)
+		m_items_position=0;
 	else
-		m_tracks_position = m_tracks.size()-1;
-    return m_tracks_position;
+		m_items_position = m_items.size()-1;
+    return m_items_position;
 }
 
 unsigned int
-mgSelection::gotoTrackPosition()
+mgSelection::gotoItemPosition()
 {
-    unsigned int tracksize = getNumTracks ();
+    unsigned int tracksize = getNumItems ();
     if (tracksize == 0)
-	setTrackPosition(0);
-    else if (m_tracks_position >= tracksize)
-        setTrackPosition(tracksize -1);
-    return m_tracks_position;
+	setItemPosition(0);
+    else if (m_items_position >= tracksize)
+        setItemPosition(tracksize -1);
+    return m_items_position;
 }
 
-bool mgSelection::skipTracks (int steps)
+bool mgSelection::skipItems (int steps)
 {
-    unsigned int tracksize = getNumTracks();
+    unsigned int tracksize = getNumItems();
     if (tracksize == 0)
         return false;
     if (m_loop_mode == LM_SINGLE)
         return true;
-    unsigned int old_pos = m_tracks_position;
+    unsigned int old_pos = m_items_position;
     unsigned int new_pos;
     if (old_pos + steps < 0)
     {
@@ -458,8 +458,8 @@ bool mgSelection::skipTracks (int steps)
            	return false;
         new_pos = 0;
     }
-    setTrackPosition (new_pos);
-    return (new_pos == gotoTrackPosition());
+    setItemPosition (new_pos);
+    return (new_pos == gotoItemPosition());
 }
 
 
@@ -467,9 +467,9 @@ unsigned long
 mgSelection::getLength ()
 {
     unsigned long result = 0;
-    unsigned int tracksize = getNumTracks ();
+    unsigned int tracksize = getNumItems ();
     for (unsigned int i = 0; i < tracksize; i++)
-        result += m_tracks[i].getDuration ();
+        result += m_items[i].getDuration ();
     return result;
 }
 
@@ -479,8 +479,8 @@ mgSelection::getCompletedLength () const
 {
     unsigned long result = 0;
     tracks ();                                    // make sure they are loaded
-    for (unsigned int i = 0; i < getTrackPosition(); i++)
-        result += m_tracks[i].getDuration ();
+    for (unsigned int i = 0; i < getItemPosition(); i++)
+        result += m_items[i].getDuration ();
     return result;
 }
 
@@ -527,12 +527,12 @@ string mgSelection::ListFilename ()
 const vector < mgContentItem > &
 mgSelection::tracks () const
 {
-    if (!m_db.Connected()) return m_tracks;
-    if (!m_current_tracks.empty()) return m_tracks;
-    m_current_tracks=order.GetContent(m_db,m_level,m_tracks);
+    if (!m_db.Connected()) return m_items;
+    if (!m_current_tracks.empty()) return m_items;
+    m_current_tracks=order.GetContent(m_db,m_level,m_items);
     if (m_shuffle_mode!=SM_NONE)
     	Shuffle();
-    return m_tracks;
+    return m_items;
 }
 
 
@@ -540,8 +540,8 @@ void mgSelection::InitSelection() {
 	m_Directory=".";
     	m_level = 0;
     	m_position = 0;
-    	m_tracks_position = 0;
-    	m_trackid = -1;
+    	m_items_position = 0;
+    	m_itemid = -1;
     	if (the_setup.InitShuffleMode)
     		m_shuffle_mode = SM_NORMAL;
 	else
@@ -627,10 +627,10 @@ mgSelection::InitFrom(mgValmap& nv)
         	if (!enter (newval))
             		if (!select (newval)) break;
 	}
-	m_trackid = nv.getlong("TrackId");
+	m_itemid = nv.getlong("ItemId");
 	setPosition(nv.getstr("Position"));
 	if (m_level>=order.size()-1) 
-		setTrackPosition(nv.getlong("TrackPosition"));
+		setItemPosition(nv.getlong("ItemPosition"));
 }
 
 
@@ -646,8 +646,8 @@ void mgSelection::InitFrom(const mgSelection* s)
     order = s->order;
     m_level = s->m_level;
     m_position = s->m_position;
-    m_trackid = s->m_trackid;
-    m_tracks_position = s->m_tracks_position;
+    m_itemid = s->m_itemid;
+    m_items_position = s->m_items_position;
     setShuffleMode (s->getShuffleMode ());
     setLoopMode (s->getLoopMode ());
 }
@@ -751,11 +751,11 @@ bool mgSelection::select (unsigned int position)
 {
     if (m_level == order.size () - 1)
     {
-        if (getNumTracks () <= position)
+        if (getNumItems () <= position)
             return false;
         order[m_level]->set (listitems[position]);
         m_level++;
-        m_trackid = m_tracks[position].getTrackid ();
+        m_itemid = m_items[position].getItemid ();
 
 	clearCache();
         return true;
@@ -778,7 +778,7 @@ mgSelection::leave ()
         m_level--;
 	prevvalue=order.getKeyItem(m_level).value();
 	order[m_level]->set(zeroitem);
-        m_trackid = -1;
+        m_itemid = -1;
 	clearCache();
 	setPosition(prevvalue);
         return true;
@@ -837,7 +837,7 @@ mgSelection::selectfrom(mgOrder& oldorder,mgContentItem* o)
 			}
 			if (selitem.valid()) break;
 		}
-		if (!selitem.valid() && o && o->getTrackid()>=0)
+		if (!selitem.valid() && o && o->getItemid()>=0)
 			selitem = o->getKeyItem(new_kt);
 		if (!selitem.valid())
 			break;
@@ -938,10 +938,10 @@ void mgSelection::DumpState(mgValmap& nv) const
 			free(n);
 		}
 	}
-	nv.put("TrackId",m_trackid);
+	nv.put("ItemId",m_itemid);
 	nv.put("Position",listitems[m_position].value());
 	if (m_level>=order.size()-1) 
-		nv.put("TrackPosition",getTrackPosition());
+		nv.put("ItemPosition",getItemPosition());
 }
 
 map <mgKeyTypes, string>

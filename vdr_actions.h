@@ -40,7 +40,7 @@ enum mgActions {
 	actAddAllToCollection,	//!< add all items of OSD list to default collection
 	actRemoveAllFromCollection,//!< remove from default collection
 	actDeleteCollection,	//!< delete collection
-	actExportTracklist,	//!< export track list into a *.m3u file
+	actExportItemlist,	//!< export track list into a *.m3u file
 	actAddCollEntry,
 	actRemoveCollEntry,
 	actAddThisToCollection,	//!< add selected item to default collection

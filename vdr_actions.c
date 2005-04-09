@@ -282,8 +282,8 @@ mgActOrder::Execute()
 	mgOrder oldorder = s->getOrder();
 	mgContentItem o;
 	s->select();
-	if (s->getNumTracks()==1)
-		o = s->getTrack(0);
+	if (s->getNumItems()==1)
+		o = s->getItem(0);
 	osd()->UseNormalSelection();	// Default for all orders
 	osd()->setOrder(s,osd()->Current());
 	mgSelection *newsel = osd()->selection();
@@ -1201,8 +1201,8 @@ mgDeleteCollection::Execute ()
 }
 
 
-//! \brief export track list for all selected items
-class mgExportTracklist:public mgCommand
+//! \brief export item list for all selected items
+class mgExportItemlist:public mgCommand
 {
     public:
         void Execute ();
@@ -1217,7 +1217,7 @@ class mgExportTracklist:public mgCommand
 };
 
 void
-mgExportTracklist::Execute ()
+mgExportItemlist::Execute ()
 {
     selection ()->select ();
     string m3u_file = selection ()->exportM3U ();
@@ -1239,7 +1239,7 @@ mgAction::Type()
 	if (t == typeid(mgAddAllToDefaultCollection)) return actAddAllToDefaultCollection;
 	if (t == typeid(mgRemoveAllFromCollection)) return actRemoveAllFromCollection;
 	if (t == typeid(mgDeleteCollection)) return actDeleteCollection;
-	if (t == typeid(mgExportTracklist)) return actExportTracklist;
+	if (t == typeid(mgExportItemlist)) return actExportItemlist;
 	if (t == typeid(mgAddCollEntry)) return actAddCollEntry;
 	if (t == typeid(mgRemoveCollEntry)) return actRemoveCollEntry;
 	if (t == typeid(mgAddThisToCollection)) return actAddThisToCollection;
@@ -1306,7 +1306,7 @@ actGenerate(const mgActions action)
 		case actAddAllToDefaultCollection:	result = new mgAddAllToDefaultCollection;break;
 		case actRemoveAllFromCollection:result = new mgRemoveAllFromCollection;break;
 		case actDeleteCollection:	result = new mgDeleteCollection;break;
-		case actExportTracklist:	result = new mgExportTracklist;break;
+		case actExportItemlist:	result = new mgExportItemlist;break;
 		case actAddCollEntry:		result = new mgAddCollEntry;break;
 		case actRemoveCollEntry:		result = new mgRemoveCollEntry;break;
 		case actAddThisToCollection:	result = new mgAddThisToCollection;break;

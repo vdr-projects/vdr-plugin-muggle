@@ -140,11 +140,11 @@ class mgSelection
 
 
 //! \brief the current position in the tracks list
-        unsigned int getTrackPosition () const;
+        unsigned int getItemPosition () const;
 
 	//! \brief go to the current track position. If it does not exist,
 	// go to the nearest.
-        unsigned int gotoTrackPosition ();
+        unsigned int gotoItemPosition ();
 
 /*! \brief enter the the next higher level, go one up in the tree.
  * If fall_through (see constructor) is set to true, and the
@@ -230,7 +230,7 @@ class mgSelection
  * This might have to be changed - suborder by keyfields of detail
  * levels. This list is cached so several consequent calls mean no
  * loss of performance. See value(), the same warning applies.
- * \todo call this more seldom. See getNumTracks()
+ * \todo call this more seldom. See getNumItems()
  */
         const vector < mgContentItem > &tracks () const;
 
@@ -238,13 +238,13 @@ class mgSelection
  * \param position the position in the tracks() list
  * \return returns NULL if position is out of range
  */
-        mgContentItem* getTrack (unsigned int position);
+        mgContentItem* getItem (unsigned int position);
 
 /*! \brief returns the current item from the tracks() list
  */
-        mgContentItem* getCurrentTrack ()
+        mgContentItem* getCurrentItem ()
         {
-            return getTrack (gotoTrackPosition());
+            return getItem (gotoItemPosition());
         }
 
 /*! \brief toggles the shuffle mode thru all possible values.
@@ -329,19 +329,19 @@ class mgSelection
  * last existing position
  * \return only if no position exists, false will be returned
  */
-        void setTrackPosition (unsigned int position) const;
+        void setItemPosition (unsigned int position) const;
 
 /*! \brief skip some tracks in the track list
  * \return false if new position does not exist
  */
-        bool skipTracks (int step=1);
+        bool skipItems (int step=1);
 
 /*! \brief skip forward by 1 in the track list
  * \return false if new position does not exist
  */
         bool skipFwd ()
         {
-            return skipTracks (+1);
+            return skipItems (+1);
         }
 
 /*! \brief skip back by 1 in the track list
@@ -349,7 +349,7 @@ class mgSelection
  */
         bool skipBack ()
         {
-            return skipTracks (-1);
+            return skipItems (-1);
         }
 
 //! \brief returns the sum of the durations of all tracks
@@ -363,9 +363,9 @@ class mgSelection
 /*! returns the number of tracks in the track list
  *  \todo should not call tracks () which loads all track info.
  *  instead, only count the tracks. If the size differs from
- *  m_tracks.size(), invalidate m_tracks
+ *  m_items.size(), invalidate m_items
  */
-        unsigned int getNumTracks () const
+        unsigned int getNumItems () const
         {
             return tracks ().size ();
         }
@@ -429,18 +429,18 @@ class mgSelection
         mutable string m_current_values;
         mutable string m_current_tracks;
 //! \brief be careful when accessing this, see mgSelection::tracks()
-        mutable vector < mgContentItem > m_tracks;
+        mutable vector < mgContentItem > m_items;
 	//! \brief initializes maps for id/value mapping in both direction
 	bool loadvalues (mgKeyTypes kt) const;
         bool m_fall_through;
         unsigned int m_position;
-        mutable unsigned int m_tracks_position;
+        mutable unsigned int m_items_position;
         ShuffleMode m_shuffle_mode;
         void Shuffle() const;
         LoopMode m_loop_mode;
         mutable mgmySql m_db;
         unsigned int m_level;
-        long m_trackid;
+        long m_itemid;
 
         mgOrder order;
 	bool UsedBefore (mgOrder *o,const mgKeyTypes kt, unsigned int level) const;

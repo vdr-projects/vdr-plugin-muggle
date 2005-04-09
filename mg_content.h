@@ -61,7 +61,7 @@ class mgContentItem
 	//! \brief construct an item from an SQL row
         mgContentItem (const MYSQL_ROW row);
 //! \brief returns track id
-        long getTrackid () const
+        long getItemid () const
         {
             return m_trackid;
         }

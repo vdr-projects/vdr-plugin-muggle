@@ -250,7 +250,7 @@ mgPCMPlayer::~mgPCMPlayer ()
 void
 mgPCMPlayer::PlayTrack()
 {
-    mgContentItem * newcurr = m_playlist->getCurrentTrack ();
+    mgContentItem * newcurr = m_playlist->getCurrentItem ();
     if (newcurr)
     {
         delete m_current;
@@ -779,9 +779,9 @@ bool mgPCMPlayer::SkipFile (int step)
     mgContentItem * newcurr = NULL;
     if (step!=0)
 	    skip_direction=step;
-    if (m_playlist->skipTracks (skip_direction)) 
+    if (m_playlist->skipItems (skip_direction)) 
     {
-        newcurr = m_playlist->getCurrentTrack ();
+        newcurr = m_playlist->getCurrentItem ();
         if (newcurr) {
 	    delete m_current;
             m_current = new mgContentItem(newcurr);
@@ -874,8 +874,8 @@ mgPCMPlayer::Backward (void)
 void
 mgPCMPlayer::Goto (int index, bool still)
 {
-    m_playlist->setTrackPosition (index - 1);
-    mgContentItem *next = m_playlist->getCurrentTrack ();
+    m_playlist->setItemPosition (index - 1);
+    mgContentItem *next = m_playlist->getCurrentItem ();
 
     if (next)
     {
@@ -1397,10 +1397,10 @@ mgPlayerControl::ShowContents ()
                 m_menu->SetTitle ("Now playing");
                 m_menu->SetTabs (25);
 
-                int cur = list->getTrackPosition ();
+                int cur = list->getItemPosition ();
                 for (int i = 0; i < num_items; i++)
                 {
-                    mgContentItem *item = list->getTrack (cur - 3 + i);
+                    mgContentItem *item = list->getItem (cur - 3 + i);
                     if (item)
                     {
                         char *buf;
@@ -1437,7 +1437,7 @@ mgPlayerControl::ShowProgress ()
                 total_frames = SecondsToFrames (list->getLength ());
                 current_frame += SecondsToFrames (list->getCompletedLength ());
                 asprintf (&buf, "%s (%d/%d)", list->getListname ().c_str (),
-                    list->getTrackPosition () + 1, list->getNumTracks ());
+                    list->getItemPosition () + 1, list->getNumItems ());
             }
         }
         else
@@ -1767,8 +1767,8 @@ mgPlayerControl::StatusMsgReplaying ()
             asprintf (&szBuf, "[%c%c] (%d/%d) %s - %s",
                 cLoopMode,
                 cShuffle,
-                player->getPlaylist ()->getTrackPosition () + 1,
-                player->getPlaylist ()->getNumTracks (),
+                player->getPlaylist ()->getItemPosition () + 1,
+                player->getPlaylist ()->getNumItems (),
                 player->getCurrent ()->getArtist ().c_str (),
                 player->getCurrent ()->getTitle ().c_str ());
         }
@@ -1777,8 +1777,8 @@ mgPlayerControl::StatusMsgReplaying ()
             asprintf (&szBuf, "[%c%c] (%d/%d) %s",
                 cLoopMode,
                 cShuffle,
-                player->getPlaylist ()->getTrackPosition () + 1,
-                player->getPlaylist ()->getNumTracks (),
+                player->getPlaylist ()->getItemPosition () + 1,
+                player->getPlaylist ()->getNumItems (),
                 player->getCurrent ()->getTitle ().c_str ());
         }
     }
