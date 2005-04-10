@@ -110,11 +110,15 @@ class mgContentItem
 
 //! \brief returns # of channels
         int getChannels () const;
+
+	bool Valid() const { return m_valid; }
         
     private:
+	mutable bool m_valid;
         long m_trackid;
         string m_title;
-        string m_mp3file;
+        mutable string m_mp3file;
+	string m_realfile;
         string m_artist;
         string m_albumtitle;
         string m_genre1_id;
@@ -129,6 +133,7 @@ class mgContentItem
         int m_duration;
         int m_samplerate;
         int m_channels;
+	bool readable(string filename) const;
 };
 
 extern mgListItem zeroitem;

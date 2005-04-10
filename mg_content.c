@@ -9,7 +9,9 @@
  *
  */
 
-#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "i18n.h"
 #include "mg_selection.h"
 #include "mg_setup.h"
@@ -174,6 +176,7 @@ int mgContentItem::getChannels () const
 mgContentItem::mgContentItem ()
 {
     m_trackid = -1;
+    m_valid = true;
 }
 
 mgContentItem::mgContentItem (const mgContentItem* c)
@@ -197,51 +200,62 @@ mgContentItem::mgContentItem (const mgContentItem* c)
     m_channels = c->m_channels;
 }
 
-static char *mg_readline(FILE *f)
+
+static bool music_dir_exists[100];
+static bool music_dirs_scanned=false;
+
+bool
+mgContentItem::readable(string filename) const
 {
-  static char buffer[10000];
-  if (fgets(buffer, sizeof(buffer), f) > 0) {
-     int l = strlen(buffer) - 1;
-     if (l >= 0 && buffer[l] == '\n')
-        buffer[l] = 0;
-     return buffer;
-     }
-  return 0;
-}
-
-static const char *FINDCMD = "cd '%s' 2>/dev/null && find -follow -name '%s' -print 2>/dev/null";
-
-static string
-GdFindFile( const char* tld, string mp3file )
-{
-  string result = "";
-  char *cmd = 0;
-  asprintf( &cmd, FINDCMD, tld, mp3file.c_str() );
-  mgDebug(4,cmd);
-  FILE *p = popen( cmd, "r" );
-  if (p) 
-    {
-      char *s;
-      if( (s = mg_readline(p) ) != 0) 
-	  result = string(s);
-      pclose(p);
-    }
-
-  free( cmd );
-
-  return result;
+	return !access(filename.c_str(),R_OK);
 }
 
 string
 mgContentItem::getSourceFile(bool AbsolutePath) const
 {
-	const char* tld = the_setup.ToplevelDir;
-	string result="";
-	if (AbsolutePath) result = tld;
-	if (the_setup.GdCompatibility)
-		result += GdFindFile(tld,m_mp3file);
-	else
-    		result += m_mp3file;
+	string tld = the_setup.ToplevelDir;
+    	string result = m_mp3file;
+	if (!Valid())
+		goto not_valid;
+	if (!readable(tld+result))
+	{
+		result.clear();
+		if (!music_dirs_scanned)
+		{
+			for (unsigned int i =0 ; i < 100 ; i++)
+			{
+				struct stat stbuf;
+				char *dir;
+				asprintf(&dir,"%s%02d",tld.c_str(),i);
+				music_dir_exists[i]=!stat(dir,&stbuf);
+				free(dir);
+			}
+			music_dirs_scanned=true;
+		}
+		for (unsigned int i =0 ; i < 100 ; i++)
+		{
+			if (!music_dir_exists[i])
+				continue;
+			char *file;
+			asprintf(&file,"%02d/%s",i,m_mp3file.c_str());
+			if (readable(tld+file))
+			{
+				m_mp3file = file;
+				result = m_mp3file;
+			}
+			free(file);
+			if (!result.empty())
+				break;
+		}
+	}
+	if (result.empty())
+	{
+		m_valid = false;
+not_valid:
+		return m_mp3file;
+	}	
+	if (AbsolutePath)
+		result = tld + result;
 	return result;
 }
 
