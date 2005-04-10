@@ -346,9 +346,6 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
     m_root->CollGreenAction = mgActions(nmain.getuint("CollGreenAction"));
     m_root->CollYellowAction = mgActions(nmain.getuint("CollYellowAction"));
     AddMenu (m_root,posi);
-
-    //SetCurrent (Get (posi));
-
     forcerefresh = false;
 }
 
@@ -414,13 +411,13 @@ mgMainMenu::LoadExternalCommands()
 #if VDRVERSNUM >= 10318
     cString cmd_file = AddDirectory (cPlugin::ConfigDirectory ("muggle"),
         "playlist_commands.conf");
-    mgDebug (1, "mgMuggle::Start: 10318 Looking for file %s", *cmd_file);
+    mgDebug (1, "mgMuggle::Start: VDRVERSNUM Looking for file %s", *cmd_file);
     bool have_cmd_file = external_commands->Load (*cmd_file);
 #else
     const char *
         cmd_file = (const char *) AddDirectory (cPlugin::ConfigDirectory ("muggle"),
         "playlist_commands.conf");
-    mgDebug (1, "mgMuggle::Start: 10317 Looking for file %s", cmd_file);
+    mgDebug (1, "mgMuggle::Start: VDRVERSNUM Looking for file %s", cmd_file);
     bool have_cmd_file = external_commands->Load ((const char *) cmd_file);
 #endif
 
@@ -873,13 +870,13 @@ showimportcount(unsigned int count,bool final=false)
 	char b[100];
 	if (final)
 	{
-		sprintf(b,tr("Import done:Imported %d tracks"),count);
+		sprintf(b,tr("Import done:Imported %d items"),count);
 		assert(strlen(b)<100);
 		showmessage(b,1);
 	}
 	else
 	{
-		sprintf(b,tr("Imported %d tracks..."),count);
+		sprintf(b,tr("Imported %d items..."),count);
 		assert(strlen(b)<100);
 		showmessage(b);
 	}
@@ -946,7 +943,6 @@ mgMenuOrder::BuildOsd ()
     m_keynames.clear();
     m_keynames.reserve(50);
     m_orderbycount = m_order->getOrderByCount();
-    mgDebug(1,"m_orderbycount wird %d",m_orderbycount);
     for (unsigned int i=0;i<m_order->size();i++)
     {
 	unsigned int kt;
@@ -972,7 +968,6 @@ mgMenuOrder::ChangeOrder(eKeys key)
     	newtypes.push_back(ktValue(m_keynames[i][m_keytypes[i]]));
     mgOrder n = mgOrder(newtypes);
     n.setOrderByCount(m_orderbycount);
-    mgDebug(1,"m_orderbycount %d nach n",m_orderbycount);
     bool result = !(n == *m_order);
     *m_order = n;
     if (result)

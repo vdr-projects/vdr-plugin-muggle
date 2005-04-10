@@ -128,7 +128,7 @@ mgSelection::mgListItems::index (const string s,bool val,bool second_try) const
     }
     // nochmal mit neuen Werten:
     if (second_try) {
-    	esyslog("index: Gibt es nicht:%s",s.c_str());
+    	mgWarning("index: Gibt es nicht:%s",s.c_str());
     	return 0;
     }
     else
@@ -189,16 +189,16 @@ mgSelection::setShuffleMode (mgSelection::ShuffleMode mode)
 void
 mgSelection::Shuffle() const
 {
-    unsigned int tracksize = getNumItems();
-    if (tracksize==0) return;
+    unsigned int numitems = getNumItems();
+    if (numitems==0) return;
     switch (m_shuffle_mode)
     {
         case SM_NONE:
         {
     	    long id = m_items[getItemPosition()].getItemid ();
             m_current_tracks = "";                // force a reload
-            tracksize = getNumItems();		  // getNumItems also reloads
-    	    for (unsigned int i = 0; i < tracksize; i++)
+            numitems = getNumItems();		  // getNumItems also reloads
+    	    for (unsigned int i = 0; i < numitems; i++)
         	if (m_items[i].getItemid () == id)
     		{
         		setItemPosition(i);
@@ -209,15 +209,15 @@ mgSelection::Shuffle() const
         case SM_PARTY:
         case SM_NORMAL:
         {
-	    // play all, beginning with current track:
+	    // play all, beginning with current item:
             mgContentItem tmp = m_items[getItemPosition()];
 	    m_items[getItemPosition()]=m_items[0];
 	    m_items[0]=tmp;
 	    setItemPosition(0);
-	    // randomize all other tracks
-            for (unsigned int i = 1; i < tracksize; i++)
+	    // randomize all other items
+            for (unsigned int i = 1; i < numitems; i++)
             {
-                unsigned int j = 1+randrange (tracksize-1);
+                unsigned int j = 1+randrange (numitems-1);
                 tmp = m_items[i];
                 m_items[i] = m_items[j];
                 m_items[j] = tmp;
@@ -229,11 +229,11 @@ mgSelection::Shuffle() const
  - initialization
  - find 15 titles according to the scheme below
  - playing
- - before entering next title perform track selection
- - track selection
+ - before entering next title perform item selection
+ - item selection
  - generate a random uid
  - if file exists:
- - determine maximum playcount of all tracks
+ - determine maximum playcount of all items
 - generate a random number n
 - if n < playcount / max. playcount
 - add the file to the end of the list
@@ -256,8 +256,8 @@ mgSelection::AddToCollection (const string Name)
     CreateCollection(Name);
     string listid = m_db.sql_string (m_db.get_col0
         ("SELECT id FROM playlist WHERE title=" + m_db.sql_string (Name)));
-    unsigned int tracksize = getNumItems ();
-    if (tracksize==0)
+    unsigned int numitems = getNumItems ();
+    if (numitems==0)
 	    return 0;
 
     // this code is rather complicated but works in a multi user
@@ -266,22 +266,22 @@ mgSelection::AddToCollection (const string Name)
     // insert a unique trackid:
     string trackid = ltos(m_db.thread_id()+1000000);
     m_db.exec_sql("INSERT INTO playlistitem SELECT "+listid+","
-	   "MAX(tracknumber)+"+ltos(tracksize)+","+trackid+
+	   "MAX(tracknumber)+"+ltos(numitems)+","+trackid+
 	   " FROM playlistitem WHERE playlist="+listid);
     
     // find tracknumber of the trackid we just inserted:
     string sql = string("SELECT tracknumber FROM playlistitem WHERE "
 		    "playlist=")+listid+" AND trackid="+trackid;
-    long first = atol(m_db.get_col0(sql).c_str()) - tracksize + 1;
+    long first = atol(m_db.get_col0(sql).c_str()) - numitems + 1;
 
     // replace the place holder trackid by the correct value:
-    m_db.exec_sql("UPDATE playlistitem SET trackid="+ltos(m_items[tracksize-1].getItemid())+
+    m_db.exec_sql("UPDATE playlistitem SET trackid="+ltos(m_items[numitems-1].getItemid())+
 		    " WHERE playlist="+listid+" AND trackid="+trackid);
     
-    // insert all other tracks:
+    // insert all other items:
     const char *sql_prefix = "INSERT INTO playlistitem VALUES ";
     sql = "";
-    for (unsigned int i = 0; i < tracksize-1; i++)
+    for (unsigned int i = 0; i < numitems-1; i++)
     {
 	string item = "(" + listid + "," + ltos (first + i) + "," +
             ltos (m_items[i].getItemid ()) + ")";
@@ -294,7 +294,7 @@ mgSelection::AddToCollection (const string Name)
     }
     if (!sql.empty()) m_db.exec_sql (sql_prefix+sql);
     if (inCollection(Name)) clearCache ();
-    return tracksize;
+    return numitems;
 }
 
 
@@ -351,8 +351,8 @@ string mgSelection::exportM3U ()
     if (!listfile)
         return "";
     fprintf (listfile, "#EXTM3U\n");
-    unsigned int tracksize = getNumItems ();
-    for (unsigned i = 0; i < tracksize; i++)
+    unsigned int numitems = getNumItems ();
+    for (unsigned i = 0; i < numitems; i++)
     {
         mgContentItem& t = m_items[i];
         fprintf (listfile, "#EXTINF:%d,%s\n", t.getDuration (),
@@ -400,17 +400,13 @@ mgSelection::getPosition ()  const
 unsigned int
 mgSelection::gotoPosition ()
 {
-    if (m_level == order.size ())
-        return gotoItemPosition();
-    else
-    {
-    	unsigned int itemsize = listitems.size();
-    	if (itemsize==0)
-		m_position = 0;
-    	else if (m_position >= itemsize)
-        	m_position = itemsize -1;
-        return m_position;
-    }
+    assert (m_level<order.size());
+    unsigned int itemsize = listitems.size();
+    if (itemsize==0)
+	m_position = 0;
+    else if (m_position >= itemsize)
+       	m_position = itemsize -1;
+    return m_position;
 }
 
 unsigned int
@@ -427,18 +423,18 @@ mgSelection::getItemPosition() const
 unsigned int
 mgSelection::gotoItemPosition()
 {
-    unsigned int tracksize = getNumItems ();
-    if (tracksize == 0)
+    unsigned int numitems = getNumItems ();
+    if (numitems == 0)
 	setItemPosition(0);
-    else if (m_items_position >= tracksize)
-        setItemPosition(tracksize -1);
+    else if (m_items_position >= numitems)
+        setItemPosition(numitems -1);
     return m_items_position;
 }
 
 bool mgSelection::skipItems (int steps)
 {
-    unsigned int tracksize = getNumItems();
-    if (tracksize == 0)
+    unsigned int numitems = getNumItems();
+    if (numitems == 0)
         return false;
     if (m_loop_mode == LM_SINGLE)
         return true;
@@ -448,11 +444,11 @@ bool mgSelection::skipItems (int steps)
     {
         if (m_loop_mode == LM_NONE)
             return false;
-        new_pos = tracksize - 1;
+        new_pos = numitems - 1;
     }
     else
 	new_pos = old_pos + steps;
-    if (new_pos >= tracksize)
+    if (new_pos >= numitems)
     {
         if (m_loop_mode == LM_NONE)
            	return false;
@@ -467,8 +463,8 @@ unsigned long
 mgSelection::getLength ()
 {
     unsigned long result = 0;
-    unsigned int tracksize = getNumItems ();
-    for (unsigned int i = 0; i < tracksize; i++)
+    unsigned int numitems = getNumItems ();
+    for (unsigned int i = 0; i < numitems; i++)
         result += m_items[i].getDuration ();
     return result;
 }
@@ -478,7 +474,7 @@ unsigned long
 mgSelection::getCompletedLength () const
 {
     unsigned long result = 0;
-    tracks ();                                    // make sure they are loaded
+    items ();                                    // make sure they are loaded
     for (unsigned int i = 0; i < getItemPosition(); i++)
         result += m_items[i].getDuration ();
     return result;
@@ -525,7 +521,7 @@ string mgSelection::ListFilename ()
 }
 
 const vector < mgContentItem > &
-mgSelection::tracks () const
+mgSelection::items () const
 {
     if (!m_db.Connected()) return m_items;
     if (!m_current_tracks.empty()) return m_items;
@@ -603,7 +599,7 @@ mgSelection::InitFrom(mgValmap& nv)
 		    argv[0]=".";
 		    argv[1]=0;
 		    m_db.Create();
-	            if (Interface->Confirm(tr("Import tracks?")))
+	            if (Interface->Confirm(tr("Import items?")))
 		    {
 		        mgThreadSync *s = mgThreadSync::get_instance();
 		        if (s)
@@ -627,9 +623,10 @@ mgSelection::InitFrom(mgValmap& nv)
         	if (!enter (newval))
             		if (!select (newval)) break;
 	}
+	assert(m_level<=order.size());
 	m_itemid = nv.getlong("ItemId");
 	setPosition(nv.getstr("Position"));
-	if (m_level>=order.size()-1) 
+	if (m_level==order.size()) 
 		setItemPosition(nv.getlong("ItemPosition"));
 }
 
@@ -650,12 +647,6 @@ void mgSelection::InitFrom(const mgSelection* s)
     m_items_position = s->m_items_position;
     setShuffleMode (s->getShuffleMode ());
     setLoopMode (s->getLoopMode ());
-}
-
-unsigned int
-mgSelection::ordersize ()
-{
-    return order.size ();
 }
 
 unsigned int
@@ -711,9 +702,11 @@ mgSelection::count () const
 bool mgSelection::enter (unsigned int position)
 {
     if (order.empty())
-	esyslog("mgSelection::enter(%u): order is empty", position);
+	mgWarning("mgSelection::enter(%u): order is empty", position);
     if (empty())
 	return false;
+    if (m_level == order.size ())
+        return false;
     setPosition (position);
     position = gotoPosition();		// reload adjusted position
     if (listitems.size()==0)
@@ -728,9 +721,6 @@ bool mgSelection::enter (unsigned int position)
             return false;
         order[m_level++]->set (item);
 	clearCache();
-	if (m_level >= order.size())
-	  mgError("mgSelection::enter(%u): level greater than order.size() %u",
-	      m_level,order.size());
         m_position = 0;
 	refreshValues();
 	if (count()==0)
@@ -808,7 +798,7 @@ void
 mgSelection::leave_all ()
 {
 	m_level=0;
-	for (unsigned int i=0;i<ordersize();i++)
+	for (unsigned int i=0;i<order.size();i++)
 		order[i]->set (zeroitem);
 	clearCache();
 }
@@ -819,7 +809,7 @@ mgSelection::selectfrom(mgOrder& oldorder,mgContentItem* o)
 	leave_all();
 	mgListItem selitem;
 	assert(m_level==0);
-	for (unsigned int idx = 0; idx < ordersize(); idx++)
+	for (unsigned int idx = 0; idx < order.size(); idx++)
 	{
 		selitem = zeroitem;
 		mgKeyTypes new_kt = getKeyType(idx);
@@ -841,7 +831,7 @@ mgSelection::selectfrom(mgOrder& oldorder,mgContentItem* o)
 			selitem = o->getKeyItem(new_kt);
 		if (!selitem.valid())
 			break;
-		if (m_level<ordersize()-1)
+		if (m_level<order.size()-1)
 		{
 			order[m_level++]->set (selitem);
 		}
@@ -859,7 +849,7 @@ mgSelection::selectfrom(mgOrder& oldorder,mgContentItem* o)
 		setPosition(selitem.value());
 		order[m_level+1]->set(zeroitem);
 	}
-	assert(m_level<ordersize());
+	assert(m_level<order.size());
 }
 
 
@@ -948,13 +938,13 @@ map <mgKeyTypes, string>
 mgSelection::UsedKeyValues() 
 {
 	map <mgKeyTypes, string> result;
-	for (unsigned int idx = 0 ; idx < level() ; idx++)
+	for (unsigned int idx = 0 ; idx < m_level ; idx++)
 	{
 		result[order.getKeyType(idx)] = order.getKeyItem(idx).value();
 	}
-	if (level() < order.size()-1)
+	if (m_level < order.size()-1)
 	{
-		mgKeyTypes ch =  order.getKeyType(level());
+		mgKeyTypes ch =  order.getKeyType(m_level);
 		result[ch] = getCurrentValue();
 	}
 	return result;
