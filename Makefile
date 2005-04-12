@@ -29,11 +29,10 @@ CXXFLAGS ?= -fPIC -O0 -Wall -Woverloaded-virtual -Wno-deprecated -g
 
 ### The directory environment:
 
-DVBDIR = ../../../../DVB
-VDRDIR = ../../../
-# /usr/local/src/VDR
-LIBDIR = ../../lib
-TMPDIR = /tmp
+DVBDIR ?= ../../../../DVB
+VDRDIR ?= ../../../
+LIBDIR ?= /../../lib
+TMPDIR ?= /tmp
 
 ### Allow user defined options to overwrite defaults:
 
