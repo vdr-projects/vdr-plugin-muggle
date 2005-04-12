@@ -1,5 +1,5 @@
 /*!
- * \file vdr_setup.c
+ * \file mg_setup.c
  * \brief A setup class for a VDR media plugin (muggle)
  *
  * \version $Revision: 1.3 $
@@ -7,7 +7,7 @@
  * \author  Ralf Klueber, Lars von Wedel, Andreas Kellner
  * \author  Responsible author: $Author: wr61 $
  *
- * $Id: vdr_setup.c 399 2005-01-24 14:45:30Z wr61 $
+ * $Id: mg_setup.c 399 2005-01-24 14:45:30Z wr61 $
  *
  * Partially adapted from
  * MP3/MPlayer plugin to VDR (C++)
