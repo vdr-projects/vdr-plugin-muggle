@@ -239,13 +239,16 @@ mgSync::SyncFile(const char *filename)
 {
 	if (!strncmp(filename,"./",2))	// strip leading ./
 		filename += 2;
-	if (strlen(filename)>255)
+	const char *cfilename=filename;
+	if (isdigit(filename[0]) && isdigit(filename[1]) && filename[2]=='/' && !strchr(filename+3,'/'))
+		cfilename=cfilename+3;
+	if (strlen(cfilename)>255)
 	{
 		mgWarning("Length of file exceeds database field capacity: %s", filename);
 		return;
 	}
 	mgDebug(3,"Importing %s",filename);
-	sql_Cstring(filename,c_mp3file);
+	sql_Cstring(cfilename,c_mp3file);
 	char sql[600];
 	sprintf(sql,"SELECT id from tracks WHERE mp3file=%s",c_mp3file);
 	string s = m_db.get_col0(sql);

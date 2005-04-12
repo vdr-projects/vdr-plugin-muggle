@@ -874,7 +874,7 @@ mgPCMPlayer::Backward (void)
 void
 mgPCMPlayer::Goto (int index, bool still)
 {
-    m_playlist->setItemPosition (index - 1);
+    m_playlist->GotoItemPosition (index - 1);
     mgContentItem *next = m_playlist->getCurrentItem ();
 
     if (next)

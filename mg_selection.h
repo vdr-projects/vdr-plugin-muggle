@@ -326,31 +326,16 @@ class mgSelection
 
 /*! \brief go to a position in the item list
  * \param position the wanted position. If it is too big, go to the 
- * last existing position
+ * last existing position. If the position is not valid, find the
+ * next valid one.
  * \return only if no position exists, false will be returned
  */
-        void setItemPosition (unsigned int position) const;
+        void GotoItemPosition (unsigned int position) const;
 
 /*! \brief skip some items in the item list
  * \return false if new position does not exist
  */
-        bool skipItems (int step=1);
-
-/*! \brief skip forward by 1 in the item list
- * \return false if new position does not exist
- */
-        bool skipFwd ()
-        {
-            return skipItems (+1);
-        }
-
-/*! \brief skip back by 1 in the item list
- * \return false if new position does not exist
- */
-        bool skipBack ()
-        {
-            return skipItems (-1);
-        }
+        bool skipItems (int step=1) const;
 
 //! \brief returns the sum of the durations of all items
         unsigned long getLength ();

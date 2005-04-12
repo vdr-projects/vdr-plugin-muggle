@@ -45,7 +45,6 @@ class mgSetup
         char *DbUser;
         char *DbPass;
         int DbPort;
-        bool GdCompatibility;
         char *ToplevelDir;
 
 	int DeleteStaleReferences;

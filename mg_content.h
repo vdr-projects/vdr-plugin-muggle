@@ -111,10 +111,11 @@ class mgContentItem
 //! \brief returns # of channels
         int getChannels () const;
 
-	bool Valid() const { return m_valid; }
+	bool Valid() const;
         
     private:
 	mutable bool m_valid;
+	mutable bool m_validated;
         long m_trackid;
         string m_title;
         mutable string m_mp3file;

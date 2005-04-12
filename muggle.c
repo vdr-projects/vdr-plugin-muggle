@@ -81,8 +81,6 @@ mgMuggle::CommandLineHelp (void)
 #ifndef HAVE_ONLY_SERVER
         "  -d DIRN,  --datadir=DIRN  specify directory for embedded sql data (default is $HOME/.muggle)\n"
 #endif
-        "  -g,       --giantdisc     enable full Giantdisc compatibility mode.\n"
-	"                            You should not use -n with -g\n"
         "  -v,       --verbose       specify debug level. The higher the more. Default is 1\n"
 	"\n"
 	"if the specified host is localhost, sockets will be used if possible.\n"
@@ -117,7 +115,6 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
         {"datadir", required_argument, NULL, 'd'},
 #endif
         {"toplevel", required_argument, NULL, 't'},
-        {"giantdisc", no_argument, NULL, 'g'},
         {NULL}
     };
 
@@ -126,9 +123,9 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
         option_index = 0;
     while ((c =
 #ifndef HAVE_ONLY_SERVER
-        getopt_long (argc, argv, "gh:s:n:p:t:u:w:d:v:", long_options,
+        getopt_long (argc, argv, "h:s:n:p:t:u:w:d:v:", long_options,
 #else
-        getopt_long (argc, argv, "gh:s:n:p:t:u:w:v:", long_options,
+        getopt_long (argc, argv, "h:s:n:p:t:u:w:v:", long_options,
 #endif
         &option_index)) != -1)
     {
@@ -188,11 +185,6 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
                     the_setup.ToplevelDir =
                         strcpyrealloc (the_setup.ToplevelDir, optarg);
                 }
-            }
-            break;
-            case 'g':
-            {
-                the_setup.GdCompatibility = true;
             }
             break;
             default:

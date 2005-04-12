@@ -22,8 +22,8 @@
 #include <plugin.h>
 
 #if VDRVERSNUM >= 10307
-#include <vdr/interface.h>
-#include <vdr/skins.h>
+#include <interface.h>
+#include <skins.h>
 #endif
 
 #include "vdr_setup.h"
@@ -33,12 +33,6 @@
 
 #define DEBUG
 #include "mg_tools.h"
-
-#include <config.h>
-#if VDRVERSNUM >= 10307
-#include <vdr/interface.h>
-#include <vdr/skins.h>
-#endif
 
 void
 mgStatus::OsdCurrentItem(const char* Text)
@@ -55,7 +49,8 @@ mgStatus::OsdCurrentItem(const char* Text)
 void Play(mgSelection *sel,const bool select) {
 	mgSelection *s = new mgSelection(sel);
 	if (select) s->select();
-	if (s->empty()) 
+	s->skipItems(0);	// make sure we start with a valid item
+	if (s->empty()) 	// no valid item exists
 	{
 		delete s;
 		return;

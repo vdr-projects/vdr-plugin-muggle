@@ -184,3 +184,11 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - import now runs as a separate thread and no longer blocks user
   input and VDR is no longer killed by the watchdog during import
 
+XXXX-XX-XX: Versionn
+- removed option -g. muggle now automatically does the right thing:
+  GD compatibility mode is used when importing files [0-9][0-9]/filename
+  relative to the toplevel directory where filename contains no /
+- external command find is no longer needed
+- better error handling for unreadable files when playing
+- changed several includes from <vdr/X.h> to <X.h>
+- Makefile respects preset values for directories

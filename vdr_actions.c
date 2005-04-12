@@ -24,7 +24,7 @@
 #include "vdr_actions.h"
 #include "vdr_menu.h"
 #include "i18n.h"
-#include <vdr/interface.h>
+#include <interface.h>
 
 #define DEBUG
 #include "mg_tools.h"

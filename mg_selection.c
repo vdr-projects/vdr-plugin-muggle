@@ -29,8 +29,8 @@
 #include <fileref.h>
 
 #if VDRVERSNUM >= 10307
-#include <vdr/interface.h>
-#include <vdr/skins.h>
+#include <interface.h>
+#include <skins.h>
 #endif
 
 //! \brief adds string n to string s, using a comma to separate them
@@ -201,7 +201,7 @@ mgSelection::Shuffle() const
     	    for (unsigned int i = 0; i < numitems; i++)
         	if (m_items[i].getItemid () == id)
     		{
-        		setItemPosition(i);
+        		m_items_position = i;
         		break;
     		}
         }
@@ -213,7 +213,7 @@ mgSelection::Shuffle() const
             mgContentItem tmp = m_items[getItemPosition()];
 	    m_items[getItemPosition()]=m_items[0];
 	    m_items[0]=tmp;
-	    setItemPosition(0);
+	    m_items_position = 0;
 	    // randomize all other items
             for (unsigned int i = 1; i < numitems; i++)
             {
@@ -377,15 +377,16 @@ void
 mgSelection::setPosition (unsigned int position)
 {
     if (m_level == order.size())
-	setItemPosition(position);
+	m_items_position = position;
     else
     	m_position = position;
 }
 
 void
-mgSelection::setItemPosition (unsigned int position) const
+mgSelection::GotoItemPosition (unsigned int position) const
 {
 	m_items_position = position;
+	skipItems(0);
 }
 
 unsigned int
@@ -425,21 +426,27 @@ mgSelection::gotoItemPosition()
 {
     unsigned int numitems = getNumItems ();
     if (numitems == 0)
-	setItemPosition(0);
-    else if (m_items_position >= numitems)
-        setItemPosition(numitems -1);
+    {
+	m_items_position = 0;
+	return 0;
+    }
+    if (m_items_position >= numitems)
+        m_items_position = numitems -1;
     return m_items_position;
 }
 
-bool mgSelection::skipItems (int steps)
+bool mgSelection::skipItems (int steps) const
 {
     unsigned int numitems = getNumItems();
     if (numitems == 0)
+    {
+	m_items_position=0;
         return false;
-    if (m_loop_mode == LM_SINGLE)
-        return true;
+    }
     unsigned int old_pos = m_items_position;
     unsigned int new_pos;
+    if (m_loop_mode == LM_SINGLE)
+    	steps = 0;
     if (old_pos + steps < 0)
     {
         if (m_loop_mode == LM_NONE)
@@ -454,10 +461,24 @@ bool mgSelection::skipItems (int steps)
            	return false;
         new_pos = 0;
     }
-    setItemPosition (new_pos);
-    return (new_pos == gotoItemPosition());
+    m_items_position = new_pos;
+    while (true)
+    {
+	if (m_items[m_items_position].Valid())
+		break;
+	m_items.erase(m_items.begin()+m_items_position);
+	if (m_items.size()==0)
+	{
+		m_items_position = 0;
+		return false;
+	}
+	if (steps<0 && m_items.size()>0 && m_items_position>0)
+		m_items_position--;
+	if (m_items_position==m_items.size())
+		m_items_position--;
+    }
+    return true;
 }
-
 
 unsigned long
 mgSelection::getLength ()
@@ -627,7 +648,7 @@ mgSelection::InitFrom(mgValmap& nv)
 	m_itemid = nv.getlong("ItemId");
 	setPosition(nv.getstr("Position"));
 	if (m_level==order.size()) 
-		setItemPosition(nv.getlong("ItemPosition"));
+		m_items_position = nv.getlong("ItemPosition");
 }
 
 

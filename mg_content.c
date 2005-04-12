@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "i18n.h"
+#include <tools.h>
 #include "mg_selection.h"
 #include "mg_setup.h"
 #include "mg_tools.h"
@@ -175,12 +176,15 @@ int mgContentItem::getChannels () const
 
 mgContentItem::mgContentItem ()
 {
-    m_trackid = -1;
     m_valid = true;
+    m_validated = false;
+    m_trackid = -1;
 }
 
 mgContentItem::mgContentItem (const mgContentItem* c)
 {
+    m_valid = true;
+    m_validated = false;
     m_trackid = c->m_trackid;
     m_title = c->m_title;
     m_mp3file = c->m_mp3file;
@@ -200,6 +204,16 @@ mgContentItem::mgContentItem (const mgContentItem* c)
     m_channels = c->m_channels;
 }
 
+bool
+mgContentItem::Valid() const
+{
+    if (!m_validated)
+    {
+	    getSourceFile();	// sets m_valid as a side effect
+	    m_validated=true;
+    }
+    return m_valid;
+}
 
 static bool music_dir_exists[100];
 static bool music_dirs_scanned=false;
@@ -215,8 +229,8 @@ mgContentItem::getSourceFile(bool AbsolutePath) const
 {
 	string tld = the_setup.ToplevelDir;
     	string result = m_mp3file;
-	if (!Valid())
-		goto not_valid;
+	if (m_validated && !m_valid)
+		return m_mp3file;
 	if (!readable(tld+result))
 	{
 		result.clear();
@@ -250,8 +264,17 @@ mgContentItem::getSourceFile(bool AbsolutePath) const
 	}
 	if (result.empty())
 	{
+		char *b=0;
+		int nsize = m_mp3file.size();
+		if (nsize<30)
+			asprintf(&b,tr("%s not readable"),m_mp3file.c_str());
+		else
+			asprintf(&b,tr("%s..%s not readable"),m_mp3file.substr(0,20).c_str(),m_mp3file.substr(nsize-20).c_str());;
+    		extern void showmessage(const char*,int duration=0);
+		showmessage(b);
+		free(b);
+        	esyslog ("ERROR: cannot stat %s. Meaning not found, not a valid file, or no access rights", m_mp3file.c_str ());
 		m_valid = false;
-not_valid:
 		return m_mp3file;
 	}	
 	if (AbsolutePath)
@@ -261,6 +284,8 @@ not_valid:
 
 mgContentItem::mgContentItem (const MYSQL_ROW row)
 {
+    m_valid = true;
+    m_validated = false;
     m_trackid = atol (row[0]);
     if (row[1])
 	m_title = row[1];

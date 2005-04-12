@@ -31,6 +31,7 @@ void
 mgSetDebugLevel (int new_level)
 {
     DEBUG_LEVEL = new_level;
+    SysLogLevel = new_level;
 }
 
 
@@ -44,7 +45,7 @@ mgDebug (int level, const char *fmt, ...)
         va_start (ap, fmt);
 
         vsnprintf (buffer, MAX_BUFLEN - 1, fmt, ap);
-        isyslog ("%s\n", buffer);
+        dsyslog ("%s\n", buffer);
     }
     va_end (ap);
 }

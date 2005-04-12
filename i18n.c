@@ -319,7 +319,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {
-        "Export track list",
+        "Export item list",
         "Stückliste exportieren",
         "",                                       // TODO
         "",                                       // TODO
@@ -1220,13 +1220,13 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {
-        "Imported %d tracks...",
-        "%d Tracks importiert...",
+        "Imported %d items...",
+        "%d Titel importiert...",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "%d tracks importés...",       // TODO
+        "%d titres importés...",       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1237,13 +1237,13 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {
-        "Import done:imported %d tracks",
-        "Import fertig:%d Tracks importiert",
+        "Import done:imported %d items",
+        "Import fertig:%d Titel importiert",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "Import finis:%d tracks importés...",       // TODO
+        "Import finis:%d titres importés...",       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO

@@ -38,7 +38,6 @@ mgSetup::mgSetup ()
     DbName = strdup ("GiantDisc");
     DbUser = 0;
     DbPass = 0;
-    GdCompatibility = false;
     ToplevelDir = strdup("/mnt/music/");
 
     DeleteStaleReferences = false;
