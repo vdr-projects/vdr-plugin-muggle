@@ -941,7 +941,7 @@ mgMenuOrder::BuildOsd ()
     for (unsigned int i=0;i<m_order->size();i++)
     {
 	unsigned int kt;
-	m_keynames.push_back(selection()->choices(m_order,i,&kt));
+	m_keynames.push_back(m_order->Choices(i,&kt));
 	m_keytypes.push_back(kt);
 	char buf[20];
 	sprintf(buf,tr("Key %d"),i+1);

@@ -1069,3 +1069,101 @@ ktValue(const char * name)
 	return mgKeyTypes(0);
 }
 
+static vector<int> keycounts;
+
+unsigned int
+mgOrder::keycount(mgKeyTypes kt) const
+{
+	if (keycounts.size()==0)
+	{
+		for (unsigned int ki=int(mgKeyTypesLow);ki<=int(mgKeyTypesHigh);ki++)
+		{
+			keycounts.push_back(-1);
+		}
+	}
+	int& count = keycounts[int(kt-mgKeyTypesLow)];
+	if (count==-1)
+	{
+		mgKey* k = ktGenerate(kt);
+		struct mgmySql db;
+		if (k->Enabled(db))
+			count = db.exec_count(k->Parts(db,true).sql_count());
+		else
+			count = 0;
+		delete k;
+	}
+	return count;
+}
+
+
+bool
+mgOrder::UsedBefore(const mgKeyTypes kt,unsigned int level) const
+{
+	if (level>=size())
+		level = size() -1;
+	for (unsigned int lx = 0; lx < level; lx++)
+		if (getKeyType(lx)==kt)
+			return true;
+	return false;
+}
+
+vector <const char *>
+mgOrder::Choices(unsigned int level, unsigned int *current) const
+{
+	vector<const char*> result;
+	if (level>size())
+	{
+		*current = 0;
+		return result;
+	}
+	for (unsigned int ki=int(mgKeyTypesLow);ki<=int(mgKeyTypesHigh);ki++)
+	{
+		mgKeyTypes kt = mgKeyTypes(ki);
+		if (kt==getKeyType(level))
+		{
+			*current = result.size();
+			result.push_back(ktName(kt));
+			continue;
+		}
+		if (UsedBefore(kt,level))
+			continue;
+		if (kt==keyDecade && UsedBefore(keyYear,level))
+			continue;
+		if (kt==keyGenre1)
+		{
+			if (UsedBefore(keyGenre2,level)) continue;
+			if (UsedBefore(keyGenre3,level)) continue;
+			if (UsedBefore(keyGenres,level)) continue;
+		}
+		if (kt==keyGenre2)
+		{
+			if (UsedBefore(keyGenre3,level)) continue;
+			if (UsedBefore(keyGenres,level)) continue;
+		}
+		if (kt==keyGenre3)
+		{
+			if (UsedBefore(keyGenres,level)) continue;
+		}
+		if (kt==keyFolder1)
+		{
+		 	if (UsedBefore(keyFolder2,level)) continue;
+		 	if (UsedBefore(keyFolder3,level)) continue;
+		 	if (UsedBefore(keyFolder4,level)) continue;
+		}
+		if (kt==keyFolder2)
+		{
+		 	if (UsedBefore(keyFolder3,level)) continue;
+		 	if (UsedBefore(keyFolder4,level)) continue;
+		}
+		if (kt==keyFolder3)
+		{
+		 	if (UsedBefore(keyFolder4,level)) continue;
+		}
+		if (kt==keyCollection || kt==keyCollectionItem)
+			result.push_back(ktName(kt));
+		else if (keycount(kt)>1)
+			result.push_back(ktName(kt));
+	}
+	return result;
+}
+

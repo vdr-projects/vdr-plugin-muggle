@@ -404,7 +404,6 @@ class mgSelection
 	string id(mgKey* k, string val) const;
 	string id(mgKey* k) const;
 	unsigned int keycount(mgKeyTypes kt);
-	vector <const char *> choices(mgOrder *o,unsigned int level, unsigned int *current);
 	unsigned int valcount (string val);
 	bool Connected() { return m_db.Connected(); }
 
@@ -428,7 +427,6 @@ class mgSelection
         long m_itemid;
 
         mgOrder order;
-	bool UsedBefore (mgOrder *o,const mgKeyTypes kt, unsigned int level) const;
         void InitSelection ();
 	/*! \brief returns the SQL command for getting all values. 
 	 * For the leaf level, all values are returned. For upper

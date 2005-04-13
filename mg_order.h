@@ -131,12 +131,15 @@ public:
 	void setOrderByCount(bool orderbycount) { m_orderByCount = orderbycount;}
 	bool getOrderByCount() { return m_orderByCount; }
 	string GetContent(mgmySql &db,unsigned int level,vector < mgContentItem > &content) const;
+	vector <const char*> Choices(unsigned int level, unsigned int *current) const;
 private:
 	bool m_orderByCount;
 	bool isCollectionOrder() const;
 	keyvector Keys;
 	void setKey ( const mgKeyTypes kt);
 	void clean();
+	unsigned int keycount(mgKeyTypes kt) const;
+	bool UsedBefore(const mgKeyTypes kt,unsigned int level) const;
 };
 
 bool operator==(const mgOrder& a,const mgOrder&b); //! \brief compares only the order, not the current key values

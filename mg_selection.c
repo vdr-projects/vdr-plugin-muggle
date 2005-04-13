@@ -899,17 +899,6 @@ mgSelection::id(mgKey* k) const
 	return k->id();
 }
 
-bool
-mgSelection::UsedBefore(mgOrder *o,const mgKeyTypes kt,unsigned int level) const
-{
-	if (level>=o->size())
-		level = o->size() -1;
-	for (unsigned int lx = 0; lx < level; lx++)
-		if (o->getKeyType(lx)==kt)
-			return true;
-	return false;
-}
-
 bool mgSelection::isLanguagelist() const
 {
     return (order.getKeyType(0) == keyLanguage);
@@ -996,64 +985,4 @@ mgSelection::keycount(mgKeyTypes kt)
 	return count;
 }
 
-
-vector <const char *>
-mgSelection::choices(mgOrder *o,unsigned int level, unsigned int *current)
-{
-	vector<const char*> result;
-	if (level>o->size())
-	{
-		*current = 0;
-		return result;
-	}
-	for (unsigned int ki=int(mgKeyTypesLow);ki<=int(mgKeyTypesHigh);ki++)
-	{
-		mgKeyTypes kt = mgKeyTypes(ki);
-		if (kt==o->getKeyType(level))
-		{
-			*current = result.size();
-			result.push_back(ktName(kt));
-			continue;
-		}
-		if (UsedBefore(o,kt,level))
-			continue;
-		if (kt==keyDecade && UsedBefore(o,keyYear,level))
-			continue;
-		if (kt==keyGenre1)
-		{
-			if (UsedBefore(o,keyGenre2,level)) continue;
-			if (UsedBefore(o,keyGenre3,level)) continue;
-			if (UsedBefore(o,keyGenres,level)) continue;
-		}
-		if (kt==keyGenre2)
-		{
-			if (UsedBefore(o,keyGenre3,level)) continue;
-			if (UsedBefore(o,keyGenres,level)) continue;
-		}
-		if (kt==keyGenre3)
-		{
-			if (UsedBefore(o,keyGenres,level)) continue;
-		}
-		if (kt==keyFolder1)
-		{
-		 	if (UsedBefore(o,keyFolder2,level)) continue;
-		 	if (UsedBefore(o,keyFolder3,level)) continue;
-		 	if (UsedBefore(o,keyFolder4,level)) continue;
-		}
-		if (kt==keyFolder2)
-		{
-		 	if (UsedBefore(o,keyFolder3,level)) continue;
-		 	if (UsedBefore(o,keyFolder4,level)) continue;
-		}
-		if (kt==keyFolder3)
-		{
-		 	if (UsedBefore(o,keyFolder4,level)) continue;
-		}
-		if (kt==keyCollection || kt==keyCollectionItem)
-			result.push_back(ktName(kt));
-		else if (keycount(kt)>1)
-			result.push_back(ktName(kt));
-	}
-	return result;
-}
 
