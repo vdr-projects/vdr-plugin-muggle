@@ -52,3 +52,10 @@ mgSetup::~mgSetup ()
     free(DbPass);
     free(ToplevelDir);
 }
+
+bool
+mgSetup::NoHost() const
+{
+    return !DbHost || strlen(DbHost)==0;
+}
+

@@ -30,6 +30,9 @@
 class mgSetup
 {
     public:
+        mgSetup (void);
+	~mgSetup (void);
+	bool NoHost() const;
         int InitLoopMode;
         int InitShuffleMode;
         int AudioMode;
@@ -49,9 +52,6 @@ class mgSetup
 
 	int DeleteStaleReferences;
 
-    public:
-        mgSetup (void);
-	~mgSetup (void);
 
 };
 

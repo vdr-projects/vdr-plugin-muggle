@@ -22,7 +22,6 @@
 
 bool needGenre2;
 static bool needGenre2_set;
-bool NoHost();
 bool UsingEmbedded();
 
 class mysqlhandle_t {
@@ -495,12 +494,6 @@ mgmySql::Connected () const
 	return m_database_found;
 }
 
-bool
-NoHost()
-{
-	return (!the_setup.DbHost
-		|| strlen(the_setup.DbHost)==0);
-}
 
 bool
 UsingEmbedded()
@@ -508,7 +501,7 @@ UsingEmbedded()
 #ifdef HAVE_ONLY_SERVER
 	return false;
 #else
-	return NoHost();
+	return the_setup.NoHost();
 #endif
 }
 
@@ -528,7 +521,7 @@ mgmySql::Connect ()
     }
     else
     {
-    	if (NoHost() || !strcmp(the_setup.DbHost,"localhost"))
+    	if (the_setup.NoHost() || !strcmp(the_setup.DbHost,"localhost"))
       		mgDebug(1,"Using socket %s for connecting to local system as user %s.",
 		      	the_setup.DbSocket, the_setup.DbUser);
     	else
