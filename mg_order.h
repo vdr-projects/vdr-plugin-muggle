@@ -5,7 +5,9 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <map>
 #include <sstream>
+using namespace std;
 #include "mg_valmap.h"
 #include "mg_mysql.h"
 #include "mg_content.h"
@@ -49,6 +51,16 @@ private:
 	mgParts ConnectToTracks(string table) const;
 };
 
+class mgKeyMaps {
+	public:
+		string value(mgKeyTypes kt, string idstr) const;
+		string id(mgKeyTypes kt, string valstr) const;
+	private:
+		bool loadvalues (mgKeyTypes kt) const;
+};
+
+extern mgKeyMaps KeyMaps;
+
 class mgKey {
 	public:
 		virtual ~mgKey() {};
@@ -60,10 +72,12 @@ class mgKey {
 		virtual void set(mgListItem& item) = 0;
 		virtual mgListItem& get() = 0;
 		virtual mgKeyTypes Type() const = 0;
+		virtual bool Enabled(mgmySql &db) { return true; }
+		virtual bool LoadMap() const;
+	protected:
 		virtual string map_idfield() const { return ""; }
 		virtual string map_valuefield() const { return ""; }
-		virtual string map_valuetable() const { return ""; }
-		virtual bool Enabled(mgmySql &db) { return true; }
+		virtual string map_table() const { return ""; }
 };
 
 
@@ -144,4 +158,5 @@ private:
 
 bool operator==(const mgOrder& a,const mgOrder&b); //! \brief compares only the order, not the current key values
 
-#endif               // _MG_SQL_H
+
+#endif

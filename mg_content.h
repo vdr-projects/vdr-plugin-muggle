@@ -12,11 +12,11 @@
 #ifndef _MG_CONTENT_H
 #define _MG_CONTENT_H
 #include <stdlib.h>
-#include <mysql/mysql.h>
 #include <string>
 #include <list>
 #include <vector>
 #include <map>
+#include <mysql/mysql.h>
 using namespace std;
 
 #include "mg_tools.h"

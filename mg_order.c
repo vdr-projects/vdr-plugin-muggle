@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <assert.h>
 
+static map <mgKeyTypes, map<string,string> > map_values;
+static map <mgKeyTypes, map<string,string> > map_ids;
+
 bool iskeyGenre(mgKeyTypes kt)
 {
 	return kt>=keyGenre1  && kt <= keyGenres;
@@ -207,10 +210,10 @@ class mgKeyGenres : public mgKeyNormal {
 		mgKeyGenres() : mgKeyNormal(keyGenres,"tracks","genre1") {};
 		mgKeyGenres(mgKeyTypes kt) : mgKeyNormal(kt,"tracks","genre1") {};
 		mgParts Parts(mgmySql &db,bool orderby=false) const;
+	protected:
 		string map_idfield() const { return "id"; }
 		string map_valuefield() const { return "genre"; }
-		string map_valuetable() const { return "genre"; }
-	protected:
+		string map_table() const { return "genre"; }
 		virtual unsigned int genrelevel() const { return 4; }
 	private:
 		string GenreClauses(mgmySql &db,bool orderby) const;
@@ -298,18 +301,20 @@ class mgKeyLanguage : public mgKeyNormal {
 	public:
 		mgKeyLanguage() : mgKeyNormal(keyLanguage,"tracks","lang") {};
 		mgParts Parts(mgmySql &db,bool orderby=false) const;
+	protected:
 		string map_idfield() const { return "id"; }
 		string map_valuefield() const { return "language"; }
-		string map_valuetable() const { return "language"; }
+		string map_table() const { return "language"; }
 };
 
 class mgKeyCollection: public mgKeyNormal {
 	public:
   	  mgKeyCollection() : mgKeyNormal(keyCollection,"playlist","id") {};
 	  mgParts Parts(mgmySql &db,bool orderby=false) const;
+	protected:
 	 string map_idfield() const { return "id"; }
 	 string map_valuefield() const { return "title"; }
-	 string map_valuetable() const { return "playlist"; }
+	 string map_table() const { return "playlist"; }
 };
 class mgKeyCollectionItem : public mgKeyNormal {
 	public:
@@ -1167,3 +1172,81 @@ mgOrder::Choices(unsigned int level, unsigned int *current) const
 	return result;
 }
 
+bool
+mgKey::LoadMap() const
+{
+	map<string,string>& idmap = map_ids[Type()];
+	if (map_idfield().empty())
+	{
+		return false;
+	}
+	mgmySql db;
+	map<string,string>& valmap = map_values[Type()];
+	char *b;
+	asprintf(&b,"select %s,%s from %s;",map_idfield().c_str(),map_valuefield().c_str(),map_table().c_str());
+	MYSQL_RES *rows = db.exec_sql (string(b));
+	free(b);
+	if (rows) 
+	{
+		MYSQL_ROW row;
+		while ((row = mysql_fetch_row (rows)) != 0)
+		{
+			if (row[0] && row[1])
+			{
+				valmap[row[0]] = row[1];
+				idmap[row[1]] = row[0];
+			}
+		}
+		mysql_free_result (rows);
+	}
+	return true;
+}
+
+bool
+mgKeyMaps::loadvalues (mgKeyTypes kt) const
+{
+	if (map_ids.count(kt)>0) 
+		return true;
+	mgKey* k = ktGenerate(kt);
+	bool result = k->LoadMap();
+	delete k;
+	return result;
+}
+
+string
+mgKeyMaps::value(mgKeyTypes kt, string idstr) const
+{
+	if (loadvalues (kt))
+	{
+		map<string,string>& valmap = map_values[kt];
+		map<string,string>::iterator it;
+		it = valmap.find(idstr);
+		if (it!=valmap.end())
+		{
+			string r = it->second;
+			if (!r.empty())
+				return r;
+		}
+		map_ids[kt].clear();
+		loadvalues(kt);
+		it = valmap.find(idstr);
+		if (it!=valmap.end())
+			return valmap[idstr];
+	}
+	return idstr;
+}
+
+string
+mgKeyMaps::id(mgKeyTypes kt, string valstr) const
+{
+	if (loadvalues (kt))
+	{
+		map<string,string>& idmap = map_ids[kt];
+		string v = idmap[valstr];
+		if (kt==keyGenre1) v=v.substr(0,1);
+		if (kt==keyGenre2) v=v.substr(0,2);
+		if (kt==keyGenre3) v=v.substr(0,3);
+		return v;
+	}
+	return valstr;
+}

@@ -17,7 +17,6 @@
 #include "mg_selection.h"
 #include "mg_setup.h"
 #include "mg_tools.h"
-#include "mg_keymaps.h"
 
 
 mgListItem zeroitem;
