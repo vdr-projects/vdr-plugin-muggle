@@ -53,7 +53,7 @@ mgThreadSync::Action()
 
   if( m_path )
     {
-      mgSync s;
+      mgDbGd s;
       s.Sync( m_path, m_delete );
     }
 

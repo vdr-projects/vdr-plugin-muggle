@@ -18,12 +18,11 @@
 
 #include "mg_mysql.h"
 
-class mgSync
+class mgDbGd
 {
 	public:
-                mgSync();
-		~mgSync();
-
+                mgDbGd();
+		~mgDbGd();
 		//! \brief drop and create the data base GiantDisc
 		void Create();
 

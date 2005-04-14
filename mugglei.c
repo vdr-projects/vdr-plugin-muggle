@@ -168,7 +168,7 @@ int main( int argc, char *argv[] )
 #endif
 	}
     }
-  mgSync *sync = new mgSync; // because we want to delete it before database_end
+  mgDbGd *sync = new mgDbGd; // because we want to delete it before database_end
   if (create_mode)
 	  sync->Create();
   if (optind<argc)
