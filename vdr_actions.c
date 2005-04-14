@@ -1136,7 +1136,6 @@ mgCreateCollection::Execute ()
 	    selection ()->clearCache();
 	    if (selection()->isCollectionlist())
 	    {
-//	    	selection ()->setPosition(selection()->id(keyCollection,name));
 	    	selection ()->setPosition(name);
 	    }
 	    osd()->forcerefresh = true;

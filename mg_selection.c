@@ -377,31 +377,30 @@ void
 mgSelection::setPosition (unsigned int position)
 {
     if (m_level == order.size())
-	m_items_position = position;
-    else
-    	m_position = position;
+	mgError("setPosition:m_level==order.size()");
+    m_position = position;
 }
 
 void
 mgSelection::GotoItemPosition (unsigned int position) const
 {
-	m_items_position = position;
-	skipItems(0);
+    m_items_position = position;
+    skipItems(0);
 }
 
 unsigned int
 mgSelection::getPosition ()  const
 {
     if (m_level == order.size())
-	    return getItemPosition();
-    else
-	    return m_position;
+	mgError("getPosition:m_level==order.size()");
+    return m_position;
 }
 
 unsigned int
 mgSelection::gotoPosition ()
 {
-    assert (m_level<order.size());
+    if (m_level == order.size())
+	mgError("gotoPosition:m_level==order.size()");
     unsigned int itemsize = listitems.size();
     if (itemsize==0)
 	m_position = 0;
@@ -646,9 +645,10 @@ mgSelection::InitFrom(mgValmap& nv)
 	}
 	assert(m_level<=order.size());
 	m_itemid = nv.getlong("ItemId");
-	setPosition(nv.getstr("Position"));
 	if (m_level==order.size()) 
 		m_items_position = nv.getlong("ItemPosition");
+	else
+		setPosition(nv.getstr("Position"));
 }
 
 
