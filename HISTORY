@@ -192,3 +192,6 @@ XXXX-XX-XX: Versionn
 - better error handling for unreadable files when playing
 - changed several includes from <vdr/X.h> to <X.h>
 - Makefile respects preset values for directories
+- Debug messages now go into /var/log/debug. Up to now it was stderr.
+- Playlist view: after pressing arrow up, playing looped backwards.
+  Now it always goes forward.

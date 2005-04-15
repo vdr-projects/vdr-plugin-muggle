@@ -167,14 +167,12 @@ class mgPCMPlayer:public cPlayer, cThread
         int m_index;
 
         void Empty ();
-        bool SkipFile (int step=0);
+        bool SkipFile (bool skipforward=true);
 	void PlayTrack();
         void StopPlay ();
 
         void SetPlayMode (ePlayMode mode);
         void WaitPlayMode (ePlayMode mode, bool inv);
-
-	int skip_direction;
 
     protected:
         virtual void Activate (bool On);
@@ -235,7 +233,6 @@ pmAudioOnlyBlack)
     m_index = 0;
     m_playing = 0;
     m_current = 0;
-    skip_direction = 1;
 }
 
 
@@ -303,7 +300,7 @@ mgPCMPlayer::ReloadPlaylist()
     m_playlist->clearCache();
     if (!m_playing)
     {
-	SkipFile(1);
+	SkipFile();
     	Play ();
     }
     Unlock ();
@@ -772,13 +769,13 @@ mgPCMPlayer::StopPlay ()
 }
 
 
-bool mgPCMPlayer::SkipFile (int step)
+bool mgPCMPlayer::SkipFile (bool skipforward)
 {
     MGLOG("mgPCMPlayer::SkipFile");
-    mgDebug(1,"SkipFile:step=%d, skip_direction=%d",step,skip_direction);
     mgContentItem * newcurr = NULL;
-    if (step!=0)
-	    skip_direction=step;
+    int skip_direction=1;
+    if (!skipforward)
+	    skip_direction=-1;
     if (m_playlist->skipItems (skip_direction)) 
     {
         newcurr = m_playlist->getCurrentItem ();
@@ -848,7 +845,7 @@ mgPCMPlayer::Forward ()
     MGLOG ("mgPCMPlayer::Forward");
 
     Lock ();
-    if (SkipFile (1))
+    if (SkipFile ())
     {
         StopPlay ();
         Play ();
@@ -862,7 +859,7 @@ mgPCMPlayer::Backward (void)
 {
     MGLOG ("mgPCMPlayer::Backward");
     Lock ();
-    if (SkipFile (-1))
+    if (SkipFile (false))
     {
         StopPlay ();
         Play ();
