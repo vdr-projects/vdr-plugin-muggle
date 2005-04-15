@@ -441,7 +441,7 @@ bool mgSelection::skipItems (int steps) const
 	m_items_position=0;
         return false;
     }
-    unsigned int old_pos = m_items_position;
+    int old_pos = m_items_position;
     unsigned int new_pos;
     if (m_loop_mode == LM_SINGLE)
     	steps = 0;

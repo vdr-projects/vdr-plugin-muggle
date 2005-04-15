@@ -195,3 +195,5 @@ XXXX-XX-XX: Versionn
 - Debug messages now go into /var/log/debug. Up to now it was stderr.
 - Playlist view: after pressing arrow up, playing looped backwards.
   Now it always goes forward.
+- Play mode: in endless mode (all tracks), trying to go back on the
+  first track restarted the first track. Now it goes to the last track.
