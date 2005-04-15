@@ -235,7 +235,7 @@ class mgMainMenu:public cOsdMenu
 
 	void CloseMenu();
 
-	void SetTitle(string title);
+	void RefreshTitle();
 };
 
 //! \brief a generic muggle menu

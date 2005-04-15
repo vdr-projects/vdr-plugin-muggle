@@ -556,9 +556,9 @@ mgMenu::SetHelpKeys(mgActions on)
 
 
 void
-mgMainMenu::SetTitle(string title)
+mgMainMenu::RefreshTitle()
 {
-    cOsdMenu::SetTitle(title.c_str());
+    SetTitle(Menus.back()->Title().c_str());
     Display ();
 }
 

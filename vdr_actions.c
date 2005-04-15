@@ -374,7 +374,7 @@ mgEntry::Process(eKeys key)
 		Execute();
 		return osContinue;
 	case k0:
-		osd()->SetTitle(m->Title()+" hallo");
+		osd()->RefreshTitle();
 		return osContinue;
 	case kBack:
 		return Back();
