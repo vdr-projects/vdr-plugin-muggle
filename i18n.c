@@ -999,6 +999,23 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {
+        "Genre",
+        "Genre",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "Genre",                                // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {
         "Genre 2",
         "Genre 2",
         "",                                       // TODO

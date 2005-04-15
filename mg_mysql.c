@@ -541,9 +541,11 @@ mgmySql::Connect ()
     {
 	    m_database_found = mysql_select_db(m_db,the_setup.DbName)==0;
 	    {
-		    if (!Connected())
+		    if (Connected())
+			mgDebug(1,"Selected database %s",the_setup.DbName);
+		    else
 		    	if (!createtime)
-			    mgWarning(mysql_error(m_db));
+			    mgWarning("%s:%s",the_setup.DbName,mysql_error(m_db));
 	    }
     }
     if (!needGenre2_set && Connected())

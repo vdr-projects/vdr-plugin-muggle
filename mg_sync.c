@@ -134,8 +134,11 @@ mgDbGd::getAlbum(const char *c_album,const char *c_artist,const char *c_director
 	return result;
 }
 
-mgDbGd::mgDbGd()
+mgDbGd::mgDbGd(bool separate_thread)
 {
+	m_separate_thread = separate_thread;
+	if (separate_thread)
+		mysql_thread_init();
       	m_genre_rows=0;
 	if (!m_db.Connected())
 		return;
@@ -152,7 +155,9 @@ mgDbGd::mgDbGd()
 
 mgDbGd::~mgDbGd()
 {
-  if (m_genre_rows) mysql_free_result(m_genre_rows);
+	if (m_genre_rows) mysql_free_result(m_genre_rows);
+	if (m_separate_thread)
+		mysql_thread_end();
 }
 
 void

@@ -21,7 +21,7 @@
 class mgDbGd
 {
 	public:
-                mgDbGd();
+                mgDbGd(bool SeparateThread=false);
 		~mgDbGd();
 		//! \brief drop and create the data base GiantDisc
 		void Create();
@@ -36,6 +36,7 @@ class mgDbGd
 		void Sync(char * const * path_argv, bool delete_missing = false);
 		
 	private:
+		bool m_separate_thread;
 		mgmySql m_db;
 		char *sql_Cstring(TagLib::String s,char *buf=0);
 		char *lower(char *s);

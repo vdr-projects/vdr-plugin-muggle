@@ -127,7 +127,7 @@ mgSelection::mgListItems::index (const string s,bool val,bool second_try) const
     }
     // nochmal mit neuen Werten:
     if (second_try) {
-    	mgWarning("index: Gibt es nicht:%s",s.c_str());
+    	mgDebug(2,"index: Gibt es nicht:%s",s.c_str());
     	return 0;
     }
     else

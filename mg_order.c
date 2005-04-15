@@ -7,6 +7,8 @@
 static map <mgKeyTypes, map<string,string> > map_values;
 static map <mgKeyTypes, map<string,string> > map_ids;
 
+mgKeyMaps KeyMaps;
+
 bool iskeyGenre(mgKeyTypes kt)
 {
 	return kt>=keyGenre1  && kt <= keyGenres;

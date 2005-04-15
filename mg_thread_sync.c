@@ -1,6 +1,4 @@
 
-#include <mysql/mysql.h>
-
 #include "mg_thread_sync.h"
 #include "mg_sync.h"
 
@@ -49,15 +47,10 @@ bool mgThreadSync::Sync(char * const * path_argv, bool delete_missing )
 void
 mgThreadSync::Action()
 {
-  mysql_thread_init();
-
   if( m_path )
     {
-      mgDbGd s;
+      mgDbGd s(true);
       s.Sync( m_path, m_delete );
     }
-
-  mysql_thread_end();
 }
-
 
