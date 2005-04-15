@@ -373,6 +373,9 @@ mgEntry::Process(eKeys key)
 	case kOk:
 		Execute();
 		return osContinue;
+	case k0:
+		osd()->SetTitle(m->Title()+" hallo");
+		return osContinue;
 	case kBack:
 		return Back();
 	default:

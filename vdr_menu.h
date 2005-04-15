@@ -183,7 +183,7 @@ class mgMainMenu:public cOsdMenu
 	int newposition;
 
 	//! \brief clears the screen, sets a title and the hotkey flag
-        void InitOsd (const char *title,const bool hashotkeys);
+        void InitOsd (string title,const bool hashotkeys);
 
 #if VDRVERSNUM >= 10307
 	//! \brief expose the protected DisplayMenu() from cOsdMenu
@@ -200,7 +200,7 @@ class mgMainMenu:public cOsdMenu
         }
 
 	//! \brief the current selection
-        mgSelection* selection ()
+        mgSelection* selection () const
         {
             if (UsingCollection) 
 		   return m_collectionsel;
@@ -209,13 +209,13 @@ class mgMainMenu:public cOsdMenu
         }
 
 	//! \brief the collection selection
-	mgSelection* collselection()
+	mgSelection* collselection() const
 	{
 	    return m_collectionsel;
 	}
 
 //! \brief the "now playing" selection
-        mgSelection* playselection ()
+        mgSelection* playselection () const
         {
             return m_playsel;
         }
@@ -234,6 +234,8 @@ class mgMainMenu:public cOsdMenu
 	void CollectionChanged(string name);
 
 	void CloseMenu();
+
+	void SetTitle(string title);
 };
 
 //! \brief a generic muggle menu
@@ -280,18 +282,18 @@ class mgMenu
 	string getParentName() { return m_parent_name; }
 
 //! \brief the pointer to the owning mgMainMenu
-        mgMainMenu* osd ()
+        mgMainMenu* osd () const
         {
             return m_osd;
         }
 
 //! \brief the currently active selection of the owning mgMainMenu
-        mgSelection* selection ()
+        mgSelection* selection () const
         {
             return osd ()->selection ();
         }
 //! \brief the playselection of the owning mgMainMenu
-        mgSelection* playselection ()
+        mgSelection* playselection () const
         {
             return osd ()->playselection ();
         }
@@ -302,8 +304,11 @@ class mgMenu
         {
         }
 
+//! \brief computes the title
+	 virtual string Title() const = 0;
+
 //! \brief clears the screen, sets a title and the hotkey flag
-        void InitOsd (const char *title,const bool hashotkeys=true);
+        void InitOsd (const bool hashotkeys=true);
 
 //! \brief display OSD and go to osd()->newposition
         void Display ();
@@ -343,6 +348,8 @@ class mgTree:public mgMenu
 {
     public:
 	mgTree();
+//! \brief computes the title
+	string Title() const;
         virtual eOSState Process (eKeys Key);
     protected:
         void BuildOsd ();
@@ -353,6 +360,8 @@ class mgSubmenu:public mgMenu
 {
     public:
 	mgSubmenu::mgSubmenu();
+//! \brief computes the title
+	string Title() const;
     protected:
         void BuildOsd ();
 };
@@ -360,6 +369,9 @@ class mgSubmenu:public mgMenu
 //! \brief an mgMenu class for selecting an order
 class mgMenuOrders:public mgMenu
 {
+    public:
+//! \brief computes the title
+	string Title() const;
     protected:
         void BuildOsd ();
 };
@@ -369,6 +381,8 @@ class mgMenuOrder : public mgMenu
     public:
         mgMenuOrder();
         ~mgMenuOrder();
+//! \brief computes the title
+	string Title() const;
 	bool ChangeOrder(eKeys key);
 	void SaveOrder();
     protected:
@@ -387,6 +401,8 @@ class mgTreeCollSelector:public mgMenu
     public:
         mgTreeCollSelector();
         ~mgTreeCollSelector();
+//! \brief computes the title
+	string Title() const;
     protected:
         void BuildOsd ();
 	virtual mgActions coll_action() = 0;
@@ -396,6 +412,7 @@ class mgTreeCollSelector:public mgMenu
 class mgTreeAddToCollSelector:public mgTreeCollSelector
 {
     public:
+//! \brief computes the title
 	mgTreeAddToCollSelector(string title);
     protected:
 	virtual mgActions coll_action() { return actAddCollEntry; }
@@ -405,6 +422,7 @@ class mgTreeAddToCollSelector:public mgTreeCollSelector
 class mgTreeRemoveFromCollSelector:public mgTreeCollSelector
 {
     public:
+//! \brief computes the title
 	mgTreeRemoveFromCollSelector(string title);
     protected:
 	virtual mgActions coll_action() { return actRemoveCollEntry; }

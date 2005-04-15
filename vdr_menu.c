@@ -406,13 +406,13 @@ mgMainMenu::LoadExternalCommands()
 #if VDRVERSNUM >= 10318
     cString cmd_file = AddDirectory (cPlugin::ConfigDirectory ("muggle"),
         "playlist_commands.conf");
-    mgDebug (1, "mgMuggle::Start: VDRVERSNUM Looking for file %s", *cmd_file);
+    mgDebug (1, "mgMuggle::Start: %d Looking for file %s",VDRVERSNUM, *cmd_file);
     bool have_cmd_file = external_commands->Load (*cmd_file);
 #else
     const char *
         cmd_file = (const char *) AddDirectory (cPlugin::ConfigDirectory ("muggle"),
         "playlist_commands.conf");
-    mgDebug (1, "mgMuggle::Start: VDRVERSNUM Looking for file %s", cmd_file);
+    mgDebug (1, "mgMuggle::Start: %d Looking for file %s",VDRVERSNUM, cmd_file);
     bool have_cmd_file = external_commands->Load ((const char *) cmd_file);
 #endif
 
@@ -556,18 +556,25 @@ mgMenu::SetHelpKeys(mgActions on)
 
 
 void
-mgMenu::InitOsd (const char *title,const bool hashotkeys)
+mgMainMenu::SetTitle(string title)
 {
-    osd ()->InitOsd (title,hashotkeys);
+    cOsdMenu::SetTitle(title.c_str());
+    Display ();
+}
+
+void
+mgMenu::InitOsd (const bool hashotkeys)
+{
+    osd ()->InitOsd (Title(),hashotkeys);
     SetHelpKeys();	// Default, will be overridden by the single items
 }
 
 
 void
-mgMainMenu::InitOsd (const char *title,const bool hashotkeys)
+mgMainMenu::InitOsd (string title,const bool hashotkeys)
 {
     Clear ();
-    SetTitle (title);
+    SetTitle (title.c_str());
     if (hashotkeys) SetHasHotkeys ();
 }
 
@@ -580,13 +587,19 @@ mgMainMenu::AddItem(mgAction *a)
     Add(c);
 }
 
-void
-mgSubmenu::BuildOsd ()
+string
+mgSubmenu::Title() const
 {
     static char b[100];
     snprintf(b,99,tr("Commands:%s"),trim(osd()->selection()->getCurrentValue()).c_str());
+    return b;
+}
+
+void
+mgSubmenu::BuildOsd ()
+{
     mgActions on = osd()->CurrentType();
-    InitOsd (b);
+    InitOsd ();
     if (!osd ()->Parent ())
 	    return;
     AddAction(actInstantPlay,on);
@@ -689,10 +702,16 @@ mgTree::Process (eKeys key)
 	return result;
 }
 
+string
+mgTree::Title () const
+{
+    return selection ()->getListname ();
+}
+
 void
 mgTree::BuildOsd ()
 {
-    InitOsd (selection ()->getListname ().c_str (), false);
+    InitOsd (false);
     AddSelectionItems (selection());
 }
 
@@ -707,7 +726,8 @@ mgMainMenu::Message1(const char *msg, const char *arg1)
 eOSState mgMainMenu::ProcessKey (eKeys key)
 {
     eOSState result = osContinue;
-
+//    if (strcmp(the_setup.DbName,"GiantDisc"))
+	    mgDebug(1,"changed to %s",the_setup.DbName);
     if (Menus.size()<1)
 	mgError("mgMainMenu::ProcessKey: Menus is empty");
     
@@ -902,6 +922,11 @@ mgSubmenu::mgSubmenu()
     CollBlueAction = actShowList;
 }
 
+string
+mgMenuOrders::Title() const
+{
+	return tr("Select an order");
+}
 
 void
 mgMenuOrders::BuildOsd ()
@@ -909,7 +934,7 @@ mgMenuOrders::BuildOsd ()
 	TreeRedAction = actEditOrder;
 	TreeGreenAction = actCreateOrder;
 	TreeYellowAction = actDeleteOrder;
-    	InitOsd (tr ("Select an order"));
+    	InitOsd ();
 	osd()->AddOrderActions(this);
 }
 
@@ -924,6 +949,12 @@ mgMenuOrder::~mgMenuOrder()
 	    delete m_order;
 }
 
+string
+mgMenuOrder::Title() const
+{
+	return m_order->Name();
+}
+
 void
 mgMenuOrder::BuildOsd ()
 {
@@ -932,7 +963,7 @@ mgMenuOrder::BuildOsd ()
         m_order = new mgOrder;
 	*m_order = *(osd()->getOrder(getParentIndex()));
     }
-    InitOsd (m_order->Name().c_str());
+    InitOsd ();
     m_keytypes.clear();
     m_keytypes.reserve(mgKeyTypesNr+1);
     m_keynames.clear();
@@ -995,12 +1026,18 @@ mgTreeCollSelector::~mgTreeCollSelector()
     osd()->UsingCollection = m_prevUsingCollection;
 }
 
+string
+mgTreeCollSelector::Title () const
+{
+    return m_title;
+}
+
 void
 mgTreeCollSelector::BuildOsd ()
 {
     osd()->UsingCollection = true;
     mgSelection *coll = osd()->collselection();
-    InitOsd (m_title.c_str());
+    InitOsd ();
     coll->leave_all();
     coll->setPosition(osd()->default_collection);
     AddSelectionItems (coll,coll_action());
@@ -1032,7 +1069,6 @@ mgMainMenu::DisplayGoto ()
     }
     Display ();
 }
-
 
 void
 mgMenu::Display ()
