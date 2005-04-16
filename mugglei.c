@@ -14,7 +14,6 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <mysql/mysql.h>
 #include <getopt.h>
 /*extern "C"
 {*/
