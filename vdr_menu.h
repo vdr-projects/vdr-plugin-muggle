@@ -14,7 +14,7 @@
 #define _VDR_MENU_H
 
 #include <string>
-#include <list>
+// #include <list>
 #include <vector>
 
 #include <osd.h>
@@ -23,8 +23,6 @@
 #include "vdr_actions.h"
 
 #include "vdr_player.h"
-
-using namespace std;
 
 //! \brief play a selection, aborting what is currently played
 //! \param select if true, play only what the current position selects
@@ -38,6 +36,7 @@ class cCommands;
 class mgSelection;
 class mgMenu;
 class mgMainMenu;
+class mgIncrementalSearch;
 
 //! \brief if a player is running, return it
 mgPlayerControl * PlayerControl ();
@@ -145,7 +144,7 @@ class mgMainMenu:public cOsdMenu
         }
 
 	//! \brief this is the collection things will be added to
-        string default_collection;
+        std::string default_collection;
 
 /*! \brief this is the "now playing" collection translated in
  * the current language. When changing the OSD language, this
@@ -154,7 +153,7 @@ class mgMainMenu:public cOsdMenu
  * previous language will stay, so the user can copy from the
  * old one to the new one.
  */
-	string play_collection;
+	std::string play_collection;
 
 /*! \brief selects a certain line on the OSD and displays the OSD
  */
@@ -177,13 +176,13 @@ class mgMainMenu:public cOsdMenu
 	// because that might do forcerefresh which overwrites the message
 	void Message (const char *msg) { m_message = strdup(msg); }
         void Message1 (const char *msg, const char *arg1);
-        void Message1 (const char *msg, string arg1) { Message1(msg,arg1.c_str()); }
+        void Message1 (const char *msg, std::string arg1) { Message1(msg,arg1.c_str()); }
 
 	//! \brief Actions can request a new position. -1 means none wanted
 	int newposition;
 
 	//! \brief clears the screen, sets a title and the hotkey flag
-        void InitOsd (string title,const bool hashotkeys);
+        void InitOsd (std::string title,const bool hashotkeys);
 
 #if VDRVERSNUM >= 10307
 	//! \brief expose the protected DisplayMenu() from cOsdMenu
@@ -227,11 +226,11 @@ class mgMainMenu:public cOsdMenu
 	bool DefaultCollectionSelected();
 
 //! \brief true if the cursor is placed in the default collection
-	bool CollectionEntered(string name);
+	bool CollectionEntered(std::string name);
 
 	void AddItem(mgAction *a);
 
-	void CollectionChanged(string name);
+	void CollectionChanged(std::string name);
 
 	void CloseMenu();
 
@@ -261,7 +260,7 @@ class mgMenu
         void AddSelectionItems (mgSelection *sel,mgActions act = actEntry);
 	//! \brief the name of the blue button depends of where we are
 	int m_parent_index;
-	string m_parent_name;
+	std::string m_parent_name;
     public:
 	/*! sets the correct help keys.
 	 * \todo without data from mysql, no key is shown,
@@ -279,8 +278,8 @@ class mgMenu
 
 	void setParentIndex(int idx) { m_parent_index = idx; }
 	int getParentIndex() { return m_parent_index; }
-	void setParentName(string name) { m_parent_name = name; }
-	string getParentName() { return m_parent_name; }
+	void setParentName(std::string name) { m_parent_name = name; }
+	std::string getParentName() { return m_parent_name; }
 
 //! \brief the pointer to the owning mgMainMenu
         mgMainMenu* osd () const
@@ -306,7 +305,7 @@ class mgMenu
         }
 
 //! \brief computes the title
-	 virtual string Title() const = 0;
+	 virtual std::string Title() const = 0;
 
 //! \brief clears the screen, sets a title and the hotkey flag
         void InitOsd (const bool hashotkeys=true);
@@ -348,11 +347,28 @@ class mgMenu
 class mgTree:public mgMenu
 {
     public:
+
 	mgTree();
-//! \brief computes the title
-	string Title() const;
+
+	//! \brief computes the title
+	std::string Title() const;
+
+	bool UpdateIncrementalSearch( eKeys key );
+
+	void TerminateIncrementalSearch( bool remain_on_current );
+
     protected:
         void BuildOsd ();
+
+ private:
+	
+	void UpdateSearchPosition();
+
+	mgIncrementalSearch *m_incsearch;
+
+	std::string m_filter;
+
+	int m_start_position;
 };
 
 //! \brief an mgMenu class for submenus
@@ -361,7 +377,7 @@ class mgSubmenu:public mgMenu
     public:
 	mgSubmenu::mgSubmenu();
 //! \brief computes the title
-	string Title() const;
+	std::string Title() const;
     protected:
         void BuildOsd ();
 };
@@ -371,7 +387,7 @@ class mgMenuOrders:public mgMenu
 {
     public:
 //! \brief computes the title
-	string Title() const;
+	std::string Title() const;
     protected:
         void BuildOsd ();
 };
@@ -382,7 +398,7 @@ class mgMenuOrder : public mgMenu
         mgMenuOrder();
         ~mgMenuOrder();
 //! \brief computes the title
-	string Title() const;
+	std::string Title() const;
 	bool ChangeOrder(eKeys key);
 	void SaveOrder();
     protected:
@@ -402,18 +418,18 @@ class mgTreeCollSelector:public mgMenu
         mgTreeCollSelector();
         ~mgTreeCollSelector();
 //! \brief computes the title
-	string Title() const;
+	std::string Title() const;
     protected:
         void BuildOsd ();
 	virtual mgActions coll_action() = 0;
-	string m_title;
+	std::string m_title;
 };
 
 class mgTreeAddToCollSelector:public mgTreeCollSelector
 {
     public:
 //! \brief computes the title
-	mgTreeAddToCollSelector(string title);
+	mgTreeAddToCollSelector(std::string title);
     protected:
 	virtual mgActions coll_action() { return actAddCollEntry; }
 };
@@ -423,7 +439,7 @@ class mgTreeRemoveFromCollSelector:public mgTreeCollSelector
 {
     public:
 //! \brief computes the title
-	mgTreeRemoveFromCollSelector(string title);
+	mgTreeRemoveFromCollSelector(std::string title);
     protected:
 	virtual mgActions coll_action() { return actRemoveCollEntry; }
 };

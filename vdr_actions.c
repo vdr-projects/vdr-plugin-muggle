@@ -2,7 +2,8 @@
  * \file   vdr_actions.c
  * \brief  Implements all actions for browsing media libraries within VDR
  *
- * \version $Revision: 1.27 $ * \date    $Date: 2004-12-25 16:52:35 +0100 (Sat, 25 Dec 2004) $
+ * \version $Revision: 1.27 $ 
+ * \date    $Date: 2004-12-25 16:52:35 +0100 (Sat, 25 Dec 2004) $
  * \author  Wolfgang Rohdewald
  * \author  Responsible author: $Author: wr61 $
  *
@@ -367,18 +368,48 @@ mgEntry::Execute()
 eOSState
 mgEntry::Process(eKeys key)
 {
-	switch (key) {
+  eOSState result = osUnknown;
+
+  mgTree *menu = dynamic_cast<mgTree*>(m); // und 0 abfangen
+  if( m )
+    {
+      switch (key) 
+	{
 	case kOk:
-		Execute();
-		return osContinue;
-	case k0:
-		osd()->RefreshTitle();
-		return osContinue;
+	  {
+	    menu->TerminateIncrementalSearch( true );
+	    Execute();
+	    
+	    result = osContinue;
+	  } break;
+	case k0...k9:
+	  {
+	    menu->UpdateIncrementalSearch( key );
+	    result = osContinue;
+	  } break;
 	case kBack:
-		return Back();
+	  {
+	    if( menu->UpdateIncrementalSearch( key ) )
+	      { // search is continued
+		result = osContinue;
+	      }
+	    else
+	      { // search is not active at all
+		result = Back();
+	      }
+	  } break;
 	default:
-		return osUnknown;
+	  {
+	    if( key != kNone )
+	      {
+		menu->TerminateIncrementalSearch( true );
+	      }
+	    result = osUnknown;
+	  }
 	}
+    }
+  
+  return result;
 }
 
 

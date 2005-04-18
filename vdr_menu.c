@@ -29,6 +29,7 @@
 #include "vdr_setup.h"
 #include "vdr_menu.h"
 #include "vdr_player.h"
+#include "mg_incremental_search.h"
 #include "i18n.h"
 
 #define DEBUG
@@ -678,8 +679,10 @@ mgMenu::ExecuteButton(eKeys key)
 
 mgTree::mgTree()
 {
-	TreeBlueAction = actShowCommands;
-	CollBlueAction = actShowCommands;
+  TreeBlueAction = actShowCommands;
+  CollBlueAction = actShowCommands;
+  m_incsearch = NULL;
+  m_start_position = 0;
 }
 
 eOSState
@@ -688,10 +691,130 @@ mgMenu::Process (eKeys key)
     return ExecuteButton(key);
 }
 
+void
+mgTree::UpdateSearchPosition()
+{
+  int position = -1;
+  if( !m_incsearch || m_filter.empty() )
+    {
+      position = m_start_position;
+    }
+  else
+    {
+      // find the first item starting with m_filter
+      int counter  = 0;
+      cOsdItem *item = osd()->First();
+      while( item && position < 0 )
+	{
+	  if( !strncasecmp( item->Text(), m_filter.c_str(), m_filter.size() ) )
+	    {
+	      position = counter;
+	    }
+	  else
+	    {
+	      counter ++;
+	      item = (cOsdItem *) item->Next();
+	    }
+	}
+    }
+
+  // Set the title accordingly	
+  osd()->RefreshTitle();
+      
+  // Jump to the current item and refresh
+  osd()->newposition = position;
+  osd()->DisplayGoto();
+}
+
+bool
+mgTree::UpdateIncrementalSearch( eKeys key )
+{
+  bool result; // false if no search active and keystroke was not used
+
+  if( !m_incsearch )
+    {
+      switch( key )
+	{
+	case k0...k9:
+	  { // create a new search object as this is the first keystroke
+	    m_incsearch = new mgIncrementalSearch();
+	    
+	    // remember the position where we started to search
+	    m_start_position = osd()->Current();
+
+	    // interprete this keystroke
+	    m_filter = m_incsearch->KeyStroke( key - k0 );
+	    result = true;
+	    UpdateSearchPosition();
+	  } break;
+	default:
+	  {
+	    result = false;
+	  }
+	}
+    }
+  else
+    { // an incremental search is already active
+      switch( key )
+	{
+	case kBack:
+	  {
+	    m_filter = m_incsearch->Backspace();
+
+	    if( m_filter.empty() )
+	      { // search should be terminated, returning to the previous item
+		TerminateIncrementalSearch( false );
+	      }
+	    else
+	      { // just find the first item for the current search string
+		UpdateSearchPosition();
+	      }
+	    result = true;
+	  } break;
+	case k0...k9:
+	  {
+	    // evaluate the keystroke
+	    m_filter = m_incsearch->KeyStroke( key - k0 );	    
+	    result = true;
+	    UpdateSearchPosition();
+	  } break;
+	default:
+	  {
+	    result = false;
+	  }
+	}  
+    }
+  return result;
+}
+
+void mgTree::TerminateIncrementalSearch( bool remain_on_current )
+{
+  if( m_incsearch )
+    {
+      m_filter = "";
+      delete m_incsearch;
+      m_incsearch = NULL;
+
+      if( remain_on_current )
+	{
+	  m_start_position = osd()->Current();
+	}
+
+      UpdateSearchPosition();
+    }
+}
+
 string
 mgTree::Title () const
 {
-    return selection ()->getListname ();
+  string title = selection ()->getListname ();
+
+  if( !m_filter.empty() )
+    {
+      title += " (" + m_filter + ")";
+    }
+
+  return title;
 }
 
 void
@@ -732,63 +855,65 @@ eOSState mgMainMenu::ProcessKey (eKeys key)
 	}
 	else
         {
-            switch (key)
-            {
-                case kPause:
-                    c->Pause ();
-                    break;
-                case kStop:
-		    if (instant_playing && queue_playing) {
-			    PlayQueue();
-		    }
-		    else
-		    {
-			    queue_playing = false;
-                    	c->Stop ();
-		    }
-                    break;
-                case kChanUp:
-                    c->Forward ();
-                    break;
-                case kChanDn:
-                    c->Backward ();
-                    break;
-                default:
-                    goto otherkeys;
+	  switch (key)
+	      {
+	    case kPause:
+	      c->Pause ();
+	      break;
+	    case kStop:
+	      if (instant_playing && queue_playing) 
+		{
+		  PlayQueue();
+		}
+	      else
+		{
+		  queue_playing = false;
+		  c->Stop ();
+		}
+	      break;
+	    case kChanUp:
+	      c->Forward ();
+	      break;
+	    case kChanDn:
+	      c->Backward ();
+	      break;
+	    default:
+	      goto otherkeys;
             }
             goto pr_exit;
         }
     }
     else
-	    if (key==kPlay) { 
-		    PlayQueue();
-		    goto pr_exit;
-	    }
+      if (key==kPlay) 
+	{ 
+	  PlayQueue();
+	  goto pr_exit;
+	}
 otherkeys:
     newmenu = Menus.back();           // Default: Stay in current menu
     newposition = -1;
-
+    
     {
-	 mgMenu * oldmenu = newmenu;
-
-// item specific key logic:
-   	 result = cOsdMenu::ProcessKey (key);
-
-// mgMenu specific key logic:
-    	if (result == osUnknown)
-        	result = oldmenu->Process (key);
+      mgMenu * oldmenu = newmenu;
+      
+       // item specific key logic:
+      result = cOsdMenu::ProcessKey (key);
+      
+      // mgMenu specific key logic:
+      if (result == osUnknown)
+	result = oldmenu->Process (key);
     }
-// catch osBack for empty OSD lists . This should only happen for playlistitems
-// (because if the list was empty, no mgActions::ProcessKey was ever called)
+    // catch osBack for empty OSD lists . This should only happen for playlistitems
+    // (because if the list was empty, no mgActions::ProcessKey was ever called)
     if (result == osBack)
     {
-	    // do as if there was an entry
-	    mgAction *a = Menus.back()->GenerateAction(actEntry,actEntry);
-	    if (a) 
-	    {
-		result = a->Back();
-		delete a;
-	    }
+      // do as if there was an entry
+      mgAction *a = Menus.back()->GenerateAction(actEntry,actEntry);
+      if (a) 
+	{
+	  result = a->Back();
+	  delete a;
+	}
     }
 
 // do nothing for unknown keys:
