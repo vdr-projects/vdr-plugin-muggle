@@ -119,27 +119,27 @@ int main( int argc, char *argv[] )
 	  } break;
 	case 'h':
 	  {
-	    the_setup.DbHost = optarg;
+	    the_setup.DbHost = strdup(optarg);
 	  } break;
 	case 'n':
 	  {
-	    the_setup.DbName = optarg;
+	    the_setup.DbName = strdup(optarg);
 	  } break;
 	case 'u':
 	  {
-	    the_setup.DbUser = optarg;
+	    the_setup.DbUser = strdup(optarg);
 	  } break;
 	case 'p':
 	  {
-	    the_setup.DbPass = optarg;
+	    the_setup.DbPass = strdup(optarg);
 	  } break;
 	case 's':
 	  {
-	    the_setup.DbSocket = optarg;
+	    the_setup.DbSocket = strdup(optarg);
 	  } break;
 	case 't':
 	  {
-	    the_setup.ToplevelDir = optarg;
+	    the_setup.ToplevelDir = strdup(optarg);
 	  } break;
         case 'z':
           {
