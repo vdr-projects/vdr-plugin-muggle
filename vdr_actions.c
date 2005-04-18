@@ -100,8 +100,6 @@ class mgDoCollEntry : public mgEntry
 {
 	public:
 		virtual eOSState Process(eKeys key);
-	protected:
-		string getTarget();
 };
 
 class mgAddCollEntry : public mgDoCollEntry
@@ -146,23 +144,11 @@ mgDoCollEntry::Process(eKeys key)
     return result;
 }
 
-string
-mgDoCollEntry::getTarget()
-{
-    string result = cOsdItem::Text();
-    if (result[0]==' ')
-	    result.erase(0,5);
-    else
-	    result.erase(0,3);
-    string::size_type lparen = result.find("  [");
-    result.erase(lparen,string::npos);
-    return result;
-}
 
 void
 mgAddCollEntry::Execute()
 {
-    string target = getTarget();
+    string target = selection()->getCurrentValue();
     osd()->default_collection = target;
     if (target == osd()->play_collection)
         if (!PlayerControl())
@@ -176,7 +162,7 @@ mgAddCollEntry::Execute()
 void
 mgRemoveCollEntry::Execute()
 {
-    string target = getTarget();
+    string target = selection()->getCurrentValue();
     int removed = osd()->moveselection->RemoveFromCollection (target);
     osd()->Message1 ("Removed %s entries",ltos(removed));
     osd()->CollectionChanged(target);
@@ -336,7 +322,6 @@ mgEntry::MenuName(const unsigned int idx,const mgListItem& item)
 	unsigned int selcount = item.count();
 	if (selection()->level()<selection()->ordersize()-1 || selcount>1)
 		sprintf(ct,"  [%u]",selcount);
-	// when changing this, also change mgDoCollEntry::getTarget()
 	if (selection()->isCollectionlist())
 	{
 		if (item.value() == osd()->default_collection)
@@ -815,7 +800,7 @@ void
 mgAddAllToCollection::ExecuteMove()
 {
     if (osd() ->Menus.size()>1) 
-	    osd ()->CloseMenu();	// TODO Gebastel...
+	osd ()->CloseMenu();	// TODO Gebastel...
     char *b;
     asprintf(&b,tr("'%s' to collection"),selection()->getCurrentValue().c_str());
     osd ()->newmenu = new mgTreeAddToCollSelector(string(b));
