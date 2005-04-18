@@ -552,7 +552,6 @@ mgSelection::items () const
 
 
 void mgSelection::InitSelection() {
-	m_Directory=".";
     	m_level = 0;
     	m_position = 0;
     	m_items_position = 0;
@@ -632,7 +631,6 @@ mgSelection::InitFrom(mgValmap& nv)
 	}
 	InitSelection();
 	m_fall_through = nv.getbool("FallThrough");
-    	m_Directory = nv.getstr("Directory");
 	while (m_level < nv.getuint("Level"))
 	{
 		char *idx;
@@ -659,7 +657,6 @@ void mgSelection::InitFrom(const mgSelection* s)
 {
     InitSelection();
     m_fall_through = s->m_fall_through;
-    m_Directory = s->m_Directory;
     order = s->order;
     m_level = s->m_level;
     m_position = s->m_position;
@@ -926,7 +923,6 @@ mgSelection::inCollection(const string Name) const
 void mgSelection::DumpState(mgValmap& nv) const
 {
 	nv.put("FallThrough",m_fall_through);
-	nv.put("Directory",m_Directory);
 	nv.put("Level",int(m_level));
     	for (unsigned int i=0;i<order.size();i++)
     	{

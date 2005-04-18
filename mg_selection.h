@@ -355,12 +355,6 @@ class mgSelection
             return items ().size ();
         }
 
-//! sets the directory for the storage of m3u file
-        void SetDirectory (const string directory)
-        {
-            m_Directory = directory;
-        }
-
 /*! returns the name of the current play list. If no play list is active,
  * the name is built from the name of the key fields.
  */
