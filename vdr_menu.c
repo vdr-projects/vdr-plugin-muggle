@@ -497,10 +497,10 @@ mgMenu::AddSelectionItems (mgSelection *sel,mgActions act)
 	// example:
 	if (name[0]!='C')
 		continue;
-#endif
 	// adapt newposition since it refers to position in mgSelection:
 	if ((signed int)i==osd()->newposition)
 		osd()->newposition = osd()->Count();
+#endif
 	a->SetText(name,false);
 	a->setHandle(i);
         osd()->AddItem(a);
@@ -688,20 +688,6 @@ mgMenu::Process (eKeys key)
     return ExecuteButton(key);
 }
 
-eOSState
-mgTree::Process (eKeys key)
-{
-	eOSState result = osUnknown;
-	if (key!=kNone)
-		mgDebug(1,"mgTree::Process(%d)",key);
-	switch (key)
-	{
-		case k0:mgDebug(1,"ich bin k0");break;
-		default: result = mgMenu::Process(key);
-	}
-	return result;
-}
-
 string
 mgTree::Title () const
 {
@@ -726,8 +712,6 @@ mgMainMenu::Message1(const char *msg, const char *arg1)
 eOSState mgMainMenu::ProcessKey (eKeys key)
 {
     eOSState result = osContinue;
-//    if (strcmp(the_setup.DbName,"GiantDisc"))
-	    mgDebug(1,"changed to %s",the_setup.DbName);
     if (Menus.size()<1)
 	mgError("mgMainMenu::ProcessKey: Menus is empty");
     
@@ -914,6 +898,7 @@ mgMenu::setosd(mgMainMenu *osd)
 {
     m_osd = osd;
     m_prevUsingCollection = osd->UsingCollection;
+    m_prevpos=osd->selection()->getPosition();
 }
 
 mgSubmenu::mgSubmenu()
@@ -1024,11 +1009,12 @@ mgTreeCollSelector::mgTreeCollSelector()
 mgTreeCollSelector::~mgTreeCollSelector()
 {
     osd()->UsingCollection = m_prevUsingCollection;
+    osd()->newposition = m_prevpos;
 }
 
 string
 mgTreeCollSelector::Title () const
-{
+{ 
     return m_title;
 }
 

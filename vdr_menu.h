@@ -245,6 +245,7 @@ class mgMenu
         mgMainMenu*  m_osd;
 	const char *HKey(const mgActions act,mgActions on);
     protected:
+	unsigned int m_prevpos;
 	bool m_prevUsingCollection;
 	eOSState ExecuteButton(eKeys key);
 //! \brief adds the wanted action to the OSD menu
@@ -350,7 +351,6 @@ class mgTree:public mgMenu
 	mgTree();
 //! \brief computes the title
 	string Title() const;
-        virtual eOSState Process (eKeys Key);
     protected:
         void BuildOsd ();
 };
