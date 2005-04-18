@@ -15,6 +15,7 @@
 #include <typeinfo>
 #include <string>
 #include <vector>
+#include <assert.h>
 
 #include <menuitems.h>
 #include <tools.h>
@@ -316,25 +317,37 @@ mgEntry::Notify()
 const char *
 mgEntry::MenuName(const unsigned int idx,const mgListItem& item)
 {
-	char *result;
 	char ct[20];
-	ct[0]=0;
 	unsigned int selcount = item.count();
 	if (selection()->level()<selection()->ordersize()-1 || selcount>1)
-		sprintf(ct,"  [%u]",selcount);
+	{
+		char numct[20];
+		sprintf(numct,"%u",selcount);
+		memset(ct,' ',19);
+		if (strlen(numct)<4)
+			ct[6-strlen(numct)*2]=0;
+		else
+			ct[0]=0;
+		strcat(ct,numct);
+		strcat(ct," ");
+		assert(strlen(ct)<20);
+	}
+	else
+		ct[0]=0;
+	char *result;
 	if (selection()->isCollectionlist())
 	{
 		if (item.value() == osd()->default_collection)
-			asprintf(&result,"-> %s%s",item.value().c_str(),ct);
+			asprintf(&result,"-> %s%s",ct,item.value().c_str());
         	else
-			asprintf(&result,"     %s%s",item.value().c_str(),ct);
+			asprintf(&result,"     %s%s",ct,item.value().c_str());
 	}
 	else if (selection()->inCollection())
-		asprintf(&result,"%4d %s%s",idx,item.value().c_str(),ct);
+		asprintf(&result,"%4d %s",idx,item.value().c_str());
 	else if (selection()->isLanguagelist())
-		asprintf(&result,"%s%s",dgettext("iso_639",item.value().c_str()),ct);
+		asprintf(&result,"%s%s",ct,dgettext("iso_639",item.value().c_str()));
 	else
-		asprintf(&result,"%s%s",item.value().c_str(),ct);
+		asprintf(&result,"%s%s",ct,item.value().c_str());
 	return result;
 }
 
