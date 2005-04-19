@@ -696,32 +696,18 @@ mgTree::UpdateSearchPosition()
 {
   int position = -1;
   if( !m_incsearch || m_filter.empty() )
-    {
-      position = m_start_position;
-    }
+	  position = m_start_position;
   else
-    {
+  {
       // find the first item starting with m_filter
-      int counter  = 0;
-      cOsdItem *item = osd()->First();
-      while( item && position < 0 )
-	{
-	  if( !strncasecmp( item->Text(), m_filter.c_str(), m_filter.size() ) )
-	    {
-	      position = counter;
-	    }
-	  else
-	    {
-	      counter ++;
-	      item = (cOsdItem *) item->Next();
-	    }
-	}
-    }
-
-  // Set the title accordingly	
-  osd()->RefreshTitle();
-      
-  // Jump to the current item and refresh
+      mgListItems& listitems = osd()->selection()->listitems;
+      for (unsigned int idx = 0 ; idx < listitems.size(); idx++)
+	  if( strncasecmp( listitems[idx].value().c_str(), m_filter.c_str(), m_filter.size() )>=0 )
+	  {
+	      position = idx;
+	      break;
+	  }
+  }
   osd()->newposition = position;
   osd()->DisplayGoto();
 }
