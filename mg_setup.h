@@ -30,12 +30,14 @@
 class mgSetup
 {
     public:
+        mgSetup (void);
+	~mgSetup (void);
+	bool NoHost() const;
         int InitLoopMode;
         int InitShuffleMode;
         int AudioMode;
         int DisplayMode;
         int BackgrMode;
-        int MenuMode;
         int TargetLevel;
         int LimiterLevel;
         int Only48kHz;
@@ -46,15 +48,10 @@ class mgSetup
         char *DbUser;
         char *DbPass;
         int DbPort;
-        bool GdCompatibility;
         char *ToplevelDir;
-
-        char PathPrefix[MAX_STRING_LEN];
 
 	int DeleteStaleReferences;
 
-    public:
-        mgSetup (void);
 
 };
 

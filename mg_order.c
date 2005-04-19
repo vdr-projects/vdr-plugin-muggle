@@ -4,7 +4,10 @@
 #include <stdio.h>
 #include <assert.h>
 
-mgSelItem zeroitem;
+static map <mgKeyTypes, map<string,string> > map_values;
+static map <mgKeyTypes, map<string,string> > map_ids;
+
+mgKeyMaps KeyMaps;
 
 bool iskeyGenre(mgKeyTypes kt)
 {
@@ -100,50 +103,6 @@ ltos (long l)
 	return s.str ();
 }
 
-mgSelItem::mgSelItem()
-{
-	m_valid=false;
-	m_count=0;
-}
-
-mgSelItem::mgSelItem(string v,string i,unsigned int c)
-{
-	set(v,i,c);
-}
-
-void
-mgSelItem::set(string v,string i,unsigned int c)
-{
-	m_valid=true;
-	m_value=v;
-	m_id=i;
-	m_count=c;
-}
-
-void 
-mgSelItem::operator=(const mgSelItem& from)
-{
-	m_valid=from.m_valid;
-	m_value=from.m_value;
-	m_id=from.m_id;
-	m_count=from.m_count;
-}
-
-void
-mgSelItem::operator=(const mgSelItem* from)
-{
-	m_valid=from->m_valid;
-	m_value=from->m_value;
-	m_id=from->m_id;
-	m_count=from->m_count;
-}
-
-bool
-mgSelItem::operator==(const mgSelItem& other) const
-{
-	return m_value == other.m_value
-		&& m_id == other.m_id;
-}
 
 class mgKeyNormal : public mgKey {
 	public:
@@ -153,15 +112,15 @@ class mgKeyNormal : public mgKey {
 		string value() const;
 		string id() const;
 		bool valid() const;
-		void set(mgSelItem& item);
-		mgSelItem& get();
+		void set(mgListItem& item);
+		mgListItem& get();
 		mgKeyTypes Type() const { return m_kt; }
 		virtual string expr() const { return m_table + "." + m_field; }
 		virtual string table() const { return m_table; }
 	protected:
 		string IdClause(mgmySql &db,string what,string::size_type start=0,string::size_type len=string::npos) const;
 		void AddIdClause(mgmySql &db,mgParts &result,string what) const;
-		mgSelItem m_item;
+		mgListItem m_item;
 		string m_field;
 	private:
 		mgKeyTypes m_kt;
@@ -253,10 +212,10 @@ class mgKeyGenres : public mgKeyNormal {
 		mgKeyGenres() : mgKeyNormal(keyGenres,"tracks","genre1") {};
 		mgKeyGenres(mgKeyTypes kt) : mgKeyNormal(kt,"tracks","genre1") {};
 		mgParts Parts(mgmySql &db,bool orderby=false) const;
+	protected:
 		string map_idfield() const { return "id"; }
 		string map_valuefield() const { return "genre"; }
-		string map_valuetable() const { return "genre"; }
-	protected:
+		string map_table() const { return "genre"; }
 		virtual unsigned int genrelevel() const { return 4; }
 	private:
 		string GenreClauses(mgmySql &db,bool orderby) const;
@@ -344,18 +303,20 @@ class mgKeyLanguage : public mgKeyNormal {
 	public:
 		mgKeyLanguage() : mgKeyNormal(keyLanguage,"tracks","lang") {};
 		mgParts Parts(mgmySql &db,bool orderby=false) const;
+	protected:
 		string map_idfield() const { return "id"; }
 		string map_valuefield() const { return "language"; }
-		string map_valuetable() const { return "language"; }
+		string map_table() const { return "language"; }
 };
 
 class mgKeyCollection: public mgKeyNormal {
 	public:
   	  mgKeyCollection() : mgKeyNormal(keyCollection,"playlist","id") {};
 	  mgParts Parts(mgmySql &db,bool orderby=false) const;
+	protected:
 	 string map_idfield() const { return "id"; }
 	 string map_valuefield() const { return "title"; }
-	 string map_valuetable() const { return "playlist"; }
+	 string map_table() const { return "playlist"; }
 };
 class mgKeyCollectionItem : public mgKeyNormal {
 	public:
@@ -404,12 +365,12 @@ mgKeyNormal::mgKeyNormal(const mgKeyTypes kt, string table, string field)
 }
 
 void
-mgKeyNormal::set(mgSelItem& item)
+mgKeyNormal::set(mgListItem& item)
 {
 	m_item=item;
 }
 
-mgSelItem&
+mgListItem&
 mgKeyNormal::get()
 {
 	return m_item;
@@ -802,7 +763,7 @@ mgOrder::getKeyType(unsigned int idx) const
 	return Keys[idx]->Type();
 }
 
-mgSelItem&
+mgListItem&
 mgOrder::getKeyItem(unsigned int idx) const
 {
 	assert(idx<Keys.size());
@@ -930,6 +891,43 @@ next:
 	}
 	return result;
 }
+
+string
+mgOrder::GetContent(mgmySql &db,unsigned int level,vector < mgContentItem > &content) const
+{
+    mgParts p = Parts(db,level);
+    p.fields.clear();
+    p.fields.push_back("tracks.id");
+    p.fields.push_back("tracks.title");
+    p.fields.push_back("tracks.mp3file");
+    p.fields.push_back("tracks.artist");
+    p.fields.push_back("album.title");
+    p.fields.push_back("tracks.genre1");
+    p.fields.push_back("tracks.genre2");
+    p.fields.push_back("tracks.bitrate");
+    p.fields.push_back("tracks.year");
+    p.fields.push_back("tracks.rating");
+    p.fields.push_back("tracks.length");
+    p.fields.push_back("tracks.samplerate");
+    p.fields.push_back("tracks.channels");
+    p.fields.push_back("tracks.lang");
+    p.tables.push_back("tracks");
+    p.tables.push_back("album");
+    for (unsigned int i = level; i<size(); i++)
+    	p += Key(i)->Parts(db,true);
+     string result = p.sql_select(false); 
+     content.clear ();
+     MYSQL_RES *rows = db.exec_sql (result);
+     if (rows)
+     {
+     	MYSQL_ROW row;
+      	while ((row = mysql_fetch_row (rows)) != 0)
+	content.push_back (mgContentItem (row));
+        mysql_free_result (rows);
+     }
+     return result;
+}
+
 
 //! \brief right now thread locking should not be needed here
 mgReferences::mgReferences()
@@ -1078,13 +1076,179 @@ ktValue(const char * name)
 	return mgKeyTypes(0);
 }
 
+static vector<int> keycounts;
 
-vector<const char*>
-ktNames()
+unsigned int
+mgOrder::keycount(mgKeyTypes kt) const
 {
-	static vector<const char*> result;
-	for (unsigned int i = int(mgKeyTypesLow); i <= int(mgKeyTypesHigh); i++)
-		result.push_back(ktName(mgKeyTypes(i)));
+	if (keycounts.size()==0)
+	{
+		for (unsigned int ki=int(mgKeyTypesLow);ki<=int(mgKeyTypesHigh);ki++)
+		{
+			keycounts.push_back(-1);
+		}
+	}
+	int& count = keycounts[int(kt-mgKeyTypesLow)];
+	if (count==-1)
+	{
+		mgKey* k = ktGenerate(kt);
+		struct mgmySql db;
+		if (k->Enabled(db))
+			count = db.exec_count(k->Parts(db,true).sql_count());
+		else
+			count = 0;
+		delete k;
+	}
+	return count;
+}
+
+
+bool
+mgOrder::UsedBefore(const mgKeyTypes kt,unsigned int level) const
+{
+	if (level>=size())
+		level = size() -1;
+	for (unsigned int lx = 0; lx < level; lx++)
+		if (getKeyType(lx)==kt)
+			return true;
+	return false;
+}
+
+vector <const char *>
+mgOrder::Choices(unsigned int level, unsigned int *current) const
+{
+	vector<const char*> result;
+	if (level>size())
+	{
+		*current = 0;
+		return result;
+	}
+	for (unsigned int ki=int(mgKeyTypesLow);ki<=int(mgKeyTypesHigh);ki++)
+	{
+		mgKeyTypes kt = mgKeyTypes(ki);
+		if (kt==getKeyType(level))
+		{
+			*current = result.size();
+			result.push_back(ktName(kt));
+			continue;
+		}
+		if (UsedBefore(kt,level))
+			continue;
+		if (kt==keyDecade && UsedBefore(keyYear,level))
+			continue;
+		if (kt==keyGenre1)
+		{
+			if (UsedBefore(keyGenre2,level)) continue;
+			if (UsedBefore(keyGenre3,level)) continue;
+			if (UsedBefore(keyGenres,level)) continue;
+		}
+		if (kt==keyGenre2)
+		{
+			if (UsedBefore(keyGenre3,level)) continue;
+			if (UsedBefore(keyGenres,level)) continue;
+		}
+		if (kt==keyGenre3)
+		{
+			if (UsedBefore(keyGenres,level)) continue;
+		}
+		if (kt==keyFolder1)
+		{
+		 	if (UsedBefore(keyFolder2,level)) continue;
+		 	if (UsedBefore(keyFolder3,level)) continue;
+		 	if (UsedBefore(keyFolder4,level)) continue;
+		}
+		if (kt==keyFolder2)
+		{
+		 	if (UsedBefore(keyFolder3,level)) continue;
+		 	if (UsedBefore(keyFolder4,level)) continue;
+		}
+		if (kt==keyFolder3)
+		{
+		 	if (UsedBefore(keyFolder4,level)) continue;
+		}
+		if (kt==keyCollection || kt==keyCollectionItem)
+			result.push_back(ktName(kt));
+		else if (keycount(kt)>1)
+			result.push_back(ktName(kt));
+	}
 	return result;
 }
 
+bool
+mgKey::LoadMap() const
+{
+	map<string,string>& idmap = map_ids[Type()];
+	if (map_idfield().empty())
+	{
+		return false;
+	}
+	mgmySql db;
+	map<string,string>& valmap = map_values[Type()];
+	char *b;
+	asprintf(&b,"select %s,%s from %s;",map_idfield().c_str(),map_valuefield().c_str(),map_table().c_str());
+	MYSQL_RES *rows = db.exec_sql (string(b));
+	free(b);
+	if (rows) 
+	{
+		MYSQL_ROW row;
+		while ((row = mysql_fetch_row (rows)) != 0)
+		{
+			if (row[0] && row[1])
+			{
+				valmap[row[0]] = row[1];
+				idmap[row[1]] = row[0];
+			}
+		}
+		mysql_free_result (rows);
+	}
+	return true;
+}
+
+bool
+mgKeyMaps::loadvalues (mgKeyTypes kt) const
+{
+	if (map_ids.count(kt)>0) 
+		return true;
+	mgKey* k = ktGenerate(kt);
+	bool result = k->LoadMap();
+	delete k;
+	return result;
+}
+
+string
+mgKeyMaps::value(mgKeyTypes kt, string idstr) const
+{
+	if (loadvalues (kt))
+	{
+		map<string,string>& valmap = map_values[kt];
+		map<string,string>::iterator it;
+		it = valmap.find(idstr);
+		if (it!=valmap.end())
+		{
+			string r = it->second;
+			if (!r.empty())
+				return r;
+		}
+		map_ids[kt].clear();
+		loadvalues(kt);
+		it = valmap.find(idstr);
+		if (it!=valmap.end())
+			return valmap[idstr];
+	}
+	return idstr;
+}
+
+string
+mgKeyMaps::id(mgKeyTypes kt, string valstr) const
+{
+	if (loadvalues (kt))
+	{
+		map<string,string>& idmap = map_ids[kt];
+		string v = idmap[valstr];
+		if (kt==keyGenre1) v=v.substr(0,1);
+		if (kt==keyGenre2) v=v.substr(0,2);
+		if (kt==keyGenre3) v=v.substr(0,3);
+		return v;
+	}
+	return valstr;
+}

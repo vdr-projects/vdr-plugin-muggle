@@ -22,7 +22,6 @@
 
 bool needGenre2;
 static bool needGenre2_set;
-bool NoHost();
 bool UsingEmbedded();
 
 class mysqlhandle_t {
@@ -401,19 +400,27 @@ void mgmySql::Create()
   createtime=time(0);
   // create database and tables
   mgDebug(1,"Dropping and recreating database %s",the_setup.DbName);
-  if (sql_query("DROP DATABASE IF EXISTS GiantDisc;"))
+  char buffer[500];
+  sprintf(buffer,"DROP DATABASE IF EXISTS %s",the_setup.DbName);
+  if (strlen(buffer)>400)
+	  mgError("name of database too long: %s",the_setup.DbName);
+  if (sql_query(buffer))
   {
-  	mgWarning("Cannot drop existing database:%s",mysql_error (m_db));
+  	mgWarning("Cannot drop %s:%s",the_setup.DbName,
+			mysql_error (m_db));
 	return;
   }
-  if (sql_query("CREATE DATABASE GiantDisc;"))
+  sprintf(buffer,"CREATE DATABASE %s",the_setup.DbName);
+  if (sql_query(buffer))
   {
-  	mgWarning("Cannot create database:%s",mysql_error (m_db));
+  	mgWarning("Cannot create %s:%s",the_setup.DbName,mysql_error (m_db));
 	return;
   }
 
   if (!UsingEmbedded())
-  	sql_query("grant all privileges on GiantDisc.* to vdr@localhost;");
+	sprintf(buffer,"grant all privileges on %s.* to vdr@localhost",
+			the_setup.DbName);
+  	sql_query(buffer);
   	// ignore error. If we can create the data base, we can do everything
   	// with it anyway.
 
@@ -426,7 +433,8 @@ void mgmySql::Create()
   	if (sql_query (db_cmds[i]))
   	{
     		mgWarning("%20s: %s",db_cmds[i],mysql_error (m_db));
-  		sql_query("DROP DATABASE IF EXISTS GiantDisc;");	// clean up
+		sprintf(buffer,"DROP DATABASE IF EXISTS %s",the_setup.DbName);
+  		sql_query(buffer);	// clean up
 		return;
 	}
     }
@@ -486,12 +494,6 @@ mgmySql::Connected () const
 	return m_database_found;
 }
 
-bool
-NoHost()
-{
-	return (!the_setup.DbHost
-		|| strlen(the_setup.DbHost)==0);
-}
 
 bool
 UsingEmbedded()
@@ -499,7 +501,7 @@ UsingEmbedded()
 #ifdef HAVE_ONLY_SERVER
 	return false;
 #else
-	return NoHost();
+	return the_setup.NoHost();
 #endif
 }
 
@@ -519,7 +521,7 @@ mgmySql::Connect ()
     }
     else
     {
-    	if (NoHost() || !strcmp(the_setup.DbHost,"localhost"))
+    	if (the_setup.NoHost() || !strcmp(the_setup.DbHost,"localhost"))
       		mgDebug(1,"Using socket %s for connecting to local system as user %s.",
 		      	the_setup.DbSocket, the_setup.DbUser);
     	else
@@ -539,9 +541,11 @@ mgmySql::Connect ()
     {
 	    m_database_found = mysql_select_db(m_db,the_setup.DbName)==0;
 	    {
-		    if (!Connected())
+		    if (Connected())
+			mgDebug(1,"Selected database %s",the_setup.DbName);
+		    else
 		    	if (!createtime)
-			    mgWarning(mysql_error(m_db));
+			    mgWarning("%s:%s",the_setup.DbName,mysql_error(m_db));
 	    }
     }
     if (!needGenre2_set && Connected())

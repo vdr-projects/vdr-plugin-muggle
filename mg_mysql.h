@@ -61,7 +61,6 @@ class mgmySql
   bool ServerConnected() const;
   bool Connected() const;
   bool HasFolderFields() const { return m_hasfolderfields;}
-  void Connect();
   //! \brief create database and tables
   void Create();
   void FillTables();
@@ -71,6 +70,7 @@ class mgmySql
   bool m_database_found;
   bool m_hasfolderfields;
   bool sql_query(const char *query);
+  void Connect();
 };
 
 #endif

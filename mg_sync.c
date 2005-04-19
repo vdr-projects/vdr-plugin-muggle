@@ -29,13 +29,13 @@
 #include "mg_setup.h"
 
 char *
-mgSync::sql_Cstring(TagLib::String s,char *buf)
+mgDbGd::sql_Cstring(TagLib::String s,char *buf)
 {
 	return m_db.sql_Cstring(s.toCString(),buf);
 }
 
 char *
-mgSync::lower(char *s)
+mgDbGd::lower(char *s)
 {
 	char *p=s;
 	while (*p)
@@ -48,7 +48,7 @@ mgSync::lower(char *s)
 }
 
 TagLib::String
-mgSync::getlanguage(const char *filename)
+mgDbGd::getlanguage(const char *filename)
 {
       TagLib::String result = "";
       TagLib::ID3v2::Tag * id3v2tag=0;
@@ -78,7 +78,7 @@ mgSync::getlanguage(const char *filename)
 }
 
 char *
-mgSync::getAlbum(const char *c_album,const char *c_artist,const char *c_directory)
+mgDbGd::getAlbum(const char *c_album,const char *c_artist,const char *c_directory)
 {
 	char * result;
 	char *b;
@@ -134,8 +134,11 @@ mgSync::getAlbum(const char *c_album,const char *c_artist,const char *c_director
 	return result;
 }
 
-mgSync::mgSync()
+mgDbGd::mgDbGd(bool separate_thread)
 {
+	m_separate_thread = separate_thread;
+	if (separate_thread)
+		mysql_thread_init();
       	m_genre_rows=0;
 	if (!m_db.Connected())
 		return;
@@ -150,13 +153,15 @@ mgSync::mgSync()
 	srandom( tv.tv_usec );
 }
 
-mgSync::~mgSync()
+mgDbGd::~mgDbGd()
 {
-  if (m_genre_rows) mysql_free_result(m_genre_rows);
+	if (m_genre_rows) mysql_free_result(m_genre_rows);
+	if (m_separate_thread)
+		mysql_thread_end();
 }
 
 void
-mgSync::UpdateTrack(long trackid)
+mgDbGd::UpdateTrack(long trackid)
 {
 	char sql[7000];
 	char *c_cddbid=getAlbum(c_album,c_artist,c_directory);
@@ -171,7 +176,7 @@ mgSync::UpdateTrack(long trackid)
 }
 
 void
-mgSync::AddTrack()
+mgDbGd::AddTrack()
 {
 	char sql[7000];
 	char *c_cddbid=getAlbum(c_album,c_artist,c_directory);
@@ -188,7 +193,7 @@ mgSync::AddTrack()
 }
 
 bool
-mgSync::GetFileInfo(const char *filename)
+mgDbGd::GetFileInfo(const char *filename)
 {
 	TagLib::FileRef f( filename) ;
 	if (f.isNull())
@@ -235,17 +240,20 @@ mgSync::GetFileInfo(const char *filename)
 }
 
 void
-mgSync::SyncFile(const char *filename)
+mgDbGd::SyncFile(const char *filename)
 {
 	if (!strncmp(filename,"./",2))	// strip leading ./
 		filename += 2;
-	if (strlen(filename)>255)
+	const char *cfilename=filename;
+	if (isdigit(filename[0]) && isdigit(filename[1]) && filename[2]=='/' && !strchr(filename+3,'/'))
+		cfilename=cfilename+3;
+	if (strlen(cfilename)>255)
 	{
 		mgWarning("Length of file exceeds database field capacity: %s", filename);
 		return;
 	}
 	mgDebug(3,"Importing %s",filename);
-	sql_Cstring(filename,c_mp3file);
+	sql_Cstring(cfilename,c_mp3file);
 	char sql[600];
 	sprintf(sql,"SELECT id from tracks WHERE mp3file=%s",c_mp3file);
 	string s = m_db.get_col0(sql);
@@ -262,7 +270,7 @@ mgSync::SyncFile(const char *filename)
 }
 
 void
-mgSync::Sync(char * const * path_argv, bool delete_missing)
+mgDbGd::Sync(char * const * path_argv, bool delete_missing)
 {
   extern void showimportcount(unsigned int,bool final=false);
   if (!m_db.Connected())
@@ -299,7 +307,7 @@ mgSync::Sync(char * const * path_argv, bool delete_missing)
 }
 
 void
-mgSync::Create()
+mgDbGd::Create()
 {
-	m_db.Create();
+       m_db.Create();
 }

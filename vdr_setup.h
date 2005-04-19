@@ -29,8 +29,6 @@
  */
 class mgMenuSetup : public cMenuSetupPage
 {
-    private:
-        mgSetup m_data;
     protected:
         virtual void Store ();
     public:

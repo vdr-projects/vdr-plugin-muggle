@@ -22,23 +22,21 @@
 #include <plugin.h>
 
 #if VDRVERSNUM >= 10307
-#include <vdr/interface.h>
-#include <vdr/skins.h>
+#include <interface.h>
+#include <skins.h>
 #endif
 
 #include "vdr_setup.h"
 #include "vdr_menu.h"
 #include "vdr_player.h"
+
+#include "mg_incremental_search.h"
+#include "mg_selection.h"
+
 #include "i18n.h"
 
 #define DEBUG
 #include "mg_tools.h"
-
-#include <config.h>
-#if VDRVERSNUM >= 10307
-#include <vdr/interface.h>
-#include <vdr/skins.h>
-#endif
 
 void
 mgStatus::OsdCurrentItem(const char* Text)
@@ -55,7 +53,8 @@ mgStatus::OsdCurrentItem(const char* Text)
 void Play(mgSelection *sel,const bool select) {
 	mgSelection *s = new mgSelection(sel);
 	if (select) s->select();
-	if (s->empty()) 
+	s->skipItems(0);	// make sure we start with a valid item
+	if (s->empty()) 	// no valid item exists
 	{
 		delete s;
 		return;
@@ -346,9 +345,6 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
     m_root->CollGreenAction = mgActions(nmain.getuint("CollGreenAction"));
     m_root->CollYellowAction = mgActions(nmain.getuint("CollYellowAction"));
     AddMenu (m_root,posi);
-
-    //SetCurrent (Get (posi));
-
     forcerefresh = false;
 }
 
@@ -414,13 +410,13 @@ mgMainMenu::LoadExternalCommands()
 #if VDRVERSNUM >= 10318
     cString cmd_file = AddDirectory (cPlugin::ConfigDirectory ("muggle"),
         "playlist_commands.conf");
-    mgDebug (1, "mgMuggle::Start: 10318 Looking for file %s", *cmd_file);
+    mgDebug (1, "mgMuggle::Start: %d Looking for file %s",VDRVERSNUM, *cmd_file);
     bool have_cmd_file = external_commands->Load (*cmd_file);
 #else
     const char *
         cmd_file = (const char *) AddDirectory (cPlugin::ConfigDirectory ("muggle"),
         "playlist_commands.conf");
-    mgDebug (1, "mgMuggle::Start: 10317 Looking for file %s", cmd_file);
+    mgDebug (1, "mgMuggle::Start: %d Looking for file %s",VDRVERSNUM, cmd_file);
     bool have_cmd_file = external_commands->Load ((const char *) cmd_file);
 #endif
 
@@ -495,20 +491,20 @@ mgMainMenu::AddOrderActions(mgMenu* m)
 void
 mgMenu::AddSelectionItems (mgSelection *sel,mgActions act)
 {
-    for (unsigned int i = 0; i < sel->items.size (); i++)
+    for (unsigned int i = 0; i < sel->listitems.size (); i++)
     {
     	mgAction *a = GenerateAction(act, actEntry);
 	if (!a) continue;
-	const char *name = a->MenuName(i+1,sel->items[i]);
+	const char *name = a->MenuName(i+1,sel->listitems[i]);
 	// add incremental filter here
 #if 0
 	// example:
 	if (name[0]!='C')
 		continue;
-#endif
 	// adapt newposition since it refers to position in mgSelection:
 	if ((signed int)i==osd()->newposition)
 		osd()->newposition = osd()->Count();
+#endif
 	a->SetText(name,false);
 	a->setHandle(i);
         osd()->AddItem(a);
@@ -564,18 +560,25 @@ mgMenu::SetHelpKeys(mgActions on)
 
 
 void
-mgMenu::InitOsd (const char *title,const bool hashotkeys)
+mgMainMenu::RefreshTitle()
 {
-    osd ()->InitOsd (title,hashotkeys);
+    SetTitle(Menus.back()->Title().c_str());
+    Display ();
+}
+
+void
+mgMenu::InitOsd (const bool hashotkeys)
+{
+    osd ()->InitOsd (Title(),hashotkeys);
     SetHelpKeys();	// Default, will be overridden by the single items
 }
 
 
 void
-mgMainMenu::InitOsd (const char *title,const bool hashotkeys)
+mgMainMenu::InitOsd (string title,const bool hashotkeys)
 {
     Clear ();
-    SetTitle (title);
+    SetTitle (title.c_str());
     if (hashotkeys) SetHasHotkeys ();
 }
 
@@ -588,13 +591,19 @@ mgMainMenu::AddItem(mgAction *a)
     Add(c);
 }
 
-void
-mgSubmenu::BuildOsd ()
+string
+mgSubmenu::Title() const
 {
     static char b[100];
     snprintf(b,99,tr("Commands:%s"),trim(osd()->selection()->getCurrentValue()).c_str());
+    return b;
+}
+
+void
+mgSubmenu::BuildOsd ()
+{
     mgActions on = osd()->CurrentType();
-    InitOsd (b);
+    InitOsd ();
     if (!osd ()->Parent ())
 	    return;
     AddAction(actInstantPlay,on);
@@ -606,7 +615,7 @@ mgSubmenu::BuildOsd ()
     AddAction(actDeleteCollection,on);
     AddAction(actClearCollection,on);
     AddAction(actChooseOrder,on);
-    AddAction(actExportTracklist,on);
+    AddAction(actExportItemlist,on);
     cCommand *command;
     if (osd()->external_commands)
     {
@@ -673,8 +682,10 @@ mgMenu::ExecuteButton(eKeys key)
 
 mgTree::mgTree()
 {
-	TreeBlueAction = actShowCommands;
-	CollBlueAction = actShowCommands;
+  TreeBlueAction = actShowCommands;
+  CollBlueAction = actShowCommands;
+  m_incsearch = NULL;
+  m_start_position = 0;
 }
 
 eOSState
@@ -683,24 +694,122 @@ mgMenu::Process (eKeys key)
     return ExecuteButton(key);
 }
 
-eOSState
-mgTree::Process (eKeys key)
+void
+mgTree::UpdateSearchPosition()
 {
-	eOSState result = osUnknown;
-	if (key!=kNone)
-		mgDebug(1,"mgTree::Process(%d)",key);
-	switch (key)
+  int position = -1;
+  if( !m_incsearch || m_filter.empty() )
+	  position = m_start_position;
+  else
+  {
+      // find the first item starting with m_filter
+      mgSelection::mgListItems& listitems = osd()->selection()->listitems;
+      for (unsigned int idx = 0 ; idx < listitems.size(); idx++)
+	  if( strncasecmp( listitems[idx].value().c_str(), m_filter.c_str(), m_filter.size() )>=0 )
+	  {
+	      position = idx;
+	      break;
+	  }
+  }
+  osd()->newposition = position;
+  osd()->DisplayGoto();
+}
+
+bool
+mgTree::UpdateIncrementalSearch( eKeys key )
+{
+  bool result; // false if no search active and keystroke was not used
+
+  if( !m_incsearch )
+    {
+      switch( key )
 	{
-		case k0:mgDebug(1,"ich bin k0");break;
-		default: result = mgMenu::Process(key);
+	case k0...k9:
+	  { // create a new search object as this is the first keystroke
+	    m_incsearch = new mgIncrementalSearch();
+	    
+	    // remember the position where we started to search
+	    m_start_position = osd()->Current();
+
+	    // interprete this keystroke
+	    m_filter = m_incsearch->KeyStroke( key - k0 );
+	    result = true;
+	    UpdateSearchPosition();
+	  } break;
+	default:
+	  {
+	    result = false;
+	  }
 	}
-	return result;
+    }
+  else
+    { // an incremental search is already active
+      switch( key )
+	{
+	case kBack:
+	  {
+	    m_filter = m_incsearch->Backspace();
+
+	    if( m_filter.empty() )
+	      { // search should be terminated, returning to the previous item
+		TerminateIncrementalSearch( false );
+	      }
+	    else
+	      { // just find the first item for the current search string
+		UpdateSearchPosition();
+	      }
+	    result = true;
+	  } break;
+	case k0...k9:
+	  {
+	    // evaluate the keystroke
+	    m_filter = m_incsearch->KeyStroke( key - k0 );	    
+	    result = true;
+	    UpdateSearchPosition();
+	  } break;
+	default:
+	  {
+	    result = false;
+	  }
+	}  
+    }
+  return result;
+}
+
+void mgTree::TerminateIncrementalSearch( bool remain_on_current )
+{
+  if( m_incsearch )
+    {
+      m_filter = "";
+      delete m_incsearch;
+      m_incsearch = NULL;
+
+      if( remain_on_current )
+	{
+	  m_start_position = osd()->Current();
+	}
+
+      UpdateSearchPosition();
+    }
+}
+
+string
+mgTree::Title () const
+{
+  string title = selection ()->getListname ();
+
+  if( !m_filter.empty() )
+    {
+      title += " (" + m_filter + ")";
+    }
+
+  return title;
 }
 
 void
 mgTree::BuildOsd ()
 {
-    InitOsd (selection ()->getListname ().c_str (), false);
+    InitOsd (false);
     AddSelectionItems (selection());
 }
 
@@ -715,7 +824,6 @@ mgMainMenu::Message1(const char *msg, const char *arg1)
 eOSState mgMainMenu::ProcessKey (eKeys key)
 {
     eOSState result = osContinue;
-
     if (Menus.size()<1)
 	mgError("mgMainMenu::ProcessKey: Menus is empty");
     
@@ -736,63 +844,65 @@ eOSState mgMainMenu::ProcessKey (eKeys key)
 	}
 	else
         {
-            switch (key)
-            {
-                case kPause:
-                    c->Pause ();
-                    break;
-                case kStop:
-		    if (instant_playing && queue_playing) {
-			    PlayQueue();
-		    }
-		    else
-		    {
-			    queue_playing = false;
-                    	c->Stop ();
-		    }
-                    break;
-                case kChanUp:
-                    c->Forward ();
-                    break;
-                case kChanDn:
-                    c->Backward ();
-                    break;
-                default:
-                    goto otherkeys;
+	  switch (key)
+	      {
+	    case kPause:
+	      c->Pause ();
+	      break;
+	    case kStop:
+	      if (instant_playing && queue_playing) 
+		{
+		  PlayQueue();
+		}
+	      else
+		{
+		  queue_playing = false;
+		  c->Stop ();
+		}
+	      break;
+	    case kChanUp:
+	      c->Forward ();
+	      break;
+	    case kChanDn:
+	      c->Backward ();
+	      break;
+	    default:
+	      goto otherkeys;
             }
             goto pr_exit;
         }
     }
     else
-	    if (key==kPlay) { 
-		    PlayQueue();
-		    goto pr_exit;
-	    }
+      if (key==kPlay) 
+	{ 
+	  PlayQueue();
+	  goto pr_exit;
+	}
 otherkeys:
     newmenu = Menus.back();           // Default: Stay in current menu
     newposition = -1;
-
+    
     {
-	 mgMenu * oldmenu = newmenu;
-
-// item specific key logic:
-   	 result = cOsdMenu::ProcessKey (key);
-
-// mgMenu specific key logic:
-    	if (result == osUnknown)
-        	result = oldmenu->Process (key);
+      mgMenu * oldmenu = newmenu;
+      
+       // item specific key logic:
+      result = cOsdMenu::ProcessKey (key);
+      
+      // mgMenu specific key logic:
+      if (result == osUnknown)
+	result = oldmenu->Process (key);
     }
-// catch osBack for empty OSD lists . This should only happen for playlistitems
-// (because if the list was empty, no mgActions::ProcessKey was ever called)
+    // catch osBack for empty OSD lists . This should only happen for playlistitems
+    // (because if the list was empty, no mgActions::ProcessKey was ever called)
     if (result == osBack)
     {
-	    // do as if there was an entry
-	    mgAction *a = Menus.back()->GenerateAction(actEntry,actEntry);
-	    if (a) 
-	    {
-		result = a->Back();
-		delete a;
-	    }
+      // do as if there was an entry
+      mgAction *a = Menus.back()->GenerateAction(actEntry,actEntry);
+      if (a) 
+	{
+	  result = a->Back();
+	  delete a;
+	}
     }
 
 // do nothing for unknown keys:
@@ -873,13 +983,13 @@ showimportcount(unsigned int count,bool final=false)
 	char b[100];
 	if (final)
 	{
-		sprintf(b,tr("Import done:Imported %d tracks"),count);
+		sprintf(b,tr("Import done:Imported %d items"),count);
 		assert(strlen(b)<100);
 		showmessage(b,1);
 	}
 	else
 	{
-		sprintf(b,tr("Imported %d tracks..."),count);
+		sprintf(b,tr("Imported %d items..."),count);
 		assert(strlen(b)<100);
 		showmessage(b);
 	}
@@ -902,6 +1012,7 @@ mgMenu::setosd(mgMainMenu *osd)
 {
     m_osd = osd;
     m_prevUsingCollection = osd->UsingCollection;
+    m_prevpos=osd->selection()->getPosition();
 }
 
 mgSubmenu::mgSubmenu()
@@ -910,6 +1021,11 @@ mgSubmenu::mgSubmenu()
     CollBlueAction = actShowList;
 }
 
+string
+mgMenuOrders::Title() const
+{
+	return tr("Select an order");
+}
 
 void
 mgMenuOrders::BuildOsd ()
@@ -917,7 +1033,7 @@ mgMenuOrders::BuildOsd ()
 	TreeRedAction = actEditOrder;
 	TreeGreenAction = actCreateOrder;
 	TreeYellowAction = actDeleteOrder;
-    	InitOsd (tr ("Select an order"));
+    	InitOsd ();
 	osd()->AddOrderActions(this);
 }
 
@@ -932,6 +1048,12 @@ mgMenuOrder::~mgMenuOrder()
 	    delete m_order;
 }
 
+string
+mgMenuOrder::Title() const
+{
+	return m_order->Name();
+}
+
 void
 mgMenuOrder::BuildOsd ()
 {
@@ -940,17 +1062,16 @@ mgMenuOrder::BuildOsd ()
         m_order = new mgOrder;
 	*m_order = *(osd()->getOrder(getParentIndex()));
     }
-    InitOsd (m_order->Name().c_str());
+    InitOsd ();
     m_keytypes.clear();
     m_keytypes.reserve(mgKeyTypesNr+1);
     m_keynames.clear();
     m_keynames.reserve(50);
     m_orderbycount = m_order->getOrderByCount();
-    mgDebug(1,"m_orderbycount wird %d",m_orderbycount);
     for (unsigned int i=0;i<m_order->size();i++)
     {
 	unsigned int kt;
-	m_keynames.push_back(selection()->choices(m_order,i,&kt));
+	m_keynames.push_back(m_order->Choices(i,&kt));
 	m_keytypes.push_back(kt);
 	char buf[20];
 	sprintf(buf,tr("Key %d"),i+1);
@@ -972,7 +1093,6 @@ mgMenuOrder::ChangeOrder(eKeys key)
     	newtypes.push_back(ktValue(m_keynames[i][m_keytypes[i]]));
     mgOrder n = mgOrder(newtypes);
     n.setOrderByCount(m_orderbycount);
-    mgDebug(1,"m_orderbycount %d nach n",m_orderbycount);
     bool result = !(n == *m_order);
     *m_order = n;
     if (result)
@@ -1003,6 +1123,13 @@ mgTreeCollSelector::mgTreeCollSelector()
 mgTreeCollSelector::~mgTreeCollSelector()
 {
     osd()->UsingCollection = m_prevUsingCollection;
+    osd()->newposition = m_prevpos;
+}
+
+string
+mgTreeCollSelector::Title () const
+{ 
+    return m_title;
 }
 
 void
@@ -1010,7 +1137,7 @@ mgTreeCollSelector::BuildOsd ()
 {
     osd()->UsingCollection = true;
     mgSelection *coll = osd()->collselection();
-    InitOsd (m_title.c_str());
+    InitOsd ();
     coll->leave_all();
     coll->setPosition(osd()->default_collection);
     AddSelectionItems (coll,coll_action());
@@ -1042,7 +1169,6 @@ mgMainMenu::DisplayGoto ()
     }
     Display ();
 }
-
 
 void
 mgMenu::Display ()

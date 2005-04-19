@@ -20,7 +20,7 @@
 #include <getopt.h>
 #include <config.h>
 
-static const char *VERSION = "0.1.6";
+static const char *VERSION = "0.1.7";
 static const char *DESCRIPTION = "Media juggle plugin for VDR";
 static const char *MAINMENUENTRY = "Muggle";
 
@@ -47,15 +47,6 @@ mgMuggle::MainMenuEntry (void)
 
 mgMuggle::mgMuggle (void)
 {
-// defaults for database arguments
-    the_setup.DbHost = 0;
-    the_setup.DbSocket = 0;
-    the_setup.DbPort = 0;
-    the_setup.DbName = strdup ("GiantDisc");
-    the_setup.DbUser = 0;
-    the_setup.DbPass = 0;
-    the_setup.GdCompatibility = false;
-    the_setup.ToplevelDir = strdup ("/mnt/music/");
 #ifndef HAVE_ONLY_SERVER
     char *buf;
     asprintf(&buf,"%s/.muggle",getenv("HOME"));
@@ -68,11 +59,6 @@ mgMuggle::mgMuggle (void)
 void
 mgMuggle::Stop (void)
 {
-    free(the_setup.DbHost);
-    free(the_setup.DbName);
-    free(the_setup.DbUser);
-    free(the_setup.DbPass);
-    free(the_setup.ToplevelDir);
 }
 
 
@@ -87,7 +73,7 @@ mgMuggle::CommandLineHelp (void)
         "  -h HHHH,  --host=HHHH     specify database host (default is mysql embedded)\n"
 #endif
         "  -s SSSS   --socket=PATH   specify database socket\n"
-        "  -n NNNN,  --name=NNNN     specify database name (overridden by -g)\n"
+        "  -n NNNN,  --name=NNNN     specify database name (default is GiantDisc)\n"
         "  -p PPPP,  --port=PPPP     specify port of database server (default is )\n"
         "  -u UUUU,  --user=UUUU     specify database user (default is )\n"
         "  -w WWWW,  --password=WWWW specify database password (default is empty)\n"
@@ -95,7 +81,6 @@ mgMuggle::CommandLineHelp (void)
 #ifndef HAVE_ONLY_SERVER
         "  -d DIRN,  --datadir=DIRN  specify directory for embedded sql data (default is $HOME/.muggle)\n"
 #endif
-        "  -g,       --giantdisc     enable full Giantdisc compatibility mode\n"
         "  -v,       --verbose       specify debug level. The higher the more. Default is 1\n"
 	"\n"
 	"if the specified host is localhost, sockets will be used if possible.\n"
@@ -130,7 +115,6 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
         {"datadir", required_argument, NULL, 'd'},
 #endif
         {"toplevel", required_argument, NULL, 't'},
-        {"giantdisc", no_argument, NULL, 'g'},
         {NULL}
     };
 
@@ -139,9 +123,9 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
         option_index = 0;
     while ((c =
 #ifndef HAVE_ONLY_SERVER
-        getopt_long (argc, argv, "gh:s:n:p:t:u:w:d:v:", long_options,
+        getopt_long (argc, argv, "h:s:n:p:t:u:w:d:v:", long_options,
 #else
-        getopt_long (argc, argv, "gh:s:n:p:t:u:w:v:", long_options,
+        getopt_long (argc, argv, "h:s:n:p:t:u:w:v:", long_options,
 #endif
         &option_index)) != -1)
     {
@@ -201,12 +185,6 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
                     the_setup.ToplevelDir =
                         strcpyrealloc (the_setup.ToplevelDir, optarg);
                 }
-            }
-            break;
-            case 'g':
-            {
-                the_setup.DbName = strcpyrealloc (the_setup.DbName, "GiantDisc");
-                the_setup.GdCompatibility = true;
             }
             break;
             default:

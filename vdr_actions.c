@@ -2,7 +2,8 @@
  * \file   vdr_actions.c
  * \brief  Implements all actions for browsing media libraries within VDR
  *
- * \version $Revision: 1.27 $ * \date    $Date: 2004-12-25 16:52:35 +0100 (Sat, 25 Dec 2004) $
+ * \version $Revision: 1.27 $ 
+ * \date    $Date: 2004-12-25 16:52:35 +0100 (Sat, 25 Dec 2004) $
  * \author  Wolfgang Rohdewald
  * \author  Responsible author: $Author: wr61 $
  *
@@ -15,6 +16,7 @@
 #include <typeinfo>
 #include <string>
 #include <vector>
+#include <assert.h>
 
 #include <menuitems.h>
 #include <tools.h>
@@ -24,7 +26,7 @@
 #include "vdr_actions.h"
 #include "vdr_menu.h"
 #include "i18n.h"
-#include <vdr/interface.h>
+#include <interface.h>
 
 #define DEBUG
 #include "mg_tools.h"
@@ -74,7 +76,7 @@ class mgEntry : public mgOsdItem
 	public:
 		void Notify();
 		bool Enabled(mgActions on) { return IsEntry(on);}
-        	const char *MenuName (const unsigned int idx,const mgSelItem& item);
+        	const char *MenuName (const unsigned int idx,const mgListItem& item);
 		eOSState Process(eKeys key);
 		void Execute();
 		eOSState Back();
@@ -100,8 +102,6 @@ class mgDoCollEntry : public mgEntry
 {
 	public:
 		virtual eOSState Process(eKeys key);
-	protected:
-		string getTarget();
 };
 
 class mgAddCollEntry : public mgDoCollEntry
@@ -146,23 +146,11 @@ mgDoCollEntry::Process(eKeys key)
     return result;
 }
 
-string
-mgDoCollEntry::getTarget()
-{
-    string result = cOsdItem::Text();
-    if (result[0]==' ')
-	    result.erase(0,5);
-    else
-	    result.erase(0,3);
-    string::size_type lparen = result.find("  [");
-    result.erase(lparen,string::npos);
-    return result;
-}
 
 void
 mgAddCollEntry::Execute()
 {
-    string target = getTarget();
+    string target = selection()->getCurrentValue();
     osd()->default_collection = target;
     if (target == osd()->play_collection)
         if (!PlayerControl())
@@ -176,7 +164,7 @@ mgAddCollEntry::Execute()
 void
 mgRemoveCollEntry::Execute()
 {
-    string target = getTarget();
+    string target = selection()->getCurrentValue();
     int removed = osd()->moveselection->RemoveFromCollection (target);
     osd()->Message1 ("Removed %s entries",ltos(removed));
     osd()->CollectionChanged(target);
@@ -243,13 +231,13 @@ class mgCommand : public mgOsdItem
 class mgActOrder : public mgOsdItem
 {
 	public:
-		const char* MenuName(const unsigned int idx,const mgSelItem& item);
+		const char* MenuName(const unsigned int idx,const mgListItem& item);
 		virtual eOSState Process(eKeys key);
 		void Execute();
 };
 
 const char*
-mgActOrder::MenuName(const unsigned int idx,const mgSelItem& item)
+mgActOrder::MenuName(const unsigned int idx,const mgListItem& item)
 {
 	return strdup(item.value().c_str());
 }
@@ -282,8 +270,8 @@ mgActOrder::Execute()
 	mgOrder oldorder = s->getOrder();
 	mgContentItem o;
 	s->select();
-	if (s->getNumTracks()==1)
-		o = s->getTrack(0);
+	if (s->getNumItems()==1)
+		o = s->getItem(0);
 	osd()->UseNormalSelection();	// Default for all orders
 	osd()->setOrder(s,osd()->Current());
 	mgSelection *newsel = osd()->selection();
@@ -328,28 +316,39 @@ mgEntry::Notify()
 
 
 const char *
-mgEntry::MenuName(const unsigned int idx,const mgSelItem& item)
+mgEntry::MenuName(const unsigned int idx,const mgListItem& item)
 {
-	char *result;
 	char ct[20];
-	ct[0]=0;
 	unsigned int selcount = item.count();
 	if (selection()->level()<selection()->ordersize()-1 || selcount>1)
-		sprintf(ct,"  [%u]",selcount);
-	// when changing this, also change mgDoCollEntry::getTarget()
+	{
+		char numct[20];
+		sprintf(numct,"%u",selcount);
+		memset(ct,' ',19);
+		if (strlen(numct)<4)
+			ct[6-strlen(numct)*2]=0;
+		else
+			ct[0]=0;
+		strcat(ct,numct);
+		strcat(ct," ");
+		assert(strlen(ct)<20);
+	}
+	else
+		ct[0]=0;
+	char *result;
 	if (selection()->isCollectionlist())
 	{
 		if (item.value() == osd()->default_collection)
-			asprintf(&result,"-> %s%s",item.value().c_str(),ct);
+			asprintf(&result,"-> %s%s",ct,item.value().c_str());
         	else
-			asprintf(&result,"     %s%s",item.value().c_str(),ct);
+			asprintf(&result,"     %s%s",ct,item.value().c_str());
 	}
 	else if (selection()->inCollection())
-		asprintf(&result,"%4d %s%s",idx,item.value().c_str(),ct);
+		asprintf(&result,"%4d %s",idx,item.value().c_str());
 	else if (selection()->isLanguagelist())
-		asprintf(&result,"%s%s",dgettext("iso_639",item.value().c_str()),ct);
+		asprintf(&result,"%s%s",ct,dgettext("iso_639",item.value().c_str()));
 	else
-		asprintf(&result,"%s%s",item.value().c_str(),ct);
+		asprintf(&result,"%s%s",ct,item.value().c_str());
 	return result;
 }
 
@@ -369,15 +368,50 @@ mgEntry::Execute()
 eOSState
 mgEntry::Process(eKeys key)
 {
-	switch (key) {
+  eOSState result = osUnknown;
+
+  mgTree *menu = dynamic_cast<mgTree*>(m); // und 0 abfangen
+      switch (key) 
+	{
 	case kOk:
-		Execute();
-		return osContinue;
+	  {
+	    if (menu)
+		    menu->TerminateIncrementalSearch( true );
+	    Execute();
+	    
+	    result = osContinue;
+	  } break;
+	case k0...k9:
+	  {
+	    if (menu)
+	    {
+		menu->UpdateIncrementalSearch( key );
+	    	result = osContinue;
+	    }
+	  } break;
 	case kBack:
-		return Back();
+	  {
+	    if( menu && menu->UpdateIncrementalSearch( key ) )
+	      { // search is continued
+		result = osContinue;
+	      }
+	    else
+	      { // search is not active at all
+		result = Back();
+	      }
+	  } break;
 	default:
-		return osUnknown;
+	  {
+	    if( key != kNone )
+	      {
+		if (menu)
+			menu->TerminateIncrementalSearch( true );
+	      }
+	    result = osUnknown;
+	  }
 	}
+  
+  return result;
 }
 
 
@@ -541,7 +575,7 @@ class mgChooseOrder : public mgCommand
 	virtual eOSState Process(eKeys key);
         void Execute ();
         const char *ButtonName() { return tr("Order"); }
-        const char *MenuName(const unsigned int idx,const mgSelItem& item)
+        const char *MenuName(const unsigned int idx,const mgListItem& item)
 	{ return strdup(tr("Select an order")); }
 };
 
@@ -726,10 +760,10 @@ class mgSetDefaultCollection:public mgCommand
         {
             return tr ("Default");
         }
-        const char *MenuName (const unsigned int idx,const mgSelItem& item);
+        const char *MenuName (const unsigned int idx,const mgListItem& item);
 };
 
-const char * mgSetDefaultCollection::MenuName(const unsigned int idx,const mgSelItem& item)
+const char * mgSetDefaultCollection::MenuName(const unsigned int idx,const mgListItem& item)
 {
     char *b;
     asprintf (&b, tr("Set default to collection '%s'"),
@@ -788,13 +822,13 @@ class mgAddAllToCollection:public mgCommand {
         {
             return tr ("Add");
         }
-        const char *MenuName (const unsigned int idx,const mgSelItem& item);
+        const char *MenuName (const unsigned int idx,const mgListItem& item);
     protected:
 	void ExecuteMove();
 };
 
 const char *
-mgAddAllToCollection::MenuName (const unsigned int idx,const mgSelItem& item)
+mgAddAllToCollection::MenuName (const unsigned int idx,const mgListItem& item)
 {
     return strdup(tr("Add all to a collection"));
 }
@@ -812,7 +846,7 @@ void
 mgAddAllToCollection::ExecuteMove()
 {
     if (osd() ->Menus.size()>1) 
-	    osd ()->CloseMenu();	// TODO Gebastel...
+	osd ()->CloseMenu();	// TODO Gebastel...
     char *b;
     asprintf(&b,tr("'%s' to collection"),selection()->getCurrentValue().c_str());
     osd ()->newmenu = new mgTreeAddToCollSelector(string(b));
@@ -833,11 +867,11 @@ class mgAddAllToDefaultCollection:public mgCommand {
         {
             return tr ("Add");
         }
-        const char *MenuName (const unsigned int idx,const mgSelItem& item);
+        const char *MenuName (const unsigned int idx,const mgListItem& item);
 };
 
 const char *
-mgAddAllToDefaultCollection::MenuName (const unsigned int idx,const mgSelItem& item)
+mgAddAllToDefaultCollection::MenuName (const unsigned int idx,const mgListItem& item)
 {
     char *b;
     asprintf (&b, tr ("Add all to '%s'"),
@@ -883,7 +917,7 @@ class mgAddThisToCollection:public mgAddAllToCollection
 	bool Enabled(mgActions on);
         void Execute ();
         const char *ButtonName ();
-        const char *MenuName (const unsigned int idx,const mgSelItem& item);
+        const char *MenuName (const unsigned int idx,const mgListItem& item);
 };
 
 
@@ -910,7 +944,7 @@ mgAddThisToCollection::Enabled(mgActions on)
 }
 
 const char *
-mgAddThisToCollection::MenuName (const unsigned int idx,const mgSelItem& item)
+mgAddThisToCollection::MenuName (const unsigned int idx,const mgListItem& item)
 {
     return strdup(tr("Add to a collection"));
 }
@@ -922,7 +956,7 @@ class mgAddThisToDefaultCollection:public mgAddAllToDefaultCollection
 	bool Enabled(mgActions on);
         void Execute ();
         const char *ButtonName ();
-        const char *MenuName (const unsigned int idx,const mgSelItem& item);
+        const char *MenuName (const unsigned int idx,const mgListItem& item);
 };
 
 
@@ -952,7 +986,7 @@ mgAddThisToDefaultCollection::Enabled(mgActions on)
 }
 
 const char *
-mgAddThisToDefaultCollection::MenuName (const unsigned int idx,const mgSelItem& item)
+mgAddThisToDefaultCollection::MenuName (const unsigned int idx,const mgListItem& item)
 {
     char *b;
     asprintf (&b, tr ("Add to '%s'"), osd ()->default_collection.c_str ());
@@ -968,7 +1002,7 @@ class mgRemoveAllFromCollection:public mgCommand
         {
             return tr ("Remove");
         }
-        const char *MenuName (const unsigned int idx,const mgSelItem& item);
+        const char *MenuName (const unsigned int idx,const mgListItem& item);
 };
 
 void
@@ -983,7 +1017,7 @@ mgRemoveAllFromCollection::Execute ()
 }
 
 const char *
-mgRemoveAllFromCollection::MenuName (const unsigned int idx,const mgSelItem& item)
+mgRemoveAllFromCollection::MenuName (const unsigned int idx,const mgListItem& item)
 {
     return strdup(tr("Remove all from a collection"));
 }
@@ -997,11 +1031,11 @@ class mgClearCollection : public mgCommand
         {
             return tr ("Clear");
         }
-        const char *MenuName (const unsigned int idx,const mgSelItem& item);
+        const char *MenuName (const unsigned int idx,const mgListItem& item);
 };
 
 const char *
-mgClearCollection::MenuName (const unsigned int idx,const mgSelItem& item)
+mgClearCollection::MenuName (const unsigned int idx,const mgListItem& item)
 {
 	return strdup(tr("Clear the collection"));
 }
@@ -1032,7 +1066,7 @@ class mgRemoveThisFromCollection:public mgRemoveAllFromCollection
         {
             return tr ("Remove");
         }
-        const char *MenuName (const unsigned int idx,const mgSelItem& item);
+        const char *MenuName (const unsigned int idx,const mgListItem& item);
 };
 
 
@@ -1048,7 +1082,7 @@ mgRemoveThisFromCollection::Execute ()
 
 
 const char *
-mgRemoveThisFromCollection::MenuName (const unsigned int idx,const mgSelItem& item)
+mgRemoveThisFromCollection::MenuName (const unsigned int idx,const mgListItem& item)
 {
     return strdup(tr("Remove from a collection"));
 }
@@ -1110,7 +1144,7 @@ class mgCreateCollection : public mgCreate
 	mgCreateCollection();
 	bool Enabled(mgActions on);
         void Execute ();
-        const char *MenuName (const unsigned int idx=0,const mgSelItem& item=zeroitem);
+        const char *MenuName (const unsigned int idx=0,const mgListItem& item=zeroitem);
 };
 
 mgCreateCollection::mgCreateCollection() : mgCreate(MenuName())
@@ -1118,7 +1152,7 @@ mgCreateCollection::mgCreateCollection() : mgCreate(MenuName())
 }
 
 const char*
-mgCreateCollection::MenuName(const unsigned int idx,const mgSelItem& item)
+mgCreateCollection::MenuName(const unsigned int idx,const mgListItem& item)
 {
             return strdup(tr ("Create collection"));
 }
@@ -1136,7 +1170,6 @@ mgCreateCollection::Execute ()
 	    selection ()->clearCache();
 	    if (selection()->isCollectionlist())
 	    {
-//	    	selection ()->setPosition(selection()->id(keyCollection,name));
 	    	selection ()->setPosition(name);
 	    }
 	    osd()->forcerefresh = true;
@@ -1162,7 +1195,7 @@ class mgDeleteCollection:public mgCommand
         {
             return tr ("Delete");
         }
-        const char *MenuName (const unsigned int idx,const mgSelItem& item);
+        const char *MenuName (const unsigned int idx,const mgListItem& item);
 };
 
 bool
@@ -1178,7 +1211,7 @@ mgDeleteCollection::Enabled(mgActions on)
 	return result;
 }
 
-const char* mgDeleteCollection::MenuName(const unsigned int idx,const mgSelItem& item)
+const char* mgDeleteCollection::MenuName(const unsigned int idx,const mgListItem& item)
 {
     return strdup(tr("Delete the collection"));
 }
@@ -1201,8 +1234,8 @@ mgDeleteCollection::Execute ()
 }
 
 
-//! \brief export track list for all selected items
-class mgExportTracklist:public mgCommand
+//! \brief export item list for all selected items
+class mgExportItemlist:public mgCommand
 {
     public:
         void Execute ();
@@ -1210,14 +1243,14 @@ class mgExportTracklist:public mgCommand
         {
             return tr ("Export");
         }
-        const char *MenuName (const unsigned int idx,const mgSelItem& item)
+        const char *MenuName (const unsigned int idx,const mgListItem& item)
         {
             return strdup(tr ("Export track list"));
         }
 };
 
 void
-mgExportTracklist::Execute ()
+mgExportItemlist::Execute ()
 {
     selection ()->select ();
     string m3u_file = selection ()->exportM3U ();
@@ -1239,7 +1272,7 @@ mgAction::Type()
 	if (t == typeid(mgAddAllToDefaultCollection)) return actAddAllToDefaultCollection;
 	if (t == typeid(mgRemoveAllFromCollection)) return actRemoveAllFromCollection;
 	if (t == typeid(mgDeleteCollection)) return actDeleteCollection;
-	if (t == typeid(mgExportTracklist)) return actExportTracklist;
+	if (t == typeid(mgExportItemlist)) return actExportItemlist;
 	if (t == typeid(mgAddCollEntry)) return actAddCollEntry;
 	if (t == typeid(mgRemoveCollEntry)) return actRemoveCollEntry;
 	if (t == typeid(mgAddThisToCollection)) return actAddThisToCollection;
@@ -1306,7 +1339,7 @@ actGenerate(const mgActions action)
 		case actAddAllToDefaultCollection:	result = new mgAddAllToDefaultCollection;break;
 		case actRemoveAllFromCollection:result = new mgRemoveAllFromCollection;break;
 		case actDeleteCollection:	result = new mgDeleteCollection;break;
-		case actExportTracklist:	result = new mgExportTracklist;break;
+		case actExportItemlist:	result = new mgExportItemlist;break;
 		case actAddCollEntry:		result = new mgAddCollEntry;break;
 		case actRemoveCollEntry:		result = new mgRemoveCollEntry;break;
 		case actAddThisToCollection:	result = new mgAddThisToCollection;break;

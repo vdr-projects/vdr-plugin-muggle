@@ -93,21 +93,6 @@ mgDecoders::findDecoder (mgContentItem * item)
 
     std::string filename = item->getSourceFile ();
 
-    struct stat st;
-    if (stat (filename.c_str (), &st))
-    {
-	char *b=0;
-	int nsize = filename.size();
-	if (nsize<30)
-		asprintf(&b,tr("%s not readable"),filename.c_str());
-	else
-		asprintf(&b,tr("%s..%s not readable"),filename.substr(0,20).c_str(),filename.substr(nsize-20).c_str());;
-	showmessage(b);
-	free(b);
-        esyslog ("ERROR: cannot stat %s. Meaning not found, not a valid file, or no access rights", filename.c_str ());
-        return 0;
-    }
-
     switch (getMediaType (filename))
       {
       case MT_MP3:

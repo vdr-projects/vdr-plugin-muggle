@@ -5,9 +5,13 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <map>
 #include <sstream>
+using namespace std;
 #include "mg_valmap.h"
 #include "mg_mysql.h"
+#include "mg_content.h"
+#include "mg_tools.h"
 
 using namespace std;
 
@@ -17,34 +21,6 @@ strlist& operator+=(strlist&a, strlist b);
 
 //! \brief adds string n to string s, using string sep to separate them
 string& addsep (string & s, string sep, string n);
-
-enum mgKeyTypes {
-	keyGenre1=1, // the genre types must have exactly this order!
-	keyGenre2,
-	keyGenre3,
-	keyGenres,
-	keyDecade,
-	keyYear,
-	keyArtist,
-	keyAlbum,
-	keyTitle,
-	keyTrack,
-	keyLanguage,
-	keyRating,
-	keyFolder1,
-	keyFolder2,
-	keyFolder3,
-	keyFolder4,
-	keyCreated,
-	keyModified,
-	keyArtistABC,
-	keyTitleABC,
-	keyCollection,
-	keyCollectionItem,
-};
-const mgKeyTypes mgKeyTypesLow = keyGenre1;
-const mgKeyTypes mgKeyTypesHigh = keyCollectionItem;
-const unsigned int mgKeyTypesNr = keyCollectionItem;
 
 bool iskeyGenre(mgKeyTypes kt);
 
@@ -75,25 +51,15 @@ private:
 	mgParts ConnectToTracks(string table) const;
 };
 
-class mgSelItem
-{
+class mgKeyMaps {
 	public:
-		mgSelItem();
-		mgSelItem(string v,string i,unsigned int c=0);
-		void set(string v,string i,unsigned int c=0);
-		void operator=(const mgSelItem& from);
-		void operator=(const mgSelItem* from);
-		bool operator==(const mgSelItem& other) const;
-		string value() const { return m_value; } 
-		string id() const { return m_id; } 
-		unsigned int count() const { return m_count; } 
-		bool valid() const { return m_valid; }
+		string value(mgKeyTypes kt, string idstr) const;
+		string id(mgKeyTypes kt, string valstr) const;
 	private:
-		bool m_valid;
-		string m_value;
-		string m_id;
-		unsigned int m_count;
+		bool loadvalues (mgKeyTypes kt) const;
 };
+
+extern mgKeyMaps KeyMaps;
 
 class mgKey {
 	public:
@@ -103,13 +69,15 @@ class mgKey {
 		virtual bool valid() const = 0;
 		virtual string value () const = 0;
 		//!\brief translate field into user friendly string
-		virtual void set(mgSelItem& item) = 0;
-		virtual mgSelItem& get() = 0;
+		virtual void set(mgListItem& item) = 0;
+		virtual mgListItem& get() = 0;
 		virtual mgKeyTypes Type() const = 0;
+		virtual bool Enabled(mgmySql &db) { return true; }
+		virtual bool LoadMap() const;
+	protected:
 		virtual string map_idfield() const { return ""; }
 		virtual string map_valuefield() const { return ""; }
-		virtual string map_valuetable() const { return ""; }
-		virtual bool Enabled(mgmySql &db) { return true; }
+		virtual string map_table() const { return ""; }
 };
 
 
@@ -118,7 +86,6 @@ ktGenerate(const mgKeyTypes kt);
 
 const char * const ktName(const mgKeyTypes kt);
 mgKeyTypes ktValue(const char * name);
-vector < const char*> ktNames();
  
 typedef vector<mgKey*> keyvector;
 
@@ -172,21 +139,24 @@ public:
 	void clear();
 	mgKey* Key(unsigned int idx) const;
 	mgKeyTypes getKeyType(unsigned int idx) const;
-	mgSelItem& getKeyItem(unsigned int idx) const;
+	mgListItem& getKeyItem(unsigned int idx) const;
 	void setKeys(vector<mgKeyTypes> kt);
 	string Name();
 	void setOrderByCount(bool orderbycount) { m_orderByCount = orderbycount;}
 	bool getOrderByCount() { return m_orderByCount; }
+	string GetContent(mgmySql &db,unsigned int level,vector < mgContentItem > &content) const;
+	vector <const char*> Choices(unsigned int level, unsigned int *current) const;
 private:
 	bool m_orderByCount;
 	bool isCollectionOrder() const;
 	keyvector Keys;
 	void setKey ( const mgKeyTypes kt);
 	void clean();
+	unsigned int keycount(mgKeyTypes kt) const;
+	bool UsedBefore(const mgKeyTypes kt,unsigned int level) const;
 };
 
 bool operator==(const mgOrder& a,const mgOrder&b); //! \brief compares only the order, not the current key values
 
-extern mgSelItem zeroitem;
 
-#endif               // _MG_SQL_H
+#endif

@@ -40,7 +40,7 @@ enum mgActions {
 	actAddAllToCollection,	//!< add all items of OSD list to default collection
 	actRemoveAllFromCollection,//!< remove from default collection
 	actDeleteCollection,	//!< delete collection
-	actExportTracklist,	//!< export track list into a *.m3u file
+	actExportItemlist,	//!< export track list into a *.m3u file
 	actAddCollEntry,
 	actRemoveCollEntry,
 	actAddThisToCollection,	//!< add selected item to default collection
@@ -109,7 +109,7 @@ class mgAction
  * to execute this. The returned C string must be freeable at any time.
  * \param value a string that can be used for building the menu name.
  */
-        virtual const char *MenuName (const unsigned int idx=0,const mgSelItem& item=zeroitem)
+        virtual const char *MenuName (const unsigned int idx=0,const mgListItem& item=zeroitem)
 	{
 	    return strdup(ButtonName());
 	}

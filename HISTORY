@@ -184,3 +184,18 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - import now runs as a separate thread and no longer blocks user
   input and VDR is no longer killed by the watchdog during import
 
+2005-04-19: Version 0.1.7-BETA
+- Removed option -g. muggle now automatically does the right thing:
+  GD compatibility mode is used when importing files [0-9][0-9]/filename
+  relative to the toplevel directory where filename contains no /
+- External command find is no longer needed
+- Better error handling for unreadable files when playing
+- Changed several includes from <vdr/X.h> to <X.h>
+- Elected a new pope
+- Makefile respects preset values for directories
+- Debug messages now go into /var/log/debug. Up to now it was stderr.
+- Playlist view: after pressing arrow up, playing looped backwards.
+  Now it always goes forward.
+- Play mode: in endless mode (all tracks), trying to go back on the
+  first track restarted the first track. Now it goes to the last track.
+- Added incremental search

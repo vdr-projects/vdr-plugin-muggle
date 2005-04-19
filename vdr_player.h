@@ -103,6 +103,7 @@ class mgPlayerControl:public cControl
  *
  *  \param index - the position in the playlist to skip to
  *  \param still - currently unused
+ *  \todo Goto is currently unused and has an obvious memory leak
  */
         void Goto (int index, bool still = false);
 
