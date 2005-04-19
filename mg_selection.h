@@ -34,6 +34,7 @@ typedef vector<string> strvector;
  */
 class mgSelection
 {
+    public:
 	class mgListItems 
 	{
 		public:
@@ -53,7 +54,7 @@ class mgSelection
 			vector<mgListItem> m_items;
 			mgSelection* m_sel;
 	};
-    public:
+
 //! \brief defines an order to be used 
         void setOrder(mgOrder *o);
 

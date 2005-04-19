@@ -29,7 +29,10 @@
 #include "vdr_setup.h"
 #include "vdr_menu.h"
 #include "vdr_player.h"
+
 #include "mg_incremental_search.h"
+#include "mg_selection.h"
+
 #include "i18n.h"
 
 #define DEBUG
@@ -700,7 +703,7 @@ mgTree::UpdateSearchPosition()
   else
   {
       // find the first item starting with m_filter
-      mgListItems& listitems = osd()->selection()->listitems;
+      mgSelection::mgListItems& listitems = osd()->selection()->listitems;
       for (unsigned int idx = 0 ; idx < listitems.size(); idx++)
 	  if( strncasecmp( listitems[idx].value().c_str(), m_filter.c_str(), m_filter.size() )>=0 )
 	  {
