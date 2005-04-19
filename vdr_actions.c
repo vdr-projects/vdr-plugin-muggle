@@ -371,25 +371,27 @@ mgEntry::Process(eKeys key)
   eOSState result = osUnknown;
 
   mgTree *menu = dynamic_cast<mgTree*>(m); // und 0 abfangen
-  if( m )
-    {
       switch (key) 
 	{
 	case kOk:
 	  {
-	    menu->TerminateIncrementalSearch( true );
+	    if (menu)
+		    menu->TerminateIncrementalSearch( true );
 	    Execute();
 	    
 	    result = osContinue;
 	  } break;
 	case k0...k9:
 	  {
-	    menu->UpdateIncrementalSearch( key );
-	    result = osContinue;
+	    if (menu)
+	    {
+		menu->UpdateIncrementalSearch( key );
+	    	result = osContinue;
+	    }
 	  } break;
 	case kBack:
 	  {
-	    if( menu->UpdateIncrementalSearch( key ) )
+	    if( menu && menu->UpdateIncrementalSearch( key ) )
 	      { // search is continued
 		result = osContinue;
 	      }
@@ -402,12 +404,12 @@ mgEntry::Process(eKeys key)
 	  {
 	    if( key != kNone )
 	      {
-		menu->TerminateIncrementalSearch( true );
+		if (menu)
+			menu->TerminateIncrementalSearch( true );
 	      }
 	    result = osUnknown;
 	  }
 	}
-    }
   
   return result;
 }
