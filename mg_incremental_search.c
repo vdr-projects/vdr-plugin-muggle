@@ -58,7 +58,7 @@ string mgIncrementalSearch::KeyStroke( unsigned key )
       // position remains
       m_repeats ++;
       
-      if( (unsigned) m_repeats > strlen( keys[m_position] ) )
+      if( (unsigned) m_repeats >= strlen( keys[m_position] ) )
 	{
 	  // wrap around to first char
 	  m_repeats = 0;
