@@ -191,8 +191,6 @@ class mgSelection
             return select (listitems.valindex(value));
         }
 
-	void selectfrom(mgOrder& oldorder,mgContentItem* o);
-
 /*! \brief leave the current level, go one up in the tree.
  * If fall_through (see constructor) is set to true, and the
  * level entered by leave() contains only one item, automatically
@@ -412,7 +410,7 @@ class mgSelection
         string ListFilename ();
 
 	void InitFrom(const mgSelection* s);
-
+	void selectfrom(mgOrder& oldorder,mgContentItem& o);
 };
 
 

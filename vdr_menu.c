@@ -83,16 +83,19 @@ mgMainMenu::PlayInstant(const bool select)
 }
 
 void
-mgMainMenu::setOrder(mgSelection *sel,unsigned int idx)
+mgMainMenu::ChangeOrder()
 {
-	mgOrder* o = getOrder(idx);
+	mgOrder* o = getOrder(Current());
 	if (o->size()>0)
 	{
-		m_current_order = idx;
-		sel->setOrder(o);
+		m_current_order = Current();
+		UseNormalSelection();
+		m_treesel->setOrder(o);
+		newposition = m_treesel->getPosition();
+		SaveState();
 	}
 	else
-		mgWarning("mgMainMenu::setOrder: orders[%u] is empty",idx);
+		mgWarning("mgMainMenu::ChangeOrder: orders[%u] is empty",Current());
 }
 
 mgOrder* mgMainMenu::getOrder(unsigned int idx)

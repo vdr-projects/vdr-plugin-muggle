@@ -81,7 +81,7 @@ class mgMainMenu:public cOsdMenu
 	void AddOrderActions(mgMenu *m);
 	unsigned int getCurrentOrder() { return m_current_order; }
 	mgOrder* getOrder(unsigned int idx);
-	void setOrder(mgSelection *sel, unsigned int idx);
+	void ChangeOrder();
 
 	mgSelection *moveselection;
 	mgActions CurrentType();

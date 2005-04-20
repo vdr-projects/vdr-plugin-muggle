@@ -266,18 +266,7 @@ mgActOrder::Process(eKeys key)
 void
 mgActOrder::Execute()
 {
- 	mgSelection *s = osd()->selection();
-	mgOrder oldorder = s->getOrder();
-	mgContentItem o;
-	s->select();
-	if (s->getNumItems()==1)
-		o = s->getItem(0);
-	osd()->UseNormalSelection();	// Default for all orders
-	osd()->setOrder(s,osd()->Current());
-	mgSelection *newsel = osd()->selection();
-	newsel->selectfrom(oldorder,&o);
-	osd()->newposition = newsel->getPosition();
-	osd()->SaveState();
+	osd()->ChangeOrder();
 }
 
 bool

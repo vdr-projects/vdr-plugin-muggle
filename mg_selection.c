@@ -534,11 +534,17 @@ mgSelection::mgSelection (mgValmap& nv)
 }
 
 void
-mgSelection::setOrder(mgOrder* o)
+mgSelection::setOrder(mgOrder* n)
 {
-	if (o)
+	if (n)
  	{
-		order = *o;
+		mgOrder oldorder = order;
+		mgContentItem o;
+		select();
+		if (getNumItems()==1)
+			o = getItem(0);
+		order = *n;
+		selectfrom(oldorder,o);
 	}
 	else
 		mgWarning("mgSelection::setOrder(0)");
@@ -701,7 +707,7 @@ mgSelection::leave_all ()
 }
 
 void 
-mgSelection::selectfrom(mgOrder& oldorder,mgContentItem* o)
+mgSelection::selectfrom(mgOrder& oldorder,mgContentItem& o)
 {
 	leave_all();
 	mgListItem selitem;
@@ -724,8 +730,8 @@ mgSelection::selectfrom(mgOrder& oldorder,mgContentItem* o)
 			}
 			if (selitem.valid()) break;
 		}
-		if (!selitem.valid() && o && o->getItemid()>=0)
-			selitem = o->getKeyItem(new_kt);
+		if (!selitem.valid() && o.getItemid()>=0)
+			selitem = o.getKeyItem(new_kt);
 		if (!selitem.valid())
 			break;
 		if (m_level<order.size()-1)
