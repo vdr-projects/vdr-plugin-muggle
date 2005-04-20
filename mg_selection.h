@@ -26,6 +26,8 @@ using namespace std;
 
 typedef vector<string> strvector;
 
+class mgSelection;
+
 class mgListItems 
 {
 	public:
