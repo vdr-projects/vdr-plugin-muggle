@@ -1235,7 +1235,7 @@ mgKey::LoadMap() const
 bool
 mgKeyMaps::loadvalues (mgKeyTypes kt) const
 {
-	if (map_ids.count(kt)>0) 
+	if (map_ids[kt].size()>0) 
 		return true;
 	mgKey* k = ktGenerate(kt);
 	bool result = k->LoadMap();

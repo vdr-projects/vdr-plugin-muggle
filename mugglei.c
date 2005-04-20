@@ -36,6 +36,8 @@ bool import_assorted, delete_mode, create_mode;
 
 void showmessage(const char *msg,int duration)
 {
+	fprintf(stderr,msg);
+	fprintf(stderr,"\n");
 }
 
 void showimportcount(unsigned int importcount,bool final=false)
@@ -172,10 +174,10 @@ int main( int argc, char *argv[] )
 #endif
 	}
     }
-  mgDb *sync = GenerateDB(); 
+  mgDb *sync = GenerateDB();
   if (optind<argc)
 	  sync->Sync(argv+optind,delete_mode);
-  sync->DatabaseEnd();
+  sync->ServerEnd();
   delete sync;
   return 0;
 }

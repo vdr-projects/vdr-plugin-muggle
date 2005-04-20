@@ -114,7 +114,7 @@ string mgContentItem::getGenre () const
     string result="";
     if (m_genre1!="NULL")
 	    result = m_genre1;
-    if (m_genre2!="NULL")
+    if (m_genre2!="NULL" && m_genre2.size()>0)
     {
 	    if (!result.empty())
 		    result += "/";

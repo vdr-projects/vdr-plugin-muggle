@@ -663,7 +663,9 @@ mgSelection::leave ()
     }
     if (m_level == order.size ())
     {
-	order[m_level--]->set(zeroitem);
+	if (m_level<order.size())
+		order[m_level]->set(zeroitem);
+	m_level--;
 	prevvalue=order.getKeyItem(m_level).value();
 	clearCache();
 	setPosition(prevvalue);
