@@ -1,5 +1,5 @@
 /*!
- * \file mg_content.c
+ * \file mg_item.c
  * \brief A general interface to data items, currently only GiantDisc
  *
  * \version $Revision: 1.0 $
@@ -13,7 +13,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "i18n.h"
-#include "mg_content.h"
+#include "mg_item.h"
 #include "mg_setup.h"
 #include "mg_tools.h"
 #include "mg_order.h"
@@ -22,7 +22,7 @@
 #include <tools.h>
 
 mgListItem*
-mgContentItem::getKeyItem(mgKeyTypes kt)
+mgItem::getKeyItem(mgKeyTypes kt)
 {
 	string val;
 	string id;
@@ -61,7 +61,7 @@ mgContentItem::getKeyItem(mgKeyTypes kt)
 }
 
 
-string mgContentItem::getGenre () const
+string mgItem::getGenre () const
 {
     string result="";
     if (m_genre1!="NULL")
@@ -76,66 +76,66 @@ string mgContentItem::getGenre () const
 }
 
 
-string mgContentItem::getLanguage() const
+string mgItem::getLanguage() const
 {
     return m_language;
 }
 
-string mgContentItem::getBitrate () const
+string mgItem::getBitrate () const
 {
     return m_bitrate;
 }
 
 
-string mgContentItem::getImageFile () const
+string mgItem::getImageFile () const
 {
     return "Name of Imagefile";
 }
 
 
-string mgContentItem::getAlbum () const
+string mgItem::getAlbum () const
 {
     return m_albumtitle;
 }
 
 
-int mgContentItem::getYear () const
+int mgItem::getYear () const
 {
     return m_year;
 }
 
 
-int mgContentItem::getRating () const
+int mgItem::getRating () const
 {
     return m_rating;
 }
 
 
-int mgContentItem::getDuration () const
+int mgItem::getDuration () const
 {
     return m_duration;
 }
 
 
-int mgContentItem::getSampleRate () const
+int mgItem::getSampleRate () const
 {
     return m_samplerate;
 }
 
 
-int mgContentItem::getChannels () const
+int mgItem::getChannels () const
 {
     return m_channels;
 }
 
-mgContentItem::mgContentItem ()
+mgItem::mgItem ()
 {
     m_valid = true;
     m_validated = false;
     m_trackid = -1;
 }
 
-mgContentItem::mgContentItem (const mgContentItem* c)
+mgItem::mgItem (const mgItem* c)
 {
     m_valid = true;
     m_validated = false;
@@ -159,7 +159,7 @@ mgContentItem::mgContentItem (const mgContentItem* c)
 }
 
 bool
-mgContentItem::Valid() const
+mgItem::Valid() const
 {
     if (!m_validated)
     {
@@ -173,13 +173,13 @@ static bool music_dir_exists[100];
 static bool music_dirs_scanned=false;
 
 bool
-mgContentItem::readable(string filename) const
+mgItem::readable(string filename) const
 {
 	return !access(filename.c_str(),R_OK);
 }
 
 string
-mgContentItem::getSourceFile(bool AbsolutePath) const
+mgItem::getSourceFile(bool AbsolutePath) const
 {
 	string tld = the_setup.ToplevelDir;
     	string result = m_mp3file;
@@ -236,7 +236,7 @@ mgContentItem::getSourceFile(bool AbsolutePath) const
 	return result;
 }
 
-mgContentItem::mgContentItem (const MYSQL_ROW row)
+mgItem::mgItem (const MYSQL_ROW row)
 {
     m_valid = true;
     m_validated = false;

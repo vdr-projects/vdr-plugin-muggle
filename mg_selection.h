@@ -21,7 +21,7 @@ using namespace std;
 #include "mg_tools.h"
 #include "mg_valmap.h"
 #include "mg_order.h"
-#include "mg_content.h"
+#include "mg_item.h"
 #include "mg_db.h"
 
 typedef vector<string> strvector;
@@ -224,17 +224,17 @@ class mgSelection
  * loss of performance. See value(), the same warning applies.
  * \todo call this more seldom. See getNumItems()
  */
-        const vector < mgContentItem > &items () const;
+        const vector < mgItem > &items () const;
 
 /*! \brief returns an item from the items() list
  * \param position the position in the items() list
  * \return returns NULL if position is out of range
  */
-        mgContentItem* getItem (unsigned int position);
+        mgItem* getItem (unsigned int position);
 
 /*! \brief returns the current item from the items() list
  */
-        mgContentItem* getCurrentItem ()
+        mgItem* getCurrentItem ()
         {
             return getItem (gotoItemPosition());
         }
@@ -395,7 +395,7 @@ class mgSelection
         mutable string m_current_values;
         mutable string m_current_tracks;
 //! \brief be careful when accessing this, see mgSelection::items()
-        mutable vector < mgContentItem > m_items;
+        mutable vector < mgItem > m_items;
         bool m_fall_through;
         unsigned int m_position;
         mutable unsigned int m_items_position;
@@ -410,7 +410,7 @@ class mgSelection
         string ListFilename ();
 
 	void InitFrom(const mgSelection* s);
-	void selectfrom(mgOrder& oldorder,mgContentItem& o);
+	void selectfrom(mgOrder& oldorder,mgItem& o);
 };
 
 

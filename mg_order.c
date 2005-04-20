@@ -388,7 +388,7 @@ mgKeyTrack::Parts(mgDb *db,bool orderby) const
 	if (orderby)
 	{
 		// if you change tracks.title, please also
-		// change mgContentItem::getKeyItem()
+		// change mgItem::getKeyItem()
 		result.fields.push_back("tracks.title");
        		result.orders.push_back("tracks.tracknb");
 	}
@@ -863,7 +863,7 @@ next:
 }
 
 string
-mgOrder::GetContent(mgDbGd *db,unsigned int level,vector < mgContentItem > &content) const
+mgOrder::GetContent(mgDbGd *db,unsigned int level,vector < mgItem > &content) const
 {
     mgParts p = Parts(db,level);
     p.fields.clear();
@@ -892,7 +892,7 @@ mgOrder::GetContent(mgDbGd *db,unsigned int level,vector < mgContentItem > &cont
         content.clear ();
      	MYSQL_ROW row;
       	while ((row = mysql_fetch_row (rows)) != 0)
-		content.push_back (mgContentItem (row));
+		content.push_back (mgItem (row));
         mysql_free_result (rows);
      }
      return result;

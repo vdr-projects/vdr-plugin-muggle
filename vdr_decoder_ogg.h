@@ -42,7 +42,7 @@ class mgOggDecoder:public mgDecoder
 
     public:
 
-        mgOggDecoder (mgContentItem * item);
+        mgOggDecoder (mgItem * item);
         ~mgOggDecoder ();
 
         virtual mgPlayInfo *playInfo ();

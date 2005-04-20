@@ -1,5 +1,5 @@
 /*!
- * \file mg_content.h
+ * \file mg_item.h
  * \brief A general interface to data items, currently only GiantDisc
  *
  * \version $Revision: 1.0 $
@@ -26,18 +26,18 @@ using namespace std;
 
 
 //! \brief represents a content item like an mp3 file.
-class mgContentItem
+class mgItem
 {
     public:
-        mgContentItem ();
+        mgItem ();
 
 	mgListItem* getKeyItem(mgKeyTypes kt);
 
 	//! \brief copy constructor
-        mgContentItem(const mgContentItem* c);
+        mgItem(const mgItem* c);
 
 	//! \brief construct an item from an SQL row
-        mgContentItem (const MYSQL_ROW row);
+        mgItem (const MYSQL_ROW row);
 //! \brief returns track id
         long getItemid () const
         {

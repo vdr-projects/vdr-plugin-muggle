@@ -153,7 +153,7 @@ mgSelection::getKeyType (const unsigned int level) const
         return order.getKeyType(level);
 }
 
-mgContentItem *
+mgItem *
 mgSelection::getItem (unsigned int position)
 {
     if (position >= getNumItems ())
@@ -199,7 +199,7 @@ mgSelection::Shuffle() const
         case SM_NORMAL:
         {
 	    // play all, beginning with current item:
-            mgContentItem tmp = m_items[getItemPosition()];
+            mgItem tmp = m_items[getItemPosition()];
 	    m_items[getItemPosition()]=m_items[0];
 	    m_items[0]=tmp;
 	    m_items_position = 0;
@@ -295,7 +295,7 @@ string mgSelection::exportM3U ()
     unsigned int numitems = getNumItems ();
     for (unsigned i = 0; i < numitems; i++)
     {
-        mgContentItem& t = m_items[i];
+        mgItem& t = m_items[i];
         fprintf (listfile, "#EXTINF:%d,%s\n", t.getDuration (),
             t.getTitle ().c_str ());
 	fprintf (listfile, "#MUGGLE:%ld\n", t.getItemid());
@@ -481,7 +481,7 @@ string mgSelection::ListFilename ()
     return res;
 }
 
-const vector < mgContentItem > &
+const vector < mgItem > &
 mgSelection::items () const
 {
     if (!m_current_tracks.empty())
@@ -539,7 +539,7 @@ mgSelection::setOrder(mgOrder* n)
 	if (n)
  	{
 		mgOrder oldorder = order;
-		mgContentItem o;
+		mgItem o;
 		select();
 		if (getNumItems()==1)
 			o = getItem(0);
@@ -707,7 +707,7 @@ mgSelection::leave_all ()
 }
 
 void 
-mgSelection::selectfrom(mgOrder& oldorder,mgContentItem& o)
+mgSelection::selectfrom(mgOrder& oldorder,mgItem& o)
 {
 	leave_all();
 	mgListItem selitem;

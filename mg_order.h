@@ -11,7 +11,7 @@ using namespace std;
 #include "mg_valmap.h"
 #include "mg_db.h"
 #include "mg_db_gd.h"
-#include "mg_content.h"
+#include "mg_item.h"
 #include "mg_tools.h"
 
 using namespace std;
@@ -135,7 +135,7 @@ public:
 	string Name();
 	void setOrderByCount(bool orderbycount) { m_orderByCount = orderbycount;}
 	bool getOrderByCount() { return m_orderByCount; }
-	string GetContent(mgDbGd *db,unsigned int level,vector < mgContentItem > &content) const;
+	string GetContent(mgDbGd *db,unsigned int level,vector < mgItem > &content) const;
 	vector <const char*> Choices(unsigned int level, unsigned int *current) const;
 	unsigned int level() const { return m_level; }
 private:
