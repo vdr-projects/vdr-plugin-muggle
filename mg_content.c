@@ -16,7 +16,6 @@
 #include "mg_content.h"
 #include "mg_setup.h"
 #include "mg_tools.h"
-#include "mg_content.h"
 #include "mg_order.h"
 
 // this one last because of swap() redefinition:
