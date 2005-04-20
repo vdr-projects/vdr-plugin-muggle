@@ -10,15 +10,11 @@
 
 #include <tools.h>
 
-#include "mg_tools.h"
-
-/*extern "C"
-{*/
 #include <stdarg.h>
 #include <stdio.h>
-/*}
- */
 #include <stdlib.h>
+
+#include "mg_tools.h"
 
 //! \brief buffer for messages
 #define  MAX_BUFLEN  2048
@@ -120,5 +116,36 @@ SeparateFolders(const char *filename, char * folders[],unsigned int fcount)
 		*slash=0;
 	}
 	return fbuf;
+}
+
+string&
+addsep (string & s, string sep, string n)
+{
+	if (!n.empty ())
+	{
+		if (!s.empty ())
+    		s.append (sep);
+		s.append (n);
+	}
+	return s;
+}
+
+
+//! \brief converts long to string
+string
+itos (int i)
+{
+	std::stringstream s;
+	s << i;
+	return s.str ();
+}
+
+//! \brief convert long to string
+string
+ltos (long l)
+{
+	std::stringstream s;
+	s << l;
+	return s.str ();
 }
 

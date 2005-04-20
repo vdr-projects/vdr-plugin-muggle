@@ -20,7 +20,7 @@
 #include <getopt.h>
 #include <config.h>
 
-static const char *VERSION = "0.1.7";
+static const char *VERSION = "0.1.6";
 static const char *DESCRIPTION = "Media juggle plugin for VDR";
 static const char *MAINMENUENTRY = "Muggle";
 
@@ -59,6 +59,8 @@ mgMuggle::mgMuggle (void)
 void
 mgMuggle::Stop (void)
 {
+	mgDb *db;
+	db->DatabaseEnd();
 }
 
 

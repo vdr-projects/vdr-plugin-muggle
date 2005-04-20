@@ -29,10 +29,7 @@
 #include "vdr_setup.h"
 #include "vdr_menu.h"
 #include "vdr_player.h"
-
 #include "mg_incremental_search.h"
-#include "mg_selection.h"
-
 #include "i18n.h"
 
 #define DEBUG
@@ -480,7 +477,7 @@ mgMainMenu::AddOrderActions(mgMenu* m)
     {
         mgOrder *o = orders[idx];
 	if (!o) 
-			mgError("AddOrderAction:orders[%u] is 0",idx);
+		mgError("AddOrderAction:orders[%u] is 0",idx);
     	mgAction *a = m->GenerateAction(actOrder,actNone);
     	assert(a);
     	a->SetText(hk(o->Name().c_str()));
@@ -496,15 +493,6 @@ mgMenu::AddSelectionItems (mgSelection *sel,mgActions act)
     	mgAction *a = GenerateAction(act, actEntry);
 	if (!a) continue;
 	const char *name = a->MenuName(i+1,sel->listitems[i]);
-	// add incremental filter here
-#if 0
-	// example:
-	if (name[0]!='C')
-		continue;
-	// adapt newposition since it refers to position in mgSelection:
-	if ((signed int)i==osd()->newposition)
-		osd()->newposition = osd()->Count();
-#endif
 	a->SetText(name,false);
 	a->setHandle(i);
         osd()->AddItem(a);
@@ -703,7 +691,7 @@ mgTree::UpdateSearchPosition()
   else
   {
       // find the first item starting with m_filter
-      mgSelection::mgListItems& listitems = osd()->selection()->listitems;
+      mgListItems& listitems = osd()->selection()->listitems;
       for (unsigned int idx = 0 ; idx < listitems.size(); idx++)
 	  if( strncasecmp( listitems[idx].value().c_str(), m_filter.c_str(), m_filter.size() )>=0 )
 	  {
@@ -712,7 +700,6 @@ mgTree::UpdateSearchPosition()
 	  }
   }
   osd()->newposition = position;
-  osd()->DisplayGoto();
 }
 
 bool
@@ -800,6 +787,7 @@ mgTree::Title () const
 
   if( !m_filter.empty() )
     {
+	    mgDebug(1,"m_filter.size():%d,string:%s",m_filter.size(),m_filter.c_str());
       title += " (" + m_filter + ")";
     }
 
@@ -978,18 +966,18 @@ showmessage(const char * msg,int duration)
 }
 
 void
-showimportcount(unsigned int count,bool final=false)
+showimportcount(unsigned int impcount,bool final=false)
 {
 	char b[100];
 	if (final)
 	{
-		sprintf(b,tr("Import done:Imported %d items"),count);
+		sprintf(b,tr("Import done:Imported %d items"),impcount);
 		assert(strlen(b)<100);
 		showmessage(b,1);
 	}
 	else
 	{
-		sprintf(b,tr("Imported %d items..."),count);
+		sprintf(b,tr("Imported %d items..."),impcount);
 		assert(strlen(b)<100);
 		showmessage(b);
 	}

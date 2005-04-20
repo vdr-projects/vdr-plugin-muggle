@@ -9,7 +9,8 @@
 #include <sstream>
 using namespace std;
 #include "mg_valmap.h"
-#include "mg_mysql.h"
+#include "mg_db.h"
+#include "mg_db_gd.h"
 #include "mg_content.h"
 #include "mg_tools.h"
 
@@ -19,8 +20,6 @@ typedef list<string> strlist;
 
 strlist& operator+=(strlist&a, strlist b);
 
-//! \brief adds string n to string s, using string sep to separate them
-string& addsep (string & s, string sep, string n);
 
 bool iskeyGenre(mgKeyTypes kt);
 
@@ -33,6 +32,7 @@ class mgReference {
                 string t2() const { return m_t2; }
                 string f1() const { return m_f1; }
                 string f2() const { return m_f2; }
+		bool Equal(string table1, string table2) const;
 	private:
 		string m_t1;
 		string m_t2;
@@ -40,15 +40,10 @@ class mgReference {
 		string m_f2;
 };
 
-class mgReferences : public vector<mgReference> {
+class mgReferences : public vector<mgReference*> {
 public:
-	// \todo memory leak for vector ref?
-	mgReferences();
-	mgParts Connect(string c1, string c2) const;
-private:
-	bool Equal(unsigned int i,string table1, string table2) const;
-	mgParts FindConnectionBetween(string table1, string table2) const;
-	mgParts ConnectToTracks(string table) const;
+	void InitReferences();
+	unsigned int CountTable(string table) const;
 };
 
 class mgKeyMaps {
@@ -64,7 +59,7 @@ extern mgKeyMaps KeyMaps;
 class mgKey {
 	public:
 		virtual ~mgKey() {};
-		virtual mgParts Parts(mgmySql &db,bool orderby=false) const = 0;
+		virtual mgParts Parts(mgDb *db,bool orderby=false) const = 0;
 		virtual string id() const = 0;
 		virtual bool valid() const = 0;
 		virtual string value () const = 0;
@@ -72,7 +67,7 @@ class mgKey {
 		virtual void set(mgListItem& item) = 0;
 		virtual mgListItem& get() = 0;
 		virtual mgKeyTypes Type() const = 0;
-		virtual bool Enabled(mgmySql &db) { return true; }
+		virtual bool Enabled(mgDb *db) { return true; }
 		virtual bool LoadMap() const;
 	protected:
 		virtual string map_idfield() const { return ""; }
@@ -109,14 +104,10 @@ public:
 	bool orderByCount;
 private:
 	bool UsesTracks();
-	mgReferences ref;
+	mgReferences rest;
+	mgReferences positives;
+	void ConnectTables(string c1, string c2);
 };
-
-//! \brief converts long to string
-string itos (int i);
-
-//! \brief convert long to string
-string ltos (long l);
 
 
 const unsigned int MaxKeys = 20;
@@ -130,7 +121,7 @@ public:
 	~mgOrder();
 	void InitFrom(const mgOrder &from);
         void DumpState(mgValmap& nv, char *prefix) const;
-	mgParts Parts(mgmySql &db,const unsigned int level,bool orderby=true) const;
+	mgParts Parts(mgDb *db,const unsigned int level,bool orderby=true) const;
 	const mgOrder& operator=(const mgOrder& from);
 	mgKey*& operator[](unsigned int idx);
 	unsigned int size() const { return Keys.size(); }
@@ -144,9 +135,11 @@ public:
 	string Name();
 	void setOrderByCount(bool orderbycount) { m_orderByCount = orderbycount;}
 	bool getOrderByCount() { return m_orderByCount; }
-	string GetContent(mgmySql &db,unsigned int level,vector < mgContentItem > &content) const;
+	string GetContent(mgDbGd *db,unsigned int level,vector < mgContentItem > &content) const;
 	vector <const char*> Choices(unsigned int level, unsigned int *current) const;
+	unsigned int level() const { return m_level; }
 private:
+	unsigned int m_level;
 	bool m_orderByCount;
 	bool isCollectionOrder() const;
 	keyvector Keys;

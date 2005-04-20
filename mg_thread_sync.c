@@ -1,6 +1,6 @@
 
 #include "mg_thread_sync.h"
-#include "mg_sync.h"
+#include "mg_db.h"
 
 static mgThreadSync* the_instance = NULL;
 
@@ -49,8 +49,9 @@ mgThreadSync::Action()
 {
   if( m_path )
     {
-      mgDbGd s(true);
-      s.Sync( m_path, m_delete );
+      mgDb *s = GenerateDB(true);
+      s->Sync( m_path, m_delete );
+      delete s;
     }
 }
 

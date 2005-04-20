@@ -1,5 +1,5 @@
 /*!
- * \file mg_selection.h
+ * \file mg_content.h
  * \brief A general interface to data items, currently only GiantDisc
  *
  * \version $Revision: 1.0 $

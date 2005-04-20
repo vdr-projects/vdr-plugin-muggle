@@ -1,5 +1,5 @@
 /*!
- * \file mg_selection.c
+ * \file mg_content.c
  * \brief A general interface to data items, currently only GiantDisc
  *
  * \version $Revision: 1.0 $
@@ -13,11 +13,14 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "i18n.h"
-#include <tools.h>
-#include "mg_selection.h"
+#include "mg_content.h"
 #include "mg_setup.h"
 #include "mg_tools.h"
+#include "mg_content.h"
+#include "mg_order.h"
 
+// this one last because of swap() redefinition:
+#include <tools.h>
 
 mgListItem zeroitem;
 
@@ -232,7 +235,7 @@ mgContentItem::getSourceFile(bool AbsolutePath) const
 		return m_mp3file;
 	if (!readable(tld+result))
 	{
-		result.clear();
+		result="";
 		if (!music_dirs_scanned)
 		{
 			for (unsigned int i =0 ; i < 100 ; i++)

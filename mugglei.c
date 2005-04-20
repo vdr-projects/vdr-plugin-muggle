@@ -25,7 +25,7 @@
 
 #include "mg_tools.h"
 #include "mg_setup.h"
-#include "mg_sync.h"
+#include "mg_db.h"
 
 
 using namespace std;
@@ -38,7 +38,7 @@ void showmessage(const char *msg,int duration)
 {
 }
 
-void showimportcount(unsigned int count,bool final=false)
+void showimportcount(unsigned int importcount,bool final=false)
 {
 }
 
@@ -161,13 +161,13 @@ int main( int argc, char *argv[] )
 #endif
 	}
     }
-  mgDbGd *sync = new mgDbGd; // because we want to delete it before database_end
+  mgDb *sync = GenerateDB(); 
   if (create_mode)
 	  sync->Create();
   if (optind<argc)
 	  sync->Sync(argv+optind,delete_mode);
+  sync->DatabaseEnd();
   delete sync;
-  database_end();
   return 0;
 }
 

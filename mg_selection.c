@@ -32,9 +32,6 @@
 #include <skins.h>
 #endif
 
-//! \brief adds string n to string s, using a comma to separate them
-static string comma (string & s, string n);
-
 /*! \brief returns a random integer within some range
  */
 unsigned int
@@ -46,21 +43,14 @@ randrange (const unsigned int high)
 }
 
 
-static string
-comma (string & s, string n)
-{
-    return addsep (s, ",", n);
-}
-
-
 void
-mgSelection::mgListItems::clear()
+mgListItems::clear()
 {
 	m_items.clear();
 }
 
 bool
-mgSelection::mgListItems::operator==(const mgListItems&x) const
+mgListItems::operator==(const mgListItems&x) const
 {
 	bool result = m_items.size()==x.m_items.size();
 	if (result)
@@ -70,7 +60,7 @@ mgSelection::mgListItems::operator==(const mgListItems&x) const
 }
 
 size_t
-mgSelection::mgListItems::size() const
+mgListItems::size() const
 {
 	if (!m_sel)
 		mgError("mgListItems: m_sel is 0");
@@ -79,7 +69,7 @@ mgSelection::mgListItems::size() const
 }
 
 mgListItem&
-mgSelection::mgListItems::operator[](unsigned int idx)
+mgListItems::operator[](unsigned int idx)
 {
 	if (!m_sel)
 		mgError("mgListItems: m_sel is 0");
@@ -89,25 +79,25 @@ mgSelection::mgListItems::operator[](unsigned int idx)
 }
 
 void
-mgSelection::mgListItems::setOwner(mgSelection* sel)
+mgListItems::setOwner(mgSelection* sel)
 {
 	m_sel = sel;
 }
 
 unsigned int
-mgSelection::mgListItems::valindex (const string v) const
+mgListItems::valindex (const string v) const
 {
 	return index(v,true);
 }
 
 unsigned int
-mgSelection::mgListItems::idindex (const string i) const
+mgListItems::idindex (const string i) const
 {
 	return index(i,true);
 }
 
 unsigned int
-mgSelection::mgListItems::index (const string s,bool val,bool second_try) const
+mgListItems::index (const string s,bool val,bool second_try) const
 {
     if (!m_sel)
 	mgError("mgListItems::index(%s): m_sel is 0",s.c_str());
@@ -251,93 +241,45 @@ mgSelection::LoopMode mgSelection::toggleLoopMode ()
 unsigned int
 mgSelection::AddToCollection (const string Name)
 {
-    if (!m_db.Connected()) return 0;
-    CreateCollection(Name);
-    string listid = m_db.sql_string (m_db.get_col0
-        ("SELECT id FROM playlist WHERE title=" + m_db.sql_string (Name)));
-    unsigned int numitems = getNumItems ();
-    if (numitems==0)
-	    return 0;
-
-    // this code is rather complicated but works in a multi user
-    // environment:
- 
-    // insert a unique trackid:
-    string trackid = ltos(m_db.thread_id()+1000000);
-    m_db.exec_sql("INSERT INTO playlistitem SELECT "+listid+","
-	   "MAX(tracknumber)+"+ltos(numitems)+","+trackid+
-	   " FROM playlistitem WHERE playlist="+listid);
-    
-    // find tracknumber of the trackid we just inserted:
-    string sql = string("SELECT tracknumber FROM playlistitem WHERE "
-		    "playlist=")+listid+" AND trackid="+trackid;
-    long first = atol(m_db.get_col0(sql).c_str()) - numitems + 1;
-
-    // replace the place holder trackid by the correct value:
-    m_db.exec_sql("UPDATE playlistitem SET trackid="+ltos(m_items[numitems-1].getItemid())+
-		    " WHERE playlist="+listid+" AND trackid="+trackid);
-    
-    // insert all other items:
-    const char *sql_prefix = "INSERT INTO playlistitem VALUES ";
-    sql = "";
-    for (unsigned int i = 0; i < numitems-1; i++)
-    {
-	string item = "(" + listid + "," + ltos (first + i) + "," +
-            ltos (m_items[i].getItemid ()) + ")";
-	comma(sql, item);
-	if ((i%100)==99)
-	{
-    		m_db.exec_sql (sql_prefix+sql);
-		sql = "";
-	}
-    }
-    if (!sql.empty()) m_db.exec_sql (sql_prefix+sql);
-    if (inCollection(Name)) clearCache ();
-    return numitems;
+    int result = m_db->AddToCollection(Name,items());
+    if (result>0)
+	    if (inCollection(Name)) clearCache ();
+    return result;
 }
 
 
 unsigned int
 mgSelection::RemoveFromCollection (const string Name)
 {
-    if (!m_db.Connected()) return 0;
-    mgParts p = order.Parts(m_db,m_level,false);
-    string sql = p.sql_delete_from_collection(KeyMaps.id(keyCollection,Name));
-    m_db.exec_sql (sql);
-    unsigned int removed = m_db.affected_rows ();
-    if (inCollection(Name)) clearCache ();
-    return removed;
+    unsigned int result = m_db->RemoveFromCollection(Name,&order,m_level);
+    if (result>0)
+    	if (inCollection(Name)) clearCache ();
+    return result;
 }
 
 
 bool mgSelection::DeleteCollection (const string Name)
 {
-    if (!m_db.Connected()) return false;
-    ClearCollection(Name);
-    m_db.exec_sql ("DELETE FROM playlist WHERE title=" + m_db.sql_string (Name));
-    if (isCollectionlist()) clearCache ();
-    return (m_db.affected_rows () == 1);
+    bool result = m_db->DeleteCollection (Name);
+    if (result)
+    	if (isCollectionlist()) clearCache ();
+    return result;
 }
 
 
 void mgSelection::ClearCollection (const string Name)
 {
-    if (!m_db.Connected()) return;
-    string listid = KeyMaps.id(keyCollection,Name);
-    m_db.exec_sql ("DELETE FROM playlistitem WHERE playlist="+m_db.sql_string(listid));
+    m_db->DeleteCollection (Name);
     if (inCollection(Name)) clearCache ();
 }
 
 
 bool mgSelection::CreateCollection(const string Name)
 {
-    if (!m_db.Connected()) return false;
-    string name = m_db.sql_string(Name);
-    if (m_db.exec_count("SELECT count(title) FROM playlist WHERE title = " + name)>0) 
-	return false;
-    m_db.exec_sql ("INSERT playlist VALUES(" + name + ",'VDR',NULL,NULL,NULL)");
-    if (isCollectionlist()) clearCache ();
-    return true;
+    bool result = m_db->CreateCollection (Name);
+    if (result)
+	    if (isCollectionlist()) clearCache ();
+    return result;
 }
 
 
@@ -542,9 +484,10 @@ string mgSelection::ListFilename ()
 const vector < mgContentItem > &
 mgSelection::items () const
 {
-    if (!m_db.Connected()) return m_items;
+    if (!m_db->Connected()) return m_items;
     if (!m_current_tracks.empty()) return m_items;
-    m_current_tracks=order.GetContent(m_db,m_level,m_items);
+    m_current_tracks=order.GetContent(dynamic_cast<mgDbGd*>(m_db),m_level,m_items);
+    // \todo remove dynamic_cast
     if (m_shuffle_mode!=SM_NONE)
     	Shuffle();
     return m_items;
@@ -552,10 +495,10 @@ mgSelection::items () const
 
 
 void mgSelection::InitSelection() {
+	m_db = new mgDbGd;
     	m_level = 0;
     	m_position = 0;
     	m_items_position = 0;
-    	m_itemid = -1;
     	if (the_setup.InitShuffleMode)
     		m_shuffle_mode = SM_NORMAL;
 	else
@@ -606,7 +549,7 @@ void
 mgSelection::InitFrom(mgValmap& nv)
 {
 	extern time_t createtime;
-	if (m_db.ServerConnected() && !m_db.Connected() 
+	if (m_db->ServerConnected() && !m_db->Connected() 
 		&& (time(0)>createtime+10))
 	{
 	    char *b;
@@ -616,13 +559,17 @@ mgSelection::InitFrom(mgValmap& nv)
 		    char *argv[2];
 		    argv[0]=".";
 		    argv[1]=0;
-		    m_db.Create();
+		    m_db->Create();
 	            if (Interface->Confirm(tr("Import items?")))
 		    {
 		        mgThreadSync *s = mgThreadSync::get_instance();
 		        if (s)
 		        {
-				extern char *sync_args[];
+				char *sync_args[] =
+				{
+					".",
+					0
+				};
 				s->Sync(sync_args,(bool)the_setup.DeleteStaleReferences);
 			}
 		    }
@@ -641,7 +588,6 @@ mgSelection::InitFrom(mgValmap& nv)
             		if (!select (newval)) break;
 	}
 	assert(m_level<=order.size());
-	m_itemid = nv.getlong("ItemId");
 	if (m_level==order.size()) 
 		m_items_position = nv.getlong("ItemPosition");
 	else
@@ -651,6 +597,7 @@ mgSelection::InitFrom(mgValmap& nv)
 
 mgSelection::~mgSelection ()
 {
+    delete m_db;
 }
 
 void mgSelection::InitFrom(const mgSelection* s)
@@ -660,59 +607,25 @@ void mgSelection::InitFrom(const mgSelection* s)
     order = s->order;
     m_level = s->m_level;
     m_position = s->m_position;
-    m_itemid = s->m_itemid;
     m_items_position = s->m_items_position;
     setShuffleMode (s->getShuffleMode ());
     setLoopMode (s->getLoopMode ());
 }
 
-unsigned int
-mgSelection::valcount (string value)
-{
-	return listitems[listitems.valindex(value)].count();
-}
 
 void
 mgSelection::refreshValues ()  const
 {
     assert(this);
-    if (!m_db.Connected())
+    assert(m_db);
+    if (!m_db->Connected())
 	return;
     if (m_current_values.empty())
     {
 	mgParts p =  order.Parts(m_db,m_level);
         m_current_values = p.sql_select();
-        listitems.clear ();
-        MYSQL_RES *rows = m_db.exec_sql (m_current_values);
-        if (rows)
-        {
-                unsigned int num_fields = mysql_num_fields(rows);
-		MYSQL_ROW row;
-            	while ((row = mysql_fetch_row (rows)) != 0)
-            	{
-			if (!row[0]) continue;
-			string r0 = row[0];
-			if (!strcmp(row[0],"NULL")) // there is a genre NULL!
-				continue;
-			mgListItem n;
-			if (num_fields==3)
-			{
-				if (!row[1]) continue;
-				n.set(row[0],row[1],atol(row[2]));
-			}
-			else
-                		n.set(value(order.Key(m_level),r0),r0,atol(row[1]));
-			listitems.push_back(n);
-            	}
-            	mysql_free_result (rows);
-        }
+	m_db->LoadValuesInto(&order,m_level,listitems.items());
     }
-}
-
-unsigned int
-mgSelection::count () const
-{
-    return listitems.size ();
 }
 
 
@@ -740,14 +653,14 @@ bool mgSelection::enter (unsigned int position)
 	clearCache();
         m_position = 0;
 	refreshValues();
-	if (count()==0)
+	if (listitems.size()==0)
 		break;
 	item=listitems[0];
         if (!m_fall_through)
             break;
         if (m_level==order.size()-1)
 	    break;
-	if (count () > 1 && !(prev==listitems))
+	if (listitems.size () > 1 && !(prev==listitems))
             break;
     }
     return true;
@@ -760,9 +673,7 @@ bool mgSelection::select (unsigned int position)
     {
         if (getNumItems () <= position)
             return false;
-        order[m_level]->set (listitems[position]);
-        m_level++;
-        m_itemid = m_items[position].getItemid ();
+        order[m_level++]->set (listitems[position]);
 
 	clearCache();
         return true;
@@ -782,10 +693,8 @@ mgSelection::leave ()
     }
     if (m_level == order.size ())
     {
-        m_level--;
+	order[m_level--]->set(zeroitem);
 	prevvalue=order.getKeyItem(m_level).value();
-	order[m_level]->set(zeroitem);
-        m_itemid = -1;
 	clearCache();
 	setPosition(prevvalue);
         return true;
@@ -797,14 +706,13 @@ mgSelection::leave ()
     {
         if (m_level < 1)
             return false;
-        if (m_level<order.size()) order[m_level]->set (zeroitem);
-	m_level--;
+        order[m_level--]->set (zeroitem);
 	prevvalue=order.getKeyItem(m_level).value();
         if (m_level<order.size()) order[m_level]->set (zeroitem);
 	clearCache();
         if (!m_fall_through)
             break;
-        if (count () > 1 && !(prev==listitems))
+        if (listitems.size () > 1 && !(prev==listitems))
             break;
     }
     setPosition(prevvalue);
@@ -909,13 +817,18 @@ bool mgSelection::isCollectionlist () const
 bool
 mgSelection::inCollection(const string Name) const
 {
-    if (order.size()==0) return false;
-    bool result = (order.getKeyType(0) == keyCollection && m_level == 1);
-    if (result)
-	    if (order.getKeyType(1) != keyCollectionItem)
-		    mgError("inCollection: key[1] is not keyCollectionItem");
-    if (!Name.empty())
-    	result &= (order.getKeyItem(0).value() == Name);
+    bool result = false;
+    for (unsigned int idx = 0 ; idx <= m_level; idx++)
+    {
+	    if (idx==order.size()) break;
+	    if (order.getKeyType(idx) == keyCollection)
+		    if (order.getKeyItem(idx).value() != Name) break;
+	    if (order.getKeyType(idx) == keyCollectionItem)
+	    {
+		    result = true;
+		    break;
+	    }
+    }
     return result;
 }
 
@@ -933,7 +846,6 @@ void mgSelection::DumpState(mgValmap& nv) const
 			free(n);
 		}
 	}
-	nv.put("ItemId",m_itemid);
 	nv.put("Position",listitems[m_position].value());
 	if (m_level>=order.size()-1) 
 		nv.put("ItemPosition",getItemPosition());
@@ -954,30 +866,3 @@ mgSelection::UsedKeyValues()
 	}
 	return result;
 }
-
-static vector<int> keycounts;
-
-unsigned int
-mgSelection::keycount(mgKeyTypes kt)
-{
-	if (keycounts.size()==0)
-	{
-		for (unsigned int ki=int(mgKeyTypesLow);ki<=int(mgKeyTypesHigh);ki++)
-		{
-			keycounts.push_back(-1);
-		}
-	}
-	int& count = keycounts[int(kt-mgKeyTypesLow)];
-	if (count==-1)
-	{
-		mgKey* k = ktGenerate(kt);
-		if (k->Enabled(m_db))
-			count = m_db.exec_count(k->Parts(m_db,true).sql_count());
-		else
-			count = 0;
-		delete k;
-	}
-	return count;
-}
-
-

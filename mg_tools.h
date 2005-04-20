@@ -14,7 +14,10 @@
 #define _MUGGLE_TOOLS_H
 
 #include <iostream>
+#include <sstream>
 #include <string>
+
+using namespace std;
 
 /*!
  * \brief Logging utilities
@@ -58,12 +61,12 @@ class mgLog
             LOG, WARNING, ERROR, FATAL
         } mgLogLevel;
 
-        std::ostream & getStream ()
+        ostream & getStream ()
         {
             return std::cout;
         }
 
-        mgLog (std::string methodname):m_methodname (methodname)
+        mgLog (string methodname):m_methodname (methodname)
         {
             getStream () << m_methodname << " entered" << std::endl;
         };
@@ -75,11 +78,11 @@ class mgLog
 
     private:
 
-        std::string m_methodname;
+        string m_methodname;
 
 };
 
-std::string trim(std::string const& source, char const* delims = " \t\r\n");
+string trim(string const& source, char const* delims = " \t\r\n");
 
 char *SeparateFolders(const char *filename, char * folders[],unsigned int fcount);
 
@@ -110,5 +113,14 @@ enum mgKeyTypes {
 const mgKeyTypes mgKeyTypesLow = keyGenre1;
 const mgKeyTypes mgKeyTypesHigh = keyCollectionItem;
 const unsigned int mgKeyTypesNr = keyCollectionItem;
+
+//! \brief adds string n to string s, using string sep to separate them
+string& addsep (string & s, string sep, string n);
+
+//! \brief converts long to string
+string itos (int i);
+
+//! \brief convert long to string
+string ltos (long l);
 
 #endif                                            /*  _MUGGLE_TOOLS_H */

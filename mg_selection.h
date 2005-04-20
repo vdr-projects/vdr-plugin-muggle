@@ -22,8 +22,30 @@ using namespace std;
 #include "mg_valmap.h"
 #include "mg_order.h"
 #include "mg_content.h"
+#include "mg_db.h"
 
 typedef vector<string> strvector;
+
+class mgListItems 
+{
+	public:
+		mgListItems() { m_sel=0; }
+		void setOwner(mgSelection* sel);
+		mgListItem& operator[](unsigned int idx);
+		string& id(unsigned int);
+		unsigned int count(unsigned int);
+		bool operator==(const mgListItems&x) const;
+		size_t size() const;
+       		unsigned int valindex (const string v) const;
+       		unsigned int idindex (const string i) const;
+		void clear();
+		void push_back(mgListItem& item) { m_items.push_back(item); }
+		vector<mgListItem>& items() { return m_items; }	//! \brief use only for loading!
+	private:
+       		unsigned int index (const string s,bool val,bool second_try=false) const;
+		vector<mgListItem> m_items;
+		mgSelection* m_sel;
+};
 
 /*!
  * \brief the only interface to the database.
@@ -35,26 +57,6 @@ typedef vector<string> strvector;
 class mgSelection
 {
     public:
-	class mgListItems 
-	{
-		public:
-			mgListItems() { m_sel=0; }
-			void setOwner(mgSelection* sel);
-			mgListItem& operator[](unsigned int idx);
-			string& id(unsigned int);
-			unsigned int count(unsigned int);
-			bool operator==(const mgListItems&x) const;
-			size_t size() const;
-        		unsigned int valindex (const string v) const;
-        		unsigned int idindex (const string i) const;
-			void clear();
-			void push_back(mgListItem& item) { m_items.push_back(item); }
-		private:
-        		unsigned int index (const string s,bool val,bool second_try=false) const;
-			vector<mgListItem> m_items;
-			mgSelection* m_sel;
-	};
-
 //! \brief defines an order to be used 
         void setOrder(mgOrder *o);
 
@@ -126,12 +128,6 @@ class mgSelection
 //! \brief returns a map (new allocated) for all used key fields and their values
 	map<mgKeyTypes,string> UsedKeyValues();
 
-//! \brief the number of key fields used for the query
-        unsigned int ordersize () { return order.size(); }
-
-//! \brief the number of music items currently selected
-        unsigned int count () const;
-
 //! \brief the current position
         unsigned int getPosition ()const;
 
@@ -192,11 +188,6 @@ class mgSelection
         {
             return select (listitems.valindex(value));
         }
-
-	bool selectid (const string i)
-	{
-	    return select(listitems.idindex(i));
-	}
 
 	void selectfrom(mgOrder& oldorder,mgContentItem* o);
 
@@ -356,6 +347,7 @@ class mgSelection
             return items ().size ();
         }
 
+
 /*! returns the name of the current play list. If no play list is active,
  * the name is built from the name of the key fields.
  */
@@ -398,42 +390,25 @@ class mgSelection
 	string id(mgKeyTypes kt, string val) const;
 	string id(mgKey* k, string val) const;
 	string id(mgKey* k) const;
-	unsigned int keycount(mgKeyTypes kt);
-	unsigned int valcount (string val);
-	bool Connected() { return m_db.Connected(); }
+	bool Connected() { return m_db->Connected(); }
 
     private:
-	mutable map <mgKeyTypes, map<string,string> > map_values;
-	mutable map <mgKeyTypes, map<string,string> > map_ids;
         mutable string m_current_values;
         mutable string m_current_tracks;
 //! \brief be careful when accessing this, see mgSelection::items()
         mutable vector < mgContentItem > m_items;
-	//! \brief initializes maps for id/value mapping in both direction
-	bool loadvalues (mgKeyTypes kt) const;
         bool m_fall_through;
         unsigned int m_position;
         mutable unsigned int m_items_position;
         ShuffleMode m_shuffle_mode;
         void Shuffle() const;
         LoopMode m_loop_mode;
-        mutable mgmySql m_db;
+        mutable mgDb* m_db;
         unsigned int m_level;
-        long m_itemid;
 
         mgOrder order;
         void InitSelection ();
-	/*! \brief returns the SQL command for getting all values. 
-	 * For the leaf level, all values are returned. For upper
-	 * levels, every distinct value is returned only once.
-	 * This must be so for the leaf level because otherwise
-	 * the value() entries do not correspond to the track()
-	 * entries and the wrong items might be played.
-	 */
-        string sql_values ();
         string ListFilename ();
-        string m_Directory;
-        void loadgenres ();
 
 	void InitFrom(const mgSelection* s);
 

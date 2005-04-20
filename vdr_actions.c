@@ -320,7 +320,7 @@ mgEntry::MenuName(const unsigned int idx,const mgListItem& item)
 {
 	char ct[20];
 	unsigned int selcount = item.count();
-	if (selection()->level()<selection()->ordersize()-1 || selcount>1)
+	if (selection()->level()<selection()->getOrder().size()-1 || selcount>1)
 	{
 		char numct[20];
 		sprintf(numct,"%u",selcount);
