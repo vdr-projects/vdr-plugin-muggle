@@ -42,6 +42,17 @@ void showimportcount(unsigned int importcount,bool final=false)
 {
 }
 
+bool
+create_question()
+{
+    return create_mode;
+}
+
+void
+import()
+{
+}
+
 const char *I18nTranslate(const char *s,const char *Plugin)
 {
 	return s;
@@ -162,8 +173,6 @@ int main( int argc, char *argv[] )
 	}
     }
   mgDb *sync = GenerateDB(); 
-  if (create_mode)
-	  sync->Create();
   if (optind<argc)
 	  sync->Sync(argv+optind,delete_mode);
   sync->DatabaseEnd();

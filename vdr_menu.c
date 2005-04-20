@@ -30,6 +30,7 @@
 #include "vdr_menu.h"
 #include "vdr_player.h"
 #include "mg_incremental_search.h"
+#include "mg_thread_sync.h"
 #include "i18n.h"
 
 #define DEBUG
@@ -1165,3 +1166,26 @@ mgMenu::Display ()
     osd ()->DisplayGoto ();
 }
 
+bool
+create_question()
+{
+    char *b;
+    asprintf(&b,tr("Create database %s?"),the_setup.DbName);
+    bool result = Interface->Confirm(b);
+    free(b);
+    return result;
+}
+
+void
+import()
+{
+    if (Interface->Confirm(tr("Import items?")))
+    {
+        mgThreadSync *s = mgThreadSync::get_instance();
+        if (s)
+       	{
+		char *sync_args[] = { ".", 0 };
+		s->Sync(sync_args,(bool)the_setup.DeleteStaleReferences);
+	}
+    }
+}

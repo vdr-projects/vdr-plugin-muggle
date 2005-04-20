@@ -484,8 +484,8 @@ string mgSelection::ListFilename ()
 const vector < mgContentItem > &
 mgSelection::items () const
 {
-    if (!m_db->Connected()) return m_items;
-    if (!m_current_tracks.empty()) return m_items;
+    if (!m_current_tracks.empty())
+	return m_items;
     m_current_tracks=order.GetContent(dynamic_cast<mgDbGd*>(m_db),m_level,m_items);
     // \todo remove dynamic_cast
     if (m_shuffle_mode!=SM_NONE)
@@ -548,34 +548,6 @@ mgSelection::setOrder(mgOrder* o)
 void
 mgSelection::InitFrom(mgValmap& nv)
 {
-	extern time_t createtime;
-	if (m_db->ServerConnected() && !m_db->Connected() 
-		&& (time(0)>createtime+10))
-	{
-	    char *b;
-	    asprintf(&b,tr("Create database %s?"),the_setup.DbName);
-	    if (Interface->Confirm(b))
-	    {
-		    char *argv[2];
-		    argv[0]=".";
-		    argv[1]=0;
-		    m_db->Create();
-	            if (Interface->Confirm(tr("Import items?")))
-		    {
-		        mgThreadSync *s = mgThreadSync::get_instance();
-		        if (s)
-		        {
-				char *sync_args[] =
-				{
-					".",
-					0
-				};
-				s->Sync(sync_args,(bool)the_setup.DeleteStaleReferences);
-			}
-		    }
-	    }
-	    free(b);
-	}
 	InitSelection();
 	m_fall_through = nv.getbool("FallThrough");
 	while (m_level < nv.getuint("Level"))
@@ -618,14 +590,12 @@ mgSelection::refreshValues ()  const
 {
     assert(this);
     assert(m_db);
-    if (!m_db->Connected())
-	return;
-    if (m_current_values.empty())
-    {
-	mgParts p =  order.Parts(m_db,m_level);
-        m_current_values = p.sql_select();
-	m_db->LoadValuesInto(&order,m_level,listitems.items());
-    }
+    if (!m_current_values.empty())
+        return;
+    mgParts p =  order.Parts(m_db,m_level);
+    m_current_values = p.sql_select();
+    if (!m_db->LoadValuesInto(&order,m_level,listitems.items()))
+	m_current_values = "";
 }
 
 

@@ -886,13 +886,13 @@ mgOrder::GetContent(mgDbGd *db,unsigned int level,vector < mgContentItem > &cont
     for (unsigned int i = level; i<size(); i++)
     	p += Key(i)->Parts(db,true);
      string result = p.sql_select(false); 
-     content.clear ();
      MYSQL_RES *rows = db->exec_sql (result);
      if (rows)
      {
+        content.clear ();
      	MYSQL_ROW row;
       	while ((row = mysql_fetch_row (rows)) != 0)
-	content.push_back (mgContentItem (row));
+		content.push_back (mgContentItem (row));
         mysql_free_result (rows);
      }
      return result;

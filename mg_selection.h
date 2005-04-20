@@ -390,7 +390,6 @@ class mgSelection
 	string id(mgKeyTypes kt, string val) const;
 	string id(mgKey* k, string val) const;
 	string id(mgKey* k) const;
-	bool Connected() { return m_db->Connected(); }
 
     private:
         mutable string m_current_values;
