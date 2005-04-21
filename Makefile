@@ -79,7 +79,7 @@ endif
 ifdef HAVE_FLAC
 DEFINES += -DHAVE_FLAC
 OBJS += vdr_decoder_flac.o
-LIBS += -lFLAC++
+LIBS += -lFLAC++ -lFLAC
 endif
 
 ### Targets:
