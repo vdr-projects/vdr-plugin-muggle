@@ -8,17 +8,12 @@
  * \author  file owner: $Author$
  */
 
-#include <tools.h>
-
 #include "mg_tools.h"
 
-/*extern "C"
-{*/
 #include <stdarg.h>
 #include <stdio.h>
-/*}
- */
 #include <stdlib.h>
+#include <syslog.h>
 
 //! \brief buffer for messages
 #define  MAX_BUFLEN  2048
@@ -31,7 +26,6 @@ void
 mgSetDebugLevel (int new_level)
 {
     DEBUG_LEVEL = new_level;
-    SysLogLevel = new_level;
 }
 
 
@@ -45,7 +39,7 @@ mgDebug (int level, const char *fmt, ...)
         va_start (ap, fmt);
 
         vsnprintf (buffer, MAX_BUFLEN - 1, fmt, ap);
-        dsyslog ("%s\n", buffer);
+	syslog(LOG_DEBUG,"%s\n",buffer);
     }
     va_end (ap);
 }
@@ -68,7 +62,7 @@ mgWarning (const char *fmt, ...)
     va_start (ap, fmt);
     vsnprintf (buffer, MAX_BUFLEN - 1, fmt, ap);
 
-    isyslog ("Warning: %s\n", buffer);
+    syslog(LOG_INFO,"Warning: %s\n",buffer);
     extern void showmessage(const char*,int duration=0);
     showmessage(buffer);
     va_end (ap);
@@ -83,7 +77,7 @@ mgError (const char *fmt, ...)
     va_start (ap, fmt);
     vsnprintf (buffer, MAX_BUFLEN - 1, fmt, ap);
 
-    isyslog ("Error in Muggle: %s\n", buffer);
+    syslog (LOG_ERR,"Error in Muggle: %s\n", buffer);
 
     va_end (ap);
 }
