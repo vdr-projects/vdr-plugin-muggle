@@ -401,8 +401,4 @@ class mgSelection
 	void selectfrom(mgOrder& oldorder,mgItem* o);
 };
 
-
-unsigned int randrange (const unsigned int high);
-
-
 #endif                                            // _DB_H

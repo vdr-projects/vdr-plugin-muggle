@@ -28,47 +28,16 @@ strlist& operator+=(strlist&a, strlist b)
 }
 
 
-/*! \brief if the SQL command works on only 1 table, remove all table
-* qualifiers. Example: SELECT X.title FROM X becomes SELECT title
-* FROM X
-* \param spar the sql command. It will be edited in place
-* \return the new sql command is also returned
-*/
-static string
-optimize (string & spar)
-{
-	string s = spar;
-	string::size_type tmp = s.find (" WHERE");
-	if (tmp != string::npos)
-		s.erase (tmp, 9999);
-	tmp = s.find (" ORDER");
-	if (tmp != string::npos)
-		s.erase (tmp, 9999);
-	string::size_type frompos = s.find (" FROM ") + 6;
-	if (s.substr (frompos).find (",") == string::npos)
-	{
-		string from = s.substr (frompos, 999) + '.';
-		string::size_type tbl;
-		while ((tbl = spar.find (from)) != string::npos)
-		{
-    			spar.erase (tbl, from.size ());
-		}
-	}
-	return spar;
-}
-
-static string
-sql_list (string prefix,strlist v,string sep=",",string postfix="")
+string
+sql_list (string prefix,strlist v,string sep,string postfix)
 {
 	string result = "";
 	for (list < string >::iterator it = v.begin (); it != v.end (); ++it)
-	{
 		addsep (result, sep, *it);
-	}
 	if (!result.empty())
 	{
     		result.insert(0," "+prefix+" ");
-    	result += postfix;
+    		result += postfix;
 	}
 	return result;
 }
@@ -530,7 +499,6 @@ mgParts::sql_select(bool distinct)
 			orders.insert(orders.begin(),"mgcount desc");
 	}
 	result += sql_list("ORDER BY",orders);
-	optimize(result);
 	return result;
 }
 
@@ -543,40 +511,8 @@ mgParts::sql_count()
 		return result;
 	result += sql_list("FROM",tables);
 	result += sql_list("WHERE",clauses," AND ");
-	optimize(result);
 	return result;
 }
-
-bool
-mgParts::UsesTracks()
-{
-	for (list < string >::iterator it = tables.begin (); it != tables.end (); ++it)
-		if (*it == "tracks") return true;
-	return false;
-}
-
-string
-mgParts::sql_delete_from_collection(string pid)
-{
-	if (pid.empty())
-		return "";
-	Prepare();
-	// del nach vorne, weil DELETE playlistitem die erste Table nimmt,
-	// die passt, egal ob alias oder nicht.
-	tables.push_front("playlistitem as del");
-	clauses.push_back("del.playlist="+pid);
-	// todo geht so nicht fuer andere selections
-	if (UsesTracks())
-		clauses.push_back("del.trackid=tracks.id");
-	else
-		clauses.push_back("del.trackid=playlistitem.trackid");
-	string result = "DELETE playlistitem";
-	result += sql_list(" FROM",tables);
-	result += sql_list(" WHERE",clauses," AND ");
-	optimize(result);
-	return result;
-}
-
 
 mgReference::mgReference(string t1,string f1,string t2,string f2)
 {

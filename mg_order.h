@@ -21,6 +21,8 @@ typedef list<string> strlist;
 strlist& operator+=(strlist&a, strlist b);
 
 
+extern string sql_list (string prefix,strlist v,string sep=",",string postfix="");
+
 bool iskeyGenre(mgKeyTypes kt);
 
 class mgParts;
@@ -97,12 +99,10 @@ public:
 	void Prepare();
 	string sql_count();
 	string sql_select(bool distinct=true);
-	string sql_delete_from_collection(string pid);
 	bool empty() const { return tables.size()==0;}
 	string m_sql_select;
 	bool orderByCount;
 private:
-	bool UsesTracks();
 	mgReferences rest;
 	mgReferences positives;
 	void ConnectTables(string c1, string c2);
