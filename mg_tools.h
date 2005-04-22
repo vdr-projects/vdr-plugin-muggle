@@ -123,4 +123,6 @@ string itos (int i);
 //! \brief convert long to string
 string ltos (long l);
 
+char *lower(char* s);
+
 #endif                                            /*  _MUGGLE_TOOLS_H */

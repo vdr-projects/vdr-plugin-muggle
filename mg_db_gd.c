@@ -631,18 +631,6 @@ mgDbGd::sql_Cstring(TagLib::String s,char *buf)
 	return sql_Cstring(s.toCString(),buf);
 }
 
-char *
-mgDbGd::lower(char *s)
-{
-	char *p=s;
-	while (*p)
-	{
-		int i=(int)(*p);
-		(*p)=(char)tolower(i);
-		p++;
-	}
-	return s;
-}
 
 TagLib::String
 mgDbGd::getlanguage(const char *filename)
