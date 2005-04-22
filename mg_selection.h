@@ -123,6 +123,10 @@ class mgSelection
 //! \brief return the current value of this key
         mgListItem* getKeyItem (const unsigned int level) const;
 	
+/*! \brief returns an item value
+ */
+	string getValue(unsigned int idx) const;
+
 /*! \brief returns the current item from the value() list
  */
 	string getCurrentValue();

@@ -1133,7 +1133,7 @@ class mgCreateCollection : public mgCreate
 	mgCreateCollection();
 	bool Enabled(mgActions on);
         void Execute ();
-        const char *MenuName (const unsigned int idx=0,const mgListItem* item=&zeroitem);
+        const char *MenuName (const unsigned int idx=0,const mgListItem* item=0);
 };
 
 mgCreateCollection::mgCreateCollection() : mgCreate(MenuName())

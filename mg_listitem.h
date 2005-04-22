@@ -26,10 +26,10 @@ class mgListItem
 		void operator=(const mgListItem& from);
 		void operator=(const mgListItem* from);
 		bool operator==(const mgListItem& other) const;
-		string value() const { return m_value; } 
-		string id() const { return m_id; } 
-		unsigned int count() const { return m_count; } 
-		bool valid() const { return m_valid; }
+		string value() const;
+		string id() const;
+		unsigned int count() const;
+		bool valid() const;
 	private:
 		mgListItem(const mgListItem *from);
 		bool m_valid;
@@ -37,7 +37,5 @@ class mgListItem
 		string m_id;
 		unsigned int m_count;
 };
-
-extern mgListItem zeroitem;
 
 #endif

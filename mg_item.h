@@ -61,6 +61,4 @@ class mgItem
 };
 
 
-extern mgListItem zeroitem;
-
 #endif
