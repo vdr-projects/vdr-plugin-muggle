@@ -17,7 +17,6 @@
 #include <stdio.h>
 
 #include "mg_tools.h"
-#include "mg_item.h"
 
 #include "vdr_setup.h"
 #include "vdr_decoder_flac.h"
@@ -32,7 +31,7 @@ static const unsigned MAX_RES_SIZE = 16384;
 
 // --- mgFlacDecoder -------------------------------------------------------------
 
-mgFlacDecoder::mgFlacDecoder( mgItem *item ) 
+mgFlacDecoder::mgFlacDecoder( mgItemGd *item ) 
   : mgDecoder( item ), FLAC::Decoder::File()
 {
   mgLog lg( "mgFlacDecoder::mgFlacDecoder" );

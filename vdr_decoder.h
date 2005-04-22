@@ -25,7 +25,7 @@
 
 #define DEC_ID(a,b,c,d) (((a)<<24)+((b)<<16)+((c)<<8)+(d))
 
-class mgItem;
+#include "mg_item_gd.h"
 
 // --------From decoder_core.h ------------------------------------
 
@@ -83,7 +83,7 @@ class mgDecoder
     protected:
 
   /*! \brief database handle to the track being decoded */
-  mgItem * m_item;
+  mgItemGd * m_item;
 
   /*! \brief The currently playing file */
   std::string m_filename;
@@ -112,7 +112,7 @@ class mgDecoder
   
   //@{
   /*! \brief The constructor */
-  mgDecoder (mgItem * item);
+  mgDecoder (mgItemGd * item);
   
   /*! \brief The destructor */
   virtual ~ mgDecoder ();
@@ -160,7 +160,7 @@ class mgDecoders
   
   /*! \brief Try to find a valid decoder for a file
    */
-  static mgDecoder *findDecoder (mgItem * item);
+  static mgDecoder *findDecoder (mgItemGd * item);
 
   /*! \brief determine the media type for a given source
    */

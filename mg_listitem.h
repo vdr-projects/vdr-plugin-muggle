@@ -21,6 +21,7 @@ class mgListItem
 	public:
 		mgListItem();
 		mgListItem(string v,string i,unsigned int c=0);
+		mgListItem* Clone();
 		void set(string v,string i,unsigned int c=0);
 		void operator=(const mgListItem& from);
 		void operator=(const mgListItem* from);
@@ -30,6 +31,7 @@ class mgListItem
 		unsigned int count() const { return m_count; } 
 		bool valid() const { return m_valid; }
 	private:
+		mgListItem(const mgListItem *from);
 		bool m_valid;
 		string m_value;
 		string m_id;

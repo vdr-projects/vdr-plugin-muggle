@@ -1,4 +1,5 @@
 #include "mg_order.h"
+#include "mg_item_gd.h"
 #include "mg_tools.h"
 #include "i18n.h"
 #include <stdio.h>
@@ -81,15 +82,15 @@ class mgKeyNormal : public mgKey {
 		string value() const;
 		string id() const;
 		bool valid() const;
-		void set(mgListItem& item);
-		mgListItem& get();
+		void set(mgListItem* item);
+		mgListItem* get();
 		mgKeyTypes Type() const { return m_kt; }
 		virtual string expr() const { return m_table + "." + m_field; }
 		virtual string table() const { return m_table; }
 	protected:
 		string IdClause(mgDb *db,string what,string::size_type start=0,string::size_type len=string::npos) const;
 		void AddIdClause(mgDb *db,mgParts &result,string what) const;
-		mgListItem m_item;
+		mgListItem *m_item;
 		string m_field;
 	private:
 		mgKeyTypes m_kt;
@@ -289,19 +290,25 @@ class mgKeyDecade : public mgKeyNormal {
 string
 mgKeyNormal::id() const
 {
-	return m_item.id();
+	if (m_item)
+		return m_item->id();
+	else
+		return "";
 }
 
 bool
 mgKeyNormal::valid() const
 {
-	return m_item.valid();
+	return m_item && m_item->valid();
 }
 
 string
 mgKeyNormal::value() const
 {
-	return m_item.value();
+	if (m_item)
+		return m_item->value();
+	else
+		return "";
 }
 
 
@@ -310,7 +317,7 @@ mgKeyNormal::mgKeyNormal(const mgKeyNormal& k)
 	m_kt = k.m_kt;
 	m_table = k.m_table;
 	m_field = k.m_field;
-	m_item = k.m_item;
+	m_item = k.m_item->Clone();
 }
 
 mgKeyNormal::mgKeyNormal(const mgKeyTypes kt, string table, string field)
@@ -318,15 +325,16 @@ mgKeyNormal::mgKeyNormal(const mgKeyTypes kt, string table, string field)
 	m_kt = kt;
 	m_table = table;
 	m_field = field;
+	m_item = 0;
 }
 
 void
-mgKeyNormal::set(mgListItem& item)
+mgKeyNormal::set(mgListItem* item)
 {
-	m_item=item;
+	m_item=item->Clone();
 }
 
-mgListItem&
+mgListItem*
 mgKeyNormal::get()
 {
 	return m_item;
@@ -388,7 +396,7 @@ mgKeyTrack::Parts(mgDb *db,bool orderby) const
 	if (orderby)
 	{
 		// if you change tracks.title, please also
-		// change mgItem::getKeyItem()
+		// change mgItemGd::getKeyItem()
 		result.fields.push_back("tracks.title");
        		result.orders.push_back("tracks.tracknb");
 	}
@@ -732,7 +740,7 @@ mgOrder::getKeyType(unsigned int idx) const
 	return Keys[idx]->Type();
 }
 
-mgListItem&
+mgListItem*
 mgOrder::getKeyItem(unsigned int idx) const
 {
 	assert(idx<Keys.size());
@@ -863,7 +871,7 @@ next:
 }
 
 string
-mgOrder::GetContent(mgDbGd *db,unsigned int level,vector < mgItem > &content) const
+mgOrder::GetContent(mgDbGd *db,unsigned int level,vector < mgItem* > &content) const
 {
     mgParts p = Parts(db,level);
     p.fields.clear();
@@ -889,10 +897,12 @@ mgOrder::GetContent(mgDbGd *db,unsigned int level,vector < mgItem > &content) co
      MYSQL_RES *rows = db->exec_sql (result);
      if (rows)
      {
-        content.clear ();
+        for (unsigned int idx=0;idx<content.size();idx++)
+		delete content[idx];
+	content.clear ();
      	MYSQL_ROW row;
       	while ((row = mysql_fetch_row (rows)) != 0)
-		content.push_back (mgItem (row));
+		content.push_back (new mgItemGd (row));
         mysql_free_result (rows);
      }
      return result;

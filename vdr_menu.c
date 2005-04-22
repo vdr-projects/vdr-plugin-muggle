@@ -144,7 +144,7 @@ mgMainMenu::CollectionEntered(string name)
 {
     if (!UsingCollection) return false;
     if (selection()->level()==0) return false;
-    return trim(selection ()->getKeyItem(0).value()) == name;
+    return trim(selection ()->getKeyItem(0)->value()) == name;
 }
 
 
@@ -697,7 +697,7 @@ mgTree::UpdateSearchPosition()
       // find the first item starting with m_filter
       mgListItems& listitems = osd()->selection()->listitems;
       for (unsigned int idx = 0 ; idx < listitems.size(); idx++)
-	  if( strncasecmp( listitems[idx].value().c_str(), m_filter.c_str(), m_filter.size() )>=0 )
+	  if( strncasecmp( listitems[idx]->value().c_str(), m_filter.c_str(), m_filter.size() )>=0 )
 	  {
 	      position = idx;
 	      break;

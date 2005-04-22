@@ -64,8 +64,8 @@ class mgKey {
 		virtual bool valid() const = 0;
 		virtual string value () const = 0;
 		//!\brief translate field into user friendly string
-		virtual void set(mgListItem& item) = 0;
-		virtual mgListItem& get() = 0;
+		virtual void set(mgListItem* item) = 0;
+		virtual mgListItem* get() = 0;
 		virtual mgKeyTypes Type() const = 0;
 		virtual bool Enabled(mgDb *db) { return true; }
 		virtual bool LoadMap() const;
@@ -130,12 +130,12 @@ public:
 	void clear();
 	mgKey* Key(unsigned int idx) const;
 	mgKeyTypes getKeyType(unsigned int idx) const;
-	mgListItem& getKeyItem(unsigned int idx) const;
+	mgListItem* getKeyItem(unsigned int idx) const;
 	void setKeys(vector<mgKeyTypes> kt);
 	string Name();
 	void setOrderByCount(bool orderbycount) { m_orderByCount = orderbycount;}
 	bool getOrderByCount() { return m_orderByCount; }
-	string GetContent(mgDbGd *db,unsigned int level,vector < mgItem > &content) const;
+	string GetContent(mgDbGd *db,unsigned int level,vector < mgItem* > &content) const;
 	vector <const char*> Choices(unsigned int level, unsigned int *current) const;
 	unsigned int level() const { return m_level; }
 private:

@@ -33,7 +33,7 @@ class mgListItems
 	public:
 		mgListItems() { m_sel=0; }
 		void setOwner(mgSelection* sel);
-		mgListItem& operator[](unsigned int idx);
+		mgListItem* operator[](unsigned int idx);
 		string& id(unsigned int);
 		unsigned int count(unsigned int);
 		bool operator==(const mgListItems&x) const;
@@ -41,11 +41,11 @@ class mgListItems
        		unsigned int valindex (const string v) const;
        		unsigned int idindex (const string i) const;
 		void clear();
-		void push_back(mgListItem& item) { m_items.push_back(item); }
-		vector<mgListItem>& items() { return m_items; }	//! \brief use only for loading!
+		void push_back(mgListItem* item) { m_items.push_back(item); }
+		vector<mgListItem*>& items() { return m_items; }	//! \brief use only for loading!
 	private:
        		unsigned int index (const string s,bool val,bool second_try=false) const;
-		vector<mgListItem> m_items;
+		vector<mgListItem*> m_items;
 		mgSelection* m_sel;
 };
 
@@ -121,7 +121,7 @@ class mgSelection
         mgKeyTypes getKeyType (const unsigned int level) const;
 
 //! \brief return the current value of this key
-        mgListItem& getKeyItem (const unsigned int level) const;
+        mgListItem* getKeyItem (const unsigned int level) const;
 	
 /*! \brief returns the current item from the value() list
  */
@@ -224,7 +224,7 @@ class mgSelection
  * loss of performance. See value(), the same warning applies.
  * \todo call this more seldom. See getNumItems()
  */
-        const vector < mgItem > &items () const;
+        const vector < mgItem* > &items () const;
 
 /*! \brief returns an item from the items() list
  * \param position the position in the items() list
@@ -395,7 +395,7 @@ class mgSelection
         mutable string m_current_values;
         mutable string m_current_tracks;
 //! \brief be careful when accessing this, see mgSelection::items()
-        mutable vector < mgItem > m_items;
+        mutable vector < mgItem* > m_items;
         bool m_fall_through;
         unsigned int m_position;
         mutable unsigned int m_items_position;
@@ -410,7 +410,7 @@ class mgSelection
         string ListFilename ();
 
 	void InitFrom(const mgSelection* s);
-	void selectfrom(mgOrder& oldorder,mgItem& o);
+	void selectfrom(mgOrder& oldorder,mgItem* o);
 };
 
 

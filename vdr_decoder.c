@@ -87,7 +87,7 @@ mgMediaType mgDecoders::getMediaType (std::string s)
 
 
 mgDecoder *
-mgDecoders::findDecoder (mgItem * item)
+mgDecoders::findDecoder (mgItemGd * item)
 {
     mgDecoder *decoder = 0;
 
@@ -139,7 +139,7 @@ mgDecoders::findDecoder (mgItem * item)
 
 // --- mgDecoder ----------------------------------------------------------------
 
-mgDecoder::mgDecoder (mgItem * item)
+mgDecoder::mgDecoder (mgItemGd * item)
 {
     m_item = item;
     m_locked = 0;

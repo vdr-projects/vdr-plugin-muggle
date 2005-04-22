@@ -132,10 +132,10 @@ class mgPCMPlayer:public cPlayer, cThread
         mgSelection *m_playlist;
 
 //! \brief the currently played or to be played item
-        mgItem *m_current;
+        mgItemGd *m_current;
 
 //! \brief the currently playing item
-        mgItem *m_playing;
+        mgItemGd *m_playing;
 
 //! \brief the decoder responsible for the currently playing item
         mgDecoder *m_decoder;
@@ -202,7 +202,7 @@ class mgPCMPlayer:public cPlayer, cThread
 
         void ReloadPlaylist ();
         void NewPlaylist (mgSelection * plist);
-        mgItem *getCurrent ()
+        mgItemGd *getCurrent ()
         {
             return m_current;
         }
@@ -247,11 +247,11 @@ mgPCMPlayer::~mgPCMPlayer ()
 void
 mgPCMPlayer::PlayTrack()
 {
-    mgItem * newcurr = m_playlist->getCurrentItem ();
+    mgItemGd * newcurr = dynamic_cast<mgItemGd*>(m_playlist->getCurrentItem ());
     if (newcurr)
     {
         delete m_current;
-        m_current = new mgItem(newcurr);
+        m_current = new mgItemGd(newcurr);
     }
     Play ();
 }
@@ -772,16 +772,16 @@ mgPCMPlayer::StopPlay ()
 bool mgPCMPlayer::SkipFile (bool skipforward)
 {
     MGLOG("mgPCMPlayer::SkipFile");
-    mgItem * newcurr = NULL;
+    mgItemGd * newcurr = NULL;
     int skip_direction=1;
     if (!skipforward)
 	    skip_direction=-1;
     if (m_playlist->skipItems (skip_direction)) 
     {
-        newcurr = m_playlist->getCurrentItem ();
+        newcurr = dynamic_cast<mgItemGd*>(m_playlist->getCurrentItem ());
         if (newcurr) {
 	    delete m_current;
-            m_current = new mgItem(newcurr);
+            m_current = new mgItemGd(newcurr);
 	}
     }
     return (newcurr != NULL);
@@ -872,14 +872,14 @@ void
 mgPCMPlayer::Goto (int index, bool still)
 {
     m_playlist->GotoItemPosition (index - 1);
-    mgItem *next = m_playlist->getCurrentItem ();
+    mgItemGd *next = dynamic_cast<mgItemGd*>(m_playlist->getCurrentItem ());
 
     if (next)
     {
         Lock ();
         StopPlay ();
 	delete m_current;
-        m_current = new mgItem(next);
+        m_current = new mgItemGd(next);
         Play ();
         Unlock ();
     }
@@ -1397,7 +1397,7 @@ mgPlayerControl::ShowContents ()
                 int cur = list->getItemPosition ();
                 for (int i = 0; i < num_items; i++)
                 {
-                    mgItem *item = list->getItem (cur - 3 + i);
+                    mgItemGd *item = dynamic_cast<mgItemGd*>(list->getItem (cur - 3 + i));
                     if (item)
                     {
                         char *buf;
@@ -1756,7 +1756,7 @@ mgPlayerControl::StatusMsgReplaying ()
                 break;
         }
 
-        mgItem *tmp = player->getCurrent ();
+        mgItemGd *tmp = dynamic_cast<mgItemGd*>(player->getCurrent ());
 	if (tmp == NULL) 
 	    mgError("mgPlayerControl::StatusMsgReplaying: getCurrent() is NULL");
         if (tmp->getArtist ().length () > 0)
