@@ -26,29 +26,6 @@ using namespace std;
 
 typedef vector<string> strvector;
 
-class mgSelection;
-
-class mgListItems 
-{
-	public:
-		mgListItems() { m_sel=0; }
-		void setOwner(mgSelection* sel);
-		mgListItem* operator[](unsigned int idx);
-		string& id(unsigned int);
-		unsigned int count(unsigned int);
-		bool operator==(const mgListItems&x) const;
-		size_t size() const;
-       		unsigned int valindex (const string v) const;
-       		unsigned int idindex (const string i) const;
-		void clear();
-		void push_back(mgListItem* item) { m_items.push_back(item); }
-		vector<mgListItem*>& items() { return m_items; }	//! \brief use only for loading!
-	private:
-       		unsigned int index (const string s,bool val,bool second_try=false) const;
-		vector<mgListItem*> m_items;
-		mgSelection* m_sel;
-};
-
 /*!
  * \brief the only interface to the database.
  * Some member functions are declared const although they can modify the inner state of mgSelection.
@@ -81,6 +58,28 @@ class mgSelection
             LM_SINGLE,                            //!< \brief loop a single item
             LM_FULL                               //!< \brief loop the whole item list
         };
+
+	class mgListItems 
+	{
+		public:
+			mgListItems() { m_sel=0; }
+			void setOwner(mgSelection* sel);
+			mgListItem* operator[](unsigned int idx);
+			string& id(unsigned int);
+			unsigned int count(unsigned int);
+			bool operator==(const mgListItems&x) const;
+			size_t size() const;
+       			int search (const string v) const;
+       			unsigned int valindex (const string v) const;
+       			unsigned int idindex (const string i) const;
+			void clear();
+			void push_back(mgListItem* item) { m_items.push_back(item); }
+			vector<mgListItem*>& items() { return m_items; }	//! \brief use only for loading!
+		private:
+       			unsigned int index (const string s,bool val,bool second_try=false) const;
+			vector<mgListItem*> m_items;
+			mgSelection* m_sel;
+	};
 
 /*! \brief the main constructor
  * \param fall_through if TRUE: If enter() returns a choice
@@ -140,7 +139,6 @@ class mgSelection
 	//! \brief go to the current position. If it does not exist,
 	// go to the nearest.
         unsigned int gotoPosition ();
-
 
 //! \brief the current position in the item list
         unsigned int getItemPosition () const;
@@ -315,10 +313,13 @@ class mgSelection
 /*! \brief go to the position with value in the current level
  * \param value the value of the wanted position
  */
-        void setPosition (const string value)
-        {
-            setPosition (listitems.valindex (value));
-        }
+        void setPosition (string value);
+
+/*! \brief search the first position starting with search in the current level
+ * \param search the search string
+ * \return the new position
+ */
+        unsigned int searchPosition (string search);
 
 /*! \brief go to a position in the item list
  * \param position the wanted position. If it is too big, go to the 

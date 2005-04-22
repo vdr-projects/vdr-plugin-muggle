@@ -697,21 +697,10 @@ mgMenu::Process (eKeys key)
 void
 mgTree::UpdateSearchPosition()
 {
-  int position = -1;
   if( !m_incsearch || m_filter.empty() )
-	  position = m_start_position;
+	osd()->newposition = m_start_position;
   else
-  {
-      // find the first item starting with m_filter
-      mgListItems& listitems = osd()->selection()->listitems;
-      for (unsigned int idx = 0 ; idx < listitems.size(); idx++)
-	  if( strncasecmp( listitems[idx]->value().c_str(), m_filter.c_str(), m_filter.size() )>=0 )
-	  {
-	      position = idx;
-	      break;
-	  }
-  }
-  osd()->newposition = position;
+	osd()->newposition = osd()->selection()->searchPosition(m_filter);
 }
 
 bool

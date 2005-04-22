@@ -124,7 +124,6 @@ public:
 	const mgOrder& operator=(const mgOrder& from);
 	mgKey*& operator[](unsigned int idx);
 	unsigned int size() const { return Keys.size(); }
-	void truncate(unsigned int i);
 	bool empty() const { return Keys.empty(); }
 	void clear();
 	mgKey* Key(unsigned int idx) const;
@@ -144,6 +143,7 @@ private:
 	keyvector Keys;
 	void setKey ( const mgKeyTypes kt);
 	void clean();
+	void truncate(unsigned int i);
 	unsigned int keycount(mgKeyTypes kt) const;
 	bool UsedBefore(const mgKeyTypes kt,unsigned int level) const;
 };

@@ -44,7 +44,7 @@ randrange (const unsigned int high)
 
 
 void
-mgListItems::clear()
+mgSelection::mgListItems::clear()
 {
 	for (unsigned int i=0;i<m_items.size();i++)
 		delete m_items[i];
@@ -52,7 +52,7 @@ mgListItems::clear()
 }
 
 bool
-mgListItems::operator==(const mgListItems&x) const
+mgSelection::mgListItems::operator==(const mgListItems&x) const
 {
 	bool result = m_items.size()==x.m_items.size();
 	if (result)
@@ -62,7 +62,7 @@ mgListItems::operator==(const mgListItems&x) const
 }
 
 size_t
-mgListItems::size() const
+mgSelection::mgListItems::size() const
 {
 	if (!m_sel)
 		mgError("mgListItems: m_sel is 0");
@@ -71,7 +71,7 @@ mgListItems::size() const
 }
 
 mgListItem*
-mgListItems::operator[](unsigned int idx)
+mgSelection::mgListItems::operator[](unsigned int idx)
 {
 	if (!m_sel)
 		mgError("mgListItems: m_sel is 0");
@@ -81,25 +81,43 @@ mgListItems::operator[](unsigned int idx)
 }
 
 void
-mgListItems::setOwner(mgSelection* sel)
+mgSelection::mgListItems::setOwner(mgSelection* sel)
 {
 	m_sel = sel;
 }
 
+int
+mgSelection::mgListItems::search (const string v) const
+{
+    if (!m_sel)
+	mgError("mgListItems::index(%s): m_sel is 0",v.c_str());
+    unsigned int itemsize = m_items.size();
+    const char *cstr = v.c_str();
+    unsigned int clen = strlen(cstr);
+    int result = -1;
+    for (unsigned int idx = 0 ; idx < itemsize; idx++)
+	if( strncasecmp( m_items[idx]->value().c_str(), cstr, clen )>=0)
+	{
+		result = idx;
+		break;
+	}
+    return result;
+}
+
 unsigned int
-mgListItems::valindex (const string v) const
+mgSelection::mgListItems::valindex (const string v) const
 {
 	return index(v,true);
 }
 
 unsigned int
-mgListItems::idindex (const string i) const
+mgSelection::mgListItems::idindex (const string i) const
 {
 	return index(i,true);
 }
 
 unsigned int
-mgListItems::index (const string s,bool val,bool second_try) const
+mgSelection::mgListItems::index (const string s,bool val,bool second_try) const
 {
     if (!m_sel)
 	mgError("mgListItems::index(%s): m_sel is 0",s.c_str());
@@ -335,6 +353,21 @@ mgSelection::setPosition (unsigned int position)
 }
 
 void
+mgSelection::setPosition(string value)
+{
+	setPosition (listitems.valindex (value));
+}
+
+unsigned int
+mgSelection::searchPosition(string search)
+{
+	int res = listitems.search (search);
+	if (res>=0)
+		setPosition (res);
+	return gotoPosition();
+}
+
+void
 mgSelection::GotoItemPosition (unsigned int position) const
 {
     m_items_position = position;
@@ -361,6 +394,7 @@ mgSelection::gotoPosition ()
        	m_position = itemsize -1;
     return m_position;
 }
+
 
 unsigned int
 mgSelection::getItemPosition() const

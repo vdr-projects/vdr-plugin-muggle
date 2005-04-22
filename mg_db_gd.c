@@ -311,9 +311,10 @@ static char *db_cmds[] =
 bool
 mgDbGd::sql_query(string sql)
 {
-	const char * optsql = optimize(sql).c_str();
+	//const char * optsql = optimize(sql).c_str();
+	const char * optsql = sql.c_str();
   	mgDebug(4,"mysql_query(%X,%s)",m_db,optsql);
-	bool result = mysql_query(m_db,optsql);
+	bool result = !mysql_query(m_db,optsql);
 	if (!result)
 	{
     		mgError("SQL Error in %s: %s",optsql,mysql_error (m_db));
