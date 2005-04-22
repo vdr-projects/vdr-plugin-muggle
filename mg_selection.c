@@ -168,7 +168,7 @@ mgSelection::getKeyType (const unsigned int level) const
 mgItem *
 mgSelection::getItem (unsigned int position)
 {
-    if (position >= getNumItems ())
+    if (position >= items().size())
         return 0;
     return m_items[position];
 }
@@ -190,7 +190,7 @@ mgSelection::setShuffleMode (mgSelection::ShuffleMode mode)
 void
 mgSelection::Shuffle() const
 {
-    unsigned int numitems = getNumItems();
+    unsigned int numitems = items().size();
     if (numitems==0) return;
     switch (m_shuffle_mode)
     {
@@ -198,7 +198,7 @@ mgSelection::Shuffle() const
         {
     	    long id = m_items[getItemPosition()]->getItemid ();
             m_current_tracks = "";                // force a reload
-            numitems = getNumItems();		  // getNumItems also reloads
+            numitems = items().size();		  // also reloads
     	    for (unsigned int i = 0; i < numitems; i++)
         	if (m_items[i]->getItemid () == id)
     		{
@@ -304,7 +304,7 @@ string mgSelection::exportM3U ()
     if (!listfile)
         return "";
     fprintf (listfile, "#EXTM3U\n");
-    unsigned int numitems = getNumItems ();
+    unsigned int numitems = items().size();
     for (unsigned i = 0; i < numitems; i++)
     {
         mgItem* t = m_items[i];
@@ -321,7 +321,7 @@ bool
 mgSelection::empty()
 {
     if (m_level>= order.size ()-1)
-	return ( getNumItems () == 0);
+	return ( items().size() == 0);
     else
 	return ( listitems.size () == 0);
 }
@@ -376,7 +376,7 @@ mgSelection::getItemPosition() const
 unsigned int
 mgSelection::gotoItemPosition()
 {
-    unsigned int numitems = getNumItems ();
+    unsigned int numitems = items().size();
     if (numitems == 0)
     {
 	m_items_position = 0;
@@ -389,7 +389,7 @@ mgSelection::gotoItemPosition()
 
 bool mgSelection::skipItems (int steps) const
 {
-    unsigned int numitems = getNumItems();
+    unsigned int numitems = items().size();
     if (numitems == 0)
     {
 	m_items_position=0;
@@ -437,7 +437,7 @@ unsigned long
 mgSelection::getLength ()
 {
     unsigned long result = 0;
-    unsigned int numitems = getNumItems ();
+    unsigned int numitems = items().size();
     for (unsigned int i = 0; i < numitems; i++)
         result += m_items[i]->getDuration ();
     return result;
@@ -554,7 +554,7 @@ mgSelection::setOrder(mgOrder* n)
 		mgOrder oldorder = order;
 		mgItem *o=0;
 		select();
-		if (getNumItems()==1)
+		if (items().size()==1)
 			o = getItem(0)->Clone();
 		order = *n;
 		selectfrom(oldorder,o);
@@ -661,7 +661,7 @@ bool mgSelection::select (unsigned int position)
 {
     if (m_level == order.size () - 1)
     {
-        if (getNumItems () <= position)
+        if (items().size() <= position)
             return false;
         order[m_level++]->set (listitems[position]);
 
@@ -768,32 +768,6 @@ mgSelection::selectfrom(mgOrder& oldorder,mgItem* o)
 		order[m_level+1]->set(0);
 	}
 	assert(m_level<order.size());
-}
-
-
-string
-mgSelection::value(mgKey* k, string idstr) const
-{
-	return KeyMaps.value(k->Type(),idstr);
-}
-
-string
-mgSelection::value(mgKey* k) const
-{
-	return value(k,k->id());
-}
-
-
-string
-mgSelection::id(mgKey* k, string val) const
-{
-	return KeyMaps.id(k->Type(),val);
-}
-
-string
-mgSelection::id(mgKey* k) const
-{
-	return k->id();
 }
 
 bool mgSelection::isLanguagelist() const

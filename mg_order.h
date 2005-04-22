@@ -98,7 +98,6 @@ public:
 	string sql_count();
 	string sql_select(bool distinct=true);
 	string sql_delete_from_collection(string pid);
-	string sql_update(strlist new_values);
 	bool empty() const { return tables.size()==0;}
 	string m_sql_select;
 	bool orderByCount;

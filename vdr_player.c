@@ -1434,7 +1434,7 @@ mgPlayerControl::ShowProgress ()
                 total_frames = SecondsToFrames (list->getLength ());
                 current_frame += SecondsToFrames (list->getCompletedLength ());
                 asprintf (&buf, "%s (%d/%d)", list->getListname ().c_str (),
-                    list->getItemPosition () + 1, list->getNumItems ());
+                    list->getItemPosition () + 1, list->items().size());
             }
         }
         else
@@ -1765,7 +1765,7 @@ mgPlayerControl::StatusMsgReplaying ()
                 cLoopMode,
                 cShuffle,
                 player->getPlaylist ()->getItemPosition () + 1,
-                player->getPlaylist ()->getNumItems (),
+                player->getPlaylist ()->items().size(),
                 player->getCurrent ()->getArtist ().c_str (),
                 player->getCurrent ()->getTitle ().c_str ());
         }
@@ -1775,7 +1775,7 @@ mgPlayerControl::StatusMsgReplaying ()
                 cLoopMode,
                 cShuffle,
                 player->getPlaylist ()->getItemPosition () + 1,
-                player->getPlaylist ()->getNumItems (),
+                player->getPlaylist ()->items().size(),
                 player->getCurrent ()->getTitle ().c_str ());
         }
     }

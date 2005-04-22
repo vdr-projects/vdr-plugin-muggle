@@ -341,16 +341,6 @@ class mgSelection
  */
         unsigned long getCompletedLength () const;
 
-/*! returns the number of items in the item list
- *  \todo should not call items () which loads all item info.
- *  instead, only count the items. If the size differs from
- *  m_items.size(), invalidate m_items
- */
-        unsigned int getNumItems () const
-        {
-            return items ().size ();
-        }
-
 
 /*! returns the name of the current play list. If no play list is active,
  * the name is built from the name of the key fields.
@@ -388,12 +378,6 @@ class mgSelection
 	{
 		return (m_current_values=="" && m_current_tracks=="");
 	}
-	string value(mgKeyTypes kt, string idstr) const;
-	string value(mgKey* k, string idstr) const;
-	string value(mgKey* k) const;
-	string id(mgKeyTypes kt, string val) const;
-	string id(mgKey* k, string val) const;
-	string id(mgKey* k) const;
 
     private:
         mutable string m_current_values;

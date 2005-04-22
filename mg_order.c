@@ -577,18 +577,6 @@ mgParts::sql_delete_from_collection(string pid)
 	return result;
 }
 
-string
-mgParts::sql_update(strlist new_values)
-{
-	Prepare();
-	assert(fields.size()==new_values.size());
-	string result = sql_list("UPDATE",fields);
-	result += sql_list(" FROM",tables);
-	result += sql_list(" WHERE",clauses," AND ");
-	result += sql_list("VALUES(",new_values,",",")");
-	optimize(result);
-	return result;
-}
 
 mgReference::mgReference(string t1,string f1,string t2,string f2)
 {
