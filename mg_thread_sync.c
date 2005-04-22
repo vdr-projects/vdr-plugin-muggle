@@ -22,9 +22,14 @@ mgThreadSync* mgThreadSync::get_instance()
     }
 }
 
+static char *dot_args = { ".", 0 };
+
 void mgThreadSync::SetArguments( char * const * path_argv, bool delete_missing )
 {
-  m_path = path_argv;
+  if (path_argv)
+	  m_path = path_argv;
+  else
+	  m_path = dot_args;
   m_delete = delete_missing;
 }
 

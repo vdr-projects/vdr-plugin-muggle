@@ -711,12 +711,6 @@ class mgCmdSync : public mgOsdItem
 };
 
 
-char *sync_args[] =
-{
-	".",
-	0
-};
-
 eOSState
 mgCmdSync::ProcessKey(eKeys key)
 {
@@ -735,7 +729,7 @@ mgCmdSync::Execute()
   mgThreadSync *s = mgThreadSync::get_instance();
   if( s )
     {
-      s->Sync( sync_args, (bool) the_setup.DeleteStaleReferences );
+      s->Sync( 0, (bool) the_setup.DeleteStaleReferences );
     }
 }
 
