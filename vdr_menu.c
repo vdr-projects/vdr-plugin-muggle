@@ -234,19 +234,23 @@ mgMainMenu::DumpOrders(mgValmap& nv)
 void
 mgMainMenu::SaveState()
 {
-    char *b;
-    asprintf(&b,"%s/muggle.state",cPlugin::ConfigDirectory ("muggle"));
-    FILE *f = fopen(b,"w");
+    char *oldfile;
+    char *newfile;
+    char *statefile;
+    mgValmap nmain("MainMenu");
+    mgValmap nsel("tree");
+    mgValmap ncol("collection");
+    asprintf(&oldfile,"%s/muggle.state.old",cPlugin::ConfigDirectory ("muggle"));
+    asprintf(&newfile,"%s/muggle.state.new",cPlugin::ConfigDirectory ("muggle"));
+    asprintf(&statefile,"%s/muggle.state",cPlugin::ConfigDirectory ("muggle"));
+    FILE *f = fopen(newfile,"w");
     if (!f) 
     {
 	    if (!m_save_warned)
-		    mgWarning("Cannot write %s",b);
+		    mgWarning("Cannot write %s",newfile);
 	    m_save_warned=true;
-    	    free(b);
-	    return;
+	    goto err_exit;
     }
-    free(b);
-    mgValmap nmain("MainMenu");
     nmain.put("DefaultCollection",default_collection);
     nmain.put("UsingCollection",UsingCollection);
     nmain.put("TreeRedAction",int(Menus.front()->TreeRedAction));
@@ -257,14 +261,18 @@ mgMainMenu::SaveState()
     nmain.put("CollYellowAction",int(Menus.front()->CollYellowAction));
     nmain.put("CurrentOrder",m_current_order);
     DumpOrders(nmain);
-    mgValmap nsel("tree");
     m_treesel->DumpState(nsel);
-    mgValmap ncol("collection");
     m_collectionsel->DumpState(ncol);
     nmain.Write(f);
     nsel.Write(f);
     ncol.Write(f);
     fclose(f);
+    rename(statefile,oldfile);
+    rename(newfile,statefile);
+err_exit:
+    free(oldfile);
+    free(newfile);
+    free(statefile);
 }
 
 mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
