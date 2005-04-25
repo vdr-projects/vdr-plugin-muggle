@@ -328,15 +328,15 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
     vector<mgKeyTypes> kt;
     kt.push_back(keyCollection);
     kt.push_back(keyCollectionItem);
-    mgOrder o;
-    o.setKeys(kt);
+    mgOrder *o = new mgOrder ;
+    o->setKeys(kt);
     m_collectionsel = new mgSelection;
-    m_collectionsel->setOrder(&o);
+    m_collectionsel->setOrder(o);
     m_collectionsel->InitFrom (ncol);
     m_playsel = new mgSelection;
-    m_playsel->setOrder(&o);
+    m_playsel->setOrder(o);
     m_playsel->InitFrom(ncol);
-
+    delete o;
     // initialize
     if (m_playsel->level()!=1)
     {
@@ -1080,10 +1080,11 @@ mgMenuOrder::ChangeOrder(eKeys key)
     newtypes.clear();
     for (unsigned int i=0; i<m_keytypes.size();i++)
     	newtypes.push_back(ktValue(m_keynames[i][m_keytypes[i]]));
-    mgOrder n = mgOrder(newtypes);
-    n.setOrderByCount(m_orderbycount);
-    bool result = !(n == *m_order);
-    *m_order = n;
+    mgOrder *n = new mgOrder(newtypes);
+    n->setOrderByCount(m_orderbycount);
+    bool result = !(*n == *m_order);
+    delete m_order;
+    m_order = n;
     if (result)
     {
     	osd()->forcerefresh = true;
