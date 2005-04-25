@@ -328,7 +328,7 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
     vector<mgKeyTypes> kt;
     kt.push_back(keyCollection);
     kt.push_back(keyCollectionItem);
-    mgOrder *o = new mgOrder ;
+    mgOrder *o = GenerateOrder();
     o->setKeys(kt);
     m_collectionsel = new mgSelection;
     m_collectionsel->setOrder(o);
@@ -360,7 +360,7 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
 void
 mgMainMenu::AddOrder()
 {
-	orders.push_back(new mgOrder);
+	orders.push_back(GenerateOrder());
 }
 
 void
@@ -1048,7 +1048,7 @@ mgMenuOrder::BuildOsd ()
 {
     if (!m_order)
     {
-        m_order = new mgOrder;
+        m_order = GenerateOrder();
 	*m_order = *(osd()->getOrder(getParentIndex()));
     }
     InitOsd ();
@@ -1080,7 +1080,8 @@ mgMenuOrder::ChangeOrder(eKeys key)
     newtypes.clear();
     for (unsigned int i=0; i<m_keytypes.size();i++)
     	newtypes.push_back(ktValue(m_keynames[i][m_keytypes[i]]));
-    mgOrder *n = new mgOrder(newtypes);
+    mgOrder *n = GenerateOrder();
+    n->setKeys(newtypes);
     n->setOrderByCount(m_orderbycount);
     bool result = !(*n == *m_order);
     delete m_order;

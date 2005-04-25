@@ -39,7 +39,7 @@ class mgSelection
 //! \brief defines an order to be used 
         void setOrder(mgOrder *o);
 
-	mgOrder& getOrder() { return order; }
+	mgOrder* getOrder() { return order; }
 
 /*! \brief define various ways to play music in random order
  * \todo Party mode is not implemented, does same as SM_NORMAL
@@ -210,7 +210,7 @@ class mgSelection
  */
         void leave_all ();
 
-//! \brief the current level in the tree. This is at most order.size().
+//! \brief the current level in the tree. This is at most order->size().
         unsigned int level () const
         {
             return m_level;
@@ -394,12 +394,12 @@ class mgSelection
         mutable mgDb* m_db;
         unsigned int m_level;
 
-        mgOrder order;
+        mgOrder* order;
         void InitSelection ();
         string ListFilename ();
 
 	void InitFrom(const mgSelection* s);
-	void selectfrom(mgOrder& oldorder,mgItem* o);
+	void selectfrom(mgOrder* oldorder,mgItem* o);
 };
 
 #endif                                            // _DB_H

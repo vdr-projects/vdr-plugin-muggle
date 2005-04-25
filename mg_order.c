@@ -539,15 +539,10 @@ mgOrder::~mgOrder()
 mgKey*
 mgOrder::Key(unsigned int idx) const
 {
-	return Keys[idx];
-}
-
-mgKey*&
-mgOrder::operator[](unsigned int idx) 
-{
 	assert(idx<size());
 	return Keys[idx];
 }
+
 
 bool
 operator==(const mgOrder& a, const mgOrder &b)
@@ -638,13 +633,6 @@ mgOrder::DumpState(mgValmap& nv, char *prefix) const
 		sprintf(n,"%s.Keys.%d.Type",prefix,i);
 		nv.put(n,int(Key(i)->Type()));
 	}
-}
-
-mgOrder::mgOrder(vector<mgKeyTypes> kt)
-{
-	m_orderByCount = false;
-	m_level=0;
-	setKeys(kt);
 }
 
 void
@@ -1213,4 +1201,9 @@ mgKeyMaps::id(mgKeyTypes kt, string valstr) const
 		return v;
 	}
 	return valstr;
+}
+
+mgOrder* GenerateOrder()
+{
+	return new mgOrder;
 }

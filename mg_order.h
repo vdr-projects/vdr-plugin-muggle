@@ -116,13 +116,11 @@ public:
 	mgOrder();
 	mgOrder(const mgOrder &from);
 	mgOrder(mgValmap& nv, char *prefix);
-	mgOrder(vector<mgKeyTypes> kt);
 	~mgOrder();
 	void InitFrom(const mgOrder &from);
         void DumpState(mgValmap& nv, char *prefix) const;
 	mgParts Parts(mgDb *db,const unsigned int level,bool orderby=true) const;
 	const mgOrder& operator=(const mgOrder& from);
-	mgKey*& operator[](unsigned int idx);
 	unsigned int size() const { return Keys.size(); }
 	bool empty() const { return Keys.empty(); }
 	void clear();
@@ -150,5 +148,6 @@ private:
 
 bool operator==(const mgOrder& a,const mgOrder&b); //! \brief compares only the order, not the current key values
 
+mgOrder* GenerateOrder();
 
 #endif
