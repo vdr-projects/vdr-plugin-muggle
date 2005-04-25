@@ -146,3 +146,12 @@ ltos (long l)
 	s << l;
 	return s.str ();
 }
+
+char *
+extension(const char *filename)
+{
+	char *dot = strrchr(filename,'.');
+	if (!dot)
+		dot = strrchr(filename,0)-1;
+	return dot+1;
+}

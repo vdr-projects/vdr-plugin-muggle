@@ -123,4 +123,5 @@ string itos (int i);
 //! \brief convert long to string
 string ltos (long l);
 
+char *extension (const char *filename);
 #endif                                            /*  _MUGGLE_TOOLS_H */
