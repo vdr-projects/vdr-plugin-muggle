@@ -115,7 +115,6 @@ class mgOrder {
 public:
 	mgOrder();
 	mgOrder(const mgOrder &from);
-	mgOrder(mgValmap& nv, char *prefix);
 	~mgOrder();
 	void InitFrom(const mgOrder &from);
         void DumpState(mgValmap& nv, char *prefix) const;

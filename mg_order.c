@@ -603,25 +603,6 @@ mgOrder::setKey (const mgKeyTypes kt)
     	Keys.push_back(newkey);
 }
 
-mgOrder::mgOrder(mgValmap& nv,char *prefix)
-{
-	char *idx;
-	asprintf(&idx,"%s.OrderByCount",prefix);
-	m_orderByCount = nv.getbool(idx);
-	free(idx);
-	clear();
-	for (unsigned int i = 0; i < 999 ; i++)
-	{
-		asprintf(&idx,"%s.Keys.%u.Type",prefix,i);
-		unsigned int v = nv.getuint(idx);
-		free(idx);
-		if (v==0) break;
-        	setKey (mgKeyTypes(v) );
-	}
-	if (size()>0)
-		clean();
-}
-
 void
 mgOrder::DumpState(mgValmap& nv, char *prefix) const
 {

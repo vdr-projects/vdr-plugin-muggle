@@ -376,14 +376,26 @@ mgMainMenu::LoadOrders(mgValmap& nv)
 {
 	for (unsigned int idx=0;idx<1000;idx++) 
 	{
-		char b[10];
-		sprintf(b,"order%u",idx);
-		mgOrder *o = new mgOrder(nv,b);
-		if (o->size()==0)
+		char prefix[10];
+		sprintf(prefix,"order%u",idx);
+		mgOrder *o = GenerateOrder();
+		char *idx;
+		asprintf(&idx,"%s.OrderByCount",prefix);
+		o->setOrderByCount(nv.getbool(idx));
+		free(idx);
+		vector<mgKeyTypes> k;
+		k.clear();
+		for (unsigned int i = 0; i < 999 ; i++)
 		{
-			delete o;
-			break;
+			asprintf(&idx,"%s.Keys.%u.Type",prefix,i);
+			unsigned int v = nv.getuint(idx);
+			free(idx);
+			if (v==0) break;
+			k.push_back(mgKeyTypes(v));
 		}
+		if (k.size()==0)
+			break;
+		o->setKeys(k);
 		orders.push_back(o);
 	}
     	m_current_order = nv.getuint("CurrentOrder");

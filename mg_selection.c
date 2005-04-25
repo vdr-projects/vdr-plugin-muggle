@@ -542,7 +542,7 @@ mgSelection::items () const
 
 
 void mgSelection::InitSelection() {
-	m_db = new mgDbGd;
+	m_db = GenerateDB();
     	m_level = 0;
     	m_position = 0;
     	m_items_position = 0;
