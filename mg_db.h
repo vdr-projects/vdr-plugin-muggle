@@ -51,7 +51,7 @@ class mgDb {
 
 	virtual void Sync(char * const * path_argv, bool delete_missing ) =0;
 	virtual bool FieldExists(string table, string field)=0;
-	virtual void LoadMapInto(string sql,map<string,string>&idmap,map<string,string>&valmap)=0;
+	virtual void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap)=0;
 	virtual bool LoadValuesInto(const mgOrder* order,unsigned int level,vector<mgListItem*>& listitems)=0;
 	string sql_string(const string s); // \todo does it need to be public?
 	virtual bool NeedGenre2() = 0;

@@ -1160,7 +1160,7 @@ mgKey::LoadMap() const
 	mgDb *db = GenerateDB();
 	char *b;
 	asprintf(&b,"select %s,%s from %s;",map_idfield().c_str(),map_valuefield().c_str(),map_table().c_str());
-	db->LoadMapInto(b, map_ids[Type()], map_values[Type()]);
+	db->LoadMapInto(b, &map_ids[Type()], &map_values[Type()]);
 	free(b);
 	delete db;
 	return true;

@@ -1001,8 +1001,10 @@ mgDbGd::FieldExists(string table, string field)
 }
 
 void
-mgDbGd::LoadMapInto(string sql,map<string,string>&idmap,map<string,string>&valmap)
+mgDbGd::LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap)
 {
+	if (!valmap && !idmap)
+		return;
 	if (!Connect())
 		return;
 	MYSQL_RES *rows = exec_sql (sql);
@@ -1013,8 +1015,8 @@ mgDbGd::LoadMapInto(string sql,map<string,string>&idmap,map<string,string>&valma
 		{
 			if (row[0] && row[1])
 			{
-				valmap[row[0]] = row[1];
-				idmap[row[1]] = row[0];
+				if (valmap) (*valmap)[row[0]] = row[1];
+				if (idmap) (*idmap)[row[1]] = row[0];
 			}
 		}
 		mysql_free_result (rows);

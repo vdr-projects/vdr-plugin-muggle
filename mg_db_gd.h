@@ -37,7 +37,7 @@ class mgDbGd : public mgDb {
 	bool NeedGenre2();
 	long thread_id() { return mysql_thread_id(m_db); }
 	bool FieldExists(string table, string field);
-	void LoadMapInto(string sql,map<string,string>&idmap,map<string,string>&valmap);
+	void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap);
 	bool LoadValuesInto(const mgOrder* order,unsigned int level,vector<mgListItem*>& listitems);
 	MYSQL_RES* exec_sql( const string query); // \todo should be private
 	unsigned long exec_count(const string query); // \todo should be private
@@ -51,7 +51,6 @@ class mgDbGd : public mgDb {
   	bool sql_query(string query);
   	string get_col0( const string query);
 	char *sql_Cstring(TagLib::String s,char *buf=0);
-	char *lower(char *s);
 	TagLib::String getlanguage(const char *filename);
 	char * getAlbum(const char *c_album,const char *c_artist,const char *c_directory);
 	bool GetFileInfo(const char *filename);
