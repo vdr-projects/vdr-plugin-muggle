@@ -33,7 +33,6 @@ class mgDbGd : public mgDb {
 	void ClearCollection( const string Name);
 	bool CreateCollection( const string Name);
 	
-	void Sync(char * const * path_argv, bool delete_missing );
 	bool NeedGenre2();
 	long thread_id() { return mysql_thread_id(m_db); }
 	bool FieldExists(string table, string field);
@@ -44,6 +43,8 @@ class mgDbGd : public mgDb {
 	void ServerEnd();
    protected:
 	char* sql_Cstring(const char *s,char *buf);
+	bool SyncStart();
+	void SyncFile(const char *filename);
    private:
 	MYSQL *m_db;
   	void FillTables();
@@ -53,7 +54,6 @@ class mgDbGd : public mgDb {
 	char *sql_Cstring(TagLib::String s,char *buf=0);
 	TagLib::String getlanguage(const char *filename);
 	char * getAlbum(const char *filename,const char *c_album,const char *c_artist);
-	void SyncFile(const char *filename);
 	map<string,string> m_Genres;
 
 };

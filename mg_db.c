@@ -13,6 +13,10 @@
 using namespace std;
 
 #include "mg_db_gd.h"
+#include "mg_setup.h"
+
+#include <sys/stat.h>
+#include <fts.h>
 
 bool UsingEmbeddedMySQL();
 
@@ -71,5 +75,34 @@ optimize (string & spar)
 		}
 	}
 	return spar;
+}
+
+void
+mgDb::Sync(char * const * path_argv, bool delete_missing)
+{
+	if (!SyncStart())
+		return;
+  	extern void showimportcount(unsigned int,bool final=false);
+
+	unsigned int importcount=0;
+	chdir(the_setup.ToplevelDir);
+	FTS *fts;
+	FTSENT *ftsent;
+	fts = fts_open( path_argv, FTS_LOGICAL, 0);
+	if (fts)
+	{
+		while ( (ftsent = fts_read(fts)) != NULL)
+		{
+			if (!((ftsent->fts_statp->st_mode)||S_IFREG))
+				continue;
+			SyncFile(ftsent->fts_path);
+			importcount++;
+			if (importcount%1000==0)
+				showimportcount(importcount);
+		}
+		fts_close(fts);
+	}
+	SyncEnd();
+	showimportcount(importcount,true);
 }
 

@@ -49,13 +49,16 @@ class mgDb {
 	virtual void ClearCollection( const string Name) =0;
 	virtual bool CreateCollection( const string Name) =0;
 
-	virtual void Sync(char * const * path_argv, bool delete_missing ) =0;
+	void Sync(char * const * path_argv, bool delete_missing );
 	virtual bool FieldExists(string table, string field)=0;
 	virtual void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap)=0;
 	virtual bool LoadValuesInto(const mgOrder* order,unsigned int level,vector<mgListItem*>& listitems)=0;
 	string sql_string(const string s); // \todo does it need to be public?
 	virtual bool NeedGenre2() = 0;
    protected:
+	virtual bool SyncStart() { return true; }
+	virtual void SyncEnd() {}
+	virtual void SyncFile(const char *filename) {}
   	bool m_database_found;
   	bool m_hasfolderfields;
 	char* sql_Cstring(const string s,char *buf=0);

@@ -14,7 +14,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdio.h>
-#include <fts.h>
 #include <sys/time.h>
 #include <time.h>
 
@@ -728,6 +727,11 @@ mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
 void
 mgDbGd::SyncFile(const char *filename)
 {
+      	char *ext = extension(filename);
+	if (strcasecmp(ext,"flac")
+		&& strcasecmp(ext,"ogg")
+		&& strcasecmp(ext,"mp3"))
+		return;
 	if (!strncmp(filename,"./",2))	// strip leading ./
 		filename += 2;
 	const char *cfilename=filename;
@@ -812,12 +816,11 @@ mgDbGd::SyncFile(const char *filename)
 	exec_sql(sql);
 }
 
-void
-mgDbGd::Sync(char * const * path_argv, bool delete_missing)
+bool
+mgDbGd::SyncStart()
 {
-  	extern void showimportcount(unsigned int,bool final=false);
   	if (!Connect())
-    		return;
+    		return false;
 	LoadMapInto("SELECT id,genre from genre",&m_Genres,0);
 	// init random number generator
 	struct timeval tv;
@@ -825,32 +828,7 @@ mgDbGd::Sync(char * const * path_argv, bool delete_missing)
 	gettimeofday( &tv, &tz );
 	srandom( tv.tv_usec );
 	CreateFolderFields();
-
-	unsigned int importcount=0;
-	chdir(the_setup.ToplevelDir);
-	FTS *fts;
-	FTSENT *ftsent;
-	fts = fts_open( path_argv, FTS_LOGICAL, 0);
-	if (fts)
-	{
-		while ( (ftsent = fts_read(fts)) != NULL)
-		{
-			if (!((ftsent->fts_statp->st_mode)||S_IFREG))
-				continue;
-      			char *ext = extension(ftsent->fts_path);
-			if (!strcasecmp(ext,"flac")
-				|| !strcasecmp(ext,"ogg")
-				|| !strcasecmp(ext,"mp3"))
-			{
-				SyncFile(ftsent->fts_path);
-				importcount++;
-				if (importcount%1000==0)
-					showimportcount(importcount);
-			}
-		}
-		fts_close(fts);
-	}
-	showimportcount(importcount,true);
+	return true;
 }
 
 int
