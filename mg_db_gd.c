@@ -637,7 +637,7 @@ mgDbGd::getlanguage(const char *filename)
 {
       TagLib::String result = "";
       TagLib::ID3v2::Tag * id3v2tag=0;
-      if (!strcmp(c_extension,"flac"))
+      if (!strcasecmp(c_extension,"flac"))
       {
       	TagLib::FLAC::File f(filename);
 	id3v2tag = f.ID3v2Tag();
@@ -648,7 +648,7 @@ mgDbGd::getlanguage(const char *filename)
   	    result = l.front()->toString();
         }
       }
-      else if (!strcmp(c_extension,"mp3"))
+      else if (!strcasecmp(c_extension,"mp3"))
       {
       	TagLib::MPEG::File f(filename);
 	id3v2tag = f.ID3v2Tag();
@@ -862,8 +862,7 @@ mgDbGd::Sync(char * const * path_argv, bool delete_missing)
       			if (!extension)
 	      			continue;
 			strcpy(c_extension,extension+1);
-      			lower(c_extension);
-			if (!strcmp(c_extension,"flac") || !strcmp(c_extension,"ogg") || !strcmp(c_extension,"mp3"))
+			if (!strcasecmp(c_extension,"flac") || !strcasecmp(c_extension,"ogg") || !strcasecmp(c_extension,"mp3"))
 			{
 				SyncFile(ftsent->fts_path);
 				importcount++;

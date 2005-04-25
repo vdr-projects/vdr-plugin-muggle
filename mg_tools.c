@@ -146,17 +146,3 @@ ltos (long l)
 	s << l;
 	return s.str ();
 }
-
-char *
-lower(char *s)
-{
-	char *p=s;
-	while (*p)
-	{
-		int i=(int)(*p);
-		(*p)=(char)tolower(i);
-		p++;
-	}
-	return s;
-}
-
