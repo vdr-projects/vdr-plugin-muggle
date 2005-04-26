@@ -103,7 +103,7 @@ class mgSelection
 
 
 //! \brief initializes from a map.
-	void InitFrom(mgValmap& nv);
+	void InitFrom(mgOrder* o,mgValmap& nv);
 
 //! \brief the normal destructor
         ~mgSelection ();
@@ -363,11 +363,6 @@ class mgSelection
 	 * \param nv the values will be entered into this map
 	 */
         void DumpState(mgValmap& nv) const;
-
-        /*! \brief creates a new selection using saved definitions
-	 * \param nv this map contains the saved definitions
-	 */
-	mgSelection(mgValmap&  nv);
 
 	//! \brief clear the cache, next access will reload from data base
         void clearCache() const;

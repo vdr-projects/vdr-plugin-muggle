@@ -479,6 +479,8 @@ mgParts::sql_select(bool distinct)
 	if (!m_sql_select.empty())
 		return m_sql_select;
 	Prepare();
+	if (fields.empty())
+		return "";
 	string result;
 	if (distinct)
 	{
@@ -488,8 +490,6 @@ mgParts::sql_select(bool distinct)
 	}
 	else
 		result = sql_list("SELECT",fields);
-	if (result.empty())
-		return result;
 	result += sql_list("FROM",tables);
 	result += sql_list("WHERE",clauses," AND ");
 	if (distinct)
@@ -621,7 +621,9 @@ mgOrder::setKeys(vector<mgKeyTypes> kt)
 {
 	clear();
 	for (unsigned int i=0;i<kt.size();i++)
+	{
 		setKey(kt[i]);
+	}
         clean();
 }
 
@@ -1149,6 +1151,8 @@ mgKeyMaps::loadvalues (mgKeyTypes kt) const
 string
 mgKeyMaps::value(mgKeyTypes kt, string idstr) const
 {
+	if (idstr.empty())
+		return idstr;
 	if (loadvalues (kt))
 	{
 		map<string,string>& valmap = map_values[kt];

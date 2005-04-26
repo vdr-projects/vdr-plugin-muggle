@@ -137,7 +137,14 @@ mgSelection::mgListItems::index (const string s,bool val,bool second_try) const
     }
     // nochmal mit neuen Werten:
     if (second_try) {
-    	mgDebug(2,"index: Gibt es nicht:%s",s.c_str());
+    	mgDebug(5,"index: Gibt es nicht:%s",s.c_str());
+	mgDebug(5,"index: wir haben z.B.");
+	if (size()>0) mgDebug(5,"%s/%s",m_items[0]->value().c_str(),m_items[0]->id().c_str());
+	if (size()>1) mgDebug(5,"%s/%s",m_items[1]->value().c_str(),m_items[1]->id().c_str());
+	if (size()>2) mgDebug(5,"%s/%s",m_items[2]->value().c_str(),m_items[2]->id().c_str());
+	if (size()>3) mgDebug(5,"%s/%s",m_items[3]->value().c_str(),m_items[3]->id().c_str());
+	if (size()>4) mgDebug(5,"%s/%s",m_items[4]->value().c_str(),m_items[4]->id().c_str());
+	if (size()>5) mgDebug(5,"%s/%s",m_items[5]->value().c_str(),m_items[5]->id().c_str());
     	return 0;
     }
     else
@@ -386,7 +393,7 @@ unsigned int
 mgSelection::gotoPosition ()
 {
     if (m_level == order->size())
-	mgError("gotoPosition:m_level==order->size()");
+	return m_position;
     unsigned int itemsize = listitems.size();
     if (itemsize==0)
 	m_position = 0;
@@ -543,6 +550,7 @@ mgSelection::items () const
 
 void mgSelection::InitSelection() {
 	m_db = GenerateDB();
+	order = GenerateOrder();
     	m_level = 0;
     	m_position = 0;
     	m_items_position = 0;
@@ -575,11 +583,6 @@ mgSelection::mgSelection (const mgSelection* s)
     InitFrom(s);
 }
 
-mgSelection::mgSelection (mgValmap& nv)
-{
-    InitFrom(nv);
-}
-
 void
 mgSelection::setOrder(mgOrder* n)
 {
@@ -602,11 +605,12 @@ mgSelection::setOrder(mgOrder* n)
 
 
 void
-mgSelection::InitFrom(mgValmap& nv)
+mgSelection::InitFrom(mgOrder *o,mgValmap& nv)
 {
 	InitSelection();
+	setOrder(o);
 	m_fall_through = nv.getbool("FallThrough");
-	while (m_level < nv.getuint("Level"))
+	while (m_level <= nv.getuint("Level") && m_level < order->size())
 	{
 		char *idx;
 		asprintf(&idx,"order.Keys.%u.Position",m_level);
@@ -625,6 +629,7 @@ mgSelection::InitFrom(mgValmap& nv)
 
 mgSelection::~mgSelection ()
 {
+    delete order;
     delete m_db;
 }
 
@@ -767,7 +772,7 @@ mgSelection::selectfrom(mgOrder* oldorder,mgItem* o)
 	{
 		selitem = zeroitem;
 		mgKeyTypes new_kt = getKeyType(idx);
-		for (unsigned int i=0;i<oldorder->size();i++)
+		if (oldorder) for (unsigned int i=0;i<oldorder->size();i++)
 		{
 			mgKeyTypes old_kt = oldorder->getKeyType(i);
 			if (old_kt==new_kt && oldorder->getKeyItem(i))

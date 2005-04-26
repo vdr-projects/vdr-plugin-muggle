@@ -320,8 +320,7 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
     InitMapFromSetup(nsel);
     InitMapFromSetup(ncol);
     m_treesel = new mgSelection;
-    m_treesel->setOrder(getOrder(m_current_order));
-    m_treesel->InitFrom (nsel);
+    m_treesel->InitFrom (getOrder(m_current_order),nsel);
     m_treesel->CreateCollection(default_collection);
     if (default_collection!=play_collection)
 	    m_treesel->CreateCollection(play_collection);
@@ -331,11 +330,9 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
     mgOrder *o = GenerateOrder();
     o->setKeys(kt);
     m_collectionsel = new mgSelection;
-    m_collectionsel->setOrder(o);
-    m_collectionsel->InitFrom (ncol);
+    m_collectionsel->InitFrom (o,ncol);
     m_playsel = new mgSelection;
-    m_playsel->setOrder(o);
-    m_playsel->InitFrom(ncol);
+    m_playsel->InitFrom(o,ncol);
     delete o;
     // initialize
     if (m_playsel->level()!=1)
@@ -800,7 +797,6 @@ mgTree::Title () const
 
   if( !m_filter.empty() )
     {
-	    mgDebug(1,"m_filter.size():%d,string:%s",m_filter.size(),m_filter.c_str());
       title += " (" + m_filter + ")";
     }
 

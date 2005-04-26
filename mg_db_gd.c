@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
+#include <assert.h>
 
 #include <mpegfile.h>
 #include <flacfile.h>
@@ -990,6 +991,7 @@ mgDbGd::LoadValuesInto(const mgOrder* order,unsigned int level,vector<mgListItem
 		return false;
         listitems.clear ();
         unsigned int num_fields = mysql_num_fields(rows);
+	assert(num_fields>=2);
 	MYSQL_ROW row;
         while ((row = mysql_fetch_row (rows)) != 0)
         {
