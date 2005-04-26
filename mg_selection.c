@@ -113,7 +113,7 @@ mgSelection::mgListItems::valindex (const string v) const
 unsigned int
 mgSelection::mgListItems::idindex (const string i) const
 {
-	return index(i,true);
+	return index(i,false);
 }
 
 unsigned int
@@ -610,7 +610,7 @@ mgSelection::InitFrom(mgOrder *o,mgValmap& nv)
 	InitSelection();
 	setOrder(o);
 	m_fall_through = nv.getbool("FallThrough");
-	while (m_level <= nv.getuint("Level") && m_level < order->size())
+	while (m_level < nv.getuint("Level")) 
 	{
 		char *idx;
 		asprintf(&idx,"order.Keys.%u.Position",m_level);
@@ -637,7 +637,7 @@ void mgSelection::InitFrom(const mgSelection* s)
 {
     InitSelection();
     m_fall_through = s->m_fall_through;
-    order = s->order;
+    *order = *(s->order);
     m_level = s->m_level;
     m_position = s->m_position;
     m_items_position = s->m_items_position;
