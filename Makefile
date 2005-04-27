@@ -97,7 +97,7 @@ $(DEPFILE): Makefile
 
 ### Implicit rules:
 
-%.o: %.c %.h
+%.o: %.c
 	$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDES) -c $<
 
 mg_tables.h:	scripts/genres.txt scripts/iso_639.xml scripts/musictypes.txt scripts/sources.txt
