@@ -49,7 +49,7 @@ class mgDb {
 	virtual void ClearCollection( const string Name) =0;
 	virtual bool CreateCollection( const string Name) =0;
 
-	void Sync(char * const * path_argv, bool delete_missing );
+	void Sync(char * const * path_argv = 0);
 	virtual bool FieldExists(string table, string field)=0;
 	virtual void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap)=0;
 	virtual bool LoadValuesInto(const mgOrder* order,unsigned int level,vector<mgListItem*>& listitems)=0;

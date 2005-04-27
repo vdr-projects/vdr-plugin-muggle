@@ -174,11 +174,13 @@ int main( int argc, char *argv[] )
 #endif
 	}
     }
-  mgDb *sync = GenerateDB();
   if (optind<argc)
-	  sync->Sync(argv+optind,delete_mode);
-  sync->ServerEnd();
-  delete sync;
+  {
+  	mgDb *sync = GenerateDB();
+	sync->Sync(argv+optind);
+  	sync->ServerEnd();
+  	delete sync;
+  }
   return 0;
 }
 

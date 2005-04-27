@@ -705,7 +705,6 @@ class mgCmdSync : public mgOsdItem
 {
 	public:
 		bool Enabled(mgActions on) { return true; }
-		void Execute();
 		eOSState ProcessKey(eKeys key);
 		const char *ButtonName() { return tr("Synchronize database"); }
 };
@@ -715,22 +714,12 @@ eOSState
 mgCmdSync::ProcessKey(eKeys key)
 {
 	if (key==kOk)
-		if (Interface->Confirm(tr("Synchronize database with track files?")))
 	{
-		Execute();
+		extern bool import();
+		import();
 		return osContinue;
 	}
 	return osUnknown;
-}
-
-void
-mgCmdSync::Execute()
-{
-  mgThreadSync *s = mgThreadSync::get_instance();
-  if( s )
-    {
-      s->Sync( 0, (bool) the_setup.DeleteStaleReferences );
-    }
 }
 
 //! \brief sets the default collection selection

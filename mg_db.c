@@ -13,6 +13,7 @@
 using namespace std;
 
 #include "mg_db_gd.h"
+#include "mg_setup.h"
 
 #include <sys/stat.h>
 #include <fts.h>
@@ -77,7 +78,7 @@ optimize (string & spar)
 }
 
 void
-mgDb::Sync(char * const * path_argv, bool delete_missing)
+mgDb::Sync(char * const * path_argv)
 {
 	if (!SyncStart())
 		return;
@@ -87,6 +88,11 @@ mgDb::Sync(char * const * path_argv, bool delete_missing)
 	chdir(the_setup.ToplevelDir);
 	FTS *fts;
 	FTSENT *ftsent;
+	if (!path_argv)
+	{
+		static char *default_args[] = { ".", 0};
+		path_argv = default_args;
+	}
 	fts = fts_open( path_argv, FTS_LOGICAL, 0);
 	if (fts)
 	{

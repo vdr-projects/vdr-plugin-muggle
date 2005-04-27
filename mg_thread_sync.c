@@ -22,23 +22,17 @@ mgThreadSync* mgThreadSync::get_instance()
     }
 }
 
-static char *dot_args[] = { ".", 0 };
-
-void mgThreadSync::SetArguments( char * const * path_argv, bool delete_missing )
+void mgThreadSync::SetArguments( char * const * path_argv)
 {
-  if (path_argv)
-	  m_path = path_argv;
-  else
-	  m_path = dot_args;
-  m_delete = delete_missing;
+  m_path = path_argv;
 }
 
-bool mgThreadSync::Sync(char * const * path_argv, bool delete_missing )
+bool mgThreadSync::Sync(char * const * path_argv)
 {
   mgThreadSync *s = mgThreadSync::get_instance();
   if( s )
     {
-      s->SetArguments( path_argv, delete_missing );
+      s->SetArguments( path_argv);
       s->Start();
       
       return true;
@@ -55,7 +49,7 @@ mgThreadSync::Action()
   if( m_path )
     {
       mgDb *s = GenerateDB(true);
-      s->Sync( m_path, m_delete );
+      s->Sync( m_path );
       delete s;
     }
 }

@@ -1186,16 +1186,14 @@ create_question()
     return result;
 }
 
-void
+bool
 import()
 {
-    if (Interface->Confirm(tr("Import items?")))
-    {
-        mgThreadSync *s = mgThreadSync::get_instance();
-        if (s)
-       	{
-		char *sync_args[] = { ".", 0 };
-		s->Sync(sync_args,(bool)the_setup.DeleteStaleReferences);
-	}
-    }
+    if (!Interface->Confirm(tr("Import items?")))
+	    return false;
+    mgThreadSync *s = mgThreadSync::get_instance();
+    if (!s)
+	    return false;
+    s->Sync();
+    return true;
 }
