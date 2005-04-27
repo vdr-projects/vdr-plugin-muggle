@@ -455,7 +455,6 @@ mgParts::Prepare()
 	{
 		if (!prevtable.empty())
 		{
-			mgDebug(5,"Prepare:Connect %s with %s",prevtable.c_str(),(*it).c_str());
 			rest.InitReferences();
 			ConnectTables(prevtable,*it);
 		}
@@ -470,7 +469,6 @@ mgParts::Prepare()
 	clauses.sort();
 	clauses.unique();
 	orders.unique();
-	mgDebug(5,"Prepare done");
 }
 
 string
@@ -840,7 +838,6 @@ mgReference::Equal(string table1, string table2) const
 void
 mgParts::ConnectTables(string table1, string table2)
 {
-	mgDebug(5,"Connecting %s with %s",table1.c_str(),table2.c_str());
 	// same table?
 	if (table1 == table2)
 		return;
@@ -862,7 +859,6 @@ mgParts::ConnectTables(string table1, string table2)
 	if (table1.find(" AS ")!=string::npos) return;
 	if (table2.find(" AS ")!=string::npos) return;
 
-	mgDebug(5,"generic:rest.size()=%d",rest.size());
 	// now the generic part:
 	for (unsigned int i=0 ; i<rest.size(); i++ )
 	{
@@ -871,7 +867,6 @@ mgParts::ConnectTables(string table1, string table2)
 		{
 			rest.erase(rest.begin()+i);
 			positives.push_back(r);
-			mgDebug(5,"use:%s-%s",r->t1().c_str(),r->t2().c_str());
 			return;
 		}
 	}
@@ -889,12 +884,10 @@ again:
 				if (r->Equal(table1,table2))
 				{
 					positives.push_back(r);
-					mgDebug(5,"use:%s(%d)-%s(%d)",r->t1().c_str(),ct1,r->t2().c_str(),ct2);
 					return;
 				}
 				else
 				{
-					mgDebug(5,"throw away:%s(%d)-%s(%d)",r->t1().c_str(),ct1,r->t2().c_str(),ct2);
 					delete r;
 					continue;
 				}
@@ -904,18 +897,15 @@ again:
 				if (r->t1()==table1)
 				{
 					positives.push_back(r);
-					mgDebug(5,"use:%s(%d)-%s(%d)",r->t1().c_str(),ct1,r->t2().c_str(),ct2);
 					ConnectTables(r->t2(),table2);
 				}
 				else if (r->t1()==table2)
 				{
 					positives.push_back(r);
-					mgDebug(5,"use:%s(%d)-%s(%d)",r->t1().c_str(),ct1,r->t2().c_str(),ct2);
 					ConnectTables(table1,r->t2());
 				}
 				else
 				{
-					mgDebug(5,"throw away:%s(%d)-%s(%d)",r->t1().c_str(),ct1,r->t2().c_str(),ct2);
 					delete r;
 					goto again;
 				}
@@ -925,18 +915,15 @@ again:
 				if (r->t2()==table1)
 				{
 					positives.push_back(r);
-					mgDebug(5,"use:%s(%d)-%s(%d)",r->t1().c_str(),ct1,r->t2().c_str(),ct2);
 					ConnectTables(r->t1(),table2);
 				}
 				else if (r->t2()==table2)
 				{
 					positives.push_back(r);
-					mgDebug(5,"use:%s(%d)-%s(%d)",r->t1().c_str(),ct1,r->t2().c_str(),ct2);
 					ConnectTables(table1,r->t1());
 				}
 				else
 				{
-					mgDebug(5,"throw away:%s(%d)-%s(%d)",r->t1().c_str(),ct1,r->t2().c_str(),ct2);
 					delete r;
 					goto again;
 				}
