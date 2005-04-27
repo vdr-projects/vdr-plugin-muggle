@@ -18,7 +18,6 @@
 
 #include "mg_tools.h"
 
-#include "vdr_setup.h"
 #include "vdr_decoder_flac.h"
 
 

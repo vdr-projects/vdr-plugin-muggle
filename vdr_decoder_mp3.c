@@ -26,7 +26,6 @@
 #include "vdr_config.h"
 #include "vdr_decoder_mp3.h"
 #include "vdr_stream.h"
-#include "vdr_setup.h"
 
 #include "mg_tools.h"
 

@@ -22,7 +22,7 @@
 #include <tools.h>
 #include <plugin.h>
 
-#include "vdr_setup.h"
+#include "mg_setup.h"
 #include "vdr_actions.h"
 #include "vdr_menu.h"
 #include "i18n.h"

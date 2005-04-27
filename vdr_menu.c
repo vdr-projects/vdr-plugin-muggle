@@ -26,7 +26,7 @@
 #include <skins.h>
 #endif
 
-#include "vdr_setup.h"
+#include "mg_setup.h"
 #include "vdr_menu.h"
 #include "vdr_player.h"
 #include "mg_incremental_search.h"

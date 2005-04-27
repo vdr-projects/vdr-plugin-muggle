@@ -19,7 +19,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "vdr_setup.h"
 
 // --- mgOggFile ----------------------------------------------------------------
 

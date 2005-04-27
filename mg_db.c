@@ -13,7 +13,6 @@
 using namespace std;
 
 #include "mg_db_gd.h"
-#include "mg_setup.h"
 
 #include <sys/stat.h>
 #include <fts.h>

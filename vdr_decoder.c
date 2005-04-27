@@ -27,7 +27,6 @@
 #include <interface.h>
 
 
-#include "vdr_setup.h"
 #include "vdr_decoder.h"
 #include "vdr_decoder_mp3.h"
 

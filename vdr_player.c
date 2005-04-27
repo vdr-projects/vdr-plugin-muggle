@@ -39,7 +39,7 @@
 #include "vdr_player.h"
 #include "vdr_decoder.h"
 #include "vdr_config.h"
-#include "vdr_setup.h"
+#include "mg_setup.h"
 #include "i18n.h"
 
 #include "mg_tools.h"

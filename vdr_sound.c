@@ -1,5 +1,5 @@
 /*!
- * \file vdr_setup.c
+ * \file vdr_sound.c
  * \brief Sound manipulation classes for a VDR media plugin (muggle)
  *
  * \version $Revision: 1.2 $
