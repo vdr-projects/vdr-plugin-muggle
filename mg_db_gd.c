@@ -82,6 +82,14 @@ static char *mysql_embedded_args[] =
 };
 
 
+static void
+wrong_embedded_mysql_for_external_server(int version)
+{
+	mgError("You are using the embedded mysql library. For accessing external servers "
+		"you need mysql 040111 but you have only %06d", version);
+	abort();
+}
+
 mysqlhandle_t::mysqlhandle_t()
 {
 #ifndef HAVE_ONLY_SERVER
@@ -110,12 +118,15 @@ mysqlhandle_t::mysqlhandle_t()
 	}
 	else
 	{
-		if (strcmp(MYSQLCLIENTVERSION,"4.1.11")<0)
-		{
-			mgError("You have embedded mysql. For accessing external servers "
-				"you need mysql 4.1.11 but you have only %s", MYSQLCLIENTVERSION);
-			abort();
-		}
+#if MYSQL_VERSION_ID < 40111
+		// compile time check
+		wrong_embedded_mysql_for_external_server(MYSQL_VERSION_ID);
+#endif
+#if MYSQL_VERSION_ID >= 40101
+		// runtime check
+		if (mysql_get_client_version()<40111) // this function was added for embedded library in MySQL 4.1.1
+			wrong_embedded_mysql_for_external_server(mysql_get_client_version());
+#endif
 		mgDebug(1,"calling mysql_server_init for external server");
 		argv_size = -1;
 	}
