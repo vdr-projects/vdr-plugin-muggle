@@ -1220,13 +1220,13 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {
-        "Import tracks?",
-        "Tracks importieren?",
+        "Import items?",
+        "Titel importieren?",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "Importer les tracks?",       // TODO
+        "Importer les titres?",       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1254,7 +1254,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {
-        "Import done:imported %d items",
+        "Import done:Imported %d items",
         "Import fertig:%d Titel importiert",
         "",                                       // TODO
         "",                                       // TODO
