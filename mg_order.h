@@ -72,9 +72,7 @@ class mgKey {
 		virtual bool Enabled(mgDb *db) { return true; }
 		virtual bool LoadMap() const;
 	protected:
-		virtual string map_idfield() const { return ""; }
-		virtual string map_valuefield() const { return ""; }
-		virtual string map_table() const { return ""; }
+		virtual string map_sql() const { return ""; }
 };
 
 

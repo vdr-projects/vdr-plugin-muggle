@@ -140,9 +140,7 @@ class mgKeyGenres : public mgKeyNormal {
 		mgKeyGenres(mgKeyTypes kt) : mgKeyNormal(kt,"tracks","genre1") {};
 		mgParts Parts(mgDb *db,bool orderby=false) const;
 	protected:
-		string map_idfield() const { return "id"; }
-		string map_valuefield() const { return "genre"; }
-		string map_table() const { return "genre"; }
+		string map_sql() const;
 		virtual unsigned int genrelevel() const { return 4; }
 	private:
 		string GenreClauses(mgDb *db,bool orderby) const;
@@ -168,6 +166,15 @@ class mgKeyGenre3 : public mgKeyGenres
 		mgKeyGenre3() : mgKeyGenres(keyGenre3) {}
 		unsigned int genrelevel() const { return 3; }
 };
+
+string
+mgKeyGenres::map_sql() const
+{
+	if (genrelevel()==4)
+		return "select id,genre from genre;";
+	else
+		return string("select id,genre from genre where length(id)="+ltos(genrelevel())+";");
+}
 
 string
 mgKeyGenres::GenreClauses(mgDb *db,bool orderby) const
@@ -217,7 +224,10 @@ mgKeyGenres::Parts(mgDb *db,bool orderby) const
 	if (orderby)
 	{
 		result.fields.push_back("genre.genre");
-		result.fields.push_back("genre.id");
+		if (genrelevel()==4)
+			result.fields.push_back("genre.id");
+		else
+			result.fields.push_back("substring(genre.id,1,"+ltos(genrelevel())+")");
 		result.tables.push_back("genre");
        		result.orders.push_back("genre.genre");
 	}
@@ -230,9 +240,7 @@ class mgKeyLanguage : public mgKeyNormal {
 		mgKeyLanguage() : mgKeyNormal(keyLanguage,"tracks","lang") {};
 		mgParts Parts(mgDb *db,bool orderby=false) const;
 	protected:
-		string map_idfield() const { return "id"; }
-		string map_valuefield() const { return "language"; }
-		string map_table() const { return "language"; }
+		string map_sql() const { return "select id,language from language;"; }
 };
 
 class mgKeyCollection: public mgKeyNormal {
@@ -240,9 +248,7 @@ class mgKeyCollection: public mgKeyNormal {
   	  mgKeyCollection() : mgKeyNormal(keyCollection,"playlist","id") {};
 	  mgParts Parts(mgDb *db,bool orderby=false) const;
 	protected:
-	 string map_idfield() const { return "id"; }
-	 string map_valuefield() const { return "title"; }
-	 string map_table() const { return "playlist"; }
+	 string map_sql() const { return "select id,title from playlist;"; }
 };
 class mgKeyCollectionItem : public mgKeyNormal {
 	public:
@@ -1113,13 +1119,10 @@ mgOrder::Choices(unsigned int level, unsigned int *current) const
 bool
 mgKey::LoadMap() const
 {
-	if (map_idfield().empty())
+	if (map_sql().empty())
 		return false;
 	mgDb *db = GenerateDB();
-	char *b;
-	asprintf(&b,"select %s,%s from %s;",map_idfield().c_str(),map_valuefield().c_str(),map_table().c_str());
-	db->LoadMapInto(b, &map_ids[Type()], &map_values[Type()]);
-	free(b);
+	db->LoadMapInto(map_sql(), &map_ids[Type()], &map_values[Type()]);
 	delete db;
 	return true;
 }
@@ -1166,11 +1169,7 @@ mgKeyMaps::id(mgKeyTypes kt, string valstr) const
 	if (loadvalues (kt))
 	{
 		map<string,string>& idmap = map_ids[kt];
-		string v = idmap[valstr];
-		if (kt==keyGenre1) v=v.substr(0,1);
-		if (kt==keyGenre2) v=v.substr(0,2);
-		if (kt==keyGenre3) v=v.substr(0,3);
-		return v;
+		return idmap[valstr];
 	}
 	return valstr;
 }
