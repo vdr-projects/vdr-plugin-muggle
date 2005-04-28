@@ -522,12 +522,14 @@ mgDbGd::ServerConnect ()
         return false;
     if (UsingEmbeddedMySQL())
     {
+#ifndef HAVE_ONLY_SERVER
     	if (!mysql_real_connect(m_db, 0, 0, 0, 0, 0, 0, 0))
 		mgWarning("Failed to connect to embedded mysql in %s:%s ",
 				the_setup.DbDatadir,mysql_error(m_db));
     	else
 		mgDebug(1,"Connected to embedded mysql in %s",
 				the_setup.DbDatadir);
+#endif
     }
     else
     {
