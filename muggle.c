@@ -47,12 +47,6 @@ mgMuggle::MainMenuEntry (void)
 
 mgMuggle::mgMuggle (void)
 {
-#ifndef HAVE_ONLY_SERVER
-    char *buf;
-    asprintf(&buf,"%s/.muggle",getenv("HOME"));
-    set_datadir(buf);
-    free(buf);
-#endif
 }
 
 
@@ -166,7 +160,7 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
 #ifndef HAVE_ONLY_SERVER
             case 'd':
             {
-	        set_datadir(optarg);
+                the_setup.DbDatadir = strcpyrealloc (the_setup.DbDatadir, optarg);
             }
 	    break;
 #endif

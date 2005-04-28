@@ -38,6 +38,9 @@ mgSetup::mgSetup ()
     DbName = strdup ("GiantDisc");
     DbUser = 0;
     DbPass = 0;
+#ifndef HAVE_ONLY_SERVER
+    asprintf(&DbDatadir,"%s/.muggle",getenv("HOME"));
+#endif
     ToplevelDir = strdup("/mnt/music/");
 
     DeleteStaleReferences = false;
@@ -50,6 +53,9 @@ mgSetup::~mgSetup ()
     free(DbName);
     free(DbUser);
     free(DbPass);
+#ifndef HAVE_ONLY_SERVER
+    free(DbDatadir);
+#endif
     free(ToplevelDir);
 }
 

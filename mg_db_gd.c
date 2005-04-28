@@ -74,30 +74,12 @@ mgDbGd::~mgDbGd()
 
 
 
-static char *mysql_datadir;
-
 static char *mysql_embedded_args[] =
 {
 	"muggle",	
-	"--datadir=/tmp",	// stupid default
+	0,	// placeholder for --datadir=		
 	"--key_buffer_size=32M"
 };
-
-void
-set_datadir(char *dir)
-{
-	mgDebug(1,"setting mysql_datadir to %s",dir);
-	struct stat stbuf;
-	mysql_datadir=strdup(dir);
-	asprintf(&mysql_embedded_args[1],"--datadir=%s",mysql_datadir);
-	if (stat(mysql_datadir,&stbuf))
-		mkdir(mysql_datadir,0755);
-	if (stat(mysql_datadir,&stbuf))
-	{
-		mgError("Cannot access mysql_datadir %s: errno=%d",
-				mysql_datadir,errno);
-	}
-}
 
 
 mysqlhandle_t::mysqlhandle_t()
@@ -113,19 +95,35 @@ mysqlhandle_t::mysqlhandle_t()
 	int argv_size;
 	if (UsingEmbeddedMySQL())
 	{
-		mgDebug(1,"calling mysql_server_init for embedded");
 		argv_size = sizeof(mysql_embedded_args) / sizeof(char *);
+		struct stat stbuf;
+		if (stat(the_setup.DbDatadir,&stbuf))
+			mkdir(the_setup.DbDatadir,0755);
+		if (stat(the_setup.DbDatadir,&stbuf))
+		{
+			mgError("Cannot access mysqldata directory %s: errno=%d",
+					the_setup.DbDatadir,errno);
+			abort();
+		}
+		asprintf(&mysql_embedded_args[1],"--datadir=%s",the_setup.DbDatadir);
+		mgDebug(1,"calling mysql_server_init for embedded in %s",the_setup.DbDatadir);
 	}
 	else
 	{
 		if (strcmp(MYSQLCLIENTVERSION,"4.1.11")<0)
+		{
 			mgError("You have embedded mysql. For accessing external servers "
 				"you need mysql 4.1.11 but you have only %s", MYSQLCLIENTVERSION);
-		mgDebug(1,"calling mysql_server_init for external");
+			abort();
+		}
+		mgDebug(1,"calling mysql_server_init for external server");
 		argv_size = -1;
 	}
 	if (mysql_server_init(argv_size, mysql_embedded_args, mysql_embedded_groups))
-		mgDebug(3,"mysql_server_init failed");
+	{
+		mgError("mysql_server_init failed");
+		abort();
+	}
 #endif
 }
 
@@ -515,10 +513,10 @@ mgDbGd::ServerConnect ()
     {
     	if (!mysql_real_connect(m_db, 0, 0, 0, 0, 0, 0, 0))
 		mgWarning("Failed to connect to embedded mysql in %s:%s ",
-				mysql_datadir,mysql_error(m_db));
+				the_setup.DbDatadir,mysql_error(m_db));
     	else
 		mgDebug(1,"Connected to embedded mysql in %s",
-				mysql_datadir);
+				the_setup.DbDatadir);
     }
     else
     {

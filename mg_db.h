@@ -42,7 +42,6 @@ class mgDb {
   	bool HasFolderFields() const { return m_hasfolderfields;}
   	virtual bool Create() = 0;
 	virtual void ServerEnd() =0;		// must be done explicitly
-	static void set_datadir(char *datadir);
 	virtual int AddToCollection( const string Name,const vector<mgItem*>&items) =0;
 	virtual int RemoveFromCollection( const string Name,mgOrder* const order,unsigned int level) =0;
 	virtual bool DeleteCollection( const string Name) =0;

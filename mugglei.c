@@ -105,12 +105,6 @@ int main( int argc, char *argv[] )
   import_assorted = false;
   delete_mode = false;
   create_mode = false;
-#ifndef HAVE_ONLY_SERVER
-  char *buf;
-  asprintf(&buf,"%s/.muggle",getenv("HOME"));
-  set_datadir(buf);
-  free(buf);
-#endif
 
   // parse command line options
   while( 1 )
@@ -169,7 +163,7 @@ int main( int argc, char *argv[] )
 #ifndef HAVE_ONLY_SERVER
         case 'd':
           {
-	    set_datadir(optarg);
+	    the_setup.DbDatadir = strdup(optarg);
           } break;
 #endif
 	}

@@ -47,6 +47,9 @@ class mgSetup
         char *DbName;
         char *DbUser;
         char *DbPass;
+#ifndef HAVE_ONLY_SERVER
+	char *DbDatadir;
+#endif
         int DbPort;
         char *ToplevelDir;
 
