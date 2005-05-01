@@ -199,3 +199,6 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - Play mode: in endless mode (all tracks), trying to go back on the
   first track restarted the first track. Now it goes to the last track.
 - Added incremental search
+
+2005-xx-xx: Version 0.1.8-BETA
+- Added finnish translations. Thanks to Rolf Ahrenberg.
