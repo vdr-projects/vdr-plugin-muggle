@@ -56,7 +56,7 @@ mgDebug (const char *fmt, ...)
     va_end (ap);
 }
 
-extern void showmessage(const char*,int duration=0);
+extern void showmessage(int duration,const char*,...);
 
 void
 mgWarning (const char *fmt, ...)
@@ -67,7 +67,7 @@ mgWarning (const char *fmt, ...)
     vsnprintf (buffer, MAX_BUFLEN - 1, fmt, ap);
     syslog(LOG_INFO,"Warning: %s\n",buffer);
     fprintf(stderr,"%s\n",buffer);
-    showmessage(buffer);
+    showmessage(0,buffer);
     va_end (ap);
 }
 
@@ -82,7 +82,7 @@ mgError (const char *fmt, ...)
 
     syslog (LOG_ERR,"Error in Muggle: %s\n", buffer);
     fprintf(stderr,"%s\n",buffer);
-    showmessage(buffer);
+    showmessage(0,buffer);
 
     va_end (ap);
 }

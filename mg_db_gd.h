@@ -28,7 +28,7 @@ class mgDbGd : public mgDb {
 	bool Connect();
   	bool Create();
 	int AddToCollection( const string Name,const vector<mgItem*>&items);
-	int  RemoveFromCollection( const string Name,mgOrder* const order,unsigned int level);
+	int  RemoveFromCollection( const string Name,mgParts& what);
 	bool DeleteCollection( const string Name);
 	void ClearCollection( const string Name);
 	bool CreateCollection( const string Name);
@@ -37,8 +37,8 @@ class mgDbGd : public mgDb {
 	long thread_id() { return mysql_thread_id(m_db); }
 	bool FieldExists(string table, string field);
 	void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap);
-	bool LoadValuesInto(const mgOrder* order,unsigned int level,vector<mgListItem*>& listitems);
-	MYSQL_RES* exec_sql( const string query); // \todo should be private
+	string LoadItemsInto(mgParts& what,vector<mgItem*>& items);
+	string LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems);
 	unsigned long exec_count(const string query); // \todo should be private
 	void ServerEnd();
    protected:
@@ -49,6 +49,7 @@ class mgDbGd : public mgDb {
 	MYSQL *m_db;
   	void FillTables();
 	void CreateFolderFields();
+	MYSQL_RES* exec_sql( const string query);
   	bool sql_query(string query);
   	string get_col0( const string query);
 	char *sql_Cstring(TagLib::String s,char *buf=0);

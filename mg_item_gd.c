@@ -12,11 +12,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include "i18n.h"
 #include "mg_item_gd.h"
 #include "mg_setup.h"
 #include "mg_tools.h"
-#include "mg_order.h"
+#include "mg_selection.h"
 
 // this one last because of swap() redefinition:
 #include <tools.h>
@@ -177,15 +176,13 @@ mgItemGd::getSourceFile(bool AbsolutePath) const
 	}
 	if (result.empty())
 	{
-		char *b=0;
 		int nsize = m_mp3file.size();
+    		extern void showmessage(int duration,const char*,...);
 		if (nsize<30)
-			asprintf(&b,tr("%s not readable"),m_mp3file.c_str());
+			showmessage(0,"%s not readable",m_mp3file.c_str());
 		else
-			asprintf(&b,tr("%s..%s not readable"),m_mp3file.substr(0,20).c_str(),m_mp3file.substr(nsize-20).c_str());;
-    		extern void showmessage(const char*,int duration=0);
-		showmessage(b);
-		free(b);
+			showmessage(0,"%s..%s not readable",m_mp3file.
+			substr(0,20).c_str(),m_mp3file.substr(nsize-20).c_str());
         	esyslog ("ERROR: cannot stat %s. Meaning not found, not a valid file, or no access rights", m_mp3file.c_str ());
 		m_valid = false;
 		return m_mp3file;

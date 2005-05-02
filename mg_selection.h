@@ -25,6 +25,7 @@ using namespace std;
 #include "mg_db.h"
 
 typedef vector<string> strvector;
+typedef vector<mgKey*> keyvector;
 
 /*!
  * \brief the only interface to the database.
@@ -36,11 +37,7 @@ typedef vector<string> strvector;
 class mgSelection
 {
     public:
-//! \brief defines an order to be used 
-        void setOrder(mgOrder *o);
-
-	mgOrder* getOrder() { return order; }
-
+	void mgSelection::CopyKeyValues(mgSelection* s);
 /*! \brief define various ways to play music in random order
  * \todo Party mode is not implemented, does same as SM_NORMAL
  */
@@ -101,9 +98,10 @@ class mgSelection
  */
         mgSelection (const mgSelection* s);
 
+ 	void MakeCollection();
 
 //! \brief initializes from a map.
-	void InitFrom(mgOrder* o,mgValmap& nv);
+	void InitFrom(const char *prefix,mgValmap& nv);
 
 //! \brief the normal destructor
         ~mgSelection ();
@@ -129,9 +127,6 @@ class mgSelection
 /*! \brief returns the current item from the value() list
  */
 	string getCurrentValue();
-
-//! \brief returns a map (new allocated) for all used key fields and their values
-	map<mgKeyTypes,string> UsedKeyValues();
 
 //! \brief the current position
         unsigned int getPosition ()const;
@@ -210,11 +205,15 @@ class mgSelection
  */
         void leave_all ();
 
-//! \brief the current level in the tree. This is at most order->size().
-        unsigned int level () const
-        {
-            return m_level;
-        }
+	unsigned int ordersize() const
+	{
+	    return Keys.size();
+	}
+	
+	unsigned int orderlevel() const
+	{
+	    return m_level;
+	}
 
 	//! \brief true if the selection holds no items
 	bool empty();
@@ -348,21 +347,10 @@ class mgSelection
  */
         string getListname () const;
 
-/*! \brief true if this selection currently selects a list of collections
- */
-        bool isCollectionlist () const;
-
-/*! \brief true if this selection currently selects a list of languages
- */
-        bool isLanguagelist () const;
-
-	//! \brief true if we have entered a collection
-	bool inCollection(const string Name="") const;
-
 	/*! \brief dumps the entire state of this selection into a map,
 	 * \param nv the values will be entered into this map
 	 */
-        void DumpState(mgValmap& nv) const;
+        void DumpState(mgValmap& nv,const char *prefix) const;
 
 	//! \brief clear the cache, next access will reload from data base
         void clearCache() const;
@@ -374,6 +362,19 @@ class mgSelection
 	{
 		return (m_current_values=="" && m_current_tracks=="");
 	}
+
+	void setKeys(vector<const char*> kt);
+	string Name();
+	bool SameOrder(const mgSelection& other);
+	mgKey* Key(unsigned int idx) const;
+	vector <const char*> Choices(unsigned int level, unsigned int *current) const;
+	void setOrderByCount(bool orderbycount) { m_orderByCount = orderbycount;}
+	bool getOrderByCount() const { return m_orderByCount; }
+	mgParts Parts(mgDb *db,bool orderby=true) const;
+	bool inCollection(const string Name="") const;
+	bool isLanguagelist() const;
+	bool isCollectionlist() const;
+
 
     private:
         mutable string m_current_values;
@@ -387,14 +388,27 @@ class mgSelection
         void Shuffle() const;
         LoopMode m_loop_mode;
         mutable mgDb* m_db;
-        unsigned int m_level;
 
-        mgOrder* order;
         void InitSelection ();
         string ListFilename ();
 
 	void InitFrom(const mgSelection* s);
-	void selectfrom(mgOrder* oldorder,mgItem* o);
+
+	unsigned int m_level;
+	bool m_orderByCount;
+	bool isCollectionOrder() const;
+	keyvector Keys;
+	void setKey ( const mgKeyTypes kt);
+	void InitOrder(vector<mgListItem>& items);
+	void clean();
+	void clear();
+	void truncate(unsigned int i);
+	unsigned int keycount(mgKeyTypes kt) const;
+	bool UsedBefore(const mgKeyTypes kt,unsigned int level) const;
+	const char * const ktName(const mgKeyTypes kt) const;
+	mgKeyTypes ktValue(const char * name) const;
+	string GetContent(vector < mgItem* > &content) const;
 };
 
+mgSelection* GenerateSelection(const mgSelection *s = 0);
 #endif                                            // _DB_H

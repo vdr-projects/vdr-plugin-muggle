@@ -30,7 +30,7 @@
 #include "vdr_decoder.h"
 #include "vdr_decoder_mp3.h"
 
-extern void showmessage(const char *,int duration=0);
+extern void showmessage(int duration,const char *,...);
 
 #ifdef HAVE_VORBISFILE
 #include "vdr_decoder_ogg.h"

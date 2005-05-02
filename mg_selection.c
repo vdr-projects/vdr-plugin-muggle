@@ -12,12 +12,14 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/stat.h>
+#include <mysql/mysql.h>
 #include <stdio.h>
 #include <fts.h>
 #include <assert.h>
 
 #include "i18n.h"
 #include "mg_selection.h"
+#include "mg_order.h"
 #include "mg_setup.h"
 #include "mg_tools.h"
 #include "mg_thread_sync.h"
@@ -180,14 +182,16 @@ mgSelection::getValue(unsigned int idx) const
 mgListItem*
 mgSelection::getKeyItem(const unsigned int level) const
 {
-       return order->getKeyItem(level);
+       assert(level<Keys.size());
+       return Keys[level]->get();
 }
 
 
 mgKeyTypes
 mgSelection::getKeyType (const unsigned int level) const
 {
-        return order->getKeyType(level);
+       assert(level<Keys.size());
+       return Keys[level]->Type();
 }
 
 mgItem *
@@ -288,7 +292,8 @@ mgSelection::AddToCollection (const string Name)
 unsigned int
 mgSelection::RemoveFromCollection (const string Name)
 {
-    unsigned int result = m_db->RemoveFromCollection(Name,order,m_level);
+    mgParts p = Parts(m_db,false);
+    unsigned int result = m_db->RemoveFromCollection(Name,p);
     if (result>0)
     	if (inCollection(Name)) clearCache ();
     return result;
@@ -306,7 +311,7 @@ bool mgSelection::DeleteCollection (const string Name)
 
 void mgSelection::ClearCollection (const string Name)
 {
-    m_db->DeleteCollection (Name);
+    m_db->ClearCollection (Name);
     if (inCollection(Name)) clearCache ();
 }
 
@@ -345,7 +350,7 @@ string mgSelection::exportM3U ()
 bool
 mgSelection::empty()
 {
-    if (m_level>= order->size ()-1)
+    if (orderlevel() >= ordersize ()-1)
 	return ( items().size() == 0);
     else
 	return ( listitems.size () == 0);
@@ -354,8 +359,8 @@ mgSelection::empty()
 void
 mgSelection::setPosition (unsigned int position)
 {
-    if (m_level == order->size())
-	mgError("setPosition:m_level==order->size()");
+    if (orderlevel() == ordersize())
+	mgError("setPosition:orderlevel()==ordersize()");
     m_position = position;
 }
 
@@ -384,15 +389,15 @@ mgSelection::GotoItemPosition (unsigned int position) const
 unsigned int
 mgSelection::getPosition ()  const
 {
-    if (m_level == order->size())
-	mgError("getPosition:m_level==order->size()");
+    if (orderlevel() == ordersize())
+	mgError("getPosition:orderlevel()==ordersize()");
     return m_position;
 }
 
 unsigned int
 mgSelection::gotoPosition ()
 {
-    if (m_level == order->size())
+    if (orderlevel() == ordersize())
 	return m_position;
     unsigned int itemsize = listitems.size();
     if (itemsize==0)
@@ -500,8 +505,8 @@ mgSelection::getCompletedLength () const
 string mgSelection::getListname () const
 {
     list<string> st;
-    for (unsigned int i = 0; i < m_level; i++)
-	    st.push_back(order->getKeyItem(i)->value());
+    for (unsigned int i = 0; i < orderlevel(); i++)
+	    st.push_back(getKeyItem(i)->value());
     st.unique();
     string result="";
     for (list < string >::iterator it = st.begin (); it != st.end (); ++it)
@@ -509,8 +514,8 @@ string mgSelection::getListname () const
 	addsep (result, ":", *it);
     }
     if (result.empty ())
-	if (order->size()>0)
-        	result = string(ktName(order->getKeyType(0)));
+	if (ordersize()>0)
+        	result = string(ktName(getKeyType(0)));
     return result;
 }
 
@@ -538,20 +543,21 @@ string mgSelection::ListFilename ()
 const vector < mgItem* > &
 mgSelection::items () const
 {
-    if (!m_current_tracks.empty())
-	return m_items;
-    m_current_tracks=order->GetContent(dynamic_cast<mgDbGd*>(m_db),m_level,m_items);
-    // \todo remove dynamic_cast
-    if (m_shuffle_mode!=SM_NONE)
-    	Shuffle();
+    if (m_current_tracks.empty())
+    {
+    	mgParts p = Parts(m_db);
+	for (unsigned int i = m_level; i<ordersize(); i++)
+		p += Key(i)->Parts(m_db,true);
+    	m_current_tracks =  m_db->LoadItemsInto(p,m_items);
+    	if (m_shuffle_mode!=SM_NONE)
+    		Shuffle();
+    }
     return m_items;
 }
 
 
 void mgSelection::InitSelection() {
 	m_db = GenerateDB();
-	order = GenerateOrder();
-    	m_level = 0;
     	m_position = 0;
     	m_items_position = 0;
     	if (the_setup.InitShuffleMode)
@@ -564,6 +570,8 @@ void mgSelection::InitSelection() {
     		m_loop_mode = LM_NONE;
     	clearCache();
 	listitems.setOwner(this);
+       	clear();
+	m_orderByCount = false;
 }
 
 
@@ -583,62 +591,150 @@ mgSelection::mgSelection (const mgSelection* s)
     InitFrom(s);
 }
 
+
 void
-mgSelection::setOrder(mgOrder* n)
+mgSelection::MakeCollection()
 {
-	if (n)
- 	{
-		mgOrder* oldorder = order;
-		mgItem *o=0;
-		select();
-		if (items().size()==1)
-			o = getItem(0)->Clone();
-		order = GenerateOrder();
-		*order = *n;
-		selectfrom(oldorder,o);
-		delete o;
-		delete oldorder;
-	}
-	else
-		mgWarning("mgSelection::setOrder(0)");
+	clear();
+	setKey(keyCollection);
+	setKey(keyCollectionItem);
 }
 
+void mgSelection::DumpState(mgValmap& nv, const char *prefix) const
+{
+	nv.put(m_fall_through,"%s.FallThrough",prefix);
+	nv.put(m_orderByCount,"%s.OrderByCount",prefix);
+    	for (unsigned int i=0;i<ordersize();i++)
+    	{
+		nv.put(int(Key(i)->Type()),"%s.Keys.%d.Type",prefix,i);
+		if (i<=orderlevel())
+		{
+			if (i==orderlevel())
+				nv.put(getValue(m_position),
+					"%s.Keys.%u.Position",prefix,i);
+			else
+				nv.put(getKeyItem(i)->value(),
+					"%s.Keys.%u.Position",prefix,i);
+		}
+	}
+	if (orderlevel()==ordersize())
+		nv.put(getItemPosition(),"%s.ItemPosition",prefix);
+}
 
 void
-mgSelection::InitFrom(mgOrder *o,mgValmap& nv)
+mgSelection::InitFrom(const char *prefix,mgValmap& nv)
 {
 	InitSelection();
-	setOrder(o);
-	m_fall_through = nv.getbool("FallThrough");
-	while (m_level < nv.getuint("Level")) 
+	clear();
+	m_fall_through = true;
+	setOrderByCount(nv.getbool("%s.OrderByCount",prefix));
+	for (unsigned int idx = 0 ; idx < 999 ; idx++)
 	{
-		char *idx;
-		asprintf(&idx,"order.Keys.%u.Position",m_level);
-        	string newval = nv.getstr(idx);
-		free(idx);
-        	if (!enter (newval))
-            		if (!select (newval)) break;
+		unsigned int type = nv.getuint("%s.Keys.%u.Type",prefix,idx);
+		if (type==0) break;
+		setKey(mgKeyTypes(type));
 	}
-	assert(m_level<=order->size());
-	if (m_level==order->size()) 
-		m_items_position = nv.getlong("ItemPosition");
-	else
-		setPosition(nv.getstr("Position"));
+	vector<mgListItem> items;
+	for (unsigned int idx = 0 ; idx < ordersize() ; idx++)
+	{
+        	char b[100];
+		sprintf(b,"%s.Keys.%u.Position",prefix,idx);
+		if (!nv.count(b)) break;
+		string newval = nv.getstr(b);
+		items.push_back(mgListItem(newval,KeyMaps.id(Keys[idx]->Type(),newval),0));
+	}
+	InitOrder(items);
+}
+
+void 
+mgSelection::CopyKeyValues(mgSelection* s)
+{
+	if (!s)
+		mgError("mgSelection::CopyKeyValues(0)");
+	mgItem *o=0;
+	s->select();
+	if (s->items().size()==1)
+		o = s->getItem(0)->Clone();
+	m_level=0;
+	assert(orderlevel()==0);
+	vector<mgListItem> items;
+	for (unsigned int idx = 0; idx < ordersize(); idx++)
+	{
+		mgKeyTypes new_kt = getKeyType(idx);
+		if (o && o->getItemid()>=0)
+		{
+			items.push_back(o->getKeyItem(new_kt));
+			continue;
+		}
+		if (s) for (unsigned int i=0;i<s->ordersize();i++)
+		{
+			mgKeyTypes old_kt = s->getKeyType(i);
+			if (old_kt==new_kt && s->getKeyItem(i))
+			{
+				items.push_back(s->getKeyItem(i));
+				break;
+			}
+			// \todo this is no generic code, move to mgSelectionGd
+			if (old_kt>new_kt
+					&& iskeyGenre(old_kt)
+					&& iskeyGenre(new_kt))
+			{
+				string selid=KeyMaps.id(new_kt,
+					KeyMaps.value(new_kt,s->getKeyItem(i)->id()));
+				items.push_back(mgListItem(
+					KeyMaps.value(new_kt,selid),selid));
+				break;
+			}
+		}
+	}
+	delete o;
+	InitOrder(items);
+}
+
+void
+mgSelection::InitOrder(vector<mgListItem>& items)
+{
+	clearCache();
+	if (ordersize()==0)
+		return;
+	for (unsigned int idx = 0; idx < items.size(); idx++)
+	{
+		if (m_level<ordersize()-1)
+			Key(m_level++)->set (&items[idx]);
+		else
+		{
+			setPosition(items[idx].value());
+			return;
+		}
+	}
+	if (m_level>0)
+		setPosition(getKeyItem(--m_level)->value());
+	for (unsigned int idx = m_level; idx < orderlevel(); idx++)
+		Key(idx)->set(0);	
+	assert(orderlevel()<ordersize());
 }
 
 
 mgSelection::~mgSelection ()
 {
-    delete order;
+    truncate(0);
     delete m_db;
 }
 
 void mgSelection::InitFrom(const mgSelection* s)
 {
     InitSelection();
-    m_fall_through = s->m_fall_through;
-    *order = *(s->order);
+    if (!s)
+	    return;
+    for (unsigned int i = 0; i < s->ordersize();i++)
+    {
+       	mgKey *k = ktGenerate(s->getKeyType(i));
+	k->set(s->getKeyItem(i));
+	Keys.push_back(k);
+    }
     m_level = s->m_level;
+    m_fall_through = s->m_fall_through;
+    m_orderByCount = s->m_orderByCount;
     m_position = s->m_position;
     m_items_position = s->m_items_position;
     setShuffleMode (s->getShuffleMode ());
@@ -653,20 +749,19 @@ mgSelection::refreshValues ()  const
     assert(m_db);
     if (!m_current_values.empty())
         return;
-    mgParts p =  order->Parts(m_db,m_level);
-    m_current_values = p.sql_select();
-    if (!m_db->LoadValuesInto(order,m_level,listitems.items()))
-	m_current_values = "";
+    mgParts p =  Parts(m_db);
+    m_current_values = m_db->LoadValuesInto(
+		    p,getKeyType(orderlevel()),listitems.items());
 }
 
 
 bool mgSelection::enter (unsigned int position)
 {
-    if (order->empty())
+    if (Keys.empty())
 	mgWarning("mgSelection::enter(%u): order is empty", position);
     if (empty())
 	return false;
-    if (m_level == order->size ())
+    if (orderlevel() == ordersize ())
         return false;
     setPosition (position);
     position = gotoPosition();		// reload adjusted position
@@ -678,9 +773,9 @@ bool mgSelection::enter (unsigned int position)
 	    prev=listitems;// \todo deep copy?
     while (1)
     {
-        if (m_level >= order->size () - 1)
+        if (orderlevel() >= ordersize () - 1)
             return false;
-        order->Key(m_level++)->set (&item);
+        Key(m_level++)->set (&item);
 	clearCache();
         m_position = 0;
 	refreshValues();
@@ -689,7 +784,7 @@ bool mgSelection::enter (unsigned int position)
 	item=*listitems[0];
         if (!m_fall_through)
             break;
-        if (m_level==order->size()-1)
+        if (orderlevel()==ordersize()-1)
 	    break;
 	if (listitems.size () > 1 && !(prev==listitems))
             break;
@@ -700,11 +795,11 @@ bool mgSelection::enter (unsigned int position)
 
 bool mgSelection::select (unsigned int position)
 {
-    if (m_level == order->size () - 1)
+    if (orderlevel() == ordersize() -1 )
     {
         if (items().size() <= position)
             return false;
-        order->Key(m_level++)->set (listitems[position]);
+        Key(m_level++)->set (listitems[position]);
 
 	clearCache();
         return true;
@@ -717,17 +812,17 @@ bool
 mgSelection::leave ()
 {
     string prevvalue;
-    if (order->empty())
+    if (Keys.empty())
     {
 	mgWarning("mgSelection::leave(): order is empty");
 	return false;
     }
-    if (m_level == order->size ())
+    if (orderlevel() == ordersize ())
     {
-	if (m_level<order->size())
-		order->Key(m_level)->set(0);
+	if (orderlevel()<ordersize())
+		Key(orderlevel())->set(0);
 	m_level--;
-	prevvalue=order->getKeyItem(m_level)->value();
+	prevvalue=getKeyItem(m_level)->value();
 	clearCache();
 	setPosition(prevvalue);
         return true;
@@ -737,11 +832,11 @@ mgSelection::leave ()
 	    prev=listitems;
     while (1)
     {
-        if (m_level < 1)
+        if (orderlevel() < 1)
             return false;
-        order->Key(m_level--)->set (0);
-	prevvalue=order->getKeyItem(m_level)->value();
-        if (m_level<order->size()) order->Key(m_level)->set (0);
+        Key(m_level--)->set (0);
+	prevvalue=getKeyItem(orderlevel())->value();
+        if (orderlevel()<ordersize()) Key(orderlevel())->set (0);
 	clearCache();
         if (!m_fall_through)
             break;
@@ -755,83 +850,143 @@ mgSelection::leave ()
 void
 mgSelection::leave_all ()
 {
-	m_level=0;
-	for (unsigned int i=0;i<order->size();i++)
-		order->Key(i)->set (0);
+	m_level = 0;
+	for (unsigned int i=0;i<ordersize();i++)
+		Key(i)->set (0);
 	clearCache();
 }
 
-void 
-mgSelection::selectfrom(mgOrder* oldorder,mgItem* o)
+
+void
+mgSelection::truncate(unsigned int i)
 {
-	leave_all();
-	mgListItem selitem;
-	mgListItem zeroitem;
-	assert(m_level==0);
-	for (unsigned int idx = 0; idx < order->size(); idx++)
+	while (ordersize()>i)
 	{
-		selitem = zeroitem;
-		mgKeyTypes new_kt = getKeyType(idx);
-		if (oldorder) for (unsigned int i=0;i<oldorder->size();i++)
-		{
-			mgKeyTypes old_kt = oldorder->getKeyType(i);
-			if (old_kt==new_kt && oldorder->getKeyItem(i))
-				selitem = *(oldorder->getKeyItem(i));
-			else if (old_kt>new_kt
-					&& iskeyGenre(old_kt)
-					&& iskeyGenre(new_kt))
+		delete Keys.back();
+		Keys.pop_back();
+	}
+}
+
+void
+mgSelection::setKey (const mgKeyTypes kt)
+{
+    mgKey *newkey = ktGenerate(kt);
+    if (newkey)
+    	Keys.push_back(newkey);
+}
+
+void
+mgSelection::setKeys(vector<const char*> kt)
+{
+	clear();
+	for (unsigned int i=0;i<kt.size();i++)
+	{
+		setKey(ktValue(kt[i]));
+	}
+        clean();
+}
+
+void
+mgSelection::clear()
+{
+	truncate(0);
+	m_level=0;
+}
+
+void
+mgSelection::clean()
+{
+	// remove double entries:
+	keyvector::iterator a;
+	keyvector::iterator b;
+	for (a = Keys.begin () ; a != Keys.end (); ++a)
+	{
+cleanagain:
+		for (b = a+1 ; b != Keys.end(); ++b)
+			if ((*a)->Type() == (*b)->Type())
 			{
-				string selid=KeyMaps.id(new_kt,KeyMaps.value(new_kt,oldorder->getKeyItem(i)->id()));
-				selitem=mgListItem (KeyMaps.value(new_kt,selid),selid);
+				delete *b;
+				Keys.erase(b);
+				goto cleanagain;
 			}
-			if (selitem.valid()) break;
-		}
-		if (!selitem.valid() && o && o->getItemid()>=0)
-			selitem = o->getKeyItem(new_kt);
-		if (!selitem.valid())
-			break;
-		if (m_level<order->size()-1)
-		{
-			order->Key(m_level++)->set (&selitem);
-		}
-		else
-		{
-			setPosition(selitem.value());
-			return;
-		}
 	}
-	if (m_level>0)
+
+	// Gd specific:
+	keyvector::iterator i;
+	keyvector::iterator j;
+	bool collection_found = false;	
+	bool collitem_found = false;	
+	bool album_found = false;	
+	bool tracknb_found = false;	
+	bool title_found = false;	
+	bool is_unique = false;
+	for (i = Keys.begin () ; i != Keys.end (); ++i)
 	{
-		m_level--;
-		selitem = order->getKeyItem(m_level);
-		order->Key(m_level)->set(0);
-		setPosition(selitem.value());
-		order->Key(m_level+1)->set(0);
+		mgKey* k = *i;
+		collection_found |= (k->Type()==keyCollection);
+		collitem_found |= (k->Type()==keyCollectionItem);
+		album_found |= (k->Type()==keyAlbum);
+		tracknb_found |= (k->Type()==keyTrack);
+		title_found |= (k->Type()==keyTitle);
+		is_unique = tracknb_found || (album_found && title_found)
+			|| (collection_found && collitem_found);
+		if (is_unique)
+		{
+			truncate (i+1-Keys.begin()); // \todo test this!
+			break;
+		}
+		if (k->Type()==keyYear)
+		{
+			for (j = i+1 ; j != Keys.end(); ++j)
+				if ((*j)->Type() == keyDecade)
+				{
+					delete *j;
+					Keys.erase(j);
+					break;
+				}
+		}
 	}
-	assert(m_level<order->size());
+	if (!is_unique)
+	{
+		if (!album_found)
+			Keys.push_back(ktGenerate(keyAlbum));
+		if (!title_found)
+			Keys.push_back(ktGenerate(keyTitle));
+	}
 }
 
-bool mgSelection::isLanguagelist() const
+bool
+mgSelection::isCollectionOrder() const
 {
-    return (order->getKeyType(0) == keyLanguage);
+	return (ordersize()==2
+		&& (Keys[0]->Type()==keyCollection)
+		&& (Keys[1]->Type()==keyCollectionItem));
 }
 
-bool mgSelection::isCollectionlist () const
+bool
+mgSelection::isLanguagelist() const
 {
-    if (order->size()==0) return false;
-    return (order->getKeyType(0) == keyCollection && m_level == 0);
+    return (getKeyType(0) == keyLanguage);
+}
+
+bool
+mgSelection::isCollectionlist () const
+{
+    if (ordersize()==0) return false;
+    return (getKeyType(0) == keyCollection && orderlevel() == 0);
 }
 
 bool
 mgSelection::inCollection(const string Name) const
 {
     bool result = false;
-    for (unsigned int idx = 0 ; idx <= m_level; idx++)
+    for (unsigned int idx = 0 ; idx <= orderlevel(); idx++)
     {
-	    if (idx==order->size()) break;
-	    if (order->getKeyType(idx) == keyCollection)
-		    if (order->getKeyItem(idx)->value() != Name) break;
-	    if (order->getKeyType(idx) == keyCollectionItem)
+	    if (idx==ordersize()) break;
+	    if (getKeyType(idx) == keyCollection)
+		    if (!Name.empty() && getKeyItem(idx)->value() != Name)
+			    break;
+	    if (getKeyType(idx) == keyCollectionItem)
 	    {
 		    result = true;
 		    break;
@@ -840,37 +995,225 @@ mgSelection::inCollection(const string Name) const
     return result;
 }
 
-
-void mgSelection::DumpState(mgValmap& nv) const
+string
+mgSelection::Name()
 {
-	nv.put("FallThrough",m_fall_through);
-	nv.put("Level",int(m_level));
-    	for (unsigned int i=0;i<order->size();i++)
-    	{
-		if (i<m_level) {
-			char *n;
-			asprintf(&n,"order.Keys.%u.Position",i);
-			nv.put(n,getKeyItem(i)->value());
-			free(n);
-		}
-	}
-	nv.put("Position",getValue(m_position));
-	if (m_level>=order->size()-1) 
-		nv.put("ItemPosition",getItemPosition());
-}
-
-map <mgKeyTypes, string>
-mgSelection::UsedKeyValues() 
-{
-	map <mgKeyTypes, string> result;
-	for (unsigned int idx = 0 ; idx < m_level ; idx++)
+	string result="";
+	for (unsigned int idx=0;idx<ordersize();idx++)
 	{
-		result[order->getKeyType(idx)] = order->getKeyItem(idx)->value();
-	}
-	if (m_level < order->size()-1)
-	{
-		mgKeyTypes ch =  order->getKeyType(m_level);
-		result[ch] = getCurrentValue();
+		if (!result.empty()) result += ":";
+		result += ktName(Keys[idx]->Type());
 	}
 	return result;
 }
+
+mgSelection* GenerateSelection(const mgSelection* s)
+{
+	return new mgSelection(s); // case
+}
+
+bool
+mgSelection::SameOrder(const mgSelection& other)
+{
+    bool result =  ordersize()==other.ordersize();
+    if (result)
+    	for (unsigned int i=0; i<ordersize();i++)
+    	{
+    		result &= Key(i)->Type()==other.Key(i)->Type();
+		if (!result) break;
+    	}
+    return result;
+}
+
+mgKey* 
+mgSelection::Key(unsigned int idx) const
+{
+	assert(idx<ordersize());
+	return Keys[idx];
+}
+
+bool
+mgSelection::UsedBefore(const mgKeyTypes kt,unsigned int level) const
+{
+	if (level>=ordersize())
+		level = ordersize() -1;
+	for (unsigned int lx = 0; lx < level; lx++)
+		if (getKeyType(lx)==kt)
+			return true;
+	return false;
+}
+
+static vector<int> keycounts;
+
+unsigned int
+mgSelection::keycount(mgKeyTypes kt) const
+{
+	if (keycounts.size()==0)
+	{
+		for (unsigned int ki=int(mgKeyTypesLow);ki<=int(mgKeyTypesHigh);ki++)
+		{
+			keycounts.push_back(-1);
+		}
+	}
+	int& kcount = keycounts[int(kt-mgKeyTypesLow)];
+	if (kcount==-1)
+	{
+		mgKey* k = ktGenerate(kt);
+		if (k->Enabled(m_db))
+			kcount = m_db->exec_count(k->Parts(m_db,true).sql_count());
+		else
+			kcount = 0;
+		delete k;
+	}
+	return kcount;
+}
+
+vector <const char *>
+mgSelection::Choices(unsigned int level, unsigned int *current) const
+{
+	vector<const char*> result;
+	if (level>ordersize())
+	{
+		*current = 0;
+		return result;
+	}
+	for (unsigned int ki=int(mgKeyTypesLow);ki<=int(mgKeyTypesHigh);ki++)
+	{
+		mgKeyTypes kt = mgKeyTypes(ki);
+		if (kt==getKeyType(level))
+		{
+			*current = result.size();
+			result.push_back(ktName(kt));
+			continue;
+		}
+		if (UsedBefore(kt,level))
+			continue;
+		if (kt==keyDecade && UsedBefore(keyYear,level))
+			continue;
+		if (kt==keyGenre1)
+		{
+			if (UsedBefore(keyGenre2,level)) continue;
+			if (UsedBefore(keyGenre3,level)) continue;
+			if (UsedBefore(keyGenres,level)) continue;
+		}
+		if (kt==keyGenre2)
+		{
+			if (UsedBefore(keyGenre3,level)) continue;
+			if (UsedBefore(keyGenres,level)) continue;
+		}
+		if (kt==keyGenre3)
+		{
+			if (UsedBefore(keyGenres,level)) continue;
+		}
+		if (kt==keyFolder1)
+		{
+		 	if (UsedBefore(keyFolder2,level)) continue;
+		 	if (UsedBefore(keyFolder3,level)) continue;
+		 	if (UsedBefore(keyFolder4,level)) continue;
+		}
+		if (kt==keyFolder2)
+		{
+		 	if (UsedBefore(keyFolder3,level)) continue;
+		 	if (UsedBefore(keyFolder4,level)) continue;
+		}
+		if (kt==keyFolder3)
+		{
+		 	if (UsedBefore(keyFolder4,level)) continue;
+		}
+		if (kt==keyCollectionItem)
+		{
+		 	if (!UsedBefore(keyCollection,level)) continue;
+		}
+		if (kt==keyCollection)
+			result.push_back(ktName(kt));
+		else if (keycount(kt)>1)
+			result.push_back(ktName(kt));
+	}
+	return result;
+}
+
+
+const char * const
+mgSelection::ktName(const mgKeyTypes kt) const
+{
+	const char * result = "";
+	switch (kt)
+	{
+		case keyGenres: result = "Genre";break;
+		case keyGenre1: result = "Genre1";break;
+		case keyGenre2: result = "Genre2";break;
+		case keyGenre3: result = "Genre3";break;
+		case keyFolder1: result = "Folder1";break;
+		case keyFolder2: result = "Folder2";break;
+		case keyFolder3: result = "Folder3";break;
+		case keyFolder4: result = "Folder4";break;
+		case keyArtist: result = "Artist";break;
+		case keyArtistABC: result = "ArtistABC";break;
+		case keyTitle: result = "Title";break;
+		case keyTitleABC: result = "TitleABC";break;
+		case keyTrack: result = "Track";break;
+		case keyDecade: result = "Decade";break;
+		case keyAlbum: result = "Album";break;
+		case keyCreated: result = "Created";break;
+		case keyModified: result = "Modified";break;
+		case keyCollection: result = "Collection";break;
+		case keyCollectionItem: result = "Collection item";break;
+		case keyLanguage: result = "Language";break;
+		case keyRating: result = "Rating";break;
+		case keyYear: result = "Year";break;
+	}
+	return tr(result);
+}
+
+mgKeyTypes
+mgSelection::ktValue(const char * name) const
+{
+	for (int kt=int(mgKeyTypesLow);kt<=int(mgKeyTypesHigh);kt++)
+		if (!strcmp(name,ktName(mgKeyTypes(kt))))
+				return mgKeyTypes(kt);
+	mgError("ktValue(%s): unknown name",name);
+	return mgKeyTypes(0);
+}
+
+
+mgParts
+mgSelection::Parts(mgDb *db,bool orderby) const
+{
+	mgParts result;
+	result.orderByCount = m_orderByCount;
+	if (m_level==0 &&  isCollectionOrder())
+	{
+		// sql command contributed by jarny
+		result.m_sql_select = string("select playlist.title,playlist.id, "
+				"count(*) * (playlistitem.playlist is not null) from playlist "
+				"left join playlistitem on playlist.id = playlistitem.playlist "
+				"group by playlist.title");
+		return result;
+	}
+	for (unsigned int i=0;i<=m_level;i++)
+	{
+		if (i==Keys.size()) break;
+		mgKey *k = Keys[i];
+		mgKeyTypes kt = k->Type();
+		if (iskeyGenre(kt))
+		{
+			for (unsigned int j=i+1;j<=m_level;j++)
+			{
+				if (j>=Keys.size())
+					break;
+				mgKey *kn = Keys[j];
+				if (kn)
+				{
+					mgKeyTypes knt = kn->Type();
+					if (iskeyGenre(knt) && knt>kt && !kn->id().empty())
+						goto next;
+				}
+			}
+		}
+		result += k->Parts(db,orderby && (i==m_level));
+next:
+		continue;
+	}
+	return result;
+}
+

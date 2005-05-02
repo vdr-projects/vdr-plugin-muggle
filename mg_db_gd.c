@@ -23,11 +23,10 @@
 #include <id3v2tag.h>
 #include <fileref.h>
 
-#include "mg_tools.h"
 #include "mg_setup.h"
-#include "mg_item.h"
-#include "mg_order.h"
+#include "mg_item_gd.h"
 #include "mg_db_gd.h"
+#include "mg_order.h"
 #include "mg_thread_sync.h"
 
 using namespace std;
@@ -74,13 +73,13 @@ mgDbGd::~mgDbGd()
 
 
 
+#ifndef HAVE_ONLY_SERVER
 static char *mysql_embedded_args[] =
 {
 	"muggle",	
 	0,	// placeholder for --datadir=		
 	"--key_buffer_size=32M"
 };
-
 
 static void
 wrong_embedded_mysql_for_external_server(int version)
@@ -89,6 +88,7 @@ wrong_embedded_mysql_for_external_server(int version)
 		"you need mysql 040111 but you have only %06d", version);
 	abort();
 }
+#endif
 
 mysqlhandle_t::mysqlhandle_t()
 {
@@ -891,7 +891,7 @@ mgDbGd::AddToCollection( const string Name,const vector<mgItem*>&items)
 }
 
 int
-mgDbGd::RemoveFromCollection (const string Name, mgOrder* const order, unsigned int level)
+mgDbGd::RemoveFromCollection (const string Name, mgParts& what)
 {
     if (Name.empty())
 	    return 0;
@@ -899,24 +899,23 @@ mgDbGd::RemoveFromCollection (const string Name, mgOrder* const order, unsigned 
     string pid = KeyMaps.id(keyCollection,Name);
     if (pid.empty())
 	    return 0;
-    mgParts p = order->Parts(this,level,false);
-    p.Prepare();
-    p.tables.push_front("playlistitem as del");
-    p.clauses.push_back("del.playlist="+pid);
+    what.Prepare();
+    what.tables.push_front("playlistitem as del");
+    what.clauses.push_back("del.playlist="+pid);
     bool usesTracks = false;
-    for (list < string >::iterator it = p.tables.begin (); it != p.tables.end (); ++it)
+    for (list < string >::iterator it = what.tables.begin (); it != what.tables.end (); ++it)
 	if (*it == "tracks")
 	{
 		usesTracks = true;
 		break;
 	}
     if (usesTracks)
-	p.clauses.push_back("del.trackid=tracks.id");
+	what.clauses.push_back("del.trackid=tracks.id");
     else
-	p.clauses.push_back("del.trackid=playlistitem.trackid");
+	what.clauses.push_back("del.trackid=playlistitem.trackid");
     string sql = "DELETE playlistitem";
-    sql += sql_list(" FROM",p.tables);
-    sql += sql_list(" WHERE",p.clauses," AND ");
+    sql += sql_list(" FROM",what.tables);
+    sql += sql_list(" WHERE",what.clauses," AND ");
     exec_sql (sql);
     return m_db->affected_rows;
 }
@@ -956,7 +955,7 @@ mgDbGd::FieldExists(string table, string field)
 		return false;
     	char *b;
     	asprintf(&b,"DESCRIBE %s %s",table.c_str(),field.c_str());
-    	MYSQL_RES * rows = exec_sql (b);
+    	MYSQL_RES *rows = exec_sql (b);
     	free(b);
 	bool result=false;
     	if (rows)
@@ -990,37 +989,74 @@ mgDbGd::LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valma
 	}
 }
 
-bool
-mgDbGd::LoadValuesInto(const mgOrder* order,unsigned int level,vector<mgListItem*>& listitems)
+string
+mgDbGd::LoadItemsInto(mgParts& what,vector<mgItem*>& items)
 {
     	if (!Connect())
-		return false;
-        mgParts p = order->Parts(this,level);
-	string sql = p.sql_select();		
-	MYSQL_RES *rows = exec_sql (sql);
-        if (!rows)
-		return false;
-        listitems.clear ();
-        unsigned int num_fields = mysql_num_fields(rows);
-	assert(num_fields>=2);
-	MYSQL_ROW row;
-        while ((row = mysql_fetch_row (rows)) != 0)
-        {
-		if (!row[0]) continue;
-		string r0 = row[0];
-		if (!strcmp(row[0],"NULL")) // there is a genre NULL!
-			continue;
-		mgListItem* n = new mgListItem;
-		if (num_fields==3)
-		{
-			if (!row[1]) continue;
-			n->set(row[0],row[1],atol(row[2]));
-		}
-		else
-        		n->set(KeyMaps.value(order->Key(level)->Type(),r0),r0,atol(row[1]));
-		listitems.push_back(n);
-        }
-        mysql_free_result (rows);
-	return true;
+		return "";
+	what.fields.clear();
+	what.fields.push_back("tracks.id");
+	what.fields.push_back("tracks.title");
+	what.fields.push_back("tracks.mp3file");
+	what.fields.push_back("tracks.artist");
+	what.fields.push_back("album.title");
+	what.fields.push_back("tracks.genre1");
+	what.fields.push_back("tracks.genre2");
+	what.fields.push_back("tracks.bitrate");
+	what.fields.push_back("tracks.year");
+	what.fields.push_back("tracks.rating");
+	what.fields.push_back("tracks.length");
+	what.fields.push_back("tracks.samplerate");
+	what.fields.push_back("tracks.channels");
+	what.fields.push_back("tracks.lang");
+	what.tables.push_back("tracks");
+	what.tables.push_back("album");
+	string result = what.sql_select(false); 
+	MYSQL_RES *rows = exec_sql (result);
+	if (rows)
+	{
+		for (unsigned int idx=0;idx<items.size();idx++)
+			delete items[idx];
+		items.clear ();
+		MYSQL_ROW row;
+		while ((row = mysql_fetch_row (rows)) != 0)
+			items.push_back (new mgItemGd (row));
+		mysql_free_result (rows);
+	}
+	return result;
+}
+
+string
+mgDbGd::LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems)
+{
+    	if (!Connect())
+		return "";
+	string result = what.sql_select();		
+	MYSQL_RES *rows = exec_sql (result);
+        if (rows)
+	{
+        	listitems.clear ();
+        	unsigned int num_fields = mysql_num_fields(rows);
+		assert(num_fields>=2);
+		MYSQL_ROW row;
+        	while ((row = mysql_fetch_row (rows)) != 0)
+        	{
+			if (!row[0]) continue;
+			string r0 = row[0];
+			if (!strcmp(row[0],"NULL")) // there is a genre NULL!
+				continue;
+			mgListItem* n = new mgListItem;
+			if (num_fields==3)
+			{
+				if (!row[1]) continue;
+				n->set(row[0],row[1],atol(row[2]));
+			}
+			else
+        			n->set(KeyMaps.value(tp,r0),r0,atol(row[1]));
+			listitems.push_back(n);
+        	}
+        	mysql_free_result (rows);
+	}
+	return result;
 }
 

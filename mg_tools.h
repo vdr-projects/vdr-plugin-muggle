@@ -30,7 +30,6 @@ void mgSetDebugLevel (int new_level);
 void mgDebug (int level, const char *fmt, ...);
 void mgDebug (const char *fmt, ...);
 void mgWarning (const char *fmt, ...);
-//! \todo mgError should display the message on the OSD. How?
 void mgError (const char *fmt, ...); 
 //@}
 

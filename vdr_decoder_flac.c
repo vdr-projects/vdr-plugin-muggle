@@ -10,8 +10,6 @@
 
 #ifdef HAVE_FLAC
 
-#define DEBUG
-
 #include <string>
 #include <stdlib.h>
 #include <stdio.h>

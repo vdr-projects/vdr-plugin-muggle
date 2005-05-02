@@ -18,7 +18,6 @@
 using namespace std;
 
 #include "mg_tools.h"
-#include "mg_valmap.h"
 #include "mg_item.h"
 
 //! \brief represents a GiantDisc content item 

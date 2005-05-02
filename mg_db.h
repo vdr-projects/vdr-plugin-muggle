@@ -20,8 +20,10 @@
 using namespace std;
 
 class mgItem;
-class mgOrder;
+class mgParts;
 #include "mg_listitem.h"
+#include "mg_tools.h"
+#include "mg_order.h"
 
 /*!
  * \brief an abstract database class
@@ -43,7 +45,7 @@ class mgDb {
   	virtual bool Create() = 0;
 	virtual void ServerEnd() =0;		// must be done explicitly
 	virtual int AddToCollection( const string Name,const vector<mgItem*>&items) =0;
-	virtual int RemoveFromCollection( const string Name,mgOrder* const order,unsigned int level) =0;
+	virtual int RemoveFromCollection( const string Name,mgParts& what) =0;
 	virtual bool DeleteCollection( const string Name) =0;
 	virtual void ClearCollection( const string Name) =0;
 	virtual bool CreateCollection( const string Name) =0;
@@ -51,7 +53,8 @@ class mgDb {
 	void Sync(char * const * path_argv = 0);
 	virtual bool FieldExists(string table, string field)=0;
 	virtual void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap)=0;
-	virtual bool LoadValuesInto(const mgOrder* order,unsigned int level,vector<mgListItem*>& listitems)=0;
+	virtual string LoadItemsInto(mgParts& what,vector<mgItem*>& items) = 0;
+	virtual string LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems)=0;
 	string sql_string(const string s); // \todo does it need to be public?
 	virtual bool NeedGenre2() = 0;
    protected:

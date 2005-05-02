@@ -1,5 +1,5 @@
-#ifndef _MG_SQL_H
-#define _MG_SQL_H
+#ifndef _MG_ORDER_H
+#define _MG_ORDER_H
 #include <stdlib.h>
 #include <typeinfo>
 #include <string>
@@ -8,9 +8,7 @@
 #include <map>
 #include <sstream>
 using namespace std;
-#include "mg_valmap.h"
 #include "mg_db.h"
-#include "mg_db_gd.h"
 #include "mg_item.h"
 #include "mg_tools.h"
 
@@ -26,6 +24,7 @@ extern string sql_list (string prefix,strlist v,string sep=",",string postfix=""
 bool iskeyGenre(mgKeyTypes kt);
 
 class mgParts;
+class mgDb;
 
 class mgReference {
 	public:
@@ -79,11 +78,6 @@ class mgKey {
 mgKey*
 ktGenerate(const mgKeyTypes kt);
 
-const char * const ktName(const mgKeyTypes kt);
-mgKeyTypes ktValue(const char * name);
- 
-typedef vector<mgKey*> keyvector;
-
 class mgParts {
 public:
 	mgParts();
@@ -105,46 +99,5 @@ private:
 	mgReferences positives;
 	void ConnectTables(string c1, string c2);
 };
-
-
-const unsigned int MaxKeys = 20;
-
-class mgOrder {
-public:
-	mgOrder();
-	mgOrder(const mgOrder &from);
-	~mgOrder();
-	void InitFrom(const mgOrder &from);
-        void DumpState(mgValmap& nv, char *prefix) const;
-	mgParts Parts(mgDb *db,const unsigned int level,bool orderby=true) const;
-	const mgOrder& operator=(const mgOrder& from);
-	unsigned int size() const { return Keys.size(); }
-	bool empty() const { return Keys.empty(); }
-	void clear();
-	mgKey* Key(unsigned int idx) const;
-	mgKeyTypes getKeyType(unsigned int idx) const;
-	mgListItem* getKeyItem(unsigned int idx) const;
-	void setKeys(vector<mgKeyTypes> kt);
-	string Name();
-	void setOrderByCount(bool orderbycount) { m_orderByCount = orderbycount;}
-	bool getOrderByCount() { return m_orderByCount; }
-	string GetContent(mgDbGd *db,unsigned int level,vector < mgItem* > &content) const;
-	vector <const char*> Choices(unsigned int level, unsigned int *current) const;
-	unsigned int level() const { return m_level; }
-private:
-	unsigned int m_level;
-	bool m_orderByCount;
-	bool isCollectionOrder() const;
-	keyvector Keys;
-	void setKey ( const mgKeyTypes kt);
-	void clean();
-	void truncate(unsigned int i);
-	unsigned int keycount(mgKeyTypes kt) const;
-	bool UsedBefore(const mgKeyTypes kt,unsigned int level) const;
-};
-
-bool operator==(const mgOrder& a,const mgOrder&b); //! \brief compares only the order, not the current key values
-
-mgOrder* GenerateOrder();
 
 #endif

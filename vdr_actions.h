@@ -18,7 +18,7 @@
 #include <osd.h>
 #include <plugin.h>
 
-#include "mg_order.h"
+#include "mg_selection.h"
 
 using namespace std;
 
@@ -92,7 +92,7 @@ class mgAction
 	virtual bool Enabled(mgActions on = mgActions(0));
 
 	//! \brief the action to be executed
-        virtual void Execute () {}
+        virtual bool Execute () {return true;}
 
 	//! \brief handles the kBack key
 	virtual eOSState Back();

@@ -34,10 +34,13 @@ int SysLogLevel = 1;
 
 bool import_assorted, delete_mode, create_mode;
 
-void showmessage(const char *msg,int duration)
+void showmessage(int duration,const char *msg,...)
 {
-	fprintf(stderr,msg);
+	va_list ap;
+	va_start(ap,msg);
+	vfprintf(stderr,msg,ap);
 	fprintf(stderr,"\n");
+	va_end(ap);
 }
 
 void showimportcount(unsigned int importcount,bool final=false)
