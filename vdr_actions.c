@@ -818,7 +818,7 @@ mgAddAllToCollection::Execute()
 {
 // work on a copy, so we don't have to clear the cache of selection()
 // which would result in an osd()->forcerefresh which could scroll.
-    osd()->moveselection = new mgSelection(selection());
+    osd()->moveselection = GenerateSelection(selection());
     ExecuteMove();
     return true;
 }
@@ -863,7 +863,7 @@ mgAddAllToDefaultCollection::MenuName (const unsigned int idx,const mgListItem* 
 bool
 mgAddAllToDefaultCollection::Execute()
 {
-    mgSelection *sel = new mgSelection(selection());
+    mgSelection *sel = GenerateSelection(selection());
     sel->select ();
     ExecuteSelection(sel);
     delete sel;
@@ -908,7 +908,7 @@ mgAddThisToCollection::Execute ()
 {
 // work on a copy, so we don't have to clear the cache of selection()
 // which would result in an osd()->forcerefresh which could scroll.
-    osd()->moveselection = new mgSelection(selection());
+    osd()->moveselection = GenerateSelection(selection());
     osd()->moveselection->select ();
     mgAddAllToCollection::ExecuteMove();
     return true;
@@ -948,7 +948,7 @@ mgAddThisToDefaultCollection::Execute ()
 {
 // work on a copy, so we don't have to clear the cache of selection()
 // which would result in an osd()->forcerefresh which could scroll.
-    mgSelection *sel = new mgSelection(selection());
+    mgSelection *sel = GenerateSelection(selection());
     sel->select ();
     mgAddAllToDefaultCollection::ExecuteSelection(sel);
     delete sel;
@@ -1061,7 +1061,7 @@ mgRemoveThisFromCollection::Execute ()
 {
 // work on a copy, so we don't have to clear the cache of selection()
 // which would result in an osd()->forcerefresh which could scroll.
-    osd()->moveselection = new mgSelection(selection());
+    osd()->moveselection = GenerateSelection(selection());
     osd()->moveselection->select ();
     mgRemoveAllFromCollection::Execute();
     return true;

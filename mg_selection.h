@@ -37,7 +37,7 @@ typedef vector<mgKey*> keyvector;
 class mgSelection
 {
     public:
-	void mgSelection::CopyKeyValues(mgSelection* s);
+	void CopyKeyValues(mgSelection* s);
 /*! \brief define various ways to play music in random order
  * \todo Party mode is not implemented, does same as SM_NORMAL
  */
@@ -104,7 +104,7 @@ class mgSelection
 	void InitFrom(const char *prefix,mgValmap& nv);
 
 //! \brief the normal destructor
-        ~mgSelection ();
+        virtual ~mgSelection ();
 
 /*! \brief represents all items for the current level. The result
  * is cached, subsequent accesses to values only incur a
@@ -365,16 +365,33 @@ class mgSelection
 
 	void setKeys(vector<const char*> kt);
 	string Name();
+	bool SameOrder(const mgSelection* other);
 	bool SameOrder(const mgSelection& other);
 	mgKey* Key(unsigned int idx) const;
-	vector <const char*> Choices(unsigned int level, unsigned int *current) const;
+	virtual vector <const char*> Choices(unsigned int level, unsigned int *current) const = 0;
 	void setOrderByCount(bool orderbycount) { m_orderByCount = orderbycount;}
 	bool getOrderByCount() const { return m_orderByCount; }
-	mgParts Parts(mgDb *db,bool orderby=true) const;
-	bool inCollection(const string Name="") const;
-	bool isLanguagelist() const;
-	bool isCollectionlist() const;
+	virtual mgParts Parts(mgDb *db,bool orderby=true) const = 0;
+	virtual bool inCollection(const string Name="") const;
+	virtual bool isLanguagelist() const;
+	virtual bool isCollectionlist() const;
 
+    protected:
+	void InitFrom(const mgSelection* s);
+	virtual void DeduceKeyValue(mgKeyTypes new_kt,const mgSelection *s,
+		vector<mgListItem>& items) {}
+	virtual void clean();
+        virtual void InitSelection ();
+	virtual bool isCollectionOrder() const;
+	keyvector Keys;
+	unsigned int m_level;
+        mutable mgDb* m_db;
+	bool m_orderByCount;
+	bool UsedBefore(const mgKeyTypes kt,unsigned int level) const;
+	unsigned int keycount(mgKeyTypes kt) const;
+	const char * const ktName(const mgKeyTypes kt) const;
+	mgKeyTypes ktValue(const char * name) const;
+	void truncate(unsigned int i);
 
     private:
         mutable string m_current_values;
@@ -387,28 +404,13 @@ class mgSelection
         ShuffleMode m_shuffle_mode;
         void Shuffle() const;
         LoopMode m_loop_mode;
-        mutable mgDb* m_db;
 
-        void InitSelection ();
         string ListFilename ();
 
-	void InitFrom(const mgSelection* s);
-
-	unsigned int m_level;
-	bool m_orderByCount;
-	bool isCollectionOrder() const;
-	keyvector Keys;
 	void setKey ( const mgKeyTypes kt);
 	void InitOrder(vector<mgListItem>& items);
-	void clean();
 	void clear();
-	void truncate(unsigned int i);
-	unsigned int keycount(mgKeyTypes kt) const;
-	bool UsedBefore(const mgKeyTypes kt,unsigned int level) const;
-	const char * const ktName(const mgKeyTypes kt) const;
-	mgKeyTypes ktValue(const char * name) const;
-	string GetContent(vector < mgItem* > &content) const;
 };
 
 mgSelection* GenerateSelection(const mgSelection *s = 0);
-#endif                                            // _DB_H
+#endif
