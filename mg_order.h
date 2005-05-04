@@ -92,7 +92,7 @@ public:
 	string sql_count();
 	string sql_select(bool distinct=true);
 	bool empty() const { return tables.size()==0;}
-	string m_sql_select;
+	string special_statement;
 	bool orderByCount;
 private:
 	mgReferences rest;

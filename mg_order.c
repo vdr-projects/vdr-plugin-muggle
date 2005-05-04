@@ -109,22 +109,6 @@ class mgKeyFolder : public mgKeyNormal {
 		int m_enabled;
 };
 
-class mgKeyFolder1 : public mgKeyFolder {
-	public:
-		mgKeyFolder1() : mgKeyFolder(keyFolder1,"folder1") {};
-};
-class mgKeyFolder2 : public mgKeyFolder {
-	public:
-		mgKeyFolder2() : mgKeyFolder(keyFolder2,"folder2") {};
-};
-class mgKeyFolder3 : public mgKeyFolder {
-	public:
-		mgKeyFolder3() : mgKeyFolder(keyFolder3,"folder3") {};
-};
-class mgKeyFolder4 : public mgKeyFolder {
-	public:
-		mgKeyFolder4() : mgKeyFolder(keyFolder4,"folder4") {};
-};
 
 bool
 mgKeyFolder::Enabled(mgDb *db)
@@ -317,7 +301,7 @@ mgKeyNormal::get()
 
 mgParts::mgParts()
 {
-	m_sql_select="";
+	special_statement="";
 	orderByCount = false;
 }
 
@@ -480,8 +464,8 @@ mgParts::Prepare()
 string
 mgParts::sql_select(bool distinct)
 {
-	if (!m_sql_select.empty())
-		return m_sql_select;
+	if (!special_statement.empty())
+		return special_statement;
 	Prepare();
 	if (fields.empty())
 		return "";
@@ -667,10 +651,10 @@ ktGenerate(const mgKeyTypes kt)
 		case keyGenre1:	result = new mgKeyGenre1;break;
 		case keyGenre2:	result = new mgKeyGenre2;break;
 		case keyGenre3:	result = new mgKeyGenre3;break;
-		case keyFolder1:result = new mgKeyFolder1;break;
-		case keyFolder2:result = new mgKeyFolder2;break;
-		case keyFolder3:result = new mgKeyFolder3;break;
-		case keyFolder4:result = new mgKeyFolder4;break;
+		case keyFolder1:result = new mgKeyFolder(keyFolder1,"folder1");break;
+		case keyFolder2:result = new mgKeyFolder(keyFolder2,"folder2");break;
+		case keyFolder3:result = new mgKeyFolder(keyFolder3,"folder3");break;
+		case keyFolder4:result = new mgKeyFolder(keyFolder4,"folder4");break;
 		case keyArtist: result = new mgKeyNormal(kt,"tracks","artist");break;
 		case keyArtistABC: result = new mgKeyABC(kt,"tracks","artist");break;
 		case keyTitle: result = new mgKeyNormal(kt,"tracks","title");break;

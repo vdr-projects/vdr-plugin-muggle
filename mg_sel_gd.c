@@ -183,7 +183,7 @@ mgSelectionGd::Parts(mgDb *db,bool orderby) const
 	if (m_level==0 &&  isCollectionOrder())
 	{
 		// sql command contributed by jarny
-		result.m_sql_select = string("select playlist.title,playlist.id, "
+		result.special_statement = string("select playlist.title,playlist.id, "
 				"count(*) * (playlistitem.playlist is not null) from playlist "
 				"left join playlistitem on playlist.id = playlistitem.playlist "
 				"group by playlist.title");
