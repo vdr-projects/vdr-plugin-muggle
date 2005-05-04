@@ -12,7 +12,6 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/stat.h>
-#include <mysql/mysql.h>
 #include <stdio.h>
 #include <assert.h>
 
