@@ -698,13 +698,23 @@ mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
 			c_album);
 
 		// how many artists will the album have after adding this one?
-		asprintf(&b,"SELECT distinct album.artist FROM tracks, album %s "
-				" union select %s",where,c_artist);
+		asprintf(&b,"SELECT distinct album.artist FROM tracks, album %s ",where);
         	MYSQL_RES *rows = exec_sql (b);
 		free(b);
 		long new_album_artists = m_db->affected_rows;
-		mysql_free_result(rows);	
-		if (new_album_artists>1)	// is the album multi artist?
+		char buf[520];
+		if (new_album_artists==1)
+		{
+			MYSQL_ROW row = mysql_fetch_row(rows);
+			sql_Cstring(row[0],buf);
+			mgDebug(1,"c_artist=%s,buf=%s",c_artist,buf);
+			if (strcmp(buf,c_artist))
+				new_album_artists++;
+		}
+		else
+			mgDebug(1,"c_artist is unique:%s",c_artist);
+		if (new_album_artists>1 && strcmp(buf,"'Various Artists'"))
+			// is the album multi artist and not yet marked as such?
 		{
 			asprintf(&b,"SELECT album.cddbid FROM tracks, album %s",where);
 			free(result);
@@ -729,6 +739,7 @@ mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
 			exec_sql(b);
 			free(b);
 		}
+		mysql_free_result(rows);	
 		free(where);
 	}
 	return result;
