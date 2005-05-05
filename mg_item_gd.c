@@ -90,6 +90,12 @@ string mgItemGd::getImageFile () const
 }
 
 
+string mgItemGd::getArtist () const
+{
+    return m_artist;
+}
+
+
 string mgItemGd::getAlbum () const
 {
     return m_albumtitle;

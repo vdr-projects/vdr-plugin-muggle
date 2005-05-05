@@ -38,10 +38,7 @@ class mgItemGd : public mgItem
         string getSourceFile (bool AbsolutePath=true) const;
 
 //! \brief returns artist
-        string getArtist () const
-        {
-            return m_artist;
-        }
+        string getArtist () const;
 
 //! \brief returns the name of the album
         string getAlbum () const;

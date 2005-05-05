@@ -47,7 +47,6 @@ void
 mgSelectionGd::DeduceKeyValue(mgKeyTypes new_kt,const mgSelection *s,
 		vector<mgListItem>& items)
 {
-	// \todo this is no generic code, move to mgSelectionGd
 	if (!s) 
 		return;
 	for (unsigned int i=0;i<s->ordersize();i++)
@@ -65,9 +64,6 @@ mgSelectionGd::DeduceKeyValue(mgKeyTypes new_kt,const mgSelection *s,
 		}
 	}
 }
-
-
-
 
 void
 mgSelectionGd::clean()

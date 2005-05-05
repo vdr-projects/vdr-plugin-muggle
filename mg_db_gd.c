@@ -26,7 +26,6 @@
 #include "mg_setup.h"
 #include "mg_item_gd.h"
 #include "mg_db_gd.h"
-#include "mg_thread_sync.h"
 
 using namespace std;
 
