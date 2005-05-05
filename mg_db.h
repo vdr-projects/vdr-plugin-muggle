@@ -14,16 +14,67 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <string>
+#include <list>
 #include <vector>
 #include <map>
 
 using namespace std;
 
 class mgItem;
-class mgParts;
+
 #include "mg_listitem.h"
-#include "mg_tools.h"
-#include "mg_order.h"
+#include "mg_keytypes.h"
+
+typedef list<string> strlist;
+
+strlist& operator+=(strlist&a, strlist b);
+
+
+string sql_list (string prefix,strlist v,string sep=",",string postfix="");
+
+class mgReference {
+	public:
+		mgReference(string t1,string f1,string t2,string f2);
+                string t1() const { return m_t1; }
+                string t2() const { return m_t2; }
+                string f1() const { return m_f1; }
+                string f2() const { return m_f2; }
+		bool Equal(string table1, string table2) const;
+	private:
+		string m_t1;
+		string m_t2;
+		string m_f1;
+		string m_f2;
+};
+
+class mgReferences : public vector<mgReference*> {
+public:
+	void InitReferences();
+	unsigned int CountTable(string table) const;
+};
+
+
+class mgParts {
+public:
+	mgParts();
+	~mgParts();
+	strlist fields;
+	strlist tables;
+	strlist clauses;
+	strlist groupby;
+	strlist orders;
+	mgParts& operator+=(mgParts a);
+	void Prepare();
+	string sql_count();
+	string sql_select(bool distinct=true);
+	bool empty() const { return tables.size()==0;}
+	string special_statement;
+	bool orderByCount;
+private:
+	mgReferences rest;
+	mgReferences positives;
+	void ConnectTables(string c1, string c2);
+};
 
 /*!
  * \brief an abstract database class
@@ -70,6 +121,62 @@ class mgDb {
 	time_t m_create_time;
 };
 
+class mgKey {
+	public:
+		virtual ~mgKey() {};
+		virtual mgParts Parts(mgDb *db,bool orderby=false) const = 0;
+		virtual string id() const = 0;
+		virtual bool valid() const = 0;
+		virtual string value () const = 0;
+		//!\brief translate field into user friendly string
+		virtual void set(mgListItem* item) = 0;
+		virtual mgListItem* get() = 0;
+		virtual mgKeyTypes Type() const = 0;
+		virtual bool Enabled(mgDb *db) { return true; }
+		virtual bool LoadMap() const;
+	protected:
+		virtual string map_sql() const { return ""; }
+};
+
+class mgKeyNormal : public mgKey {
+	public:
+		mgKeyNormal(const mgKeyNormal& k);
+		mgKeyNormal(const mgKeyTypes kt, string table, string field);
+		virtual mgParts Parts(mgDb *db,bool orderby=false) const;
+		string value() const;
+		string id() const;
+		bool valid() const;
+		void set(mgListItem* item);
+		mgListItem* get();
+		mgKeyTypes Type() const { return m_kt; }
+		virtual string expr() const { return m_table + "." + m_field; }
+		virtual string table() const { return m_table; }
+	protected:
+		string IdClause(mgDb *db,string what,string::size_type start=0,string::size_type len=string::npos) const;
+		void AddIdClause(mgDb *db,mgParts &result,string what) const;
+		mgListItem *m_item;
+		string m_field;
+	private:
+		mgKeyTypes m_kt;
+		string m_table;
+};
+
+class mgKeyABC : public mgKeyNormal {
+	public:
+		mgKeyABC(const mgKeyNormal& k) : mgKeyNormal(k) {}
+		mgKeyABC(const mgKeyTypes kt, string table, string field) : mgKeyNormal(kt,table,field) {}
+		virtual string expr() const { return "substring("+mgKeyNormal::expr()+",1,1)"; }
+	protected:
+		//void AddIdClause(mgDb *db,mgParts &result,string what) const;
+};
+
+class mgKeyDate : public mgKeyNormal {
+	public:
+		mgKeyDate(mgKeyTypes kt,string table, string field) : mgKeyNormal(kt,table,field) {}
+};
+mgKey*
+ktGenerate(const mgKeyTypes kt);
+
 mgDb* GenerateDB(bool SeparateThread=false);
 
 /*! \brief if the SQL command works on only 1 table, remove all table
@@ -79,4 +186,14 @@ mgDb* GenerateDB(bool SeparateThread=false);
 * \return the new sql command is also returned
 */
 extern string optimize(string& spar);
+class mgKeyMaps {
+	public:
+		string value(mgKeyTypes kt, string idstr) const;
+		string id(mgKeyTypes kt, string valstr) const;
+	private:
+		bool loadvalues (mgKeyTypes kt) const;
+};
+
+extern mgKeyMaps KeyMaps;
+
 #endif

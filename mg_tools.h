@@ -85,34 +85,6 @@ string trim(string const& source, char const* delims = " \t\r\n");
 
 char *SeparateFolders(const char *filename, char * folders[],unsigned int fcount);
 
-enum mgKeyTypes {
-	keyGenre1=1, // the genre types must have exactly this order!
-	keyGenre2,
-	keyGenre3,
-	keyGenres,
-	keyDecade,
-	keyYear,
-	keyArtist,
-	keyAlbum,
-	keyTitle,
-	keyTrack,
-	keyLanguage,
-	keyRating,
-	keyFolder1,
-	keyFolder2,
-	keyFolder3,
-	keyFolder4,
-	keyCreated,
-	keyModified,
-	keyArtistABC,
-	keyTitleABC,
-	keyCollection,
-	keyCollectionItem,
-};
-const mgKeyTypes mgKeyTypesLow = keyGenre1;
-const mgKeyTypes mgKeyTypesHigh = keyCollectionItem;
-const unsigned int mgKeyTypesNr = keyCollectionItem;
-
 //! \brief adds string n to string s, using string sep to separate them
 string& addsep (string & s, string sep, string n);
 

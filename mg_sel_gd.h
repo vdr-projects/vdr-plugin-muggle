@@ -21,14 +21,23 @@ class mgSelectionGd : public mgSelection
     public:
         mgSelectionGd(const mgSelection *s);
 	mgSelectionGd(const bool fall_through = false);
+ 	void MakeCollection();
 	vector <const char*> Choices(unsigned int level, unsigned int *current) const;
 	mgParts Parts(mgDb *db,bool orderby=true) const;
+	bool inCollection(const string Name="") const;
+	bool isLanguagelist() const;
+	bool isCollectionlist() const;
+	bool InitDefaultOrder(unsigned int i=0);
 
 
     protected:
 	void DeduceKeyValue(mgKeyTypes new_kt,const mgSelection *s,
 		vector<mgListItem>& items);
         void InitSelection ();
+	const char * const ktName(const mgKeyTypes kt) const;
+	mgKeyTypes ktLow() const;
+	mgKeyTypes ktHigh() const;
+	bool isCollectionOrder() const;
 
     private:
 	void clean();

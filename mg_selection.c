@@ -15,9 +15,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "i18n.h"
 #include "mg_selection.h"
-#include "mg_order.h"
 #include "mg_setup.h"
 #include "mg_tools.h"
 #include "mg_thread_sync.h"
@@ -27,7 +25,6 @@
 #include <skins.h>
 #endif
 
-#include "mg_sel_gd.h"
 
 /*! \brief returns a random integer within some range
  */
@@ -586,14 +583,6 @@ mgSelection::mgSelection (const mgSelection* s)
 }
 
 
-void
-mgSelection::MakeCollection()
-{
-	clear();
-	setKey(keyCollection);
-	setKey(keyCollectionItem);
-}
-
 void mgSelection::DumpState(mgValmap& nv, const char *prefix) const
 {
 	nv.put(m_fall_through,"%s.FallThrough",prefix);
@@ -866,7 +855,18 @@ mgSelection::setKey (const mgKeyTypes kt)
 }
 
 void
-mgSelection::setKeys(vector<const char*> kt)
+mgSelection::setKeys(vector<mgKeyTypes>& kt)
+{
+	clear();
+	for (unsigned int i=0;i<kt.size();i++)
+	{
+		setKey(kt[i]);
+	}
+        clean();
+}
+
+void
+mgSelection::setKeys(vector<const char*>& kt)
 {
 	clear();
 	for (unsigned int i=0;i<kt.size();i++)
@@ -902,46 +902,6 @@ cleanagain:
 	}
 }
 
-bool
-mgSelection::isCollectionOrder() const
-{
-	return (ordersize()==2
-		&& (Keys[0]->Type()==keyCollection)
-		&& (Keys[1]->Type()==keyCollectionItem));
-}
-
-bool
-mgSelection::isLanguagelist() const
-{
-    return (getKeyType(0) == keyLanguage);
-}
-
-bool
-mgSelection::isCollectionlist () const
-{
-    if (ordersize()==0) return false;
-    return (getKeyType(0) == keyCollection && orderlevel() == 0);
-}
-
-bool
-mgSelection::inCollection(const string Name) const
-{
-    bool result = false;
-    for (unsigned int idx = 0 ; idx <= orderlevel(); idx++)
-    {
-	    if (idx==ordersize()) break;
-	    if (getKeyType(idx) == keyCollection)
-		    if (!Name.empty() && getKeyItem(idx)->value() != Name)
-			    break;
-	    if (getKeyType(idx) == keyCollectionItem)
-	    {
-		    result = true;
-		    break;
-	    }
-    }
-    return result;
-}
-
 string
 mgSelection::Name()
 {
@@ -952,11 +912,6 @@ mgSelection::Name()
 		result += ktName(Keys[idx]->Type());
 	}
 	return result;
-}
-
-mgSelection* GenerateSelection(const mgSelection* s)
-{
-	return new mgSelectionGd(s); // case
 }
 
 bool
@@ -1021,43 +976,10 @@ mgSelection::keycount(mgKeyTypes kt) const
 	return kcount;
 }
 
-
-const char * const
-mgSelection::ktName(const mgKeyTypes kt) const
-{
-	const char * result = "";
-	switch (kt)
-	{
-		case keyGenres: result = "Genre";break;
-		case keyGenre1: result = "Genre1";break;
-		case keyGenre2: result = "Genre2";break;
-		case keyGenre3: result = "Genre3";break;
-		case keyFolder1: result = "Folder1";break;
-		case keyFolder2: result = "Folder2";break;
-		case keyFolder3: result = "Folder3";break;
-		case keyFolder4: result = "Folder4";break;
-		case keyArtist: result = "Artist";break;
-		case keyArtistABC: result = "ArtistABC";break;
-		case keyTitle: result = "Title";break;
-		case keyTitleABC: result = "TitleABC";break;
-		case keyTrack: result = "Track";break;
-		case keyDecade: result = "Decade";break;
-		case keyAlbum: result = "Album";break;
-		case keyCreated: result = "Created";break;
-		case keyModified: result = "Modified";break;
-		case keyCollection: result = "Collection";break;
-		case keyCollectionItem: result = "Collection item";break;
-		case keyLanguage: result = "Language";break;
-		case keyRating: result = "Rating";break;
-		case keyYear: result = "Year";break;
-	}
-	return tr(result);
-}
-
 mgKeyTypes
 mgSelection::ktValue(const char * name) const
 {
-	for (int kt=int(mgKeyTypesLow);kt<=int(mgKeyTypesHigh);kt++)
+	for (int kt=int(ktLow());kt<=int(ktHigh());kt++)
 		if (!strcmp(name,ktName(mgKeyTypes(kt))))
 				return mgKeyTypes(kt);
 	mgError("ktValue(%s): unknown name",name);

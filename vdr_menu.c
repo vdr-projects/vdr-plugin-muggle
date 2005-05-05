@@ -34,6 +34,7 @@
 #include "i18n.h"
 
 #include "mg_tools.h"
+#include "mg_sel_gd.h"
 
 void
 mgStatus::OsdCurrentItem(const char* Text)
@@ -63,6 +64,11 @@ void Play(mgSelection *sel,const bool select) {
 		cControl::Launch (new mgPlayerControl (s));
 }
 
+mgSelection*
+GenerateSelection(const mgSelection* s)
+{
+	return new mgSelectionGd(s);
+}
 
 //! \brief queue the selection for playing, abort ongoing instant play
 void
@@ -313,24 +319,6 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
     nmain.put(int(actToggleSelection),"CollYellowAction");
     nmain.put(0,"CurrentOrder");
 
-    nsel.put(keyArtist,"order0.Keys.0.Type");
-    nsel.put(keyAlbum,"order0.Keys.1.Type");
-    nsel.put(keyTrack,"order0.Keys.2.Type");
-
-    nsel.put(keyAlbum,"order1.Keys.0.Type");
-    nsel.put(keyTrack,"order1.Keys.1.Type");
-	
-    nsel.put(keyGenres,"order2.Keys.0.Type");
-    nsel.put(keyArtist,"order2.Keys.1.Type");
-    nsel.put(keyAlbum,"order2.Keys.2.Type");
-    nsel.put(keyTrack,"order2.Keys.3.Type");
-
-    nsel.put(keyArtist,"order3.Keys.0.Type");
-    nsel.put(keyTrack,"order3.Keys.1.Type");
-
-    ncol.put(keyCollection,"order0.Keys.0.Type");
-    ncol.put(keyCollectionItem,"order0.Keys.1.Type");
-	
 
     // load values from state file
     char *b;
@@ -408,6 +396,20 @@ mgMainMenu::LoadSelections(mgValmap& nv)
 		{
 			delete s;
 			break;
+		}
+	}
+	if (selections.size()==0)
+	{
+		for (unsigned int i=0; i<100;i++)
+		{
+			mgSelection* s=GenerateSelection();
+			if (s->InitDefaultOrder(i))
+				selections.push_back(s);
+			else
+			{
+				delete s;
+				break;
+			}
 		}
 	}
     	m_current_selection = nv.getuint("CurrentSelection");

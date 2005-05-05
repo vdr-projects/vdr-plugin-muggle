@@ -15,7 +15,7 @@
 using namespace std;
 
 #include "mg_listitem.h"
-#include "mg_tools.h"
+#include "mg_keytypes.h"
 
 //! \brief represents a content item 
 class mgItem

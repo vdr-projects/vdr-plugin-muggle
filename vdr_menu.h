@@ -441,4 +441,6 @@ class mgTreeRemoveFromCollSelector:public mgTreeCollSelector
 	virtual mgActions coll_action() { return actRemoveCollEntry; }
 };
 
+mgSelection* GenerateSelection(const mgSelection *s=0);
+
 #endif

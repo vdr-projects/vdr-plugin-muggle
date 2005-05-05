@@ -15,7 +15,7 @@
 #include "mg_item_gd.h"
 #include "mg_setup.h"
 #include "mg_tools.h"
-#include "mg_selection.h"
+#include "mg_db.h"
 
 // this one last because of swap() redefinition:
 #include <tools.h>
@@ -31,28 +31,28 @@ mgItemGd::getKeyItem(mgKeyTypes kt)
 	if (m_itemid>=0) 
 	{
 		switch (kt) {
-			case keyGenres:
-			case keyGenre1:
-			case keyGenre2:
-			case keyGenre3: val = getGenre();id=m_genre_id;break;
-			case keyArtist: val = id = getArtist();break;
-			case keyArtistABC: val = id = getArtist()[0];break;
-			case keyAlbum: val = id = getAlbum();break;
-			case keyYear: val = id = string(ltos(getYear()));break;
-			case keyDecade: val = id = string(ltos(int((getYear() % 100) / 10) * 10));break;
-			case keyTitle: val = id = getTitle();break;
-			case keyTitleABC: val = id = getTitle()[0];break;
-			case keyTrack: val = id = getTitle();break;
-			case keyLanguage: val = getLanguage();id=m_language_id ; break;
-			case keyRating: val = id = getRating();break;
-			case keyFolder1:
-			case keyFolder2:
-			case keyFolder3:
-			case keyFolder4: 
+			case keyGdGenres:
+			case keyGdGenre1:
+			case keyGdGenre2:
+			case keyGdGenre3: val = getGenre();id=m_genre_id;break;
+			case keyGdArtist: val = id = getArtist();break;
+			case keyGdArtistABC: val = id = getArtist()[0];break;
+			case keyGdAlbum: val = id = getAlbum();break;
+			case keyGdYear: val = id = string(ltos(getYear()));break;
+			case keyGdDecade: val = id = string(ltos(int((getYear() % 100) / 10) * 10));break;
+			case keyGdTitle: val = id = getTitle();break;
+			case keyGdTitleABC: val = id = getTitle()[0];break;
+			case keyGdTrack: val = id = getTitle();break;
+			case keyGdLanguage: val = getLanguage();id=m_language_id ; break;
+			case keyGdRating: val = id = getRating();break;
+			case keyGdFolder1:
+			case keyGdFolder2:
+			case keyGdFolder3:
+			case keyGdFolder4: 
 				{
 				       char *folders[4];
 				       char *fbuf=SeparateFolders(m_mp3file.c_str(),folders,4);
-				       val = id = folders[int(kt)-int(keyFolder1)];
+				       val = id = folders[int(kt)-int(keyGdFolder1)];
 				       free(fbuf);
 				       break;
 				}
@@ -216,14 +216,14 @@ mgItemGd::mgItemGd (const MYSQL_ROW row)
     if (row[5] && row[5][0])
     {
 	m_genre_id = row[5];
-    	m_genre = KeyMaps.value(keyGenres,row[5]);
+    	m_genre = KeyMaps.value(keyGdGenres,row[5]);
     }
     else
     	m_genre = "NULL";
     if (row[6] && row[6][0])
     {
 	m_genre2_id = row[6];
-    	m_genre2 = KeyMaps.value(keyGenres,row[6]);
+    	m_genre2 = KeyMaps.value(keyGdGenres,row[6]);
     }
     else
     	m_genre2 = "NULL";
@@ -254,7 +254,7 @@ mgItemGd::mgItemGd (const MYSQL_ROW row)
     if (row[13])
     {
     	m_language_id = row[13];
-	m_language = KeyMaps.value(keyLanguage,row[13]);
+	m_language = KeyMaps.value(keyGdLanguage,row[13]);
     }
     else
     	m_language_id = "NULL";

@@ -1,5 +1,5 @@
 /*!
- * \file mg_selection.c
+ * \file mg_sel_gd.c
  * \brief A general interface to data items, currently only GiantDisc
  *
  * \version $Revision: 1.0 $
@@ -20,6 +20,8 @@
 #include "mg_sel_gd.h"
 #include "mg_db_gd.h"
 
+#include "i18n.h"
+
 mgSelectionGd::mgSelectionGd(const mgSelection *s)
 {
 	InitFrom(s);
@@ -36,6 +38,11 @@ void mgSelectionGd::InitSelection() {
 }
 
 
+static bool iskeyGdGenre(mgKeyTypes kt)
+{
+	return kt>=keyGdGenre1  && kt <= keyGdGenres;
+}
+
 void
 mgSelectionGd::DeduceKeyValue(mgKeyTypes new_kt,const mgSelection *s,
 		vector<mgListItem>& items)
@@ -47,8 +54,8 @@ mgSelectionGd::DeduceKeyValue(mgKeyTypes new_kt,const mgSelection *s,
 	{
 		mgKeyTypes old_kt = s->getKeyType(i);
 		if (old_kt>new_kt
-				&& iskeyGenre(old_kt)
-				&& iskeyGenre(new_kt))
+				&& iskeyGdGenre(old_kt)
+				&& iskeyGdGenre(new_kt))
 		{
 			string selid=KeyMaps.id(new_kt,
 				KeyMaps.value(new_kt,s->getKeyItem(i)->id()));
@@ -77,11 +84,11 @@ mgSelectionGd::clean()
 	for (i = Keys.begin () ; i != Keys.end (); ++i)
 	{
 		mgKey* k = *i;
-		collection_found |= (k->Type()==keyCollection);
-		collitem_found |= (k->Type()==keyCollectionItem);
-		album_found |= (k->Type()==keyAlbum);
-		tracknb_found |= (k->Type()==keyTrack);
-		title_found |= (k->Type()==keyTitle);
+		collection_found |= (k->Type()==keyGdCollection);
+		collitem_found |= (k->Type()==keyGdCollectionItem);
+		album_found |= (k->Type()==keyGdAlbum);
+		tracknb_found |= (k->Type()==keyGdTrack);
+		title_found |= (k->Type()==keyGdTitle);
 		is_unique = tracknb_found || (album_found && title_found)
 			|| (collection_found && collitem_found);
 		if (is_unique)
@@ -89,10 +96,10 @@ mgSelectionGd::clean()
 			truncate (i+1-Keys.begin()); // \todo test this!
 			break;
 		}
-		if (k->Type()==keyYear)
+		if (k->Type()==keyGdYear)
 		{
 			for (j = i+1 ; j != Keys.end(); ++j)
-				if ((*j)->Type() == keyDecade)
+				if ((*j)->Type() == keyGdDecade)
 				{
 					delete *j;
 					Keys.erase(j);
@@ -103,9 +110,9 @@ mgSelectionGd::clean()
 	if (!is_unique)
 	{
 		if (!album_found)
-			Keys.push_back(ktGenerate(keyAlbum));
+			Keys.push_back(ktGenerate(keyGdAlbum));
 		if (!title_found)
-			Keys.push_back(ktGenerate(keyTitle));
+			Keys.push_back(ktGenerate(keyGdTitle));
 	}
 }
 
@@ -119,7 +126,7 @@ mgSelectionGd::Choices(unsigned int level, unsigned int *current) const
 		*current = 0;
 		return result;
 	}
-	for (unsigned int ki=int(mgKeyTypesLow);ki<=int(mgKeyTypesHigh);ki++)
+	for (unsigned int ki=(unsigned int)(ktLow());ki<=(unsigned int)(ktHigh());ki++)
 	{
 		mgKeyTypes kt = mgKeyTypes(ki);
 		if (kt==getKeyType(level))
@@ -130,43 +137,45 @@ mgSelectionGd::Choices(unsigned int level, unsigned int *current) const
 		}
 		if (UsedBefore(kt,level))
 			continue;
-		if (kt==keyDecade && UsedBefore(keyYear,level))
-			continue;
-		if (kt==keyGenre1)
+		if (kt==keyGdDecade)
 		{
-			if (UsedBefore(keyGenre2,level)) continue;
-			if (UsedBefore(keyGenre3,level)) continue;
-			if (UsedBefore(keyGenres,level)) continue;
+			if (UsedBefore(keyGdYear,level)) continue;
 		}
-		if (kt==keyGenre2)
+		if (kt==keyGdGenre1)
 		{
-			if (UsedBefore(keyGenre3,level)) continue;
-			if (UsedBefore(keyGenres,level)) continue;
+			if (UsedBefore(keyGdGenre2,level)) continue;
+			if (UsedBefore(keyGdGenre3,level)) continue;
+			if (UsedBefore(keyGdGenres,level)) continue;
 		}
-		if (kt==keyGenre3)
+		if (kt==keyGdGenre2)
 		{
-			if (UsedBefore(keyGenres,level)) continue;
+			if (UsedBefore(keyGdGenre3,level)) continue;
+			if (UsedBefore(keyGdGenres,level)) continue;
 		}
-		if (kt==keyFolder1)
+		if (kt==keyGdGenre3)
 		{
-		 	if (UsedBefore(keyFolder2,level)) continue;
-		 	if (UsedBefore(keyFolder3,level)) continue;
-		 	if (UsedBefore(keyFolder4,level)) continue;
+			if (UsedBefore(keyGdGenres,level)) continue;
 		}
-		if (kt==keyFolder2)
+		if (kt==keyGdFolder1)
 		{
-		 	if (UsedBefore(keyFolder3,level)) continue;
-		 	if (UsedBefore(keyFolder4,level)) continue;
+		 	if (UsedBefore(keyGdFolder2,level)) continue;
+		 	if (UsedBefore(keyGdFolder3,level)) continue;
+		 	if (UsedBefore(keyGdFolder4,level)) continue;
 		}
-		if (kt==keyFolder3)
+		if (kt==keyGdFolder2)
 		{
-		 	if (UsedBefore(keyFolder4,level)) continue;
+		 	if (UsedBefore(keyGdFolder3,level)) continue;
+		 	if (UsedBefore(keyGdFolder4,level)) continue;
 		}
-		if (kt==keyCollectionItem)
+		if (kt==keyGdFolder3)
 		{
-		 	if (!UsedBefore(keyCollection,level)) continue;
+		 	if (UsedBefore(keyGdFolder4,level)) continue;
 		}
-		if (kt==keyCollection)
+		if (kt==keyGdCollectionItem)
+		{
+		 	if (!UsedBefore(keyGdCollection,level)) continue;
+		}
+		if (kt==keyGdCollection)
 			result.push_back(ktName(kt));
 		else if (keycount(kt)>1)
 			result.push_back(ktName(kt));
@@ -194,7 +203,7 @@ mgSelectionGd::Parts(mgDb *db,bool orderby) const
 		if (i==Keys.size()) break;
 		mgKey *k = Keys[i];
 		mgKeyTypes kt = k->Type();
-		if (iskeyGenre(kt))
+		if (iskeyGdGenre(kt))
 		{
 			for (unsigned int j=i+1;j<=m_level;j++)
 			{
@@ -204,7 +213,7 @@ mgSelectionGd::Parts(mgDb *db,bool orderby) const
 				if (kn)
 				{
 					mgKeyTypes knt = kn->Type();
-					if (iskeyGenre(knt) && knt>kt && !kn->id().empty())
+					if (iskeyGdGenre(knt) && knt>kt && !kn->id().empty())
 						goto next;
 				}
 			}
@@ -216,3 +225,124 @@ next:
 	return result;
 }
 
+mgKeyTypes
+mgSelectionGd::ktLow() const
+{
+	return mgGdKeyTypesLow;
+}
+
+mgKeyTypes
+mgSelectionGd::ktHigh() const
+{
+	return mgGdKeyTypesHigh;
+}
+
+const char * const
+mgSelectionGd::ktName(const mgKeyTypes kt) const
+{
+	const char * result = "";
+	switch (kt)
+	{
+		case keyGdGenres: result = "Genre";break;
+		case keyGdGenre1: result = "Genre1";break;
+		case keyGdGenre2: result = "Genre2";break;
+		case keyGdGenre3: result = "Genre3";break;
+		case keyGdFolder1: result = "Folder1";break;
+		case keyGdFolder2: result = "Folder2";break;
+		case keyGdFolder3: result = "Folder3";break;
+		case keyGdFolder4: result = "Folder4";break;
+		case keyGdArtist: result = "Artist";break;
+		case keyGdArtistABC: result = "ArtistABC";break;
+		case keyGdTitle: result = "Title";break;
+		case keyGdTitleABC: result = "TitleABC";break;
+		case keyGdTrack: result = "Track";break;
+		case keyGdDecade: result = "Decade";break;
+		case keyGdAlbum: result = "Album";break;
+		case keyGdCreated: result = "Created";break;
+		case keyGdModified: result = "Modified";break;
+		case keyGdCollection: result = "Collection";break;
+		case keyGdCollectionItem: result = "Collection item";break;
+		case keyGdLanguage: result = "Language";break;
+		case keyGdRating: result = "Rating";break;
+		case keyGdYear: result = "Year";break;
+		default: result="not implemented";break;
+	}
+	return tr(result);
+}
+
+void
+mgSelectionGd::MakeCollection()
+{
+	clear();
+	setKey(keyGdCollection);
+	setKey(keyGdCollectionItem);
+}
+
+bool
+mgSelectionGd::isCollectionOrder() const
+{
+	return (ordersize()==2
+		&& (Keys[0]->Type()==keyGdCollection)
+		&& (Keys[1]->Type()==keyGdCollectionItem));
+}
+
+bool
+mgSelectionGd::isLanguagelist() const
+{
+    return (getKeyType(0) == keyGdLanguage);
+}
+
+bool
+mgSelectionGd::isCollectionlist () const
+{
+    if (ordersize()==0) return false;
+    return (getKeyType(0) == keyGdCollection && orderlevel() == 0);
+}
+
+bool
+mgSelectionGd::inCollection(const string Name) const
+{
+    bool result = false;
+    for (unsigned int idx = 0 ; idx <= orderlevel(); idx++)
+    {
+	    if (idx==ordersize()) break;
+	    if (getKeyType(idx) == keyGdCollection)
+		    if (!Name.empty() && getKeyItem(idx)->value() != Name)
+			    break;
+	    if (getKeyType(idx) == keyGdCollectionItem)
+	    {
+		    result = true;
+		    break;
+	    }
+    }
+    return result;
+}
+
+bool
+mgSelectionGd::InitDefaultOrder(unsigned int i)
+{
+	clear();
+	switch (i) {
+		case 1:
+			setKey(keyGdArtist);
+			setKey(keyGdAlbum);
+			setKey(keyGdTrack);
+			return true;
+		case 2:
+			setKey(keyGdAlbum);
+			setKey(keyGdTrack);
+			return true;
+		case 3:
+			setKey(keyGdGenres);
+			setKey(keyGdArtist);
+			setKey(keyGdAlbum);
+			setKey(keyGdTrack);
+			return true;
+		case 4:
+			setKey(keyGdArtist);
+			setKey(keyGdTrack);
+			return true;
+		default:
+			return false;
+	}
+}

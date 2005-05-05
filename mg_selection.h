@@ -20,7 +20,6 @@ using namespace std;
 
 #include "mg_tools.h"
 #include "mg_valmap.h"
-#include "mg_order.h"
 #include "mg_item.h"
 #include "mg_db.h"
 
@@ -98,7 +97,7 @@ class mgSelection
  */
         mgSelection (const mgSelection* s);
 
- 	void MakeCollection();
+ 	virtual void MakeCollection() =0;
 
 //! \brief initializes from a map.
 	void InitFrom(const char *prefix,mgValmap& nv);
@@ -363,7 +362,8 @@ class mgSelection
 		return (m_current_values=="" && m_current_tracks=="");
 	}
 
-	void setKeys(vector<const char*> kt);
+	void setKeys(vector<const char*>& kt);
+	void setKeys(vector<mgKeyTypes>& kt);
 	string Name();
 	bool SameOrder(const mgSelection* other);
 	bool SameOrder(const mgSelection& other);
@@ -372,9 +372,10 @@ class mgSelection
 	void setOrderByCount(bool orderbycount) { m_orderByCount = orderbycount;}
 	bool getOrderByCount() const { return m_orderByCount; }
 	virtual mgParts Parts(mgDb *db,bool orderby=true) const = 0;
-	virtual bool inCollection(const string Name="") const;
-	virtual bool isLanguagelist() const;
-	virtual bool isCollectionlist() const;
+	virtual bool inCollection(const string Name="") const =0;
+	virtual bool isLanguagelist() const =0;
+	virtual bool isCollectionlist() const =0;
+	virtual bool InitDefaultOrder(unsigned int i=0) =0;
 
     protected:
 	void InitFrom(const mgSelection* s);
@@ -382,16 +383,20 @@ class mgSelection
 		vector<mgListItem>& items) {}
 	virtual void clean();
         virtual void InitSelection ();
-	virtual bool isCollectionOrder() const;
+	virtual bool isCollectionOrder() const=0;
 	keyvector Keys;
 	unsigned int m_level;
         mutable mgDb* m_db;
 	bool m_orderByCount;
 	bool UsedBefore(const mgKeyTypes kt,unsigned int level) const;
 	unsigned int keycount(mgKeyTypes kt) const;
-	const char * const ktName(const mgKeyTypes kt) const;
+	virtual mgKeyTypes ktLow() const =0;
+	virtual mgKeyTypes ktHigh() const =0;
+	virtual const char * const ktName(const mgKeyTypes kt) const=0;
 	mgKeyTypes ktValue(const char * name) const;
 	void truncate(unsigned int i);
+	void clear();
+	void setKey ( const mgKeyTypes kt);
 
     private:
         mutable string m_current_values;
@@ -407,10 +412,7 @@ class mgSelection
 
         string ListFilename ();
 
-	void setKey ( const mgKeyTypes kt);
 	void InitOrder(vector<mgListItem>& items);
-	void clear();
 };
 
-mgSelection* GenerateSelection(const mgSelection *s = 0);
 #endif
