@@ -108,6 +108,7 @@ class mgDb {
 	virtual string LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems)=0;
 	string sql_string(const string s); // \todo does it need to be public?
 	virtual bool NeedGenre2() = 0;
+	virtual bool Threadsafe() { return false; }
    protected:
 	virtual bool SyncStart() { return true; }
 	virtual void SyncEnd() {}

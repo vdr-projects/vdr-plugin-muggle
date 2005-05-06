@@ -57,11 +57,11 @@ mgDbGd::mgDbGd(bool SeparateThread)
         m_db = 0;
         if (!mysqlhandle)
                 mysqlhandle = new mysqlhandle_t;
-#if MYSQL_VERSION_ID >=400000
-	// when exactly was this introduced? After 3.23 anyway
 	if (m_separate_thread)
+	if (Threadsafe())
 		mysql_thread_init();
-#endif
+	else
+		mgError("Your Mysql version is not thread safe");
 }
 
 mgDbGd::~mgDbGd()
@@ -75,7 +75,17 @@ mgDbGd::~mgDbGd()
 #endif
 }
 
-
+bool
+mgDbGd::Threadsafe()
+{
+#ifdef THREAD_SAFE_CLIENT && MYSQL_VERSION_ID >=400000
+	// 3.23 does define THREAD_SAFE_CLIENT but has no mysql_thread_init.
+	// So we assume we should better not assume threading to be safe
+	return true;
+#else
+	return false;
+#endif
+}
 
 #ifndef HAVE_ONLY_SERVER
 static char *mysql_embedded_args[] =
