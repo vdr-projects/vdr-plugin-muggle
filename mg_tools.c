@@ -134,6 +134,12 @@ addsep (string & s, string sep, string n)
 }
 
 
+string
+comma (string & s, string n)
+{
+	    return addsep (s, ",", n);
+}
+
 //! \brief converts long to string
 string
 itos (int i)

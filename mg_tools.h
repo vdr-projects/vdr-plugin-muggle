@@ -88,6 +88,9 @@ char *SeparateFolders(const char *filename, char * folders[],unsigned int fcount
 //! \brief adds string n to string s, using string sep to separate them
 string& addsep (string & s, string sep, string n);
 
+//! \brief adds string n to string s, using a comma to separate them
+string comma (string &s, string n);
+
 //! \brief converts long to string
 string itos (int i);
 

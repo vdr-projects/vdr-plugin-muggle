@@ -33,15 +33,6 @@ using namespace std;
 static bool needGenre2;
 static bool needGenre2_set=false;
 
-//! \brief adds string n to string s, using a comma to separate them
-static string comma (string &s, string n);
-
-static string
-comma (string & s, string n)
-{
-	    return addsep (s, ",", n);
-}
-
 class mysqlhandle_t {
 	public:
 		mysqlhandle_t();
@@ -69,7 +60,6 @@ mgDbGd::~mgDbGd()
   mysql_close (m_db);
   m_db = 0;
 #if MYSQL_VERSION_ID >=400000
-	// when exactly was this introduced? After 3.23 anyway
   if (m_separate_thread)
 	mysql_thread_end();
 #endif
@@ -332,8 +322,7 @@ static char *db_cmds[] =
 bool
 mgDbGd::sql_query(string sql)
 {
-	//const char * optsql = optimize(sql).c_str();
-	const char * optsql = sql.c_str();
+	const char * optsql = optimize(sql).c_str();
   	mgDebug(4,"mysql_query(%X,%s)",m_db,optsql);
 	bool result = !mysql_query(m_db,optsql);
 	if (!result)
