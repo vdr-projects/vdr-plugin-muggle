@@ -57,16 +57,22 @@ mgDbGd::mgDbGd(bool SeparateThread)
         m_db = 0;
         if (!mysqlhandle)
                 mysqlhandle = new mysqlhandle_t;
+#if MYSQL_VERSION_ID >=400000
+	// when exactly was this introduced? After 3.23 anyway
 	if (m_separate_thread)
 		mysql_thread_init();
+#endif
 }
 
 mgDbGd::~mgDbGd()
 {
   mysql_close (m_db);
   m_db = 0;
+#if MYSQL_VERSION_ID >=400000
+	// when exactly was this introduced? After 3.23 anyway
   if (m_separate_thread)
 	mysql_thread_end();
+#endif
 }
 
 
