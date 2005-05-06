@@ -13,7 +13,6 @@
 #define _MG_ITEM_GD_H
 #include <stdlib.h>
 #include <string>
-#include <mysql/mysql.h>
 
 using namespace std;
 
@@ -30,7 +29,7 @@ class mgItemGd : public mgItem
         mgItemGd(const mgItemGd* c);
 
 	//! \brief construct an item from an SQL row
-        mgItemGd (const MYSQL_ROW row);
+        mgItemGd (char **row);
 
 	mgItemGd* Clone();
 

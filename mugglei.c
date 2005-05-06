@@ -81,20 +81,20 @@ int main( int argc, char *argv[] )
       std::cout << "" << std::endl;
       std::cout << "Options:" << std::endl;
 #ifdef HAVE_ONLY_SERVER
-      std::cout << "  -h <hostname>       - specify host of mySql database server (default is 'localhost')" << std::endl;
+      std::cout << "  -h <hostname>       - specify host of database server (default is 'localhost')" << std::endl;
 #else
-      std::cout << "  -h <hostname>       - specify host of mySql database server (default is mysql embedded')" << std::endl;
+      std::cout << "  -h <hostname>       - specify host of database server (default is embedded')" << std::endl;
 #endif
-      std::cout << "  -s <socket>         - specify a socket for mySQL communication (default is TCP)" << std::endl;
+      std::cout << "  -s <socket>         - specify a socket for communication with database server (default is TCP)" << std::endl;
       std::cout << "  -n <database>       - specify database name (default is 'GiantDisc')" << std::endl;
-      std::cout << "  -u <username>       - specify user of mySql database (default is empty)" << std::endl;
+      std::cout << "  -u <username>       - specify user of database (default is empty)" << std::endl;
       std::cout << "  -p <password>       - specify password of user (default is empty password)" << std::endl;
       std::cout << "  -t <topleveldir>    - name of music top level directory" << std::endl;
       std::cout << "  -z                  - scan all database entries and delete entries for files not found" << std::endl;
       std::cout << "                        -z is not yet implemented" << std::endl;
       std::cout << "  -c                  - delete the entire database and recreate a new empty one" << std::endl;
 #ifndef HAVE_ONLY_SERVER
-      std::cout << "  -d <datadir>        - the data directory for the embedded mysql server. Defaults to ./.muggle" << std::endl;
+      std::cout << "  -d <datadir>        - the data directory for embedded sql. Defaults to ./.muggle" << std::endl;
 #endif
       std::cout << "  -v                  - the wanted log level, the higher the more. Default is 1" << std::endl;
       std::cout << std::endl << std::endl;

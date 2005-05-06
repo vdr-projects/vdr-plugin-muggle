@@ -26,8 +26,6 @@ using namespace std;
 static map <mgKeyTypes, map<string,string> > map_values;
 static map <mgKeyTypes, map<string,string> > map_ids;
 
-bool UsingEmbeddedMySQL();
-
 mgDb* GenerateDB(bool SeparateThread)
 {
 	// \todo should return different backends according to the_setup.Variant

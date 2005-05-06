@@ -198,7 +198,7 @@ mgItemGd::getSourceFile(bool AbsolutePath) const
 	return result;
 }
 
-mgItemGd::mgItemGd (const MYSQL_ROW row)
+mgItemGd::mgItemGd (char **row)
 {
     m_valid = true;
     m_validated = false;

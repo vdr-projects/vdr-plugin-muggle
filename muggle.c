@@ -66,7 +66,7 @@ mgMuggle::CommandLineHelp (void)
 #ifdef HAVE_ONLY_SERVER
         "  -h HHHH,  --host=HHHH     specify database host (default is localhost)\n"
 #else
-        "  -h HHHH,  --host=HHHH     specify database host (default is mysql embedded)\n"
+        "  -h HHHH,  --host=HHHH     specify database host (default is embedded)\n"
 #endif
         "  -s SSSS   --socket=PATH   specify database socket\n"
         "  -n NNNN,  --name=NNNN     specify database name (default is GiantDisc)\n"
