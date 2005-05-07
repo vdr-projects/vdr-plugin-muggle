@@ -1006,21 +1006,22 @@ mgDbGd::LoadItemsInto(mgParts& what,vector<mgItem*>& items)
 {
     	if (!Connect())
 		return "";
-	what.fields.clear();
-	what.fields.push_back("tracks.id");
-	what.fields.push_back("tracks.title");
-	what.fields.push_back("tracks.mp3file");
-	what.fields.push_back("tracks.artist");
-	what.fields.push_back("album.title");
-	what.fields.push_back("tracks.genre1");
-	what.fields.push_back("tracks.genre2");
-	what.fields.push_back("tracks.bitrate");
-	what.fields.push_back("tracks.year");
-	what.fields.push_back("tracks.rating");
-	what.fields.push_back("tracks.length");
-	what.fields.push_back("tracks.samplerate");
-	what.fields.push_back("tracks.channels");
-	what.fields.push_back("tracks.lang");
+	what.idfields.clear();
+	what.valuefields.clear();
+	what.idfields.push_back("tracks.id");
+	what.idfields.push_back("tracks.title");
+	what.idfields.push_back("tracks.mp3file");
+	what.idfields.push_back("tracks.artist");
+	what.idfields.push_back("album.title");
+	what.idfields.push_back("tracks.genre1");
+	what.idfields.push_back("tracks.genre2");
+	what.idfields.push_back("tracks.bitrate");
+	what.idfields.push_back("tracks.year");
+	what.idfields.push_back("tracks.rating");
+	what.idfields.push_back("tracks.length");
+	what.idfields.push_back("tracks.samplerate");
+	what.idfields.push_back("tracks.channels");
+	what.idfields.push_back("tracks.lang");
 	what.tables.push_back("tracks");
 	what.tables.push_back("album");
 	string result = what.sql_select(false); 
@@ -1199,11 +1200,11 @@ mgKeyGdGenres::Parts(mgDb *db,bool orderby) const
 	result.tables.push_back("tracks");
 	if (orderby)
 	{
-		result.fields.push_back("genre.genre");
+		result.valuefields.push_back("genre.genre");
 		if (genrelevel()==4)
-			result.fields.push_back("genre.id");
+			result.idfields.push_back("genre.id");
 		else
-			result.fields.push_back("substring(genre.id,1,"+ltos(genrelevel())+")");
+			result.idfields.push_back("substring(genre.id,1,"+ltos(genrelevel())+")");
 		result.tables.push_back("genre");
        		result.orders.push_back("genre.genre");
 	}
@@ -1281,7 +1282,7 @@ mgKeyGdTrack::Parts(mgDb *db,bool orderby) const
 	{
 		// if you change tracks.title, please also
 		// change mgItemGd::getKeyItem()
-		result.fields.push_back("tracks.title");
+		result.idfields.push_back("tracks.title");
        		result.orders.push_back("tracks.tracknb");
 	}
 	return result;
@@ -1295,8 +1296,8 @@ mgKeyGdLanguage::Parts(mgDb *db,bool orderby) const
 	result.tables.push_back("tracks");
 	if (orderby)
 	{
-		result.fields.push_back("language.language");
-		result.fields.push_back("tracks.lang");
+		result.valuefields.push_back("language.language");
+		result.idfields.push_back("tracks.lang");
 		result.tables.push_back("language");
        		result.orders.push_back("language.language");
 	}
@@ -1311,8 +1312,8 @@ mgKeyGdCollection::Parts(mgDb *db,bool orderby) const
 	{
 		result.tables.push_back("playlist");
 		AddIdClause(db,result,"playlist.id");
-		result.fields.push_back("playlist.title");
-		result.fields.push_back("playlist.id");
+		result.valuefields.push_back("playlist.title");
+		result.idfields.push_back("playlist.id");
        		result.orders.push_back("playlist.title");
 	}
 	else
@@ -1333,8 +1334,8 @@ mgKeyGdCollectionItem::Parts(mgDb *db,bool orderby) const
 	{
 		// tracks nur hier, fuer sql_delete_from_coll wollen wir es nicht
 		result.tables.push_back("tracks");
-		result.fields.push_back("tracks.title");
-		result.fields.push_back("playlistitem.tracknumber");
+		result.idfields.push_back("tracks.title");
+		result.idfields.push_back("playlistitem.tracknumber");
        		result.orders.push_back("playlistitem.tracknumber");
 	}
 	return result;

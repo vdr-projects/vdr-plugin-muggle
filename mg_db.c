@@ -179,7 +179,7 @@ mgKeyNormal::Parts(mgDb *db, bool orderby) const
 	AddIdClause(db,result,expr());
 	if (orderby)
 	{
-		result.fields.push_back(expr());
+		result.idfields.push_back(expr());
        		result.orders.push_back(expr());
 	}
 	return result;
@@ -196,7 +196,7 @@ mgKeyNormal::IdClause(mgDb *db,string what,string::size_type start,string::size_
 		return what + "=" + db->sql_string(id());
 	else
 	{
-		return "substring("+what + ","+ltos(start+1)+","+ltos(len)+")="
+		return "substr("+what + ","+ltos(start+1)+","+ltos(len)+")="
 			+ db->sql_string(id().substr(start,len));
 	}
 }
@@ -281,6 +281,14 @@ strlist& operator+=(strlist&a, strlist b)
 	return a;
 }
 
+strlist operator+(strlist&a, strlist&b) 
+{
+	strlist result;
+	result.insert(result.end(),a.begin(),a.end());
+	result.insert(result.end(),b.begin(),b.end());
+	return result;
+}
+
 
 string
 sql_list (string prefix,strlist v,string sep,string postfix)
@@ -300,7 +308,8 @@ sql_list (string prefix,strlist v,string sep,string postfix)
 mgParts&
 mgParts::operator+=(mgParts a)
 {
-	fields += a.fields;
+	valuefields += a.valuefields;
+	idfields += a.idfields;
 	tables += a.tables;
 	clauses += a.clauses;
 	orders += a.orders;
@@ -319,18 +328,18 @@ mgParts::Prepare()
 {
 	tables.sort();
 	tables.unique();
-	strlist::reverse_iterator rit;
+	strlist::reverse_iterator it;
 	string prevtable = "";
 	rest.InitReferences();
 	positives.clear();
-	for (rit = tables.rbegin(); rit != tables.rend(); ++rit)
+	for (it = tables.rbegin(); it != tables.rend(); ++it)
 	{
 		if (!prevtable.empty())
 		{
 			rest.InitReferences();
-			ConnectTables(prevtable,*rit);
+			ConnectTables(prevtable,*it);
 		}
-		prevtable = *rit;
+		prevtable = *it;
 	}
 	for (unsigned int i = 0 ; i < positives.size(); i++)
 	{
@@ -338,16 +347,6 @@ mgParts::Prepare()
 	}
 	tables.sort();
 	tables.unique();
-	// optimization needed for SQLite, see
-	// http://www.sqlite.org/php2004/page-056.html
-	strlist::iterator it;
-	for (it = tables.begin(); it != tables.end(); ++it)
-		if (*it == "tracks")
-		{
-			tables.erase(it);
-			tables.push_front("tracks");
-			break;
-		}
 	clauses.sort();
 	clauses.unique();
 	orders.unique();
@@ -359,22 +358,22 @@ mgParts::sql_select(bool distinct)
 	if (!special_statement.empty())
 		return special_statement;
 	Prepare();
-	if (fields.empty())
+	if (idfields.empty())
 		return "";
 	string result;
 	if (distinct)
 	{
-		fields.push_back("COUNT(*) AS mgcount");
-		result = sql_list("SELECT",fields);
-		fields.pop_back();
+		idfields.push_back("COUNT(*) AS mgcount");
+		result = sql_list("SELECT",idfields);
+		idfields.pop_back();
 	}
 	else
-		result = sql_list("SELECT",fields);
+		result = sql_list("SELECT",idfields+valuefields);
 	result += sql_list("FROM",tables);
 	result += sql_list("WHERE",clauses," AND ");
 	if (distinct)
 	{
-		result += sql_list("GROUP BY",fields);
+		result += sql_list("GROUP BY",idfields);
  		if (orderByCount)
 			orders.insert(orders.begin(),"mgcount desc");
 	}
@@ -386,11 +385,12 @@ string
 mgParts::sql_count()
 {
 	Prepare();
-	string result = sql_list("SELECT COUNT(DISTINCT",fields,",",")");
+	string result = sql_list("SELECT COUNT(DISTINCT",idfields,",",")");
 	if (result.empty())
 		return result;
 	result += sql_list("FROM",tables);
 	result += sql_list("WHERE",clauses," AND ");
+	result += sql_list("GROUP BY",idfields);
 	return result;
 }
 

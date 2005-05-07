@@ -58,7 +58,8 @@ class mgParts {
 public:
 	mgParts();
 	~mgParts();
-	strlist fields;
+	strlist valuefields; 	// if idfield and valuefield are identical, define idfield only
+	strlist idfields;
 	strlist tables;
 	strlist clauses;
 	strlist groupby;
