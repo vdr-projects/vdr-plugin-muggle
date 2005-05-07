@@ -319,18 +319,18 @@ mgParts::Prepare()
 {
 	tables.sort();
 	tables.unique();
-	strlist::reverse_iterator it;
+	strlist::reverse_iterator rit;
 	string prevtable = "";
 	rest.InitReferences();
 	positives.clear();
-	for (it = tables.rbegin(); it != tables.rend(); ++it)
+	for (rit = tables.rbegin(); rit != tables.rend(); ++rit)
 	{
 		if (!prevtable.empty())
 		{
 			rest.InitReferences();
-			ConnectTables(prevtable,*it);
+			ConnectTables(prevtable,*rit);
 		}
-		prevtable = *it;
+		prevtable = *rit;
 	}
 	for (unsigned int i = 0 ; i < positives.size(); i++)
 	{
@@ -338,6 +338,16 @@ mgParts::Prepare()
 	}
 	tables.sort();
 	tables.unique();
+	// optimization needed for SQLite, see
+	// http://www.sqlite.org/php2004/page-056.html
+	strlist::iterator it;
+	for (it = tables.begin(); it != tables.end(); ++it)
+		if (*it == "tracks")
+		{
+			tables.erase(it);
+			tables.push_front("tracks");
+			break;
+		}
 	clauses.sort();
 	clauses.unique();
 	orders.unique();

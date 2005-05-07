@@ -68,7 +68,7 @@ mgDbGd::~mgDbGd()
 bool
 mgDbGd::Threadsafe()
 {
-#ifdef THREAD_SAFE_CLIENT && MYSQL_VERSION_ID >=400000
+#if defined THREAD_SAFE_CLIENT && MYSQL_VERSION_ID >=400000
 	// 3.23 does define THREAD_SAFE_CLIENT but has no mysql_thread_init.
 	// So we assume we should better not assume threading to be safe
 	return true;
@@ -712,12 +712,10 @@ mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
 		{
 			MYSQL_ROW row = mysql_fetch_row(rows);
 			sql_Cstring(row[0],buf);
-			mgDebug(1,"c_artist=%s,buf=%s",c_artist,buf);
 			if (strcmp(buf,c_artist))
 				new_album_artists++;
 		}
 		else
-			mgDebug(1,"c_artist is unique:%s",c_artist);
 		if (new_album_artists>1 && strcmp(buf,"'Various Artists'"))
 			// is the album multi artist and not yet marked as such?
 		{
