@@ -45,6 +45,7 @@ void showmessage(int duration,const char *msg,...)
 
 void showimportcount(unsigned int importcount,bool final=false)
 {
+	printf("imported %d files%s\n",importcount,final?".":"...");
 }
 
 bool
