@@ -687,7 +687,11 @@ mgSelection::InitOrder(vector<mgListItem>& items)
 		}
 	}
 	if (m_level>0)
-		setPosition(getKeyItem(--m_level)->value());
+	{
+		m_level--;
+		Key(m_level)->set(0);	// we need this before setPosition
+		setPosition(getKeyItem(m_level)->value());
+	}
 	for (unsigned int idx = m_level; idx < orderlevel(); idx++)
 		Key(idx)->set(0);	
 	assert(orderlevel()<ordersize());
