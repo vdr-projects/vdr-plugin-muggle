@@ -74,9 +74,7 @@ mgMuggle::CommandLineHelp (void)
         "  -u UUUU,  --user=UUUU     specify database user (default is )\n"
         "  -w WWWW,  --password=WWWW specify database password (default is empty)\n"
         "  -t TTTT,  --toplevel=TTTT specify toplevel directory for music (default is /mnt/music)\n"
-#ifndef HAVE_ONLY_SERVER
         "  -d DIRN,  --datadir=DIRN  specify directory for embedded sql data (default is $HOME/.muggle)\n"
-#endif
         "  -v,       --verbose       specify debug level. The higher the more. Default is 1\n"
 	"\n"
 	"if the specified host is localhost, sockets will be used if possible.\n"
@@ -107,9 +105,7 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
         {"port", required_argument, NULL, 'p'},
         {"user", required_argument, NULL, 'u'},
         {"password", required_argument, NULL, 'w'},
-#ifndef HAVE_ONLY_SERVER
         {"datadir", required_argument, NULL, 'd'},
-#endif
         {"toplevel", required_argument, NULL, 't'},
         {NULL}
     };
@@ -118,11 +114,7 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
         c,
         option_index = 0;
     while ((c =
-#ifndef HAVE_ONLY_SERVER
         getopt_long (argc, argv, "h:s:n:p:t:u:w:d:v:", long_options,
-#else
-        getopt_long (argc, argv, "h:s:n:p:t:u:w:v:", long_options,
-#endif
         &option_index)) != -1)
     {
         switch (c)
@@ -157,13 +149,11 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
                 the_setup.DbPass = strcpyrealloc (the_setup.DbPass, optarg);
             }
             break;
-#ifndef HAVE_ONLY_SERVER
             case 'd':
             {
                 the_setup.DbDatadir = strcpyrealloc (the_setup.DbDatadir, optarg);
             }
 	    break;
-#endif
             case 'v':
             {
     		mgSetDebugLevel (atol(optarg));
@@ -186,8 +176,7 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
             default:
                 return false;
         }
-    }
-
+    } 
     return true;
 }
 

@@ -45,7 +45,6 @@ void showmessage(int duration,const char *msg,...)
 
 void showimportcount(unsigned int importcount,bool final=false)
 {
-	printf("imported %d files%s\n",importcount,final?".":"...");
 }
 
 bool
@@ -94,9 +93,7 @@ int main( int argc, char *argv[] )
       std::cout << "  -z                  - scan all database entries and delete entries for files not found" << std::endl;
       std::cout << "                        -z is not yet implemented" << std::endl;
       std::cout << "  -c                  - delete the entire database and recreate a new empty one" << std::endl;
-#ifndef HAVE_ONLY_SERVER
       std::cout << "  -d <datadir>        - the data directory for embedded sql. Defaults to ./.muggle" << std::endl;
-#endif
       std::cout << "  -v                  - the wanted log level, the higher the more. Default is 1" << std::endl;
       std::cout << std::endl << std::endl;
       std::cout << "if the specified host is localhost, sockets will be used if possible." << std::endl;
@@ -113,11 +110,7 @@ int main( int argc, char *argv[] )
   // parse command line options
   while( 1 )
     {
-#ifndef HAVE_ONLY_SERVER
       int c = getopt(argc, argv, "h:s:n:u:p:t:zcv:d:");
-#else
-      int c = getopt(argc, argv, "h:s:n:u:p:t:zcv:");
-#endif
 
       if (c == -1)
 	break;
@@ -164,12 +157,10 @@ int main( int argc, char *argv[] )
           {
 	    mgSetDebugLevel(atol(optarg));
           } break;
-#ifndef HAVE_ONLY_SERVER
         case 'd':
           {
 	    the_setup.DbDatadir = strdup(optarg);
           } break;
-#endif
 	}
     }
   if (optind<argc)

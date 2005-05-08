@@ -64,12 +64,17 @@ OBJS = $(PLUGIN).o i18n.o mg_valmap.o mg_db.o mg_db_gd.o mg_thread_sync.o \
 LIBS = -lmad $(shell taglib-config --libs)
 MILIBS =  $(shell taglib-config --libs)
 
+ifdef HAVE_SQLITE
+SQLLIBS += -lsqlite3
+else
 ifdef HAVE_ONLY_SERVER
 SQLLIBS =  $(shell mysql_config --libs)
 DEFINES += -DHAVE_ONLY_SERVER
 else
 SQLLIBS = $(shell mysql_config --libmysqld-libs) -L/lib
 endif
+endif
+
 
 ifdef HAVE_VORBISFILE
 DEFINES += -DHAVE_VORBISFILE
