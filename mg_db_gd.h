@@ -39,7 +39,7 @@ class mgDbGd : public mgDb {
 	void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap);
 	string LoadItemsInto(mgParts& what,vector<mgItem*>& items);
 	string LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems);
-	unsigned long exec_count(const string query); 
+	unsigned long exec_count(const string sql); 
 	void ServerEnd();
 	bool Threadsafe();
    protected:
@@ -50,9 +50,9 @@ class mgDbGd : public mgDb {
 	MYSQL *m_db;
   	void FillTables();
 	void CreateFolderFields();
-	MYSQL_RES* exec_sql( const string query);
-  	bool sql_query(string query);
-  	string get_col0( const string query);
+	MYSQL_RES* execute( const string sql);
+  	bool sql_query(string sql);
+  	string get_col0( const string sql);
 	char *sql_Cstring(TagLib::String s,char *buf=0);
 	TagLib::String getlanguage(const char *filename);
 	char * getAlbum(const char *filename,const char *c_album,const char *c_artist);

@@ -335,22 +335,22 @@ mgDbGd::sql_query(string sql)
 
 
 MYSQL_RES*
-mgDbGd::exec_sql( string query)
+mgDbGd::execute( string sql)
 {
-  if (query.empty())
+  if (sql.empty())
 	  return 0;
   if (!Connect())
 	  return 0;
-  if (!sql_query (query))
+  if (!sql_query (sql))
 	  return 0;
   else
 	  return mysql_store_result (m_db);
 }
 
 string
-mgDbGd::get_col0( const string query)
+mgDbGd::get_col0( const string sql)
 {
-	MYSQL_RES * sql_result = exec_sql ( query);
+	MYSQL_RES * sql_result = execute ( sql);
 	if (!sql_result)
 		return "NULL";
 	MYSQL_ROW row = mysql_fetch_row (sql_result);
@@ -366,11 +366,11 @@ mgDbGd::get_col0( const string query)
 }
 
 unsigned long
-mgDbGd::exec_count( const string query) 
+mgDbGd::exec_count( const string sql) 
 {
 	if (!Connect())
 		return 0;
-	return atol (get_col0 ( query).c_str ());
+	return atol (get_col0 ( sql).c_str ());
 }
 
 struct genres_t {
@@ -407,7 +407,7 @@ void mgDbGd::FillTables()
 	  string genre = sql_string(genres[i].name);
 	  sprintf(b,"INSERT INTO genre SET id='%s', id3genre=%s, genre=%s",
 			  genres[i].id,id3genre,genre.c_str());
-	  exec_sql(b);
+	  execute(b);
   }
   len = sizeof( languages ) / sizeof( lang_t );
   for( int i=0; i < len; i ++ )
@@ -416,7 +416,7 @@ void mgDbGd::FillTables()
 	  sprintf(b,"INSERT INTO language SET id='%s', language=",
 			  languages[i].id);
 	  sql_Cstring(languages[i].name,strchr(b,0));
-	  exec_sql(b);
+	  execute(b);
   }
   len = sizeof( musictypes ) / sizeof( musictypes_t );
   for( int i=0; i < len; i ++ )
@@ -424,7 +424,7 @@ void mgDbGd::FillTables()
 	  char b[600];
 	  sprintf(b,"INSERT INTO musictype SET musictype='%s'",
 			  musictypes[i].name);
-	  exec_sql(b);
+	  execute(b);
   }
   len = sizeof( sources ) / sizeof( sources_t );
   for( int i=0; i < len; i ++ )
@@ -432,7 +432,7 @@ void mgDbGd::FillTables()
 	  char b[600];
 	  sprintf(b,"INSERT INTO source SET source='%s'",
 			  sources[i].name);
-	  exec_sql(b);
+	  execute(b);
   }
 }
 
@@ -704,7 +704,7 @@ mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
 
 		// how many artists will the album have after adding this one?
 		asprintf(&b,"SELECT distinct album.artist FROM tracks, album %s ",where);
-        	MYSQL_RES *rows = exec_sql (b);
+        	MYSQL_RES *rows = execute (b);
 		free(b);
 		long new_album_artists = m_db->affected_rows;
 		char buf[520];
@@ -724,7 +724,7 @@ mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
 			result=sql_Cstring(get_col0(b));
 			free(b);
 			asprintf(&b,"UPDATE album SET artist='Various Artists' WHERE cddbid=%s",result);
-			exec_sql(b);
+			execute(b);
 			// here we could change all tracks.sourceid to result and delete
 			// the other album entries for this album, but that should only 
 			// be needed if a pre 0.1.4 import has been done incorrectly, so we
@@ -739,7 +739,7 @@ mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
 				*p='\'';
 			asprintf(&b,"INSERT INTO album SET title=%s,artist=%s,cddbid=%s",
 				c_album,c_artist,result);
-			exec_sql(b);
+			execute(b);
 			free(b);
 		}
 		mysql_free_result(rows);	
@@ -837,7 +837,7 @@ mgDbGd::SyncFile(const char *filename)
 			c_folder1,c_folder2,c_folder3,c_folder4);
 	}
 	free(c_cddbid);
-	exec_sql(sql);
+	execute(sql);
 }
 
 bool
@@ -871,7 +871,7 @@ mgDbGd::AddToCollection( const string Name,const vector<mgItem*>&items)
  
     // insert a unique trackid:
     string trackid = ltos(thread_id()+1000000);
-    exec_sql("INSERT INTO playlistitem SELECT "+listid+","
+    execute("INSERT INTO playlistitem SELECT "+listid+","
 	   "MAX(tracknumber)+"+ltos(tracksize)+","+trackid+
 	   " FROM playlistitem WHERE playlist="+listid);
     
@@ -881,7 +881,7 @@ mgDbGd::AddToCollection( const string Name,const vector<mgItem*>&items)
     long first = atol(get_col0(sql).c_str()) - tracksize + 1;
 
     // replace the place holder trackid by the correct value:
-    exec_sql("UPDATE playlistitem SET trackid="+ltos(items[tracksize-1]->getItemid())+
+    execute("UPDATE playlistitem SET trackid="+ltos(items[tracksize-1]->getItemid())+
 		    " WHERE playlist="+listid+" AND trackid="+trackid);
     
     // insert all other tracks:
@@ -894,11 +894,11 @@ mgDbGd::AddToCollection( const string Name,const vector<mgItem*>&items)
 	comma(sql, item);
 	if ((i%100)==99)
 	{
-    		exec_sql (sql_prefix+sql);
+    		execute (sql_prefix+sql);
 		sql = "";
 	}
     }
-    if (!sql.empty()) exec_sql (sql_prefix+sql);
+    if (!sql.empty()) execute (sql_prefix+sql);
     return tracksize;
 }
 
@@ -928,7 +928,7 @@ mgDbGd::RemoveFromCollection (const string Name, mgParts& what)
     string sql = "DELETE playlistitem";
     sql += sql_list(" FROM",what.tables);
     sql += sql_list(" WHERE",what.clauses," AND ");
-    exec_sql (sql);
+    execute (sql);
     return m_db->affected_rows;
 }
 
@@ -937,7 +937,7 @@ mgDbGd::DeleteCollection (const string Name)
 {
     if (!Connect()) return false;
     ClearCollection(Name);
-    exec_sql ("DELETE FROM playlist WHERE title=" + sql_string (Name));
+    execute ("DELETE FROM playlist WHERE title=" + sql_string (Name));
     return (m_db->affected_rows == 1);
 }
 
@@ -946,7 +946,7 @@ mgDbGd::ClearCollection (const string Name)
 {
     if (!Connect()) return;
     string listid = KeyMaps.id(keyGdCollection,Name);
-    exec_sql ("DELETE FROM playlistitem WHERE playlist="+sql_string(listid));
+    execute ("DELETE FROM playlistitem WHERE playlist="+sql_string(listid));
 }
 
 bool
@@ -956,7 +956,7 @@ mgDbGd::CreateCollection (const string Name)
     string name = sql_string(Name);
     if (exec_count("SELECT count(title) FROM playlist WHERE title = " + name)>0) 
 	return false;
-    exec_sql ("INSERT playlist VALUES(" + name + ",'VDR',NULL,NULL,NULL)");
+    execute ("INSERT playlist VALUES(" + name + ",'VDR',NULL,NULL,NULL)");
     return true;
 }
 
@@ -967,7 +967,7 @@ mgDbGd::FieldExists(string table, string field)
 		return false;
     	char *b;
     	asprintf(&b,"DESCRIBE %s %s",table.c_str(),field.c_str());
-    	MYSQL_RES *rows = exec_sql (b);
+    	MYSQL_RES *rows = execute (b);
     	free(b);
 	bool result=false;
     	if (rows)
@@ -985,7 +985,7 @@ mgDbGd::LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valma
 		return;
 	if (!Connect())
 		return;
-	MYSQL_RES *rows = exec_sql (sql);
+	MYSQL_RES *rows = execute (sql);
 	if (rows) 
 	{
 		MYSQL_ROW row;
@@ -1025,7 +1025,7 @@ mgDbGd::LoadItemsInto(mgParts& what,vector<mgItem*>& items)
 	what.tables.push_back("tracks");
 	what.tables.push_back("album");
 	string result = what.sql_select(false); 
-	MYSQL_RES *rows = exec_sql (result);
+	MYSQL_RES *rows = execute (result);
 	if (rows)
 	{
 		for (unsigned int idx=0;idx<items.size();idx++)
@@ -1045,7 +1045,7 @@ mgDbGd::LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitem
     	if (!Connect())
 		return "";
 	string result = what.sql_select();		
-	MYSQL_RES *rows = exec_sql (result);
+	MYSQL_RES *rows = execute (result);
         if (rows)
 	{
         	listitems.clear ();

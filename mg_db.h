@@ -90,7 +90,7 @@ class mgDb {
  	 * returning only one row.
  	 * \param query the SQL query to be executed
  	 */
-  	virtual unsigned long exec_count (string query) = 0;
+  	virtual unsigned long exec_count (string sql) = 0;
   	virtual bool ServerConnect() = 0;
   	virtual bool Connect() = 0;
   	bool HasFolderFields() const { return m_hasfolderfields;}
