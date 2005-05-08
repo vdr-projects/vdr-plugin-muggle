@@ -385,7 +385,7 @@ string
 mgParts::sql_count()
 {
 	Prepare();
-	string result = sql_list("SELECT COUNT(DISTINCT",idfields,",",")");
+	string result = sql_list("SELECT COUNT(",idfields,",",")");
 	if (result.empty())
 		return result;
 	result += sql_list("FROM",tables);
