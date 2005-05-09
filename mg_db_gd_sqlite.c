@@ -75,6 +75,7 @@ static char *db_cmds[] =
 	  "PRIMARY KEY  (cddbid))",
   "CREATE INDEX idx_album_artist ON album (artist)",
   "CREATE INDEX idx_album_title ON album (title)",
+  "CREATE INDEX idx_album_cddbid ON album (cddbid)",
   "drop table genre;",
   "CREATE TABLE genre ("
 	  "id varchar(10) NOT NULL default '', "
@@ -194,6 +195,7 @@ static char *db_cmds[] =
 	  "folder3 varchar(255), "
 	  "folder4 varchar(255)); ",
   "CREATE INDEX tracks_title on tracks (title)",
+  "CREATE INDEX tracks_sourceid on tracks (sourceid)",
   "CREATE INDEX tracks_mp3file on tracks (mp3file)",
   "CREATE INDEX tracks_genre1 on tracks (genre1)",
   "CREATE INDEX tracks_genre2 on tracks (genre2)",
@@ -515,7 +517,7 @@ mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
 			c_album);
 		sqlite3_free(c_directory);
 		// how many artists will the album have after adding this one?
-		asprintf(&b,"SELECT distinct album.artist FROM tracks, album %s ",where);
+		asprintf(&b,"SELECT distinct album.artist FROM album, tracks %s ",where);
         	char **table = query (b);
 		free(b);
 		long new_album_artists = m_rows-1;
@@ -531,7 +533,7 @@ mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
 		if (new_album_artists>1 && strcmp(buf,"'Various Artists'"))
 			// is the album multi artist and not yet marked as such?
 		{
-			asprintf(&b,"SELECT album.cddbid FROM tracks, album %s",where);
+			asprintf(&b,"SELECT album.cddbid FROM album, tracks %s",where);
 			free(result);
 			result=sql_Cstring(get_col0(b));
 			free(b);
@@ -681,7 +683,14 @@ mgDbGd::SyncStart()
 	gettimeofday( &tv, &tz );
 	srandom( tv.tv_usec );
 	CreateFolderFields();
+	execute("BEGIN TRANSACTION");
 	return true;
+}
+
+void
+mgDbGd::SyncEnd()
+{
+	execute("COMMIT TRANSACTION");
 }
 
 int

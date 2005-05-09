@@ -45,6 +45,7 @@ class mgDbGd : public mgDb {
 	char* sql_Cstring(const char *s,char *buf);
 	bool SyncStart();
 	void SyncFile(const char *filename);
+	void SyncEnd();
    private:
 	sqlite3 *m_db;
   	void FillTables();
