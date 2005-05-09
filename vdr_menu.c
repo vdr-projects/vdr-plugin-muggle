@@ -400,7 +400,7 @@ mgMainMenu::LoadSelections(mgValmap& nv)
 	}
 	if (selections.size()==0)
 	{
-		for (unsigned int i=0; i<100;i++)
+		for (unsigned int i=1; i<100;i++)
 		{
 			mgSelection* s=GenerateSelection();
 			if (s->InitDefaultOrder(i))
