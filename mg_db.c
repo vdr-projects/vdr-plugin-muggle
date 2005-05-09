@@ -12,12 +12,10 @@
 
 using namespace std;
 
-#include "mg_db_gd.h"
+#include "mg_db.h"
+
 #include "mg_setup.h"
-#if  1
 #include "mg_tools.h"
-#include <stdio.h>
-#endif
 
 
 #include <sys/stat.h>
@@ -25,12 +23,6 @@ using namespace std;
 
 static map <mgKeyTypes, map<string,string> > map_values;
 static map <mgKeyTypes, map<string,string> > map_ids;
-
-mgDb* GenerateDB(bool SeparateThread)
-{
-	// \todo should return different backends according to the_setup.Variant
-	return new mgDbGd(SeparateThread);
-}
 
 mgDb::mgDb(bool SeparateThread)
 {

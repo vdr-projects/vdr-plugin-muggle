@@ -965,10 +965,10 @@ showmessage(int duration,const char * msg, ...)
 	vsnprintf(buffer,199,tr(msg),ap);
 #if VDRVERSNUM >= 10307
 	if (!duration) duration=2;
-    	Skins.Message (mtInfo, msg,duration);
+    	Skins.Message (mtInfo, buffer,duration);
     	Skins.Flush ();
 #else
-    	Interface->Status (msg);
+    	Interface->Status (buffer);
     	Interface->Flush ();
 #endif
 	va_end(ap);

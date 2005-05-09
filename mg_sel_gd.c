@@ -13,13 +13,11 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <stdio.h>
-#include <fts.h>
 #include <assert.h>
 
 
 #include "mg_sel_gd.h"
-#include "mg_db_gd.h"
-
+# include "mg_db.h"
 #include "i18n.h"
 
 mgSelectionGd::mgSelectionGd(const mgSelection *s)
@@ -34,7 +32,7 @@ mgSelectionGd::mgSelectionGd(const bool fall_through)
 
 void mgSelectionGd::InitSelection() {
 	mgSelection::InitSelection();
-	m_db = new mgDbGd;
+	m_db = GenerateDB();
 }
 
 

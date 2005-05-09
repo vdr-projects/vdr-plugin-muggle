@@ -91,7 +91,7 @@ class mgDb {
  	 * \param query the SQL query to be executed
  	 */
   	virtual unsigned long exec_count (string sql) = 0;
-  	virtual bool ServerConnect() = 0;
+  	virtual bool ServerConnect() { return true; }
   	virtual bool Connect() = 0;
   	bool HasFolderFields() const { return m_hasfolderfields;}
   	virtual bool Create() = 0;

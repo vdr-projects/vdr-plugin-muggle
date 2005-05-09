@@ -695,6 +695,8 @@ mgSelection::InitOrder(vector<mgListItem>& items)
 	for (unsigned int idx = m_level; idx < orderlevel(); idx++)
 		Key(idx)->set(0);	
 	assert(orderlevel()<ordersize());
+	while (listitems.size()==0 && m_level>0)
+		leave();
 }
 
 

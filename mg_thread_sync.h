@@ -17,7 +17,7 @@
 class mgThreadSync : public cThread
 {
  public:
-
+  mgThreadSync();
   static mgThreadSync* get_instance();
 
   bool Sync(char * const * path_argv=0);
@@ -32,6 +32,7 @@ class mgThreadSync : public cThread
   void SetArguments( char * const * path_argv);
   
   char * const *m_path;
+  bool m_has_args;
   bool m_delete;
 
 };

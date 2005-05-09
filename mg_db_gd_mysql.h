@@ -1,5 +1,5 @@
 /*! 
- * \file   mg_db_gd.h
+ * \file   mg_db_gd_mysql.h
  * \brief  A capsule around giantdisc database access
  *
  * \version $Revision: 1.2 $

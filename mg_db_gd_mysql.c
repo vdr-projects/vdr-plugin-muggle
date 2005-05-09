@@ -1,5 +1,5 @@
 /*! 
- * \file   mg_db_gd.c
+ * \file   mg_db_gd_mysql.c
  * \brief  A capsule around database access
  *
  * \version $Revision: 1.2 $
@@ -25,10 +25,16 @@
 
 #include "mg_setup.h"
 #include "mg_item_gd.h"
-#include "mg_db_gd.h"
+#include "mg_db_gd_mysql.h"
 
 using namespace std;
 
+
+mgDb* GenerateDB(bool SeparateThread)
+{
+	// \todo should return different backends according to the_setup.Variant
+	return new mgDbGd(SeparateThread);
+}
 
 static bool needGenre2;
 static bool needGenre2_set=false;
@@ -448,14 +454,14 @@ mgDbGd::Create()
   sprintf(buffer,"DROP DATABASE IF EXISTS %s",the_setup.DbName);
   if (strlen(buffer)>400)
 	  mgError("name of database too long: %s",the_setup.DbName);
-  if (sql_query(buffer))
+  if (!sql_query(buffer))
   {
   	mgWarning("Cannot drop %s:%s",the_setup.DbName,
 			mysql_error (m_db));
 	return false;
   }
   sprintf(buffer,"CREATE DATABASE %s",the_setup.DbName);
-  if (sql_query(buffer))
+  if (!sql_query(buffer))
   {
   	mgWarning("Cannot create %s:%s",the_setup.DbName,mysql_error (m_db));
 	return false;
@@ -474,7 +480,7 @@ mgDbGd::Create()
   int len = sizeof( db_cmds ) / sizeof( char* );
   for( int i=0; i < len; i ++ )
     {
-  	if (sql_query (db_cmds[i]))
+  	if (!sql_query (db_cmds[i]))
   	{
     		mgWarning("%20s: %s",db_cmds[i],mysql_error (m_db));
 		sprintf(buffer,"DROP DATABASE IF EXISTS %s",the_setup.DbName);
@@ -620,7 +626,7 @@ mgDbGd::CreateFolderFields()
       mysql_free_result(rows);
       if (!m_hasfolderfields)
       {
-	      m_hasfolderfields = !sql_query(
+	      m_hasfolderfields = sql_query(
 	              "alter table tracks add column folder1 varchar(255),"
 		      "add column folder2 varchar(255),"
 		      "add column folder3 varchar(255),"
@@ -843,8 +849,10 @@ mgDbGd::SyncFile(const char *filename)
 bool
 mgDbGd::SyncStart()
 {
+	mgDebug(1,"SYncStart");
   	if (!Connect())
     		return false;
+	mgDebug(1,"SYncStart has connected");
 	LoadMapInto("SELECT id,genre from genre",&m_Genres,0);
 	// init random number generator
 	struct timeval tv;
