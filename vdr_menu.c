@@ -50,6 +50,8 @@ mgStatus::OsdCurrentItem(const char* Text)
 
 void Play(mgSelection *sel,const bool select) {
 	mgSelection *s = GenerateSelection(sel);
+	if (s->ordersize()==0)
+		s->InitDefaultOrder(1);
 	if (select) s->select();
 	s->skipItems(0);	// make sure we start with a valid item
 	if (s->empty()) 	// no valid item exists

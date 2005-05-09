@@ -36,8 +36,6 @@ mgDb* GenerateDB(bool SeparateThread)
 	return new mgDbGd(SeparateThread);
 }
 
-static bool needGenre2;
-static bool needGenre2_set=false;
 
 mgDbGd::mgDbGd(bool SeparateThread)
 {
@@ -267,9 +265,11 @@ mgDbGd::get_col0( const string sql)
 unsigned long
 mgDbGd::exec_count( const string sql) 
 {
-	if (!Connect())
-		return 0;
-	return atol (get_col0 ( sql).c_str ());
+	unsigned long result = 0;
+	if (Connect())
+		result = atol (get_col0 ( sql).c_str ());
+	mgDebug(1,"exec_count(%s) returns %ld",sql.c_str(),result);
+	return result;
 }
 
 struct genres_t {
@@ -381,7 +381,34 @@ mgDirectory(sqlite3_context *context, int argc, sqlite3_value **argv)
 	if (!slash)
 		slash=buf;
 	*slash=0;
-	sqlite3_result_text(context,buf,2,free);
+	sqlite3_result_text(context,buf,strlen(buf),free);
+}
+
+void
+mgDecade(sqlite3_context *context, int argc, sqlite3_value **argv)
+{
+	assert(argc==1);
+	unsigned int year=sqlite3_value_int(argv[0]);
+	sqlite3_result_int(context,(year-year%10)%100);
+}
+
+void
+mgSubstring(sqlite3_context *context, int argc, sqlite3_value **argv)
+{
+	assert(argc==3);
+	char*full=(char*)sqlite3_value_text(argv[0]);
+	unsigned int opos=sqlite3_value_int(argv[1]);
+	unsigned int pos=opos;
+	unsigned int olen=sqlite3_value_int(argv[2]);
+	unsigned int len=olen;
+	if (pos>strlen(full))
+		pos=strlen(full);
+	if (len==0)
+		len=99999;
+	if (len>strlen(full+pos-1))
+		len=strlen(full+pos-1);
+	char *buf=strndup(full+pos-1,len);
+	sqlite3_result_text(context,buf,len,free);
 }
 
 bool
@@ -405,16 +432,35 @@ mgDbGd::Connect ()
      sqlite3_free(s);
      rc = sqlite3_create_function(m_db,"mgDirectory",1,SQLITE_UTF8,
 	    0,&mgDirectory,0,0);
-     if (rc==SQLITE_OK)
-	return true;
-     mgWarning("Cannot define mgDirectory:%d/%s",rc,sqlite3_errmsg);
-     extern bool create_question();
-     if (!create_question())
-     	return false;
-     if (!Create())
+     if (rc!=SQLITE_OK)
+     {
+     	mgWarning("Cannot define mgDirectory:%d/%s",rc,sqlite3_errmsg);
 	return false;
-     extern bool import();
-     import();
+     }
+     rc = sqlite3_create_function(m_db,"substring",3,SQLITE_UTF8,
+	    0,&mgSubstring,0,0);
+     if (rc!=SQLITE_OK)
+     {
+     	mgWarning("Cannot define mgSubstring:%d/%s",rc,sqlite3_errmsg);
+	return false;
+     }
+     rc = sqlite3_create_function(m_db,"decade",1,SQLITE_UTF8,
+	    0,&mgDecade,0,0);
+     if (rc!=SQLITE_OK)
+     {
+     	mgWarning("Cannot define decade:%d/%s",rc,sqlite3_errmsg);
+	return false;
+     }
+     if (!FieldExists("tracks","id"))
+     {
+     	extern bool create_question();
+     	if (!create_question())
+     		return false;
+     	if (!Create())
+		return false;
+     	extern bool import();
+     	import();
+     }
      return true;
 }
 
@@ -990,8 +1036,8 @@ mgKeyGdGenres::GenreClauses(mgDb *db,bool orderby) const
 		}
 		else
 		{
-			g1.push_back("substr(tracks.genre1,1,"+ltos(genrelevel())+")=genre.id");
-			g2.push_back("substr(tracks.genre2,1,"+ltos(genrelevel())+")=genre.id");
+			g1.push_back("substring(tracks.genre1,1,"+ltos(genrelevel())+")=genre.id");
+			g2.push_back("substring(tracks.genre2,1,"+ltos(genrelevel())+")=genre.id");
 		}
 
 	if (valid())
@@ -1027,7 +1073,7 @@ mgKeyGdGenres::Parts(mgDb *db,bool orderby) const
 		if (genrelevel()==4)
 			result.idfields.push_back("genre.id");
 		else
-			result.idfields.push_back("substr(genre.id,1,"+ltos(genrelevel())+")");
+			result.idfields.push_back("substring(genre.id,1,"+ltos(genrelevel())+")");
 		result.tables.push_back("genre");
        		result.orders.push_back("genre.genre");
 	}
@@ -1059,7 +1105,7 @@ class mgKeyGdCollectionItem : public mgKeyNormal {
 class mgKeyDecade : public mgKeyNormal {
 	public:
 		mgKeyDecade() : mgKeyNormal(keyGdDecade,"tracks","year") {}
-		string expr() const { return "substr(convert(10 * floor(tracks.year/10), char),3)"; }
+		string expr() const { return "Decade(tracks.year)"; }
 };
 
 mgKey*

@@ -849,10 +849,8 @@ mgDbGd::SyncFile(const char *filename)
 bool
 mgDbGd::SyncStart()
 {
-	mgDebug(1,"SYncStart");
   	if (!Connect())
     		return false;
-	mgDebug(1,"SYncStart has connected");
 	LoadMapInto("SELECT id,genre from genre",&m_Genres,0);
 	// init random number generator
 	struct timeval tv;
@@ -1158,7 +1156,7 @@ mgKeyGdGenres::map_sql() const
 	if (genrelevel()==4)
 		return "select id,genre from genre;";
 	else
-		return string("select id,genre from genre where length(id)="+ltos(genrelevel())+";");
+		return string("select id,genre from genre where length(id)<="+ltos(genrelevel())+";");
 }
 
 string
