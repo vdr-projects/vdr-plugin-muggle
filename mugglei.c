@@ -45,6 +45,8 @@ void showmessage(int duration,const char *msg,...)
 
 void showimportcount(unsigned int importcount,bool final=false)
 {
+	if (final)
+		mgDebug(1,"Imported %d tracks",importcount);
 }
 
 bool

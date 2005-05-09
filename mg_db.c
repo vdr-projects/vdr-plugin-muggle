@@ -96,7 +96,10 @@ mgDb::Sync(char * const * path_argv)
 	{
 		while ( (ftsent = fts_read(fts)) != NULL)
 		{
-			if (!((ftsent->fts_statp->st_mode)||S_IFREG))
+			mode_t mode = ftsent->fts_statp->st_mode;
+			if (mode&S_IFDIR && ftsent->fts_info&FTS_D)
+				mgDebug(1,"Importing from %s",ftsent->fts_path);
+			if (!(mode&S_IFREG))
 				continue;
 			SyncFile(ftsent->fts_path);
 			importcount++;
