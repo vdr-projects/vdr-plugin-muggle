@@ -164,6 +164,7 @@ static char *db_cmds[] =
 	  "PRIMARY KEY  (playerid,listtype,tracknb));",
   "drop table tracks;",
   "CREATE TABLE tracks ( "
+	  "id integer PRIMARY KEY autoincrement, "
 	  "artist varchar(255) default NULL, "
 	  "title varchar(255) default NULL, "
 	  "genre1 varchar(10) default NULL, "
@@ -189,7 +190,6 @@ static char *db_cmds[] =
 	  "backup tinyint(3) default NULL, "
 	  "samplerate int(7) default NULL, "
 	  "channels   tinyint(3) default NULL,  "
-	  "id integer PRIMARY KEY autoincrement, "
 	  "folder1 varchar(255), "
 	  "folder2 varchar(255), "
 	  "folder3 varchar(255), "
@@ -198,7 +198,6 @@ static char *db_cmds[] =
   "CREATE INDEX tracks_sourceid on tracks (sourceid)",
   "CREATE INDEX tracks_mp3file on tracks (mp3file)",
   "CREATE INDEX tracks_genre1 on tracks (genre1)",
-  "CREATE INDEX tracks_genre2 on tracks (genre2)",
   "CREATE INDEX tracks_year on tracks (year)",
   "CREATE INDEX tracks_lang on tracks (lang)",
   "CREATE INDEX tracks_artist on tracks (artist)",
@@ -422,12 +421,18 @@ mgDbGd::Connect ()
 bool 
 mgDbGd::NeedGenre2() 
 {
+    return false;
+#if 0
+    we do not support genre2 because queries like
+	    select title from tracks where (genre1='m' or genre2='m')
+    are very slow with sqlite
     if (!needGenre2_set && Connect())
     {
 	needGenre2_set=true;
-	needGenre2=exec_count("SELECT COUNT(genre2) FROM tracks GROUP BY genre2")>1;
+	needGenre2=exec_count("SELECT COUNT() FROM (select genre2 from tracks GROUP BY genre2)")>1;
     }
     return needGenre2;
+#endif
 }
 
 void
