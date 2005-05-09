@@ -94,9 +94,9 @@ mgMainMenu::SwitchSelection()
 	mgSelection* newsel = getSelection(Current());
 	if (newsel->ordersize()>0)
 	{
-		newposition = selection()->getPosition();
 		newsel->CopyKeyValues(selection());
 		m_current_selection = Current();
+		newposition = selection()->getPosition();
 		SaveState();
 		return true;
 	}
