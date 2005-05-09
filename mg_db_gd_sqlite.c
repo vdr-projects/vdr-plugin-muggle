@@ -525,7 +525,7 @@ mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
 		asprintf(&b,"SELECT distinct album.artist FROM album, tracks %s ",where);
         	char **table = query (b);
 		free(b);
-		long new_album_artists = m_rows-1;
+		long new_album_artists = m_rows;
 		char *buf=sqlite3_mprintf("");
 		if (new_album_artists==1)
 		{
@@ -812,7 +812,7 @@ mgDbGd::LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valma
 	if (!Connect())
 		return;
 	char **table = query(sql);
-	if (table && m_cols && m_rows>1)
+	if (table && m_cols && m_rows)
 	{
 		for (int idx=1; idx<=m_rows; idx++)
 		{
@@ -853,7 +853,7 @@ mgDbGd::LoadItemsInto(mgParts& what,vector<mgItem*>& items)
 	what.tables.push_back("album");
 	string result = what.sql_select(false); 
 	char **table = query(result);
-	if (table && m_cols && m_rows>1)
+	if (table && m_cols && m_rows)
 	{
 		for (unsigned int idx=0;idx<items.size();idx++)
 			delete items[idx];

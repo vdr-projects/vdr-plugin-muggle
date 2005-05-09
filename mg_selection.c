@@ -664,7 +664,8 @@ mgSelection::CopyKeyValues(mgSelection* s)
 		}
 		if (found)
 			continue;
-		DeduceKeyValue(new_kt,s,items);
+		if (!DeduceKeyValue(new_kt,s,items))
+			break;
 	}
 	delete o;
 	InitOrder(items);
@@ -678,6 +679,7 @@ mgSelection::InitOrder(vector<mgListItem>& items)
 		return;
 	for (unsigned int idx = 0; idx < ordersize(); idx++)
 		Key(idx)->set(0);	
+	m_position = 0;
 	for (unsigned int idx = 0; idx < items.size(); idx++)
 	{
 		if (m_level<ordersize()-1)

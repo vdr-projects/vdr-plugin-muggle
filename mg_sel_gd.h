@@ -31,7 +31,7 @@ class mgSelectionGd : public mgSelection
 
 
     protected:
-	void DeduceKeyValue(mgKeyTypes new_kt,const mgSelection *s,
+	bool DeduceKeyValue(mgKeyTypes new_kt,const mgSelection *s,
 		vector<mgListItem>& items);
         void InitSelection ();
 	const char * const ktName(const mgKeyTypes kt) const;

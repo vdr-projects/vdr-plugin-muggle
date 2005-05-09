@@ -41,12 +41,12 @@ static bool iskeyGdGenre(mgKeyTypes kt)
 	return kt>=keyGdGenre1  && kt <= keyGdGenres;
 }
 
-void
+bool
 mgSelectionGd::DeduceKeyValue(mgKeyTypes new_kt,const mgSelection *s,
 		vector<mgListItem>& items)
 {
 	if (!s) 
-		return;
+		return false;
 	for (unsigned int i=0;i<s->ordersize();i++)
 	{
 		mgKeyTypes old_kt = s->getKeyType(i);
@@ -58,9 +58,10 @@ mgSelectionGd::DeduceKeyValue(mgKeyTypes new_kt,const mgSelection *s,
 				KeyMaps.value(new_kt,s->getKeyItem(i)->id()));
 			items.push_back(mgListItem(
 				KeyMaps.value(new_kt,selid),selid));
-			break;
+			return true;
 		}
 	}
+	return false;
 }
 
 void

@@ -379,8 +379,8 @@ class mgSelection
 
     protected:
 	void InitFrom(const mgSelection* s);
-	virtual void DeduceKeyValue(mgKeyTypes new_kt,const mgSelection *s,
-		vector<mgListItem>& items) {}
+	virtual bool DeduceKeyValue(mgKeyTypes new_kt,const mgSelection *s,
+		vector<mgListItem>& items) {return false;}
 	virtual void clean();
         virtual void InitSelection ();
 	virtual bool isCollectionOrder() const=0;
