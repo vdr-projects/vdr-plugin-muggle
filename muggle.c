@@ -63,22 +63,27 @@ mgMuggle::CommandLineHelp (void)
 {
 // Return a string that describes all known command line options.
     return
-#ifdef HAVE_ONLY_SERVER
+#ifndef HAVE_SQLITE
+# ifdef HAVE_ONLY_SERVER
         "  -h HHHH,  --host=HHHH     specify database host (default is localhost)\n"
-#else
+# else
         "  -h HHHH,  --host=HHHH     specify database host (default is embedded)\n"
-#endif
+# endif
         "  -s SSSS   --socket=PATH   specify database socket\n"
-        "  -n NNNN,  --name=NNNN     specify database name (default is GiantDisc)\n"
         "  -p PPPP,  --port=PPPP     specify port of database server (default is )\n"
         "  -u UUUU,  --user=UUUU     specify database user (default is )\n"
         "  -w WWWW,  --password=WWWW specify database password (default is empty)\n"
+#endif
+        "  -n NNNN,  --name=NNNN     specify database name (default is GiantDisc)\n"
         "  -t TTTT,  --toplevel=TTTT specify toplevel directory for music (default is /mnt/music)\n"
         "  -d DIRN,  --datadir=DIRN  specify directory for embedded sql data (default is $HOME/.muggle)\n"
         "  -v,       --verbose       specify debug level. The higher the more. Default is 1\n"
 	"\n"
+#ifndef HAVE_SQLITE
 	"if the specified host is localhost, sockets will be used if possible.\n"
-	"Otherwise the -s parameter will be ignored";
+	"Otherwise the -s parameter will be ignored"
+#endif
+        ;
 }
 
 
@@ -99,14 +104,17 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
     static struct option
         long_options[] =
     {
+#ifndef HAVE_SQLITE
         {"host", required_argument, NULL, 'h'},
         {"socket", required_argument, NULL, 's'},
-        {"name", required_argument, NULL, 'n'},
         {"port", required_argument, NULL, 'p'},
         {"user", required_argument, NULL, 'u'},
         {"password", required_argument, NULL, 'w'},
+#endif
+        {"name", required_argument, NULL, 'n'},
         {"datadir", required_argument, NULL, 'd'},
         {"toplevel", required_argument, NULL, 't'},
+        {"verbose", required_argument, NULL, 'v'},
         {NULL}
     };
 
@@ -114,11 +122,16 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
         c,
         option_index = 0;
     while ((c =
+#ifdef HAVE_SQLITE
+        getopt_long (argc, argv, "n:t:d:v:", long_options,
+#else
         getopt_long (argc, argv, "h:s:n:p:t:u:w:d:v:", long_options,
+#endif
         &option_index)) != -1)
     {
         switch (c)
         {
+#ifndef HAVE_SQLITE
             case 'h':
             {
                 the_setup.DbHost = strcpyrealloc (the_setup.DbHost, optarg);
@@ -127,11 +140,6 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
             case 's':
             {
                 the_setup.DbSocket = strcpyrealloc (the_setup.DbSocket, optarg);
-            }
-            break;
-            case 'n':
-            {
-                the_setup.DbName = strcpyrealloc (the_setup.DbName, optarg);
             }
             break;
             case 'p':
@@ -147,6 +155,12 @@ bool mgMuggle::ProcessArgs (int argc, char *argv[])
             case 'w':
             {
                 the_setup.DbPass = strcpyrealloc (the_setup.DbPass, optarg);
+            }
+            break;
+#endif
+            case 'n':
+            {
+                the_setup.DbName = strcpyrealloc (the_setup.DbName, optarg);
             }
             break;
             case 'd':

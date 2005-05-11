@@ -199,3 +199,11 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - Play mode: in endless mode (all tracks), trying to go back on the
   first track restarted the first track. Now it goes to the last track.
 - Added incremental search
+
+xxxxxxxxxxxxxxxxxxxxxxxxxx
+- rewrote much of the SQL interface to allow easier implementation
+  of alternative data bases
+- implemented support for SQLite. The field genre2 is not supported
+  because it would be too slow. Define HAVE_SQLITE in Make.config.
+  Parameters h,u,s,p,w are not supported with SQLite.
+- reimplemented mugglei option -z (DeleteStaleReferences)

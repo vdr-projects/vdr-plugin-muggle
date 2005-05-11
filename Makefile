@@ -14,9 +14,19 @@ PLUGIN = muggle
 # HAVE_VORBISFILE=1
 # HAVE_FLAC=1
 
-#if you do not want to compile in code for embedded sql,
+#if you do not want to compile in code for embedded mysql,
 #define this in $VDRDIR/Make.config:
 # HAVE_ONLY_SERVER=1
+
+#define what database you want to use. Default is mysql. HAVE_SQLITE
+#removes mysql support and adds SQLite support
+# HAVE_SQLITE = 1
+
+HAVE_MYSQL = 1
+ifdef HAVE_SQLITE
+HAVE_MYSQL =
+HAVE_ONLY_SERVER =
+endif
 
 ### The version number of this plugin (taken from the main source file):
 
@@ -67,6 +77,7 @@ MILIBS =  $(shell taglib-config --libs)
 ifdef HAVE_SQLITE
 SQLLIBS += -lsqlite3
 DB_OBJ = mg_db_gd_sqlite.o
+DEFINES += -DHAVE_SQLITE
 else
 DB_OBJ = mg_db_gd_mysql.o
 ifdef HAVE_ONLY_SERVER
@@ -83,6 +94,7 @@ DEFINES += -DHAVE_VORBISFILE
 OBJS += vdr_decoder_ogg.o
 PLAYLIBS += -lvorbisfile -lvorbis
 endif
+
 ifdef HAVE_FLAC
 DEFINES += -DHAVE_FLAC
 OBJS += vdr_decoder_flac.o
@@ -134,4 +146,3 @@ dist: clean mg_tables.h
 
 clean:
 	@-rm -f $(OBJS) $(BINOBJS) $(DEPFILE) *.so *.tgz core* *~ mugglei.o mugglei
-

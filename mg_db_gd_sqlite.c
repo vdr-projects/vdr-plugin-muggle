@@ -340,8 +340,6 @@ bool
 mgDbGd::Create()
 {
   // create database and tables
-  mgDebug(1,"Creating database %s/%s",the_setup.DbDatadir,the_setup.DbName);
-
   int len = sizeof( db_cmds ) / sizeof( char* );
   for( int i=0; i < len; i ++ )
     {
@@ -361,16 +359,6 @@ char*
 mgDbGd::sql_Cstring( const char *s, char *buf)
 {
   return sqlite3_mprintf("'%q'",s);
-}
-
-bool
-UsingEmbeddedMySQL()
-{
-#ifdef HAVE_ONLY_SERVER
-	return false;
-#else
-	return the_setup.NoHost();
-#endif
 }
 
 void
@@ -422,7 +410,8 @@ mgDbGd::Connect ()
     if (time(0)<m_create_time+10)
 	return false;
     m_create_time=time(0);
-    char *s=sqlite3_mprintf("%s/%s",the_setup.DbDatadir,the_setup.DbName);
+    char *s=sqlite3_mprintf("%s/%s.sqlite",the_setup.DbDatadir,the_setup.DbName);
+    mgDebug(1,"opening data base %s",s);
     int rc = sqlite3_open(s,&m_db);
     m_database_found = rc==SQLITE_OK;
     if (!m_database_found)

@@ -82,15 +82,17 @@ int main( int argc, char *argv[] )
       std::cout << "Only files ending in .flac, .mp3, .ogg (ignoring case) will be imported" << std::endl;
       std::cout << "" << std::endl;
       std::cout << "Options:" << std::endl;
+#ifndef HAVE_SQLITE
 #ifdef HAVE_ONLY_SERVER
       std::cout << "  -h <hostname>       - specify host of database server (default is 'localhost')" << std::endl;
 #else
       std::cout << "  -h <hostname>       - specify host of database server (default is embedded')" << std::endl;
 #endif
       std::cout << "  -s <socket>         - specify a socket for communication with database server (default is TCP)" << std::endl;
-      std::cout << "  -n <database>       - specify database name (default is 'GiantDisc')" << std::endl;
       std::cout << "  -u <username>       - specify user of database (default is empty)" << std::endl;
       std::cout << "  -p <password>       - specify password of user (default is empty password)" << std::endl;
+#endif
+      std::cout << "  -n <database>       - specify database name (default is 'GiantDisc')" << std::endl;
       std::cout << "  -t <topleveldir>    - name of music top level directory" << std::endl;
       std::cout << "  -z                  - scan all database entries and delete entries for files not found" << std::endl;
       std::cout << "                        -z is not yet implemented" << std::endl;
@@ -110,7 +112,11 @@ int main( int argc, char *argv[] )
   // parse command line options
   while( 1 )
     {
+#ifdef HAVE_SQLITE
+      int c = getopt(argc, argv, "n:t:zcv:d:");
+#else
       int c = getopt(argc, argv, "h:s:n:u:p:t:zcv:d:");
+#endif
 
       if (c == -1)
 	break;
@@ -121,13 +127,10 @@ int main( int argc, char *argv[] )
 	  { // long option
 	    
 	  } break;
+#ifndef HAVE_SQLITE
 	case 'h':
 	  {
 	    the_setup.DbHost = strdup(optarg);
-	  } break;
-	case 'n':
-	  {
-	    the_setup.DbName = strdup(optarg);
 	  } break;
 	case 'u':
 	  {
@@ -140,6 +143,11 @@ int main( int argc, char *argv[] )
 	case 's':
 	  {
 	    the_setup.DbSocket = strdup(optarg);
+	  } break;
+#endif
+	case 'n':
+	  {
+	    the_setup.DbName = strdup(optarg);
 	  } break;
 	case 't':
 	  {
