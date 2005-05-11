@@ -49,7 +49,6 @@ class mgDbGd : public mgDb {
    private:
 	sqlite3 *m_db;
   	void FillTables();
-	void CreateFolderFields();
 	char ** query(const string sql);
 	int silent_execute( const string sql);
 	void execute( const string sql);

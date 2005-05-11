@@ -484,23 +484,6 @@ mgDbGd::NeedGenre2()
 }
 
 void
-mgDbGd::CreateFolderFields()
-{
-	if (HasFolderFields())
-		return;
-	m_hasfolderfields = FieldExists("tracks","folder1");
-	if (!m_hasfolderfields)
-      	{
-	      char *errmsg;
-	      m_hasfolderfields = sqlite3_exec(m_db,
-	              "alter table tracks add column folder1 varchar(255),"
-		      "add column folder2 varchar(255),"
-		      "add column folder3 varchar(255),"
-		      "add column folder4 varchar(255)",0,0,&errmsg) == SQLITE_OK;
-        }
-}
-
-void
 mgDbGd::ServerEnd()
 {
 }
@@ -651,23 +634,13 @@ mgDbGd::SyncFile(const char *filename)
 	char *c_folder2;
 	char *c_folder3;
 	char *c_folder4;
-	if (HasFolderFields())
-	{
-	    char *folders[4];
-	    char *fbuf=SeparateFolders(filename,folders,4);
-	    c_folder1=sql_Cstring(folders[0],c_folder1);
-	    c_folder2=sql_Cstring(folders[1],c_folder2);
-	    c_folder3=sql_Cstring(folders[2],c_folder3);
-	    c_folder4=sql_Cstring(folders[3],c_folder4);
-	    free(fbuf);
-	}
-	else
-	{
-	    c_folder1=0;
-	    c_folder2=0;
-	    c_folder3=0;
-	    c_folder4=0;
-	}
+	char *folders[4];
+	char *fbuf=SeparateFolders(filename,folders,4);
+	c_folder1=sql_Cstring(folders[0],c_folder1);
+	c_folder2=sql_Cstring(folders[1],c_folder2);
+	c_folder3=sql_Cstring(folders[2],c_folder3);
+	c_folder4=sql_Cstring(folders[3],c_folder4);
+	free(fbuf);
         c_artist=sql_Cstring(f.tag()->artist(),c_artist);
 	c_title=sql_Cstring(f.tag()->title(),c_title);
 	if (f.tag()->album()=="")
@@ -737,7 +710,6 @@ mgDbGd::SyncStart()
 	struct timezone tz;
 	gettimeofday( &tv, &tz );
 	srandom( tv.tv_usec );
-	CreateFolderFields();
 	execute("BEGIN TRANSACTION");
 	return true;
 }
