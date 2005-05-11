@@ -60,7 +60,7 @@ PACKAGE = vdr-$(ARCHIVE)
 ### Includes and Defines (add further entries here):
 
 INCLUDES += -I$(VDRDIR) -I$(VDRDIR)/include -I$(DVBDIR)/include \
-	$(shell mysql_config --cflags) $(shell taglib-config --cflags)
+	$(shell taglib-config --cflags)
 
 DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
 
@@ -79,6 +79,7 @@ SQLLIBS += -lsqlite3
 DB_OBJ = mg_db_gd_sqlite.o
 DEFINES += -DHAVE_SQLITE
 else
+INCLUDES += $(shell mysql_config --cflags) 
 DB_OBJ = mg_db_gd_mysql.o
 ifdef HAVE_ONLY_SERVER
 SQLLIBS =  $(shell mysql_config --libs)

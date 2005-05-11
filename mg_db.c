@@ -368,19 +368,26 @@ mgParts::Prepare()
 	}
 	tables.sort();
 	tables.unique();
-	strlist::iterator it;
-	for (it = tables.begin(); it != tables.end(); ++it)
-	{
-		if (*it=="tracks")
-		{
-			tables.erase(it);
-			tables.push_front("tracks");
-			break;
-		}
-	}
+	push_table_to_front("tracks");
+	push_table_to_front("playlistitem");
 	clauses.sort();
 	clauses.unique();
 	orders.unique();
+}
+
+void
+mgParts::push_table_to_front(string table)
+{
+	strlist::iterator it;
+	for (it = tables.begin(); it != tables.end(); ++it)
+	{
+		if (*it==table)
+		{
+			tables.erase(it);
+			tables.push_front(table);
+			break;
+		}
+	}
 }
 
 string

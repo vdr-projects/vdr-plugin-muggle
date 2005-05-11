@@ -61,7 +61,7 @@ mgDbGd::Threadsafe()
 
 static char *db_cmds[] = 
 {
-  "drop table album;",
+  "drop table album",
   "CREATE TABLE album ( "
 	  "artist varchar(255) default NULL, "
 	  "title varchar(255) default NULL, "
@@ -73,94 +73,39 @@ static char *db_cmds[] =
 	  "PRIMARY KEY  (cddbid))",
   "CREATE INDEX idx_album_artist ON album (artist)",
   "CREATE INDEX idx_album_title ON album (title)",
-  "CREATE INDEX idx_album_cddbid ON album (cddbid)",
-  "drop table genre;",
+  "drop table genre",
   "CREATE TABLE genre ("
 	  "id varchar(10) NOT NULL default '', "
 	  "id3genre smallint(6) default NULL, "
 	  "genre varchar(255) default NULL, "
 	  "freq int(11) default NULL, "
-	  "PRIMARY KEY (id));",
-  "drop table language;",
+	  "PRIMARY KEY (id))",
+  "drop table language",
   "CREATE TABLE language ("
 	  "id varchar(4) NOT NULL default '', "
 	  "language varchar(40) default NULL, "
 	  "freq int(11) default NULL, "
-	  "PRIMARY KEY  (id));",
-  "drop table musictype;",
-  "CREATE TABLE musictype ("
-	  "musictype varchar(40) default NULL, "
-	  "id integer PRIMARY KEY autoincrement); ",
-  "drop table player;",
-  "CREATE TABLE player ( "
-	  "ipaddr varchar(255) NOT NULL default '', "
-	  "uichannel varchar(255) NOT NULL default '', "
-	  "logtarget int(11) default NULL, "
-	  "cdripper varchar(255) default NULL, "
-	  "mp3encoder varchar(255) default NULL, "
-	  "cdromdev varchar(255) default NULL, "
-	  "cdrwdev varchar(255) default NULL, "
-	  "id integer PRIMARY KEY default '0'); ",
-  "drop table playerstate;",
-  "CREATE TABLE playerstate ( "
-	  "playerid int(11) NOT NULL default '0', "
-	  "playertype int(11) NOT NULL default '0', "
-	  "snddevice varchar(255) default NULL, "
-	  "playerapp varchar(255) default NULL, "
-	  "playerparams varchar(255) default NULL, "
-	  "ptlogger varchar(255) default NULL, "
-	  "currtracknb int(11) default NULL, "
-	  "state varchar(4) default NULL, "
-	  "shufflepar varchar(255) default NULL, "
-	  "shufflestat varchar(255) default NULL, "
-	  "pauseframe int(11) default NULL, "
-	  "framesplayed int(11) default NULL, "
-	  "framestotal int(11) default NULL, "
-	  "anchortime bigint(20) default NULL, "
-	  "PRIMARY KEY  (playerid,playertype));",
-  "drop table playlist;",
+	  "PRIMARY KEY  (id))",
+  "drop table playlist",
   "CREATE TABLE playlist ( "
 	  "title varchar(255) default NULL, "
 	  "author varchar(255) default NULL, "
 	  "note varchar(255) default NULL, "
 	  "created timestamp(8) NOT NULL, "
-	  "id integer PRIMARY KEY autoincrement); ",
-  "drop table playlistitem;",
+	  "id integer PRIMARY KEY autoincrement)",
+"drop table playlistitem",
   "CREATE TABLE playlistitem ( "
 	  "playlist integer, "
-	  "tracknumber integer, "
-	  "trackid int(11) default NULL, "
-	  "PRIMARY KEY (playlist,tracknumber));",
-  "drop table playlog;",
-  "CREATE TABLE playlog ( "
-	  "trackid int(11) default NULL, "
-	  "played date default NULL, "
-	  "id integer PRIMARY KEY autoincrement); ",
-  "drop table recordingitem;",
-  "CREATE TABLE recordingitem ( "
-	  "trackid int(11) default NULL, "
-	  "recdate date default NULL, "
-	  "rectime time default NULL, "
-	  "reclength int(11) default NULL, "
-	  "enddate date default NULL, "
-	  "endtime time default NULL,  "
-	  "repeat varchar(10) default NULL, "
-	  "initcmd varchar(255) default NULL, "
-	  "parameters varchar(255) default NULL, "
-	  "atqjob int(11) default NULL, "
-	  "id integer PRIMARY KEY default '0');",
-  "drop table source",
-	  "CREATE TABLE source ( "
-	  "source varchar(40) default NULL, "
-	  "id integer PRIMARY KEY autoincrement); ",
-  "drop table tracklistitem;",
+	  "trackid int(11) not NULL)",
+  "CREATE INDEX playlistitem_1 on playlistitem (playlist)",
+  "drop table tracklistitem",
   "CREATE TABLE tracklistitem ( "
 	  "playerid int(11) NOT NULL default '0', "
 	  "listtype smallint(6) NOT NULL default '0', "
 	  "tracknb int(11) NOT NULL default '0', "
 	  "trackid int(11) NOT NULL default '0', "
-	  "PRIMARY KEY  (playerid,listtype,tracknb));",
-  "drop table tracks;",
+	  "PRIMARY KEY  (playerid,listtype,tracknb))",
+  "drop table tracks",
   "CREATE TABLE tracks ( "
 	  "id integer PRIMARY KEY autoincrement, "
 	  "artist varchar(255) default NULL, "
@@ -317,21 +262,6 @@ void mgDbGd::FillTables()
 			  languages[i].id,languages[i].name);
 	  Execute(b);
 	  sqlite3_free(b);
-  }
-  len = sizeof( musictypes ) / sizeof( musictypes_t );
-  for( int i=0; i < len; i ++ )
-  {
-	  b=sqlite3_mprintf("INSERT INTO musictype (musictype) VALUES('%q')",
-			  musictypes[i].name);
-	  Execute(b);
-	  sqlite3_free(b);
-  }
-  len = sizeof( sources ) / sizeof( sources_t );
-  for( int i=0; i < len; i ++ )
-  {
-	  b=sqlite3_mprintf("INSERT INTO source (source) VALUES('%q')",
-			  sources[i].name);
-	  Execute(b);
   }
 }
 
@@ -711,69 +641,49 @@ mgDbGd::SyncEnd()
 }
 
 int
-mgDbGd::AddToCollection( const string Name,const vector<mgItem*>&items)
-{
-    if (!Connect()) return 0;
-    CreateCollection(Name);
-    string listid = sql_string (get_col0
-        ("SELECT id FROM playlist WHERE title=" + sql_string (Name)));
-    unsigned int tracksize = items.size();
-    if (tracksize==0)
-	    return 0;
-
-    // this code is rather complicated but works in a multi user
-    // environment:
- 
-    // insert a unique trackid:
-    string trackid = ltos(thread_id()+1000000);
-    Execute("INSERT INTO playlistitem SELECT "+listid+","
-	   "MAX(tracknumber)+"+ltos(tracksize)+","+trackid+
-	   " FROM playlistitem WHERE playlist="+listid);
-    
-    // find tracknumber of the trackid we just inserted:
-    string sql = string("SELECT tracknumber FROM playlistitem WHERE "
-		    "playlist=")+listid+" AND trackid="+trackid;
-    long first = atol(get_col0(sql).c_str()) - tracksize + 1;
-
-    // replace the place holder trackid by the correct value:
-    Execute("UPDATE playlistitem SET trackid="+ltos(items[tracksize-1]->getItemid())+
-		    " WHERE playlist="+listid+" AND trackid="+trackid);
-    
-    // insert all other tracks:
-    for (unsigned int i = 0; i < tracksize-1; i++)
-	Execute("INSERT INTO playlistitem VALUES (" + listid + "," + ltos (first + i) + "," +
-            ltos (items[i]->getItemid ()) + ")");
-    return tracksize;
-}
-
-int
-mgDbGd::RemoveFromCollection (const string Name, mgParts& what)
+mgDbGd::AddToCollection( const string Name, const vector<mgItem*>&items,mgParts *what)
 {
     if (Name.empty())
 	    return 0;
-    if (!Connect()) return 0;
-    string pid = KeyMaps.id(keyGdCollection,Name);
-    if (pid.empty())
+    if (!Connect())
 	    return 0;
-    what.Prepare();
-    what.tables.push_front("playlistitem as del");
-    what.clauses.push_back("del.playlist="+pid);
-    bool usesTracks = false;
-    for (list < string >::iterator it = what.tables.begin (); it != what.tables.end (); ++it)
-	if (*it == "tracks")
-	{
-		usesTracks = true;
-		break;
-	}
-    if (usesTracks)
-	what.clauses.push_back("del.trackid=tracks.id");
-    else
-	what.clauses.push_back("del.trackid=playlistitem.trackid");
-    string sql = "DELETE playlistitem";
-    sql += sql_list(" FROM",what.tables);
-    sql += sql_list(" WHERE",what.clauses," AND ");
-    sqlite3_free_table(query (sql));
-    return sqlite3_changes(m_db);
+    CreateCollection(Name);
+    string listid = get_col0
+        ("SELECT id FROM playlist WHERE title=" + sql_string (Name));
+    Execute("BEGIN TRANSACTION");
+    // insert all tracks:
+    int result = 0;
+    for (unsigned int i = 0; i < items.size(); i++)
+    {
+	Execute("INSERT INTO playlistitem VALUES( " + listid + ","
+			+ ltos (items[i]->getItemid ()) +")");
+	result += sqlite3_changes(m_db);
+    }
+    Execute("COMMIT");
+    return result;
+}
+
+int
+mgDbGd::RemoveFromCollection (const string Name, const vector<mgItem*>&items,mgParts *what)
+{
+    if (Name.empty())
+	    return 0;
+    if (!Connect())
+	    return 0;
+    string listid = KeyMaps.id(keyGdCollection,Name);
+    if (listid.empty())
+	    return 0;
+    Execute("BEGIN TRANSACTION");
+    // remove all tracks:
+    int result = 0;
+    for (unsigned int i = 0; i < items.size(); i++)
+    {
+	Execute("DELETE FROM playlistitem WHERE playlist="+listid+
+			" AND trackid = " + ltos (items[i]->getItemid ()));
+	result += sqlite3_changes(m_db);
+    }
+    Execute("COMMIT");
+    return result;
 }
 
 bool
@@ -979,9 +889,9 @@ string
 mgKeyGdGenres::map_sql() const
 {
 	if (genrelevel()==4)
-		return "select id,genre from genre;";
+		return "select id,genre from genre";
 	else
-		return string("select id,genre from genre where length(id)<="+ltos(genrelevel())+";");
+		return string("select id,genre from genre where length(id)<="+ltos(genrelevel()));
 }
 
 string
@@ -1048,7 +958,7 @@ class mgKeyGdLanguage : public mgKeyNormal {
 		mgKeyGdLanguage() : mgKeyNormal(keyGdLanguage,"tracks","lang") {};
 		mgParts Parts(mgDb *db,bool orderby=false) const;
 	protected:
-		string map_sql() const { return "select id,language from language;"; }
+		string map_sql() const { return "select id,language from language"; }
 };
 
 class mgKeyGdCollection: public mgKeyNormal {
@@ -1056,7 +966,7 @@ class mgKeyGdCollection: public mgKeyNormal {
   	  mgKeyGdCollection() : mgKeyNormal(keyGdCollection,"playlist","id") {};
 	  mgParts Parts(mgDb *db,bool orderby=false) const;
 	protected:
-	 string map_sql() const { return "select id,title from playlist;"; }
+	 string map_sql() const { return "select id,title from playlist"; }
 };
 class mgKeyGdCollectionItem : public mgKeyNormal {
 	public:
@@ -1160,14 +1070,14 @@ mgKeyGdCollectionItem::Parts(mgDb *db,bool orderby) const
 {
 	mgParts result;
 	result.tables.push_back("playlistitem");
-	AddIdClause(db,result,"playlistitem.tracknumber");
+	AddIdClause(db,result,"playlistitem.rowid");
 	if (orderby)
 	{
 		// tracks nur hier, fuer sql_delete_from_coll wollen wir es nicht
 		result.tables.push_back("tracks");
 		result.idfields.push_back("tracks.title");
-		result.idfields.push_back("playlistitem.tracknumber");
-       		result.orders.push_back("playlistitem.tracknumber");
+		result.idfields.push_back("playlistitem.rowid");
+       		result.orders.push_back("playlistitem.rowid");
 	}
 	return result;
 }

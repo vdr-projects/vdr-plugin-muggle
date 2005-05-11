@@ -871,7 +871,7 @@ mgDbGd::SyncStart()
 }
 
 int
-mgDbGd::AddToCollection( const string Name,const vector<mgItem*>&items)
+mgDbGd::AddToCollection( const string Name,const vector<mgItem*>&items, mgParts* what)
 {
     if (!Connect()) return 0;
     CreateCollection(Name);
@@ -918,7 +918,7 @@ mgDbGd::AddToCollection( const string Name,const vector<mgItem*>&items)
 }
 
 int
-mgDbGd::RemoveFromCollection (const string Name, mgParts& what)
+mgDbGd::RemoveFromCollection (const string Name, const vector<mgItem*>&items, mgParts* what)
 {
     if (Name.empty())
 	    return 0;
@@ -926,23 +926,23 @@ mgDbGd::RemoveFromCollection (const string Name, mgParts& what)
     string pid = KeyMaps.id(keyGdCollection,Name);
     if (pid.empty())
 	    return 0;
-    what.Prepare();
-    what.tables.push_front("playlistitem as del");
-    what.clauses.push_back("del.playlist="+pid);
+    what->Prepare();
+    what->tables.push_front("playlistitem as del");
+    what->clauses.push_back("del.playlist="+pid);
     bool usesTracks = false;
-    for (list < string >::iterator it = what.tables.begin (); it != what.tables.end (); ++it)
+    for (list < string >::iterator it = what->tables.begin (); it != what->tables.end (); ++it)
 	if (*it == "tracks")
 	{
 		usesTracks = true;
 		break;
 	}
     if (usesTracks)
-	what.clauses.push_back("del.trackid=tracks.id");
+	what->clauses.push_back("del.trackid=tracks.id");
     else
-	what.clauses.push_back("del.trackid=playlistitem.trackid");
+	what->clauses.push_back("del.trackid=playlistitem.trackid");
     string sql = "DELETE playlistitem";
-    sql += sql_list(" FROM",what.tables);
-    sql += sql_list(" WHERE",what.clauses," AND ");
+    sql += sql_list(" FROM",what->tables);
+    sql += sql_list(" WHERE",what->clauses," AND ");
     execute (sql);
     return m_db->affected_rows;
 }

@@ -274,7 +274,7 @@ mgSelection::LoopMode mgSelection::toggleLoopMode ()
 unsigned int
 mgSelection::AddToCollection (const string Name)
 {
-    int result = m_db->AddToCollection(Name,items());
+    int result = m_db->AddToCollection(Name,items(),0);
     if (result>0)
 	    if (inCollection(Name)) clearCache ();
     return result;
@@ -285,7 +285,7 @@ unsigned int
 mgSelection::RemoveFromCollection (const string Name)
 {
     mgParts p = Parts(m_db,false);
-    unsigned int result = m_db->RemoveFromCollection(Name,p);
+    unsigned int result = m_db->RemoveFromCollection(Name,items(),&p);
     if (result>0)
     	if (inCollection(Name)) clearCache ();
     return result;

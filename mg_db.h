@@ -75,6 +75,7 @@ private:
 	mgReferences rest;
 	mgReferences positives;
 	void ConnectTables(string c1, string c2);
+	void push_table_to_front(string table);
 };
 
 /*!
@@ -96,8 +97,8 @@ class mgDb {
   	bool HasFolderFields() const { return m_hasfolderfields;}
   	virtual bool Create() = 0;
 	virtual void ServerEnd() =0;		// must be done explicitly
-	virtual int AddToCollection( const string Name,const vector<mgItem*>&items) =0;
-	virtual int RemoveFromCollection( const string Name,mgParts& what) =0;
+	virtual int AddToCollection( const string Name,const vector<mgItem*>&items,mgParts* what=0) =0;
+	virtual int RemoveFromCollection( const string Name,const vector<mgItem*>&items,mgParts* what=0) =0;
 	virtual bool DeleteCollection( const string Name) =0;
 	virtual void ClearCollection( const string Name) =0;
 	virtual bool CreateCollection( const string Name) =0;
