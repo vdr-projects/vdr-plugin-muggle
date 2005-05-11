@@ -402,6 +402,7 @@ void mgDbGd::FillTables()
 {
 #include "mg_tables.h"
   int len = sizeof( genres ) / sizeof( genres_t );
+  execute("INSERT INTO genre (id,genre) VALUES('NULL','No Genre')");
   for( int i=0; i < len; i ++ )
   {
 	  char b[600];
@@ -416,6 +417,7 @@ void mgDbGd::FillTables()
 	  execute(b);
   }
   len = sizeof( languages ) / sizeof( lang_t );
+  execute("INSERT INTO language (id,language) VALUES('NULL','Instrumental')");
   for( int i=0; i < len; i ++ )
   {
 	  char b[600];
@@ -815,6 +817,8 @@ mgDbGd::SyncFile(const char *filename)
 	TagLib::String sgenre1=f.tag()->genre();
 	const char *genrename=sgenre1.toCString();
 	const char *genreid=m_Genres[genrename].c_str();
+	if (strlen(genreid)==0)
+		genreid="NULL";
 	sql_Cstring(genreid,c_genre1);
 	sql_Cstring(getlanguage(filename),c_lang);
 	char sql[7000];
@@ -1062,8 +1066,6 @@ mgDbGd::LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitem
         	{
 			if (!row[0]) continue;
 			string r0 = row[0];
-			if (!strcmp(row[0],"NULL")) // there is a genre NULL!
-				continue;
 			mgListItem* n = new mgListItem;
 			if (num_fields==3)
 			{

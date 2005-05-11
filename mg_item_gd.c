@@ -220,19 +220,15 @@ mgItemGd::mgItemGd (char **row)
     else
     	m_albumtitle = "NULL";
     if (row[5] && row[5][0])
-    {
 	m_genre_id = row[5];
-    	m_genre = KeyMaps.value(keyGdGenres,row[5]);
-    }
     else
-    	m_genre = "NULL";
+    	m_genre_id = "NULL";
+    m_genre = KeyMaps.value(keyGdGenres,m_genre_id);
     if (row[6] && row[6][0])
-    {
 	m_genre2_id = row[6];
-    	m_genre2 = KeyMaps.value(keyGdGenres,row[6]);
-    }
     else
-    	m_genre2 = "NULL";
+    	m_genre2_id = "NULL";
+    m_genre2 = KeyMaps.value(keyGdGenres,m_genre2_id);
     if (row[7])
     	m_bitrate = row[7];
     else
@@ -258,11 +254,9 @@ mgItemGd::mgItemGd (char **row)
     else
     	m_channels = 0;
     if (row[13])
-    {
     	m_language_id = row[13];
-	m_language = KeyMaps.value(keyGdLanguage,row[13]);
-    }
     else
     	m_language_id = "NULL";
+     m_language = KeyMaps.value(keyGdLanguage,m_language_id);
 };
 

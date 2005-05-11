@@ -296,6 +296,7 @@ void mgDbGd::FillTables()
 #include "mg_tables.h"
   char *b;
   int len = sizeof( genres ) / sizeof( genres_t );
+  execute("INSERT INTO genre (id,genre) VALUES('NULL','No Genre')");
   for( int i=0; i < len; i ++ )
   {
 	  char id3genre[5];
@@ -310,6 +311,7 @@ void mgDbGd::FillTables()
 	  sqlite3_free(b);
   }
   len = sizeof( languages ) / sizeof( lang_t );
+  execute("INSERT INTO language (id,language) VALUES('NULL','Instrumental')");
   for( int i=0; i < len; i ++ )
   {
 	  b=sqlite3_mprintf("INSERT INTO language (id,language) VALUES('%q', '%q')",
@@ -675,6 +677,8 @@ mgDbGd::SyncFile(const char *filename)
 	TagLib::String sgenre1=f.tag()->genre();
 	const char *genrename=sgenre1.toCString();
 	const char *genreid=m_Genres[genrename].c_str();
+	if (strlen(genreid)==0)
+		genreid="NULL";
 	c_genre1=sql_Cstring(genreid,c_genre1);
 	c_lang=sql_Cstring(getlanguage(filename),c_lang);
 	char sql[7000];
@@ -926,8 +930,6 @@ mgDbGd::LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitem
 			char **row = &table[idx*m_cols];
 			if (!row[0]) continue;
 			string r0 = row[0];
-			if (!strcmp(row[0],"NULL")) // there is a genre NULL!
-				continue;
 			mgListItem* n = new mgListItem;
 			if (m_cols==3)
 			{
@@ -1019,7 +1021,7 @@ mgKeyGdGenres::map_sql() const
 	if (genrelevel()==4)
 		return "select id,genre from genre;";
 	else
-		return string("select id,genre from genre where length(id)="+ltos(genrelevel())+";");
+		return string("select id,genre from genre where length(id)<="+ltos(genrelevel())+";");
 }
 
 string
