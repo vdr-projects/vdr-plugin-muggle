@@ -16,6 +16,7 @@
 
 
 #include "mg_setup.h"
+#include <stdio.h>
 #include <string>
 
 mgSetup the_setup;

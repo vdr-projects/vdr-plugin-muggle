@@ -20,6 +20,8 @@ using namespace std;
 
 
 #include <sys/stat.h>
+#include <stdio.h>
+#include <unistd.h>
 #include <fts.h>
 
 static map <mgKeyTypes, map<string,string> > map_values;
