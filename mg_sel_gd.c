@@ -213,7 +213,16 @@ mgSelectionGd::Parts(mgDb *db,bool orderby) const
 				}
 			}
 		}
-		result += k->Parts(db,orderby && (i==m_level));
+		if (i==m_level)
+		{
+			mgListItem* item = k->get();
+			k->set(0);
+			result += k->Parts(db,orderby && (i==m_level));
+			k->set(item);
+			delete item;
+		}
+		else
+			result += k->Parts(db,orderby && (i==m_level));
 next:
 		continue;
 	}
