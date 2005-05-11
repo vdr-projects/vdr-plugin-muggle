@@ -268,7 +268,6 @@ mgDbGd::exec_count( const string sql)
 	unsigned long result = 0;
 	if (Connect())
 		result = atol (get_col0 ( sql).c_str ());
-	mgDebug(1,"exec_count(%s) returns %ld",sql.c_str(),result);
 	return result;
 }
 
@@ -391,7 +390,9 @@ mgDecade(sqlite3_context *context, int argc, sqlite3_value **argv)
 {
 	assert(argc==1);
 	unsigned int year=sqlite3_value_int(argv[0]);
-	sqlite3_result_int(context,(year-year%10)%100);
+	char *buf;
+	asprintf(&buf,"%02d",(year-year%10)%100);
+	sqlite3_result_text(context,buf,2,free);
 }
 
 void
