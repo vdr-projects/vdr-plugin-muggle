@@ -355,7 +355,8 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
     	m_playsel->leave_all();
     	m_playsel->enter(play_collection);
     }
-    UseNormalSelection ();
+    mgSelection *s = selections[m_current_selection];
+    s->CopyKeyValues(s);
     unsigned int posi = selection()->gotoPosition();
     LoadExternalCommands();	// before AddMenu()
     m_root = new mgTree;

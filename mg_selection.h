@@ -413,6 +413,8 @@ class mgSelection
         string ListFilename ();
 
 	void InitOrder(vector<mgListItem>& items);
+	void ActivateOrder();
+	string leave_one();
 };
 
 #endif
