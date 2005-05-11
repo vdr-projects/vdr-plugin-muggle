@@ -77,7 +77,7 @@ bool mgFlacDecoder::initialize()
   
   // init reservoir buffer; this should be according to the maximum
   // frame/sample size that we can probably obtain from metadata
-  m_reservoir = new (FLAC__int32*)[2];
+  m_reservoir = new FLAC__int32*[2];
   m_reservoir[0] = new FLAC__int32[MAX_RES_SIZE];
   m_reservoir[1] = new FLAC__int32[MAX_RES_SIZE];
 
