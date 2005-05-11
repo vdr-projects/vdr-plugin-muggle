@@ -149,7 +149,7 @@ mgItemGd::getSourceFile(bool AbsolutePath) const
     	string result = m_mp3file;
 	if (m_validated && !m_valid)
 		return m_mp3file;
-	if (!readable(tld+result))
+	if (!readable(tld+"/"+result))
 	{
 		result="";
 		if (!gd_music_dirs_scanned)
@@ -180,6 +180,7 @@ mgItemGd::getSourceFile(bool AbsolutePath) const
 				break;
 		}
 	}
+	m_validated=true;
 	if (result.empty())
 	{
 		int nsize = m_mp3file.size();
@@ -194,7 +195,7 @@ mgItemGd::getSourceFile(bool AbsolutePath) const
 		return m_mp3file;
 	}	
 	if (AbsolutePath)
-		result = tld + result;
+		result = tld +"/" + result;
 	return result;
 }
 

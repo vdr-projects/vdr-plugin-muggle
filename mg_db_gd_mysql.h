@@ -42,6 +42,7 @@ class mgDbGd : public mgDb {
 	unsigned long exec_count(const string sql); 
 	void ServerEnd();
 	bool Threadsafe();
+	void Execute(const string sql);
    protected:
 	char* sql_Cstring(const char *s,char *buf);
 	bool SyncStart();

@@ -339,9 +339,14 @@ mgDbGd::sql_query(string sql)
 	return result;
 }
 
+void
+mgDbGd::Execute(const string sql)
+{
+	execute(sql);
+}
 
 MYSQL_RES*
-mgDbGd::execute( string sql)
+mgDbGd::execute( const string sql)
 {
   if (sql.empty())
 	  return 0;

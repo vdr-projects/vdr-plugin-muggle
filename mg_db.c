@@ -13,6 +13,7 @@
 using namespace std;
 
 #include "mg_db.h"
+#include "mg_item.h"
 
 #include "mg_setup.h"
 #include "mg_tools.h"
@@ -81,6 +82,31 @@ mgDb::Sync(char * const * path_argv)
 	if (!SyncStart())
 		return;
   	extern void showimportcount(unsigned int,bool final=false);
+
+	if (the_setup.DeleteStaleReferences)
+	{
+		int count=0;
+		mgParts all;
+		vector<mgItem*> items;
+		LoadItemsInto(all,items);
+		for (unsigned int idx=0;idx<items.size();idx++)
+		{
+			mgItem* item = items[idx];
+			string fullpath=item->getSourceFile(true);
+			if (!item->Valid())
+			{
+				char *b;
+				asprintf(&b,"DELETE FROM tracks WHERE id=%ld",item->getItemid());
+				Execute(b);
+				count++;
+				free(b);
+			}
+		}
+		char *b;
+		asprintf(&b,"Deleted %d entries because the file did not exist",count);
+    		extern void showmessage(int duration,const char*,...);
+		showmessage(0,b);
+	}
 
 	unsigned int importcount=0;
 	chdir(the_setup.ToplevelDir);

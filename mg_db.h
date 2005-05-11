@@ -110,6 +110,7 @@ class mgDb {
 	string sql_string(const string s); // \todo does it need to be public?
 	virtual bool NeedGenre2() = 0;
 	virtual bool Threadsafe() { return false; }
+	virtual void Execute(const string sql)=0;
    protected:
 	virtual bool SyncStart() { return true; }
 	virtual void SyncEnd() {}

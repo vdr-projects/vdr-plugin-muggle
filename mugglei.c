@@ -32,7 +32,7 @@ using namespace std;
 
 int SysLogLevel = 1;
 
-bool import_assorted, delete_mode, create_mode;
+bool   create_mode;
 
 void showmessage(int duration,const char *msg,...)
 {
@@ -105,8 +105,6 @@ int main( int argc, char *argv[] )
     }
 
   // option defaults
-  import_assorted = false;
-  delete_mode = false;
   create_mode = false;
 
   // parse command line options
@@ -149,7 +147,7 @@ int main( int argc, char *argv[] )
 	  } break;
         case 'z':
           {
-            delete_mode = true;
+            the_setup.DeleteStaleReferences = true;
           } break;
         case 'c':
           {

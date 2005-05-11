@@ -51,7 +51,7 @@ class mgDbGd : public mgDb {
   	void FillTables();
 	char ** query(const string sql);
 	int silent_execute( const string sql);
-	void execute( const string sql);
+	void Execute( const string sql);
   	string get_col0( const string sql);
 	char *sql_Cstring(TagLib::String s,char *buf=0);
 	TagLib::String getlanguage(const char *filename);

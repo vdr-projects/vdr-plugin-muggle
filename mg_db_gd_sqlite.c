@@ -225,7 +225,7 @@ mgDbGd::query(string sql)
 
 
 void
-mgDbGd::execute( string sql)
+mgDbGd::Execute( string sql)
 {
 	int rc = silent_execute(sql);
 	if (rc!=SQLITE_OK)
@@ -243,7 +243,7 @@ mgDbGd::silent_execute( string sql)
 	if (!Connect())
 		return 0;
 	const char * optsql = optimize(sql).c_str();
-  	mgDebug(5,"execute(%X,%s)",m_db,optsql);
+  	mgDebug(5,"Execute(%X,%s)",m_db,optsql);
 	int result = sqlite3_exec(m_db,sql.c_str(),0,0,&m_errmsg);
   	mgDebug(5,"finishes with result %d",result);
 	return result;
@@ -295,7 +295,7 @@ void mgDbGd::FillTables()
 #include "mg_tables.h"
   char *b;
   int len = sizeof( genres ) / sizeof( genres_t );
-  execute("INSERT INTO genre (id,genre) VALUES('NULL','No Genre')");
+  Execute("INSERT INTO genre (id,genre) VALUES('NULL','No Genre')");
   for( int i=0; i < len; i ++ )
   {
 	  char id3genre[5];
@@ -306,16 +306,16 @@ void mgDbGd::FillTables()
 	  string genre = sql_string(genres[i].name);
 	  b=sqlite3_mprintf("INSERT INTO genre (id,id3genre,genre) VALUES('%s', %s, %s)",
 			  genres[i].id,id3genre,genre.c_str());
-	  execute(b);
+	  Execute(b);
 	  sqlite3_free(b);
   }
   len = sizeof( languages ) / sizeof( lang_t );
-  execute("INSERT INTO language (id,language) VALUES('NULL','Instrumental')");
+  Execute("INSERT INTO language (id,language) VALUES('NULL','Instrumental')");
   for( int i=0; i < len; i ++ )
   {
 	  b=sqlite3_mprintf("INSERT INTO language (id,language) VALUES('%q', '%q')",
 			  languages[i].id,languages[i].name);
-	  execute(b);
+	  Execute(b);
 	  sqlite3_free(b);
   }
   len = sizeof( musictypes ) / sizeof( musictypes_t );
@@ -323,7 +323,7 @@ void mgDbGd::FillTables()
   {
 	  b=sqlite3_mprintf("INSERT INTO musictype (musictype) VALUES('%q')",
 			  musictypes[i].name);
-	  execute(b);
+	  Execute(b);
 	  sqlite3_free(b);
   }
   len = sizeof( sources ) / sizeof( sources_t );
@@ -331,7 +331,7 @@ void mgDbGd::FillTables()
   {
 	  b=sqlite3_mprintf("INSERT INTO source (source) VALUES('%q')",
 			  sources[i].name);
-	  execute(b);
+	  Execute(b);
   }
 }
 
@@ -575,7 +575,7 @@ mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
 			result=sql_Cstring(get_col0(b));
 			free(b);
 			asprintf(&b,"UPDATE album SET artist='Various Artists' WHERE cddbid=%s",result);
-			execute(b);
+			Execute(b);
 			// here we could change all tracks.sourceid to result and delete
 			// the other album entries for this album, but that should only 
 			// be needed if a pre 0.1.4 import has been done incorrectly, so we
@@ -591,7 +591,7 @@ mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
 			b=sqlite3_mprintf("INSERT INTO album (title,artist,cddbid) "
 					"VALUES(%s,%s,%s)",
 				c_album,c_artist,result);
-			execute(b);
+			Execute(b);
 			free(b);
 		}
 		sqlite3_free(buf);
@@ -694,7 +694,7 @@ mgDbGd::SyncFile(const char *filename)
 	sqlite3_free(c_folder2);
 	sqlite3_free(c_folder3);
 	sqlite3_free(c_folder4);
-	execute(sql);
+	Execute(sql);
 }
 
 bool
@@ -711,14 +711,14 @@ mgDbGd::SyncStart()
 	struct timezone tz;
 	gettimeofday( &tv, &tz );
 	srandom( tv.tv_usec );
-	execute("BEGIN TRANSACTION");
+	Execute("BEGIN TRANSACTION");
 	return true;
 }
 
 void
 mgDbGd::SyncEnd()
 {
-	execute("COMMIT TRANSACTION");
+	Execute("COMMIT TRANSACTION");
 }
 
 int
@@ -737,7 +737,7 @@ mgDbGd::AddToCollection( const string Name,const vector<mgItem*>&items)
  
     // insert a unique trackid:
     string trackid = ltos(thread_id()+1000000);
-    execute("INSERT INTO playlistitem SELECT "+listid+","
+    Execute("INSERT INTO playlistitem SELECT "+listid+","
 	   "MAX(tracknumber)+"+ltos(tracksize)+","+trackid+
 	   " FROM playlistitem WHERE playlist="+listid);
     
@@ -747,12 +747,12 @@ mgDbGd::AddToCollection( const string Name,const vector<mgItem*>&items)
     long first = atol(get_col0(sql).c_str()) - tracksize + 1;
 
     // replace the place holder trackid by the correct value:
-    execute("UPDATE playlistitem SET trackid="+ltos(items[tracksize-1]->getItemid())+
+    Execute("UPDATE playlistitem SET trackid="+ltos(items[tracksize-1]->getItemid())+
 		    " WHERE playlist="+listid+" AND trackid="+trackid);
     
     // insert all other tracks:
     for (unsigned int i = 0; i < tracksize-1; i++)
-	execute("INSERT INTO playlistitem VALUES (" + listid + "," + ltos (first + i) + "," +
+	Execute("INSERT INTO playlistitem VALUES (" + listid + "," + ltos (first + i) + "," +
             ltos (items[i]->getItemid ()) + ")");
     return tracksize;
 }
@@ -792,7 +792,7 @@ mgDbGd::DeleteCollection (const string Name)
 {
     if (!Connect()) return false;
     ClearCollection(Name);
-    execute ("DELETE FROM playlist WHERE title=" + sql_string (Name));
+    Execute ("DELETE FROM playlist WHERE title=" + sql_string (Name));
     return (sqlite3_changes(m_db) == 1);
 }
 
@@ -801,7 +801,7 @@ mgDbGd::ClearCollection (const string Name)
 {
     if (!Connect()) return;
     string listid = KeyMaps.id(keyGdCollection,Name);
-    execute ("DELETE FROM playlistitem WHERE playlist="+sql_string(listid));
+    Execute ("DELETE FROM playlistitem WHERE playlist="+sql_string(listid));
 }
 
 bool
@@ -811,7 +811,7 @@ mgDbGd::CreateCollection (const string Name)
     string name = sql_string(Name);
     if (exec_count("SELECT count(title) FROM playlist WHERE title = " + name)>0) 
 	return false;
-    execute ("INSERT INTO playlist VALUES(" + name + ",'VDR',NULL,strftime('%s','now'),NULL)");
+    Execute ("INSERT INTO playlist VALUES(" + name + ",'VDR',NULL,strftime('%s','now'),NULL)");
     return true;
 }
 
@@ -950,9 +950,7 @@ class mgKeyGdFolder : public mgKeyNormal {
 bool
 mgKeyGdFolder::Enabled(mgDb *db)
 {
-    if (m_enabled<0)
-	m_enabled = db->FieldExists("tracks", m_field);
-    return (m_enabled==1);
+    return true;
 }
 
 class mgKeyGdGenres : public mgKeyNormal {
