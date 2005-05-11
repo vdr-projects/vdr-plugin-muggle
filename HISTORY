@@ -200,7 +200,7 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
   first track restarted the first track. Now it goes to the last track.
 - Added incremental search
 
-xxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxx: Version 0.1.8-BETA
 - rewrote much of the SQL interface to allow easier implementation
   of alternative data bases
 - implemented support for SQLite. The field genre2 is not supported
