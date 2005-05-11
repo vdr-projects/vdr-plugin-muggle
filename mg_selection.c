@@ -396,7 +396,10 @@ mgSelection::gotoPosition ()
 	m_position = 0;
     else if (m_position >= itemsize)
        	m_position = itemsize -1;
-    Key(m_level)->set (listitems[m_position]);
+    if (itemsize==0)
+	Key(m_level)->set (0);
+    else
+	Key(m_level)->set (listitems[m_position]);
     return m_position;
 }
 
