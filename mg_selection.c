@@ -167,6 +167,12 @@ mgSelection::mgListItems::index (const string s,bool val,bool second_try) const
 }
 
 void
+mgSelection::setOrderByCount(bool orderbycount)
+{
+	m_orderByCount = orderbycount;
+}
+
+void
 mgSelection::clearCache() const
 {
         m_current_values = "";
@@ -652,10 +658,7 @@ mgSelection::CopyKeyValues(mgSelection* s)
 	if (!s)
 		mgError("mgSelection::CopyKeyValues(0)");
 	if (s==this)
-	{
-		ActivateOrder();
 		return;
-	}
 	mgItem *o=0;
 	s->select();
 	if (s->items().size()==1)
@@ -891,18 +894,7 @@ mgSelection::setKey (const mgKeyTypes kt)
 }
 
 void
-mgSelection::setKeys(vector<mgKeyTypes>& kt)
-{
-	clear();
-	for (unsigned int i=0;i<kt.size();i++)
-	{
-		setKey(kt[i]);
-	}
-        clean();
-}
-
-void
-mgSelection::setKeys(vector<const char*>& kt)
+mgSelection::setKeys(vector<const char *>& kt)
 {
 	clear();
 	for (unsigned int i=0;i<kt.size();i++)
@@ -953,7 +945,7 @@ mgSelection::Name()
 bool
 mgSelection::SameOrder(const mgSelection* other)
 {
-    bool result =  ordersize()==other->ordersize();
+    bool result =  ordersize()==other->ordersize() && m_orderByCount == other->m_orderByCount;
     if (result)
     	for (unsigned int i=0; i<ordersize();i++)
     	{
@@ -961,12 +953,6 @@ mgSelection::SameOrder(const mgSelection* other)
 		if (!result) break;
     	}
     return result;
-}
-
-bool
-mgSelection::SameOrder(const mgSelection& other)
-{
-	return SameOrder(&other);
 }
 
 mgKey* 

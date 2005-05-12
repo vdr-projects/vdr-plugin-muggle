@@ -53,7 +53,7 @@ mgMuggle::mgMuggle (void)
 void
 mgMuggle::Stop (void)
 {
-	mgDb *db;
+	mgDb *db = 0;
 	db->ServerEnd();
 }
 

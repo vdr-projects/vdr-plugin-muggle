@@ -349,11 +349,6 @@ mgDbGd::NeedGenre2()
 #endif
 }
 
-void
-mgDbGd::ServerEnd()
-{
-}
-
 char *
 mgDbGd::sql_Cstring(TagLib::String s,char *buf)
 {

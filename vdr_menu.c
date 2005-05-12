@@ -1031,6 +1031,7 @@ mgMenuOrders::BuildOsd ()
 mgMenuOrder::mgMenuOrder()
 {
     m_selection=0;
+    m_orgselection = 0;
 }
 
 mgMenuOrder::~mgMenuOrder()
@@ -1048,8 +1049,10 @@ mgMenuOrder::Title() const
 void
 mgMenuOrder::BuildOsd ()
 {
+    if (!m_orgselection)
+	    m_orgselection = osd()->getSelection(getParentIndex());;
     if (!m_selection)
-        m_selection = GenerateSelection(osd()->getSelection(getParentIndex()));
+        m_selection = GenerateSelection(m_orgselection);
     InitOsd ();
     m_keytypes.clear();
     m_keytypes.reserve(mgKeyTypesNr+1);
@@ -1079,29 +1082,32 @@ mgMenuOrder::ChangeSelection(eKeys key)
     newtypes.clear();
     for (unsigned int i=0; i<m_keytypes.size();i++)
     	newtypes.push_back(m_keynames[i][m_keytypes[i]]);
-    mgSelection *orgselection = m_selection;
-    m_selection = GenerateSelection(orgselection);
-    m_selection->setKeys(newtypes);
-    m_selection->setOrderByCount(m_orderbycount);
-    bool result = !m_selection->SameOrder(orgselection);
-    if (orgselection)
-    	delete orgselection;
-    if (result)
+    mgSelection *newsel = GenerateSelection(m_orgselection);
+    newsel->setKeys(newtypes);
+    newsel->setOrderByCount(m_orderbycount);
+    bool changed = !newsel->SameOrder(m_selection);
+    if (changed)
     {
+	delete m_selection;
+	m_selection = newsel;
     	osd()->forcerefresh = true;
 	int np = osd()->Current();
 	if (key==kUp && np) np--;
 	if (key==kDown) np++;
     	osd()->newposition = np;
     }
-    return result;
+    else
+	delete newsel;
+    return changed;
 }
 
 void
 mgMenuOrder::SaveSelection()
 {
+    m_selection->CopyKeyValues(m_orgselection);
     osd()->setSelection(getParentIndex(),m_selection);
     m_selection = 0;
+    m_orgselection = 0;
     osd()->SaveState();
 }
 

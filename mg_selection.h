@@ -364,13 +364,11 @@ class mgSelection
 	}
 
 	void setKeys(vector<const char*>& kt);
-	void setKeys(vector<mgKeyTypes>& kt);
 	string Name();
 	bool SameOrder(const mgSelection* other);
-	bool SameOrder(const mgSelection& other);
 	mgKey* Key(unsigned int idx) const;
 	virtual vector <const char*> Choices(unsigned int level, unsigned int *current) const = 0;
-	void setOrderByCount(bool orderbycount) { m_orderByCount = orderbycount;}
+	void setOrderByCount(bool orderbycount);
 	bool getOrderByCount() const { return m_orderByCount; }
 	virtual mgParts Parts(mgDb *db,bool orderby=true) const = 0;
 	virtual bool inCollection(const string Name="") const =0;

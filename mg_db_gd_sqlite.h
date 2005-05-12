@@ -38,7 +38,6 @@ class mgDbGd : public mgDb {
 	void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap);
 	string LoadItemsInto(mgParts& what,vector<mgItem*>& items);
 	string LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems);
-	void ServerEnd();
 	bool Threadsafe();
    protected:
 	char* sql_Cstring(const char *s,char *buf);

@@ -316,11 +316,6 @@ mgDbGd::NeedGenre2()
     return needGenre2;
 }
 
-void
-mgDbGd::ServerEnd()
-{
-}
-
 char *
 mgDbGd::sql_Cstring(TagLib::String s,char *buf)
 {

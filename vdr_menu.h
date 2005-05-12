@@ -402,6 +402,7 @@ class mgMenuOrder : public mgMenu
         void BuildOsd ();
     private:
 	void AddKeyActions(mgMenu *m,mgSelection *o);
+	mgSelection * m_orgselection;
 	mgSelection * m_selection;
 	int m_orderbycount;
 	vector<int> m_keytypes;

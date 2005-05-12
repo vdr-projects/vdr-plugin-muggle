@@ -95,7 +95,7 @@ class mgDb {
   	virtual bool Connect() = 0;
   	bool HasFolderFields() const { return m_hasfolderfields;}
   	virtual bool Create() = 0;
-	virtual void ServerEnd() =0;		// must be done explicitly
+	virtual void ServerEnd() {};		// must be done explicitly. Will be called with this==0
 	virtual int AddToCollection( const string Name,const vector<mgItem*>&items,mgParts* what=0) =0;
 	virtual int RemoveFromCollection( const string Name,const vector<mgItem*>&items,mgParts* what=0) =0;
 	virtual bool DeleteCollection( const string Name) =0;
