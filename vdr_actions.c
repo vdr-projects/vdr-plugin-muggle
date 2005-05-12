@@ -703,6 +703,7 @@ mgToggleSelection::Execute ()
         osd ()->UseCollectionSelection ();
 	selection()->clearCache();
     }
+    selection()->Activate();
     osd()->newposition = selection ()->gotoPosition ();
     return true;
 }

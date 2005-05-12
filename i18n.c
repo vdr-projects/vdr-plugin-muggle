@@ -1270,5 +1270,22 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
     },
+    {
+        "Order is undefined",
+        "Sortierung ist nicht definiert",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "Ordre pas défini",       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
     {NULL}
 };

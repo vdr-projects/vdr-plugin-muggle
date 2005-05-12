@@ -97,6 +97,7 @@ mgMainMenu::SwitchSelection()
 	if (newsel->ordersize()>0)
 	{
 		newsel->CopyKeyValues(selection());
+		newsel->Activate();
 		m_current_selection = Current();
 		newposition = selection()->getPosition();
 		SaveState();
@@ -357,6 +358,7 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
     }
     mgSelection *s = selections[m_current_selection];
     s->CopyKeyValues(s);
+    s->Activate();
     unsigned int posi = selection()->gotoPosition();
     LoadExternalCommands();	// before AddMenu()
     m_root = new mgTree;
@@ -374,6 +376,7 @@ void
 mgMainMenu::AddSelection()
 {
 	selections.push_back(GenerateSelection());
+	newposition = selections.size()-1;
 }
 
 void
@@ -501,7 +504,10 @@ mgMainMenu::AddOrderActions(mgMenu* m)
 		mgError("AddOrderAction:selections[%u] is 0",idx);
     	mgAction *a = m->GenerateAction(actOrder,actNone);
     	assert(a);
-    	a->SetText(hk(o->Name().c_str()));
+	const char *oname = o->Name().c_str();
+	if (strlen(oname)==0)
+		oname = tr("Order is undefined");
+    	a->SetText(hk(oname));
     	AddItem(a);
     }
 }
@@ -509,6 +515,7 @@ mgMainMenu::AddOrderActions(mgMenu* m)
 void
 mgMenu::AddSelectionItems (mgSelection *sel,mgActions act)
 {
+    sel->Activate();
     for (unsigned int i = 0; i < sel->listitems.size (); i++)
     {
     	mgAction *a = GenerateAction(act, actEntry);
@@ -990,6 +997,7 @@ void
 mgMainMenu::AddMenu (mgMenu * m,unsigned int position)
 {
     Menus.push_back (m);
+    selection()->Activate();
     m->setosd (this);
     m->setParentIndex(Current());
     if (Get(Current()))
@@ -1053,6 +1061,8 @@ mgMenuOrder::BuildOsd ()
 	    m_orgselection = osd()->getSelection(getParentIndex());;
     if (!m_selection)
         m_selection = GenerateSelection(m_orgselection);
+    if (m_selection->ordersize()==0)
+	    m_selection->InitDefaultOrder(1);
     InitOsd ();
     m_keytypes.clear();
     m_keytypes.reserve(mgKeyTypesNr+1);
@@ -1104,7 +1114,8 @@ mgMenuOrder::ChangeSelection(eKeys key)
 void
 mgMenuOrder::SaveSelection()
 {
-    m_selection->CopyKeyValues(m_orgselection);
+    m_selection->CopyKeyValues(osd()->selection());
+    m_selection->Activate();
     osd()->setSelection(getParentIndex(),m_selection);
     m_selection = 0;
     m_orgselection = 0;

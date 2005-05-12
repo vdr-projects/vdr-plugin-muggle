@@ -209,7 +209,12 @@ class mgSelection
 	{
 	    return Keys.size();
 	}
-	
+/*! \brief the orderlevel is 0 for the top level. After initializing
+ * an mgSelection from file or from another mgSelection, it is 0.
+ * It will only be correct after Activate() has been called. This
+ * is so because setting it correctly needs to access the database.
+ * We do not want to do that before we really need to.
+ */
 	unsigned int orderlevel() const
 	{
 	    return m_level;
@@ -374,7 +379,16 @@ class mgSelection
 	virtual bool inCollection(const string Name="") const =0;
 	virtual bool isLanguagelist() const =0;
 	virtual bool isCollectionlist() const =0;
+/*! \brief sets a default order. Every backend can define any number of
+ * default orders. \param i references the wanted order
+ * \return If i is higher than the highest default order, we return false
+ */
 	virtual bool InitDefaultOrder(unsigned int i=0) =0;
+/*! \brief prepare for use: initialize m_level and go to the 
+ * correct position. This will execute only once after creation
+ * of the mgSelection, so we can call it too often
+ */
+	void Activate();
 
     protected:
 	void InitFrom(const mgSelection* s);
@@ -398,6 +412,7 @@ class mgSelection
 	void setKey ( const mgKeyTypes kt);
 
     private:
+	bool m_active;
         mutable string m_current_values;
         mutable string m_current_tracks;
 //! \brief be careful when accessing this, see mgSelection::items()
@@ -412,7 +427,6 @@ class mgSelection
         string ListFilename ();
 
 	void InitOrder(vector<mgListItem>& items);
-	void ActivateOrder();
 	string leave_one();
 };
 
