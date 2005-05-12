@@ -1,6 +1,6 @@
 /*! 
- * \file   mg_db_gd_mysql.c
- * \brief  A capsule around database access
+ * \file   mg_db_gd_pg.c
+ * \brief  A capsule around postgresql database access
  *
  * \version $Revision: 1.2 $
  * \date    $Date: 2005-04-13 17:42:54 +0100 (Thu, 13 Apr 2005) $
@@ -25,7 +25,9 @@
 
 #include "mg_setup.h"
 #include "mg_item_gd.h"
-#include "mg_db_gd_mysql.h"
+#include "mg_db_gd_pg.h"
+
+#include <postgresql/pg_config.h>
 
 using namespace std;
 
@@ -39,389 +41,188 @@ mgDb* GenerateDB(bool SeparateThread)
 static bool needGenre2;
 static bool needGenre2_set=false;
 
-class mysqlhandle_t {
-	public:
-		mysqlhandle_t();
-		~mysqlhandle_t();
-};
-
-static mysqlhandle_t* mysqlhandle;
-
-bool UsingEmbeddedMySQL();
-
 mgDbGd::mgDbGd(bool SeparateThread)
 {
         m_db = 0;
-        if (!mysqlhandle)
-                mysqlhandle = new mysqlhandle_t;
 	if (m_separate_thread)
-	if (Threadsafe())
-		mysql_thread_init();
-	else
-		mgError("Your Mysql version is not thread safe");
+	if (!Threadsafe())
+		mgError("Your postgresql client library is not thread safe");
 }
 
 mgDbGd::~mgDbGd()
 {
-  mysql_close (m_db);
+  PQfinish (m_db);
   m_db = 0;
-#if MYSQL_VERSION_ID >=400000
-  if (m_separate_thread)
-	mysql_thread_end();
-#endif
 }
 
 bool
 mgDbGd::Threadsafe()
 {
-#if defined THREAD_SAFE_CLIENT && MYSQL_VERSION_ID >=400000
-	// 3.23 does define THREAD_SAFE_CLIENT but has no mysql_thread_init.
-	// So we assume we should better not assume threading to be safe
-	return true;
-#else
-	return false;
-#endif
+	return ENABLE_THREAD_SAFETY;
 }
-
-#ifndef HAVE_ONLY_SERVER
-static char *mysql_embedded_args[] =
-{
-	"muggle",	
-	0,	// placeholder for --datadir=		
-	"--key_buffer_size=32M"
-};
-
-static void
-wrong_embedded_mysql_for_external_server(int version)
-{
-	mgError("You are using the embedded mysql library. For accessing external servers "
-		"you need mysql 040111 but you have only %06d", version);
-	abort();
-}
-#endif
-
-mysqlhandle_t::mysqlhandle_t()
-{
-#ifndef HAVE_ONLY_SERVER
-	static char *mysql_embedded_groups[] =
-	{
-		"embedded",
-		"server",
-		"muggle_SERVER",
-		0
-	};
-	int argv_size;
-	if (UsingEmbeddedMySQL())
-	{
-		argv_size = sizeof(mysql_embedded_args) / sizeof(char *);
-		struct stat stbuf;
-		if (stat(the_setup.DbDatadir,&stbuf))
-			mkdir(the_setup.DbDatadir,0755);
-		if (stat(the_setup.DbDatadir,&stbuf))
-		{
-			mgError("Cannot access mysqldata directory %s: errno=%d",
-					the_setup.DbDatadir,errno);
-			abort();
-		}
-		asprintf(&mysql_embedded_args[1],"--datadir=%s",the_setup.DbDatadir);
-		mgDebug(1,"calling mysql_server_init for embedded in %s",the_setup.DbDatadir);
-	}
-	else
-	{
-#if MYSQL_VERSION_ID < 40111
-		// compile time check
-		wrong_embedded_mysql_for_external_server(MYSQL_VERSION_ID);
-#endif
-#if MYSQL_VERSION_ID >= 40101
-		// runtime check
-		if (mysql_get_client_version()<40111) // this function was added for embedded library in MySQL 4.1.1
-			wrong_embedded_mysql_for_external_server(mysql_get_client_version());
-#endif
-		mgDebug(1,"calling mysql_server_init for external server");
-		argv_size = -1;
-	}
-	if (mysql_server_init(argv_size, mysql_embedded_args, mysql_embedded_groups))
-	{
-		mgError("mysql_server_init failed");
-		abort();
-	}
-#endif
-}
-
-mysqlhandle_t::~mysqlhandle_t()
-{
-#ifndef HAVE_ONLY_SERVER
-  mgDebug(3,"calling mysql_server_end");
-  	mysql_server_end();
-#endif
-}
-
 
 
 static char *db_cmds[] = 
 {
-  "drop table if exists album;",
   "CREATE TABLE album ( "
 	  "artist varchar(255) default NULL, "
 	  "title varchar(255) default NULL, "
-	  "cddbid varchar(20) NOT NULL default '', "
+	  "cddbid varchar(20) default '', "
 	  "coverimg varchar(255) default NULL, "
-	  "covertxt mediumtext, "
+	  "covertxt text, "
 	  "modified date default NULL, "
 	  "genre varchar(10) default NULL, "
-	  "PRIMARY KEY  (cddbid), "
-	  "KEY artist (artist(10)), "
-	  "KEY title (title(10)), "
-	  "KEY genre (genre), "
-	  "KEY modified (modified)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists genre;",
+	  "PRIMARY KEY  (cddbid));",
+  "CREATE INDEX alb_artist ON album (artist);",
+  "CREATE INDEX alb_title ON album (title);",
   "CREATE TABLE genre ("
 	  "id varchar(10) NOT NULL default '', "
-	  "id3genre smallint(6) default NULL, "
+	  "id3genre smallint default NULL, "
 	  "genre varchar(255) default NULL, "
-	  "freq int(11) default NULL, "
-	  "PRIMARY KEY (id)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists language;",
+	  "freq int default NULL, "
+	  "PRIMARY KEY (id));",
   "CREATE TABLE language ("
 	  "id varchar(4) NOT NULL default '', "
 	  "language varchar(40) default NULL, "
-	  "freq int(11) default NULL, "
-	  "PRIMARY KEY  (id)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists musictype;",
+	  "freq int default NULL, "
+	  "PRIMARY KEY  (id));",
   "CREATE TABLE musictype ("
 	  "musictype varchar(40) default NULL, "
-	  "id tinyint(3) unsigned NOT NULL auto_increment, "
-	  "PRIMARY KEY  (id)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists player;",
-  "CREATE TABLE player ( "
-	  "ipaddr varchar(255) NOT NULL default '', "
-	  "uichannel varchar(255) NOT NULL default '', "
-	  "logtarget int(11) default NULL, "
-	  "cdripper varchar(255) default NULL, "
-	  "mp3encoder varchar(255) default NULL, "
-	  "cdromdev varchar(255) default NULL, "
-	  "cdrwdev varchar(255) default NULL, "
-	  "id int(11) NOT NULL default '0', "
-	  "PRIMARY KEY  (id)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists playerstate;",
-  "CREATE TABLE playerstate ( "
-	  "playerid int(11) NOT NULL default '0', "
-	  "playertype int(11) NOT NULL default '0', "
-	  "snddevice varchar(255) default NULL, "
-	  "playerapp varchar(255) default NULL, "
-	  "playerparams varchar(255) default NULL, "
-	  "ptlogger varchar(255) default NULL, "
-	  "currtracknb int(11) default NULL, "
-	  "state varchar(4) default NULL, "
-	  "shufflepar varchar(255) default NULL, "
-	  "shufflestat varchar(255) default NULL, "
-	  "pauseframe int(11) default NULL, "
-	  "framesplayed int(11) default NULL, "
-	  "framestotal int(11) default NULL, "
-	  "anchortime bigint(20) default NULL, "
-	  "PRIMARY KEY  (playerid,playertype)) "
-	  "TYPE=HEAP;",
-  "drop table if exists playlist;",
+	  "id serial, "
+	  "PRIMARY KEY  (id)) ",
   "CREATE TABLE playlist ( "
 	  "title varchar(255) default NULL, "
 	  "author varchar(255) default NULL, "
 	  "note varchar(255) default NULL, "
-	  "created timestamp(8) NOT NULL, "
-	  "id int(10) unsigned NOT NULL auto_increment, "
-	  "PRIMARY KEY  (id)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists playlistitem;",
+	  "created timestamp default NULL, "
+	  "id serial, "
+	  "PRIMARY KEY  (id));",
   "CREATE TABLE playlistitem ( "
-	  "playlist int(11) NOT NULL default '0', "
-	  "tracknumber mediumint(9) NOT NULL default '0', "
-	  "trackid int(11) default NULL, "
-	  "PRIMARY KEY  (playlist,tracknumber)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists playlog;",
-  "CREATE TABLE playlog ( "
-	  "trackid int(11) default NULL, "
-	  "played date default NULL, "
-	  "id tinyint(3) unsigned NOT NULL auto_increment, "
-	  "PRIMARY KEY  (id)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists recordingitem;",
-  "CREATE TABLE recordingitem ( "
-	  "trackid int(11) default NULL, "
-	  "recdate date default NULL, "
-	  "rectime time default NULL, "
-	  "reclength int(11) default NULL, "
-	  "enddate date default NULL, "
-	  "endtime time default NULL,  "
-	  "repeat varchar(10) default NULL, "
-	  "initcmd varchar(255) default NULL, "
-	  "parameters varchar(255) default NULL, "
-	  "atqjob int(11) default NULL, "
-	  "id int(11) NOT NULL default '0', "
-	  "PRIMARY KEY  (id)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists source",
-	  "CREATE TABLE source ( "
+	  "playlist int NOT NULL default '0', "
+	  "tracknumber int NOT NULL default '0', "
+	  "trackid int default NULL, "
+	  "PRIMARY KEY  (playlist,tracknumber));",
+   "CREATE TABLE source ( "
 	  "source varchar(40) default NULL, "
-	  "id tinyint(3) unsigned NOT NULL auto_increment, "
-	  "PRIMARY KEY  (id)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists tracklistitem;",
-  "CREATE TABLE tracklistitem ( "
-	  "playerid int(11) NOT NULL default '0', "
-	  "listtype smallint(6) NOT NULL default '0', "
-	  "tracknb int(11) NOT NULL default '0', "
-	  "trackid int(11) NOT NULL default '0', "
-	  "PRIMARY KEY  (playerid,listtype,tracknb)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists tracks;",
+	  "id serial, "
+	  "PRIMARY KEY  (id)) ",
   "CREATE TABLE tracks ( "
 	  "artist varchar(255) default NULL, "
 	  "title varchar(255) default NULL, "
 	  "genre1 varchar(10) default NULL, "
 	  "genre2 varchar(10) default NULL, "
-	  "year smallint(5) unsigned default NULL, "
+	  "year smallint default NULL, "
 	  "lang varchar(4) default NULL, "
-	  "type tinyint(3) unsigned default NULL, "
-	  "rating tinyint(3) unsigned default NULL, "
-	  "length smallint(5) unsigned default NULL, "
-	  "source tinyint(3) unsigned default NULL, "
+	  "type smallint default NULL, "
+	  "rating smallint default NULL, "
+	  "length smallint default NULL, "
+	  "source smallint default NULL, "
 	  "sourceid varchar(20) default NULL, "
-	  "tracknb tinyint(3) unsigned default NULL, "
+	  "tracknb smallint default NULL, "
 	  "mp3file varchar(255) default NULL, "
-	  "condition tinyint(3) unsigned default NULL, "
-	  "voladjust smallint(6) default '0', "
-	  "lengthfrm mediumint(9) default '0', "
-	  "startfrm mediumint(9) default '0', "
-	  "bpm smallint(6) default '0', "
-	  "lyrics mediumtext, "
+	  "condition smallint default NULL, "
+	  "voladjust smallint default '0', "
+	  "lengthfrm int default '0', "
+	  "startfrm int default '0', "
+	  "bpm smallint default '0', "
+	  "lyrics text, "
 	  "bitrate varchar(10) default NULL, "
 	  "created date default NULL, "
 	  "modified date default NULL, "
-	  "backup tinyint(3) unsigned default NULL, "
-	  "samplerate int(7) unsigned default NULL, "
-	  "channels   tinyint(3) unsigned default NULL,  "
-	  "id int(11) NOT NULL auto_increment, "
+	  "backup smallint default NULL, "
+	  "samplerate int default NULL, "
+	  "channels   smallint default NULL,  "
+	  "id serial, "
 	  "folder1 varchar(255), "
 	  "folder2 varchar(255), "
 	  "folder3 varchar(255), "
 	  "folder4 varchar(255), "
-	  "PRIMARY KEY  (id), "
-	  "KEY title (title(10)), "
-	  "KEY mp3file (mp3file(10)), "
-	  "KEY genre1 (genre1), "
-	  "KEY genre2 (genre2), "
-	  "KEY year (year), "
-	  "KEY lang (lang), "
-	  "KEY type (type), "
-	  "KEY rating (rating), "
-	  "KEY sourceid (sourceid), "
-	  "KEY artist (artist(10))) "
-	  "TYPE=MyISAM;"
+	  "PRIMARY KEY  (id));",
+  "CREATE INDEX trk_artist ON tracks (artist);",
+  "CREATE INDEX trk_title ON tracks (title)",
+  "CREATE INDEX trk_mp3file ON tracks (mp3file);",
+  "CREATE INDEX trk_genre1 ON tracks (genre1);",
+  "CREATE INDEX trk_genre2 ON tracks (genre2);",
+  "CREATE INDEX trk_year ON tracks (year);",
+  "CREATE INDEX trk_lang ON tracks (lang);",
+  "CREATE INDEX trk_type ON tracks (type);",
+  "CREATE INDEX trk_rating ON tracks (rating);",
+  "CREATE INDEX trk_sourceid ON tracks (sourceid);",
 };
 
 
-bool
+PGresult*
 mgDbGd::sql_query(string sql)
 {
 	const char * optsql = optimize(sql).c_str();
-  	mgDebug(4,"mysql_query(%X,%s)",m_db,optsql);
-	bool result = !mysql_query(m_db,optsql);
-	if (!result)
+  	mgDebug(4,"PQexec(%X,%s)",m_db,optsql);
+	PGresult* result = PQexec(m_db,optsql);
+	ExecStatusType res=PQresultStatus(result);
+	if (res != PGRES_COMMAND_OK && res != PGRES_TUPLES_OK)
 	{
-    		mgError("SQL Error in %s: %s",optsql,mysql_error (m_db));
-    		std::cout<<"ERROR in " << optsql << ":" << mysql_error(m_db)<<std::endl;
+		mgError("SQL Error in %s: %s",optsql,PQresultErrorMessage (result));
+    		std::cout<<"ERROR in " << optsql << ":" << PQresultErrorMessage (result)<<std::endl;
 	}
+    	m_rows = atol(PQcmdTuples(result));
 	return result;
 }
 
 void
 mgDbGd::Execute(const string sql)
 {
-  if (sql.empty())
-	  return;
-  if (!Connect())
-	  return;
-  sql_query (sql);
+	PQclear(Query(sql));
 }
 
-MYSQL_RES*
+PGresult*
 mgDbGd::Query( const string sql)
 {
   if (sql.empty())
 	  return 0;
   if (!Connect())
 	  return 0;
-  if (!sql_query (sql))
-	  return 0;
-  else
-	  return mysql_store_result (m_db);
+  return sql_query(sql);
 }
 
 string
 mgDbGd::get_col0( const string sql)
 {
-	MYSQL_RES * sql_result = Query ( sql);
+	PGresult * sql_result = Query ( sql);
 	if (!sql_result)
 		return "NULL";
-	MYSQL_ROW row = mysql_fetch_row (sql_result);
 	string result;
-	if (row == NULL)
-		result = "NULL";
-	else if (row[0] == NULL)
+	if (PQntuples(sql_result)==0)
 		result = "NULL";
 	else
-		result = row[0];
-	mysql_free_result (sql_result);
+	{
+		char *field = PQgetvalue(sql_result,0,0);
+		if (strlen(field)==0)
+			result = "NULL";
+		else
+			result = field;
+	}
+	PQclear (sql_result);
 	return result;
 }
 
 bool
 mgDbGd::Create()
 {
-  if (!ServerConnect())
+  if (!Connect())
 	  return false;
+  return myCreate();
+}
+
+bool
+mgDbGd::myCreate()
+{
   // create database and tables
-  mgDebug(1,"Dropping and recreating database %s",the_setup.DbName);
-  char buffer[500];
-  sprintf(buffer,"DROP DATABASE IF EXISTS %s",the_setup.DbName);
-  if (strlen(buffer)>400)
-	  mgError("name of database too long: %s",the_setup.DbName);
-  if (!sql_query(buffer))
-  {
-  	mgWarning("Cannot drop %s:%s",the_setup.DbName,
-			mysql_error (m_db));
-	return false;
-  }
-  sprintf(buffer,"CREATE DATABASE %s",the_setup.DbName);
-  if (!sql_query(buffer))
-  {
-  	mgWarning("Cannot create %s:%s",the_setup.DbName,mysql_error (m_db));
-	return false;
-  }
-
-  if (!UsingEmbeddedMySQL())
-	sprintf(buffer,"grant all privileges on %s.* to vdr@localhost",
-			the_setup.DbName);
-  	sql_query(buffer);
-  	// ignore error. If we can create the data base, we can do everything
-  	// with it anyway.
-
-  if (mysql_select_db(m_db,the_setup.DbName))
-	  mgError("mysql_select_db(%s) failed with %s",mysql_error(m_db));
-
   int len = sizeof( db_cmds ) / sizeof( char* );
   for( int i=0; i < len; i ++ )
     {
-  	if (!sql_query (db_cmds[i]))
+	PGresult *res=sql_query (db_cmds[i]);
+  	if (!res)
   	{
-    		mgWarning("%20s: %s",db_cmds[i],mysql_error (m_db));
-		sprintf(buffer,"DROP DATABASE IF EXISTS %s",the_setup.DbName);
-  		sql_query(buffer);	// clean up
+    		mgWarning("%20s: %s",db_cmds[i],PQerrorMessage (m_db));
 		return false;
 	}
     }
@@ -438,18 +239,11 @@ mgDbGd::sql_Cstring( const char *s, char *buf)
 	b=buf;
   else
   {
-  	int buflen;
-  	if (!this)
-	  	buflen=strlen(s)+2;
-  	else
-		buflen=2*strlen(s)+3;
+  	int buflen=2*strlen(s)+5;
   	b = (char *) malloc( buflen);
   }
   b[0]='\'';
-  if (!ServerConnect())
-	strcpy(b+1,s);
-  else
-  	mysql_real_escape_string( m_db, b+1, s, strlen(s) );
+  PQescapeString(b+1,s,strlen(s));
   *(strchr(b,0)+1)=0;
   *(strchr(b,0))='\'';
   return b;
@@ -458,81 +252,56 @@ mgDbGd::sql_Cstring( const char *s, char *buf)
 bool
 mgDbGd::ServerConnect () 
 {
-    if (m_db)
-	return true;
-    if (time(0)<m_connect_time+10)
-	return false;
-    m_connect_time=time(0);
-    m_db = mysql_init (0);
-    if (!m_db)
-        return false;
-    if (UsingEmbeddedMySQL())
-    {
-#ifndef HAVE_ONLY_SERVER
-    	if (!mysql_real_connect(m_db, 0, 0, 0, 0, 0, 0, 0))
-		mgWarning("Failed to connect to embedded mysql in %s:%s ",
-				the_setup.DbDatadir,mysql_error(m_db));
-    	else
-		mgDebug(1,"Connected to embedded mysql in %s",
-				the_setup.DbDatadir);
-#endif
-    }
-    else
-    {
-    	if (the_setup.NoHost() || !strcmp(the_setup.DbHost,"localhost"))
-      		mgDebug(1,"Using socket %s for connecting to local system as user %s.",
-		      	the_setup.DbSocket, the_setup.DbUser);
-    	else
-      		mgDebug(1,"Using TCP for connecting to server %s as user %s.",
-		      	the_setup.DbHost, the_setup.DbUser);
-    	if (!mysql_real_connect( m_db,
-		      	the_setup.DbHost, the_setup.DbUser, the_setup.DbPass, 0,
-		      	the_setup.DbPort, the_setup.DbSocket, 0 ) != 0 )
-    	{
-		mgWarning("Failed to connect to server '%s' as User '%s', Password '%s': %s",
-			    	the_setup.DbHost,the_setup.DbUser,the_setup.DbPass,mysql_error(m_db));
-        	mysql_close (m_db);
-		m_db = 0;
-    	}
-    }
-    return m_db!=0;
+    return true;
 }
 
-
-bool
-UsingEmbeddedMySQL()
-{
-#ifdef HAVE_ONLY_SERVER
-	return false;
-#else
-	return the_setup.NoHost();
-#endif
-}
 
 bool
 mgDbGd::Connect ()
 {
     if (m_database_found)
 	return true;
-    if (!ServerConnect())
-    	return false;
+    char conninfo[500];
+    char port[20];
+    char host[200];
+    if (the_setup.DbPort>0)
+	    sprintf(port," port = %d ",the_setup.DbPort);
+    else
+	    port[0]=0;
+    if (notempty(the_setup.DbHost))
+	snprintf(host,199," host = %s ",the_setup.DbHost);
+    else if (notempty(the_setup.DbSocket))
+	snprintf(host,199," host = %s ",the_setup.DbSocket);
+    else
+	host[0]=0;
+    snprintf(conninfo,499,"%s %s dbname = %s user = %s ",
+		    host,port,the_setup.DbName,the_setup.DbUser);
+    m_db = PQconnectdb(conninfo);
+    if (PQstatus(m_db) != CONNECTION_OK)
+    {
+	    mgWarning("Failed to connect to postgres server using %s:%s",conninfo,PQerrorMessage(m_db));
+	    return false;
+    }
+    m_database_found = true;	// otherwise we get into a recursion
+    m_database_found = exec_count("SELECT COUNT(*) FROM information_schema.tables WHERE table_name='album'");
+    if (m_database_found)
+	return true;
     if (time(0)<m_create_time+10)
 	return false;
     m_create_time=time(0);
-    m_database_found = mysql_select_db(m_db,the_setup.DbName)==0;
-    if (m_database_found)
-	return true;
     extern bool create_question();
     extern bool import();
     if (create_question())
     {
-	    if (Create())
+	    m_database_found = true;
+	    if (myCreate())
 	    {
 	    	import();
 		return true;
 	    }
     }
-    mgWarning(mysql_error(m_db));
+    m_database_found = false;
+    mgWarning(PQerrorMessage(m_db));
     return false;
 }
 
@@ -548,33 +317,8 @@ mgDbGd::NeedGenre2()
 }
 
 void
-mgDbGd::CreateFolderFields()
-{
-  if (HasFolderFields())
-	  return;
-  sql_query("DESCRIBE tracks folder1");
-  MYSQL_RES *rows = mysql_store_result(m_db);
-  if (rows)
-    {
-      m_hasfolderfields = mysql_num_rows(rows)>0;
-      mysql_free_result(rows);
-      if (!m_hasfolderfields)
-      {
-	      m_hasfolderfields = sql_query(
-	              "alter table tracks add column folder1 varchar(255),"
-		      "add column folder2 varchar(255),"
-		      "add column folder3 varchar(255),"
-		      "add column folder4 varchar(255)");
-
-      }
-    }
-}
-
-void
 mgDbGd::ServerEnd()
 {
-	delete mysqlhandle;
-	mysqlhandle=0;
 }
 
 char *
@@ -633,8 +377,8 @@ mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
 			*slash='\'';
 			*(slash+1)=0;
 		}
-		const char *directory="substring(tracks.mp3file,1,length(tracks.mp3file)"
-			"-instr(reverse(tracks.mp3file),'/'))";
+		const char *directory="substring(tracks.mp3file from '.*/(.*)')";
+
 		char *where;
 		asprintf(&where,"WHERE tracks.sourceid=album.cddbid "
 			"AND %s=%s "
@@ -644,14 +388,13 @@ mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
 
 		// how many artists will the album have after adding this one?
 		asprintf(&b,"SELECT distinct album.artist FROM tracks, album %s ",where);
-        	MYSQL_RES *rows = Query (b);
+        	PGresult *rows = Query (b);
 		free(b);
-		long new_album_artists = m_db->affected_rows;
+		long new_album_artists = PQntuples(rows);
 		char buf[520];
 		if (new_album_artists==1)
 		{
-			MYSQL_ROW row = mysql_fetch_row(rows);
-			sql_Cstring(row[0],buf);
+			sql_Cstring(PQgetvalue(rows,0,0),buf);
 			if (strcmp(buf,c_artist))
 				new_album_artists++;
 		}
@@ -673,13 +416,13 @@ mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
 		else
 		{				// no usable album found
 			free(result);
-			result = Build_cddbid(c_artist);
-			asprintf(&b,"INSERT INTO album SET title=%s,artist=%s,cddbid=%s",
+			result=Build_cddbid(c_artist);
+			asprintf(&b,"INSERT INTO album (title,artist,cddbid) VALUES(%s,%s,%s)",
 				c_album,c_artist,result);
 			Execute(b);
 			free(b);
 		}
-		mysql_free_result(rows);	
+		PQclear(rows);	
 		free(where);
 	}
 	return result;
@@ -720,23 +463,13 @@ mgDbGd::SyncFile(const char *filename)
 	char c_folder2[520];
 	char c_folder3[520];
 	char c_folder4[520];
-	if (HasFolderFields())
-	{
-	    char *folders[4];
-	    char *fbuf=SeparateFolders(filename,folders,4);
-	    sql_Cstring(folders[0],c_folder1);
-	    sql_Cstring(folders[1],c_folder2);
-	    sql_Cstring(folders[2],c_folder3);
-	    sql_Cstring(folders[3],c_folder4);
-	    free(fbuf);
-	}
-	else
-	{
-	    c_folder1[0]=0;
-	    c_folder2[0]=0;
-	    c_folder3[0]=0;
-	    c_folder4[0]=0;
-	}
+	char *folders[4];
+	char *fbuf=SeparateFolders(filename,folders,4);
+	sql_Cstring(folders[0],c_folder1);
+	sql_Cstring(folders[1],c_folder2);
+	sql_Cstring(folders[2],c_folder3);
+	sql_Cstring(folders[3],c_folder4);
+	free(fbuf);
         sql_Cstring(f.tag()->artist(),c_artist);
 	sql_Cstring(f.tag()->title(),c_title);
 	if (f.tag()->album()=="")
@@ -766,14 +499,17 @@ mgDbGd::SyncFile(const char *filename)
 	}
 	else
 	{
-		sprintf(sql,"INSERT INTO tracks SET artist=%s,title=%s,year=%u,sourceid=%s,"
-			"tracknb=%u,mp3file=%s,length=%d,bitrate=%d,samplerate=%d,"
-			"channels=%d,genre1=%s,genre2='',lang=%s,"
-			"folder1=%s,folder2=%s,folder3=%s,folder4=%s",
+		sprintf(sql,"INSERT INTO tracks "
+			"(artist,title,year,sourceid,"
+			"tracknb,mp3file,length,bitrate,samplerate,"
+			"channels,genre1,genre2,lang,folder1,folder2,"
+			"folder3,folder4) "
+			"VALUES (%s,%s,%u,%s,"
+			"%u,%s,%d,%d,%d,"
+			"%d,%s,'',%s,%s,%s,%s,%s)",
 			c_artist,c_title,f.tag()->year(),c_cddbid,
 			f.tag()->track(),c_mp3file,ap->length(),ap->bitrate(),ap->sampleRate(),
-			ap->channels(),c_genre1,c_lang,
-			c_folder1,c_folder2,c_folder3,c_folder4);
+			ap->channels(),c_genre1,c_lang,c_folder1,c_folder2,c_folder3,c_folder4);
 	}
 	free(c_cddbid);
 	Execute(sql);
@@ -790,7 +526,6 @@ mgDbGd::SyncStart()
 	struct timezone tz;
 	gettimeofday( &tv, &tz );
 	srandom( tv.tv_usec );
-	CreateFolderFields();
 	return true;
 }
 
@@ -868,7 +603,7 @@ mgDbGd::RemoveFromCollection (const string Name, const vector<mgItem*>&items, mg
     sql += sql_list(" FROM",what->tables);
     sql += sql_list(" WHERE",what->clauses," AND ");
     Execute (sql);
-    return m_db->affected_rows;
+    return m_rows;
 }
 
 bool
@@ -877,7 +612,7 @@ mgDbGd::DeleteCollection (const string Name)
     if (!Connect()) return false;
     ClearCollection(Name);
     Execute ("DELETE FROM playlist WHERE title=" + sql_string (Name));
-    return (m_db->affected_rows == 1);
+    return m_rows == 1;
 }
 
 void
@@ -895,7 +630,7 @@ mgDbGd::CreateCollection (const string Name)
     string name = sql_string(Name);
     if (exec_count("SELECT count(title) FROM playlist WHERE title = " + name)>0) 
 	return false;
-    Execute ("INSERT playlist VALUES(" + name + ",'VDR',NULL,NULL,NULL)");
+    Execute ("INSERT INTO playlist (title,author,created) VALUES(" + name + ",'VDR',CURRENT_TIMESTAMP)");
     return true;
 }
 
@@ -905,15 +640,9 @@ mgDbGd::FieldExists(string table, string field)
     	if (!Connect()) 
 		return false;
     	char *b;
-    	asprintf(&b,"DESCRIBE %s %s",table.c_str(),field.c_str());
-    	MYSQL_RES *rows = Query (b);
-    	free(b);
-	bool result=false;
-    	if (rows)
-	{
-		result = mysql_num_rows(rows) == 1;
-    		mysql_free_result (rows);
-	}
+        asprintf(&b,"SELECT COUNT(*) FROM information_schema.columns WHERE table_name='album' AND column_name='%s'",field.c_str());
+    	bool result = exec_count(b)==1;
+	free(b);
 	return result;
 }
 
@@ -924,19 +653,21 @@ mgDbGd::LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valma
 		return;
 	if (!Connect())
 		return;
-	MYSQL_RES *rows = Query (sql);
+	PGresult *rows = Query (sql);
 	if (rows) 
 	{
-		MYSQL_ROW row;
-		while ((row = mysql_fetch_row (rows)) != 0)
+		int ntuples = PQntuples(rows);
+		for (int idx=0;idx<ntuples;idx++)
 		{
-			if (row[0] && row[1])
+			char *r0 = PQgetvalue(rows,idx,0);
+			char *r1 = PQgetvalue(rows,idx,1);
+			if (r0[0] && r1[0])
 			{
-				if (valmap) (*valmap)[row[0]] = row[1];
-				if (idmap) (*idmap)[row[1]] = row[0];
+				if (valmap) (*valmap)[r0] = r1;
+				if (idmap) (*idmap)[r1] = r0;
 			}
 		}
-		mysql_free_result (rows);
+		PQclear (rows);
 	}
 }
 
@@ -964,16 +695,24 @@ mgDbGd::LoadItemsInto(mgParts& what,vector<mgItem*>& items)
 	what.tables.push_back("tracks");
 	what.tables.push_back("album");
 	string result = what.sql_select(false); 
-	MYSQL_RES *rows = Query (result);
+	PGresult *rows = Query (result);
 	if (rows)
 	{
 		for (unsigned int idx=0;idx<items.size();idx++)
 			delete items[idx];
 		items.clear ();
-		MYSQL_ROW row;
-		while ((row = mysql_fetch_row (rows)) != 0)
+		char *row[50];
+		assert(PQnfields(rows)<50);
+		for (int rowidx=0;rowidx<50;rowidx++)
+			row[rowidx]=0;
+		int ntuples = PQntuples(rows);
+		for (int rowidx=0;rowidx<ntuples;rowidx++)
+		{
+			for (int idx=0;idx<PQnfields(rows);idx++)
+				row[idx] = PQgetvalue(rows,rowidx,idx);
 			items.push_back (new mgItemGd (row));
-		mysql_free_result (rows);
+		}
+		PQclear (rows);
 	}
 	return result;
 }
@@ -984,28 +723,29 @@ mgDbGd::LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitem
     	if (!Connect())
 		return "";
 	string result = what.sql_select();		
-	MYSQL_RES *rows = Query (result);
+	PGresult *rows = Query (result);
         if (rows)
 	{
         	listitems.clear ();
-        	unsigned int num_fields = mysql_num_fields(rows);
+        	unsigned int num_fields = PQnfields(rows);
 		assert(num_fields>=2);
-		MYSQL_ROW row;
-        	while ((row = mysql_fetch_row (rows)) != 0)
+		int ntuples = PQntuples(rows);
+		for (int idx=0;idx<ntuples;idx++)
         	{
-			if (!row[0]) continue;
-			string r0 = row[0];
+			string r0 = PQgetvalue(rows,idx,0);
+			if (r0.empty()) continue;
 			mgListItem* n = new mgListItem;
 			if (num_fields==3)
 			{
-				if (!row[1]) continue;
-				n->set(row[0],row[1],atol(row[2]));
+				if (PQgetisnull(rows,idx,1))
+					continue;
+				n->set(r0,PQgetvalue(rows,idx,1),atol(PQgetvalue(rows,idx,2)));
 			}
 			else
-        			n->set(KeyMaps.value(tp,r0),r0,atol(row[1]));
+				n->set(KeyMaps.value(tp,r0),r0,atol(PQgetvalue(rows,idx,1)));
 			listitems.push_back(n);
         	}
-        	mysql_free_result (rows);
+        	PQclear (rows);
 	}
 	return result;
 }

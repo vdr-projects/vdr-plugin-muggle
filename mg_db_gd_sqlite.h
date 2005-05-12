@@ -38,7 +38,6 @@ class mgDbGd : public mgDb {
 	void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap);
 	string LoadItemsInto(mgParts& what,vector<mgItem*>& items);
 	string LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems);
-	unsigned long exec_count(const string sql); 
 	void ServerEnd();
 	bool Threadsafe();
    protected:
@@ -46,19 +45,18 @@ class mgDbGd : public mgDb {
 	bool SyncStart();
 	void SyncFile(const char *filename);
 	void SyncEnd();
+	void Execute(const string sql);
    private:
+	char ** Query(const string sql);
 	sqlite3 *m_db;
-  	void FillTables();
 	char ** query(const string sql);
 	int silent_execute( const string sql);
-	void Execute( const string sql);
+	void execute( const string sql);
   	string get_col0( const string sql);
 	char *sql_Cstring(TagLib::String s,char *buf=0);
 	TagLib::String getlanguage(const char *filename);
 	char * getAlbum(const char *filename,const char *c_album,const char *c_artist);
 	map<string,string> m_Genres;
-	int m_rows;
-	int m_cols;
 	char *m_errmsg;
 
 };

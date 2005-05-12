@@ -23,10 +23,6 @@ PLUGIN = muggle
 # HAVE_SQLITE = 1
 
 HAVE_MYSQL = 1
-ifdef HAVE_SQLITE
-HAVE_MYSQL =
-HAVE_ONLY_SERVER =
-endif
 
 ### The version number of this plugin (taken from the main source file):
 
@@ -47,6 +43,17 @@ TMPDIR ?= /tmp
 ### Allow user defined options to overwrite defaults:
 
 -include $(VDRDIR)/Make.config
+
+ifdef HAVE_SQLITE
+HAVE_MYSQL =
+HAVE_ONLY_SERVER =
+else
+ifdef HAVE_PG
+HAVE_MYSQL =
+HAVE_SQLITE = 
+HAVE_ONLY_SERVER =
+endif
+endif
 
 ### The version number of VDR (taken from VDR's "config.h"):
 
@@ -78,17 +85,24 @@ ifdef HAVE_SQLITE
 SQLLIBS += -lsqlite3
 DB_OBJ = mg_db_gd_sqlite.o
 DEFINES += -DHAVE_SQLITE
-else
+endif
+ifdef HAVE_MYSQL
 INCLUDES += $(shell mysql_config --cflags) 
 DB_OBJ = mg_db_gd_mysql.o
+DEFINES += -DHAVE_MYSQL
 ifdef HAVE_ONLY_SERVER
 SQLLIBS =  $(shell mysql_config --libs)
 DEFINES += -DHAVE_ONLY_SERVER
 else
-SQLLIBS = $(shell mysql_config --libmysqld-libs) -L/lib
+SQLLIBS = $(shell mysql_config --libmysqld-libs) 
 endif
 endif
-
+ifdef HAVE_PG
+INCLUDES += -I$(shell pg_config --includedir) 
+SQLLIBS =  -L$(shell pg_config --libdir) -lpq
+DB_OBJ = mg_db_gd_pg.o
+DEFINES += -DHAVE_PG
+endif
 
 ifdef HAVE_VORBISFILE
 DEFINES += -DHAVE_VORBISFILE
@@ -125,7 +139,8 @@ $(DEPFILE): Makefile
 mg_tables.h:	scripts/genres.txt scripts/iso_639.xml scripts/musictypes.txt scripts/sources.txt
 	scripts/gentables
 
-libvdr-$(PLUGIN).so: $(OBJS)
+# das hier nur voruebergehend, zum einfacheren Testen, ob noch alles kompiliert:
+libvdr-$(PLUGIN).so: $(OBJS) mg_db_gd_pg.o mg_db_gd_sqlite.o mg_db_gd_mysql.o
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(PLAYLIBS) $(SQLLIBS) -o $@
 	@cp $@ $(LIBDIR)/$@.$(VDRVERSION)
 

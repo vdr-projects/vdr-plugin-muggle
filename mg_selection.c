@@ -36,6 +36,24 @@ randrange (const unsigned int high)
     return result;
 }
 
+bool compvalue (const mgListItem* x, const mgListItem* y)
+{
+	return x->value()<y->value();
+}
+
+bool compcount (const mgListItem* x, const mgListItem* y)
+{
+	return x->count()>y->count();
+}
+
+void
+mgSelection::mgListItems::sort(bool bycount)
+{
+	if (bycount)
+		std::sort(m_items.begin(),m_items.end(),compcount);
+	else
+		std::sort(m_items.begin(),m_items.end(),compvalue);
+}
 
 void
 mgSelection::mgListItems::clear()
@@ -740,6 +758,7 @@ mgSelection::refreshValues ()  const
     mgParts p =  Parts(m_db);
     m_current_values = m_db->LoadValuesInto(
 		    p,getKeyType(orderlevel()),listitems.items());
+    listitems.sort(m_orderByCount);
 }
 
 

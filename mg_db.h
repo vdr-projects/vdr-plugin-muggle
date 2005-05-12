@@ -63,7 +63,6 @@ public:
 	strlist tables;
 	strlist clauses;
 	strlist groupby;
-	strlist orders;
 	mgParts& operator+=(mgParts a);
 	void Prepare();
 	string sql_count();
@@ -91,7 +90,7 @@ class mgDb {
  	 * returning only one row.
  	 * \param query the SQL query to be executed
  	 */
-  	virtual unsigned long exec_count (string sql) = 0;
+	unsigned long exec_count(const string sql); 
   	virtual bool ServerConnect() { return true; }
   	virtual bool Connect() = 0;
   	bool HasFolderFields() const { return m_hasfolderfields;}
@@ -113,6 +112,8 @@ class mgDb {
 	virtual bool Threadsafe() { return false; }
 	virtual void Execute(const string sql)=0;
    protected:
+	int m_rows;
+	int m_cols;
 	virtual bool SyncStart() { return true; }
 	virtual void SyncEnd() {}
 	virtual void SyncFile(const char *filename) {}
@@ -123,6 +124,9 @@ class mgDb {
 	bool m_separate_thread;
 	time_t m_connect_time;
 	time_t m_create_time;
+	char* Build_cddbid(const char* artist);
+	virtual string get_col0(const string sql) =0;
+	void FillTables();
 };
 
 class mgKey {

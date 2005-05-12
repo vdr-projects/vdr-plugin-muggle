@@ -86,6 +86,11 @@ static char *db_cmds[] =
 	  "language varchar(40) default NULL, "
 	  "freq int(11) default NULL, "
 	  "PRIMARY KEY  (id))",
+  "drop table musictype;",
+  "CREATE TABLE musictype ("
+	  "musictype varchar(40) default NULL, "
+	  "id tinyint(3) unsigned NOT NULL auto_increment, "
+	  "PRIMARY KEY  (id)) ",
   "drop table playlist",
   "CREATE TABLE playlist ( "
 	  "title varchar(255) default NULL, "
@@ -152,10 +157,10 @@ static char *db_cmds[] =
 
 
 char **
-mgDbGd::query(string sql)
+mgDbGd::Query(string sql)
 {
 	const char * optsql = optimize(sql).c_str();
-  	mgDebug(5,"query(%X,%s)",m_db,optsql);
+  	mgDebug(5,"Query(%X,%s)",m_db,optsql);
 	char **result=0;
 	int rc = sqlite3_get_table(m_db,optsql,&result,&m_rows,&m_cols,&m_errmsg);
   	mgDebug(5,"finishes with result %d, rows:%d, cols:%d",rc,m_rows,m_cols);
@@ -188,7 +193,7 @@ mgDbGd::silent_execute( string sql)
 	if (!Connect())
 		return 0;
 	const char * optsql = optimize(sql).c_str();
-  	mgDebug(5,"Execute(%X,%s)",m_db,optsql);
+  	mgDebug(5,"silent_execute(%X,%s)",m_db,optsql);
 	int result = sqlite3_exec(m_db,sql.c_str(),0,0,&m_errmsg);
   	mgDebug(5,"finishes with result %d",result);
 	return result;
@@ -197,7 +202,7 @@ mgDbGd::silent_execute( string sql)
 string
 mgDbGd::get_col0( const string sql)
 {
-	char **table = query(sql);
+	char **table = Query(sql);
 	string result;
 	if (table && m_rows && m_cols)
 		result = table[m_cols];
@@ -206,65 +211,6 @@ mgDbGd::get_col0( const string sql)
 	sqlite3_free_table(table);
 	return result;
 }
-
-unsigned long
-mgDbGd::exec_count( const string sql) 
-{
-	unsigned long result = 0;
-	if (Connect())
-		result = atol (get_col0 ( sql).c_str ());
-	return result;
-}
-
-struct genres_t {
-	char *id;
-	int id3genre;
-	char *name;
-};
-
-struct lang_t {
-	char *id;
-	char *name;
-};
-
-struct musictypes_t {
-	char *name;
-};
-
-struct sources_t {
-	char *name;
-};
-
-void mgDbGd::FillTables()
-{
-#include "mg_tables.h"
-  char *b;
-  int len = sizeof( genres ) / sizeof( genres_t );
-  Execute("INSERT INTO genre (id,genre) VALUES('NULL','No Genre')");
-  for( int i=0; i < len; i ++ )
-  {
-	  char id3genre[5];
-	  if (genres[i].id3genre>=0)
-	  	sprintf(id3genre,"%d",genres[i].id3genre);
-	  else
-		strcpy(id3genre,"NULL");
-	  string genre = sql_string(genres[i].name);
-	  b=sqlite3_mprintf("INSERT INTO genre (id,id3genre,genre) VALUES('%s', %s, %s)",
-			  genres[i].id,id3genre,genre.c_str());
-	  Execute(b);
-	  sqlite3_free(b);
-  }
-  len = sizeof( languages ) / sizeof( lang_t );
-  Execute("INSERT INTO language (id,language) VALUES('NULL','Instrumental')");
-  for( int i=0; i < len; i ++ )
-  {
-	  b=sqlite3_mprintf("INSERT INTO language (id,language) VALUES('%q', '%q')",
-			  languages[i].id,languages[i].name);
-	  Execute(b);
-	  sqlite3_free(b);
-  }
-}
-
 
 bool
 mgDbGd::Create()
@@ -474,7 +420,7 @@ mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
 		sqlite3_free(c_directory);
 		// how many artists will the album have after adding this one?
 		asprintf(&b,"SELECT distinct album.artist FROM album, tracks %s ",where);
-        	char **table = query (b);
+        	char **table = Query (b);
 		free(b);
 		long new_album_artists = m_rows;
 		char *buf=sqlite3_mprintf("");
@@ -503,10 +449,7 @@ mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
 		else
 		{				// no usable album found
 			sqlite3_free(result);
-			result = sqlite3_mprintf("'%ld-%9s",random(),c_artist+1);
-			char *p=strchr(result,0)-1;
-			if (*p!='\'')
-				*p='\'';
+			result = Build_cddbid(c_artist);
 			b=sqlite3_mprintf("INSERT INTO album (title,artist,cddbid) "
 					"VALUES(%s,%s,%s)",
 				c_album,c_artist,result);
@@ -733,7 +676,7 @@ mgDbGd::LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valma
 		return;
 	if (!Connect())
 		return;
-	char **table = query(sql);
+	char **table = Query(sql);
 	if (table && m_cols && m_rows)
 	{
 		for (int idx=1; idx<=m_rows; idx++)
@@ -774,7 +717,7 @@ mgDbGd::LoadItemsInto(mgParts& what,vector<mgItem*>& items)
 	what.tables.push_back("tracks");
 	what.tables.push_back("album");
 	string result = what.sql_select(false); 
-	char **table = query(result);
+	char **table = Query(result);
 	if (table && m_cols && m_rows)
 	{
 		for (unsigned int idx=0;idx<items.size();idx++)
@@ -795,7 +738,7 @@ mgDbGd::LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitem
 		return "";
 	string result = what.sql_select();		
         listitems.clear ();
-	char **table = query(result);
+	char **table = Query(result);
 	if (table && m_rows && m_cols>=2)
 		for (int idx=1; idx<=m_rows; idx++)
 		{
@@ -947,7 +890,6 @@ mgKeyGdGenres::Parts(mgDb *db,bool orderby) const
 		else
 			result.idfields.push_back("substring(genre.id,1,"+ltos(genrelevel())+")");
 		result.tables.push_back("genre");
-       		result.orders.push_back("genre.genre");
 	}
 	return result;
 }
@@ -1024,7 +966,6 @@ mgKeyGdTrack::Parts(mgDb *db,bool orderby) const
 		// if you change tracks.title, please also
 		// change mgItemGd::getKeyItem()
 		result.idfields.push_back("tracks.title");
-       		result.orders.push_back("tracks.tracknb");
 	}
 	return result;
 }
@@ -1040,7 +981,6 @@ mgKeyGdLanguage::Parts(mgDb *db,bool orderby) const
 		result.valuefields.push_back("language.language");
 		result.idfields.push_back("tracks.lang");
 		result.tables.push_back("language");
-       		result.orders.push_back("language.language");
 	}
 	return result;
 }
@@ -1055,7 +995,6 @@ mgKeyGdCollection::Parts(mgDb *db,bool orderby) const
 		AddIdClause(db,result,"playlist.id");
 		result.valuefields.push_back("playlist.title");
 		result.idfields.push_back("playlist.id");
-       		result.orders.push_back("playlist.title");
 	}
 	else
 	{
@@ -1077,7 +1016,6 @@ mgKeyGdCollectionItem::Parts(mgDb *db,bool orderby) const
 		result.tables.push_back("tracks");
 		result.idfields.push_back("tracks.title");
 		result.idfields.push_back("playlistitem.rowid");
-       		result.orders.push_back("playlistitem.rowid");
 	}
 	return result;
 }

@@ -188,9 +188,9 @@ mgSelectionGd::Parts(mgDb *db,bool orderby) const
 	{
 		// sql command contributed by jarny
 		result.special_statement = string("select playlist.title,playlist.id, "
-				"count(*) * (playlistitem.playlist is not null) from playlist "
+				"count(*) * case when playlistitem.playlist is null then 0 else 1 end from playlist "
 				"left join playlistitem on playlist.id = playlistitem.playlist "
-				"group by playlist.title");
+				"group by playlist.title,playlistitem.playlist,playlist.id");
 		return result;
 	}
 	for (unsigned int i=0;i<=m_level;i++)

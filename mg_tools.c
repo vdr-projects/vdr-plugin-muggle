@@ -166,3 +166,12 @@ extension(const char *filename)
 		dot = strrchr(filename,0)-1;
 	return dot+1;
 }
+
+bool
+notempty(const char *s)
+{
+	if (!s)
+		return false;
+	else
+		return strlen(s);
+}

@@ -201,10 +201,7 @@ mgKeyNormal::Parts(mgDb *db, bool orderby) const
 	result.tables.push_back(table());
 	AddIdClause(db,result,expr());
 	if (orderby)
-	{
-		result.idfields.push_back(expr());
-       		result.orders.push_back(expr());
-	}
+		result.idfields.push_back(expr());// \todo noch noetig?
 	return result;
 }
 
@@ -335,7 +332,6 @@ mgParts::operator+=(mgParts a)
 	idfields += a.idfields;
 	tables += a.tables;
 	clauses += a.clauses;
-	orders += a.orders;
 	return *this;
 }
 
@@ -374,7 +370,6 @@ mgParts::Prepare()
 	push_table_to_front("playlistitem");
 	clauses.sort();
 	clauses.unique();
-	orders.unique();
 }
 
 void
@@ -414,10 +409,7 @@ mgParts::sql_select(bool distinct)
 	if (distinct)
 	{
 		result += sql_list("GROUP BY",idfields);
- 		if (orderByCount)
-			orders.insert(orders.begin(),"mgcount desc");
 	}
-	result += sql_list("ORDER BY",orders);
 	return result;
 }
 
@@ -425,13 +417,13 @@ string
 mgParts::sql_count()
 {
 	Prepare();
-	string result = sql_list("SELECT COUNT() FROM ( SELECT",idfields,",","");
+	string result = sql_list("SELECT COUNT(*) FROM ( SELECT",idfields,",","");
 	if (result.empty())
 		return result;
 	result += sql_list("FROM",tables);
 	result += sql_list("WHERE",clauses," AND ");
 	result += sql_list("GROUP BY",idfields);
-	result += ")";
+	result += ") AS xx";
 	return result;
 }
 
@@ -584,3 +576,91 @@ mgParts::~mgParts()
 {
 }
 
+char *
+mgDb::Build_cddbid(const char *artist)
+{
+	char buf[520];
+	strncpy(buf,artist+1,520);
+	buf[strlen(buf)-1]=0;
+	while (char *p=strchr(buf,'\''))
+		*p='_';
+	char *result;
+	asprintf(&result,"'%ld-%.9s'",random(),buf);
+	return result;
+}
+
+unsigned long
+mgDb::exec_count( const string sql) 
+{
+	unsigned long result = 0;
+	if (Connect())
+		result = atol (get_col0 ( sql).c_str ());
+	return result;
+}
+
+
+struct genres_t {
+	char *id;
+	int id3genre;
+	char *name;
+};
+
+struct lang_t {
+	char *id;
+	char *name;
+};
+
+struct musictypes_t {
+	char *name;
+};
+
+struct sources_t {
+	char *name;
+};
+
+void mgDb::FillTables()
+{
+#include "mg_tables.h"
+  int len = sizeof( genres ) / sizeof( genres_t );
+  Execute("INSERT INTO genre (id,genre) VALUES('NULL','No Genre')");
+  for( int i=0; i < len; i ++ )
+  {
+	  char b[600];
+	  char id3genre[5];
+	  if (genres[i].id3genre>=0)
+	  	sprintf(id3genre,"%d",genres[i].id3genre);
+	  else
+		strcpy(id3genre,"NULL");
+	  string genre = sql_string(genres[i].name);
+	  sprintf(b,"INSERT INTO genre (id,id3genre,genre) VALUES ('%s',%s,%s)",
+			  genres[i].id,id3genre,genre.c_str());
+	  Execute(b);
+  }
+  len = sizeof( languages ) / sizeof( lang_t );
+  Execute("INSERT INTO language (id,language) VALUES('NULL','Instrumental')");
+  for( int i=0; i < len; i ++ )
+  {
+	  char b[600];
+	  sprintf(b,"INSERT INTO language (id,language) VALUES('%s',",
+			  languages[i].id);
+	  sql_Cstring(languages[i].name,strchr(b,0));
+	  strcat(b,")");
+	  Execute(b);
+  }
+  len = sizeof( musictypes ) / sizeof( musictypes_t );
+  for( int i=0; i < len; i ++ )
+  {
+	  char b[600];
+	  sprintf(b,"INSERT INTO musictype (musictype) VALUES('%s')",
+			  musictypes[i].name);
+	  Execute(b);
+  }
+  len = sizeof( sources ) / sizeof( sources_t );
+  for( int i=0; i < len; i ++ )
+  {
+	  char b[600];
+	  sprintf(b,"INSERT INTO source (source) VALUES('%s')",
+			  sources[i].name);
+	  Execute(b);
+  }
+}

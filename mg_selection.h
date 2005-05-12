@@ -71,6 +71,7 @@ class mgSelection
 			void clear();
 			void push_back(mgListItem* item) { m_items.push_back(item); }
 			vector<mgListItem*>& items() { return m_items; }	//! \brief use only for loading!
+			void sort(bool bycount);
 		private:
        			unsigned int index (const string s,bool val,bool second_try=false) const;
 			vector<mgListItem*> m_items;

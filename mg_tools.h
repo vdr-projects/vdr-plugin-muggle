@@ -98,4 +98,6 @@ string itos (int i);
 string ltos (long l);
 
 char *extension (const char *filename);
+
+bool notempty(const char *s);
 #endif                                            /*  _MUGGLE_TOOLS_H */

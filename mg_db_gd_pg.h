@@ -14,7 +14,7 @@
 #include <string>
 #include <tag.h>
 #include <map>
-#include <mysql/mysql.h>
+#include <postgresql/libpq-fe.h>
 
 using namespace std;
 
@@ -34,7 +34,7 @@ class mgDbGd : public mgDb {
 	bool CreateCollection( const string Name);
 	
 	bool NeedGenre2();
-	long thread_id() { return mysql_thread_id(m_db); }
+	long thread_id() { return -1; }
 	bool FieldExists(string table, string field);
 	void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap);
 	string LoadItemsInto(mgParts& what,vector<mgItem*>& items);
@@ -47,10 +47,10 @@ class mgDbGd : public mgDb {
 	bool SyncStart();
 	void SyncFile(const char *filename);
    private:
-	MYSQL *m_db;
-	void CreateFolderFields();
-	MYSQL_RES* Query( const string sql);
-  	bool sql_query(string sql);
+	bool myCreate();
+	PGconn *m_db;
+	PGresult* Query( const string sql);
+  	PGresult* sql_query(string sql);
   	string get_col0( const string sql);
 	char *sql_Cstring(TagLib::String s,char *buf=0);
 	TagLib::String getlanguage(const char *filename);
