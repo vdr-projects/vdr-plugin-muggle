@@ -180,7 +180,7 @@ mgSelectionGd::Choices(unsigned int level, unsigned int *current) const
 
 
 mgParts
-mgSelectionGd::Parts(mgDb *db,bool orderby) const
+mgSelectionGd::Parts(mgDb *db,bool groupby) const
 {
 	mgParts result;
 	result.orderByCount = m_orderByCount;
@@ -217,12 +217,12 @@ mgSelectionGd::Parts(mgDb *db,bool orderby) const
 		{
 			mgListItem* item = k->get();
 			k->set(0);
-			result += k->Parts(db,orderby && (i==m_level));
+			result += k->Parts(db,groupby && (i==m_level));
 			k->set(item);
 			delete item;
 		}
 		else
-			result += k->Parts(db,orderby && (i==m_level));
+			result += k->Parts(db,groupby && (i==m_level));
 next:
 		continue;
 	}

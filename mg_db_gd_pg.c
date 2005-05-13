@@ -721,19 +721,19 @@ mgDbGd::LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitem
 class mgKeyGdTrack : public mgKeyNormal {
 	public:
 		mgKeyGdTrack() : mgKeyNormal(keyGdTrack,"tracks","tracknb") {};
-		mgParts Parts(mgDb *db,bool orderby=false) const;
+		mgParts Parts(mgDb *db,bool groupby=false) const;
 };
 
 class mgKeyGdAlbum : public mgKeyNormal {
 	public:
 		mgKeyGdAlbum() : mgKeyNormal(keyGdAlbum,"album","title") {};
-		mgParts Parts(mgDb *db,bool orderby=false) const;
+		mgParts Parts(mgDb *db,bool groupby=false) const;
 };
 
 mgParts
-mgKeyGdAlbum::Parts(mgDb *db,bool orderby) const
+mgKeyGdAlbum::Parts(mgDb *db,bool groupby) const
 {
-	mgParts result = mgKeyNormal::Parts(db,orderby);
+	mgParts result = mgKeyNormal::Parts(db,groupby);
 	result.tables.push_back("tracks");
 	return result;
 }
@@ -760,12 +760,12 @@ class mgKeyGdGenres : public mgKeyNormal {
 	public:
 		mgKeyGdGenres() : mgKeyNormal(keyGdGenres,"tracks","genre1") {};
 		mgKeyGdGenres(mgKeyTypes kt) : mgKeyNormal(kt,"tracks","genre1") {};
-		mgParts Parts(mgDb *db,bool orderby=false) const;
+		mgParts Parts(mgDb *db,bool groupby=false) const;
 	protected:
 		string map_sql() const;
 		virtual unsigned int genrelevel() const { return 4; }
 	private:
-		string GenreClauses(mgDb *db,bool orderby) const;
+		string GenreClauses(mgDb *db,bool groupby) const;
 };
 
 class mgKeyGdGenre1 : public mgKeyGdGenres
@@ -799,12 +799,12 @@ mgKeyGdGenres::map_sql() const
 }
 
 string
-mgKeyGdGenres::GenreClauses(mgDb *db,bool orderby) const
+mgKeyGdGenres::GenreClauses(mgDb *db,bool groupby) const
 {
 	strlist g1;
 	strlist g2;
 
-	if (orderby)
+	if (groupby)
 		if (genrelevel()==4)
 		{
 			g1.push_back("tracks.genre1=genre.id");
@@ -838,12 +838,12 @@ mgKeyGdGenres::GenreClauses(mgDb *db,bool orderby) const
 
 
 mgParts
-mgKeyGdGenres::Parts(mgDb *db,bool orderby) const
+mgKeyGdGenres::Parts(mgDb *db,bool groupby) const
 {
 	mgParts result;
-   	result.clauses.push_back(GenreClauses(db,orderby));
+   	result.clauses.push_back(GenreClauses(db,groupby));
 	result.tables.push_back("tracks");
-	if (orderby)
+	if (groupby)
 	{
 		result.valuefields.push_back("genre.genre");
 		if (genrelevel()==4)
@@ -859,7 +859,7 @@ mgKeyGdGenres::Parts(mgDb *db,bool orderby) const
 class mgKeyGdLanguage : public mgKeyNormal {
 	public:
 		mgKeyGdLanguage() : mgKeyNormal(keyGdLanguage,"tracks","lang") {};
-		mgParts Parts(mgDb *db,bool orderby=false) const;
+		mgParts Parts(mgDb *db,bool groupby=false) const;
 	protected:
 		string map_sql() const { return "select id,language from language;"; }
 };
@@ -867,14 +867,14 @@ class mgKeyGdLanguage : public mgKeyNormal {
 class mgKeyGdCollection: public mgKeyNormal {
 	public:
   	  mgKeyGdCollection() : mgKeyNormal(keyGdCollection,"playlist","id") {};
-	  mgParts Parts(mgDb *db,bool orderby=false) const;
+	  mgParts Parts(mgDb *db,bool groupby=false) const;
 	protected:
 	 string map_sql() const { return "select id,title from playlist;"; }
 };
 class mgKeyGdCollectionItem : public mgKeyNormal {
 	public:
 		mgKeyGdCollectionItem() : mgKeyNormal(keyGdCollectionItem,"playlistitem","trackid") {};
-		mgParts Parts(mgDb *db,bool orderby=false) const;
+		mgParts Parts(mgDb *db,bool groupby=false) const;
 };
 
 class mgKeyDecade : public mgKeyNormal {
@@ -917,12 +917,12 @@ ktGenerate(const mgKeyTypes kt)
 }
 
 mgParts
-mgKeyGdTrack::Parts(mgDb *db,bool orderby) const
+mgKeyGdTrack::Parts(mgDb *db,bool groupby) const
 {
 	mgParts result;
 	result.tables.push_back("tracks");
 	AddIdClause(db,result,"tracks.title");
-	if (orderby)
+	if (groupby)
 	{
 		// if you change tracks.title, please also
 		// change mgItemGd::getKeyItem()
@@ -932,12 +932,12 @@ mgKeyGdTrack::Parts(mgDb *db,bool orderby) const
 }
 
 mgParts
-mgKeyGdLanguage::Parts(mgDb *db,bool orderby) const
+mgKeyGdLanguage::Parts(mgDb *db,bool groupby) const
 {
 	mgParts result;
 	AddIdClause(db,result,"tracks.lang");
 	result.tables.push_back("tracks");
-	if (orderby)
+	if (groupby)
 	{
 		result.valuefields.push_back("language.language");
 		result.idfields.push_back("tracks.lang");
@@ -947,10 +947,10 @@ mgKeyGdLanguage::Parts(mgDb *db,bool orderby) const
 }
 
 mgParts
-mgKeyGdCollection::Parts(mgDb *db,bool orderby) const
+mgKeyGdCollection::Parts(mgDb *db,bool groupby) const
 {
 	mgParts result;
-	if (orderby)
+	if (groupby)
 	{
 		result.tables.push_back("playlist");
 		AddIdClause(db,result,"playlist.id");
@@ -966,12 +966,12 @@ mgKeyGdCollection::Parts(mgDb *db,bool orderby) const
 }
 
 mgParts
-mgKeyGdCollectionItem::Parts(mgDb *db,bool orderby) const
+mgKeyGdCollectionItem::Parts(mgDb *db,bool groupby) const
 {
 	mgParts result;
 	result.tables.push_back("playlistitem");
 	AddIdClause(db,result,"tracks.title");
-	if (orderby)
+	if (groupby)
 	{
 		result.tables.push_back("tracks");
 		result.idfields.push_back("tracks.title");

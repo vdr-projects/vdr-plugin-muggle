@@ -195,13 +195,13 @@ mgKeyNormal::get()
 }
 
 mgParts
-mgKeyNormal::Parts(mgDb *db, bool orderby) const
+mgKeyNormal::Parts(mgDb *db, bool groupby) const
 {
 	mgParts result;
 	result.tables.push_back(table());
 	AddIdClause(db,result,expr());
-	if (orderby)
-		result.idfields.push_back(expr());// \todo noch noetig?
+	if (groupby)
+		result.idfields.push_back(expr());
 	return result;
 }
 

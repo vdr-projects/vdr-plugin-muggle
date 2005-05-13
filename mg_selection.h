@@ -373,9 +373,9 @@ class mgSelection
 	bool SameOrder(const mgSelection* other);
 	mgKey* Key(unsigned int idx) const;
 	virtual vector <const char*> Choices(unsigned int level, unsigned int *current) const = 0;
-	void setOrderByCount(bool orderbycount);
+	void setOrderByCount(bool groupbycount);
 	bool getOrderByCount() const { return m_orderByCount; }
-	virtual mgParts Parts(mgDb *db,bool orderby=true) const = 0;
+	virtual mgParts Parts(mgDb *db,bool groupby=true) const = 0;
 	virtual bool inCollection(const string Name="") const =0;
 	virtual bool isLanguagelist() const =0;
 	virtual bool isCollectionlist() const =0;

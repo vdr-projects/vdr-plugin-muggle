@@ -23,7 +23,7 @@ class mgSelectionGd : public mgSelection
 	mgSelectionGd(const bool fall_through = false);
  	void MakeCollection();
 	vector <const char*> Choices(unsigned int level, unsigned int *current) const;
-	mgParts Parts(mgDb *db,bool orderby=true) const;
+	mgParts Parts(mgDb *db,bool groupby=true) const;
 	bool inCollection(const string Name="") const;
 	bool isLanguagelist() const;
 	bool isCollectionlist() const;
