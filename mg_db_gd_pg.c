@@ -98,10 +98,8 @@ static char *db_cmds[] =
 	  "id serial, "
 	  "PRIMARY KEY  (id));",
   "CREATE TABLE playlistitem ( "
-	  "playlist int NOT NULL default '0', "
-	  "tracknumber int NOT NULL default '0', "
-	  "trackid int default NULL, "
-	  "PRIMARY KEY  (playlist,tracknumber));",
+	  "playlist int NOT NULL,"
+	  "trackid int NOT NULL) WITH OIDS",
    "CREATE TABLE source ( "
 	  "source varchar(40) default NULL, "
 	  "id serial, "
@@ -157,13 +155,18 @@ mgDbGd::sql_query(string sql)
 	const char * optsql = optimize(sql).c_str();
   	mgDebug(4,"PQexec(%X,%s)",m_db,optsql);
 	PGresult* result = PQexec(m_db,optsql);
-	ExecStatusType res=PQresultStatus(result);
-	if (res != PGRES_COMMAND_OK && res != PGRES_TUPLES_OK)
-	{
-		mgError("SQL Error in %s: %s",optsql,PQresultErrorMessage (result));
-    		std::cout<<"ERROR in " << optsql << ":" << PQresultErrorMessage (result)<<std::endl;
+	switch (PQresultStatus(result)) {
+		case PGRES_COMMAND_OK:
+    			m_rows = atol(PQcmdTuples(result));
+			break;
+		case PGRES_TUPLES_OK:
+    			m_rows = PQntuples(result);
+			break;
+		default:	
+			mgError("SQL Error in %s: %s",optsql,PQresultErrorMessage (result));
+    			std::cout<<"ERROR in " << optsql << ":" << PQresultErrorMessage (result)<<std::endl;
+			break;
 	}
-    	m_rows = atol(PQcmdTuples(result));
 	return result;
 }
 
@@ -190,7 +193,7 @@ mgDbGd::get_col0( const string sql)
 	if (!sql_result)
 		return "NULL";
 	string result;
-	if (PQntuples(sql_result)==0)
+	if (m_rows==0)
 		result = "NULL";
 	else
 	{
@@ -385,7 +388,7 @@ mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
 		asprintf(&b,"SELECT distinct album.artist FROM tracks, album %s ",where);
         	PGresult *rows = Query (b);
 		free(b);
-		long new_album_artists = PQntuples(rows);
+		long new_album_artists = m_rows;
 		char buf[520];
 		if (new_album_artists==1)
 		{
@@ -527,48 +530,25 @@ mgDbGd::SyncStart()
 int
 mgDbGd::AddToCollection( const string Name,const vector<mgItem*>&items, mgParts* what)
 {
-    if (!Connect()) return 0;
-    CreateCollection(Name);
-    string listid = sql_string (get_col0
-        ("SELECT id FROM playlist WHERE title=" + sql_string (Name)));
-    unsigned int tracksize = items.size();
-    if (tracksize==0)
+    if (Name.empty())
 	    return 0;
-
-    // this code is rather complicated but works in a multi user
-    // environment:
- 
-    // insert a unique trackid:
-    string trackid = ltos(thread_id()+1000000);
-    Execute("INSERT INTO playlistitem SELECT "+listid+","
-	   "MAX(tracknumber)+"+ltos(tracksize)+","+trackid+
-	   " FROM playlistitem WHERE playlist="+listid);
-    
-    // find tracknumber of the trackid we just inserted:
-    string sql = string("SELECT tracknumber FROM playlistitem WHERE "
-		    "playlist=")+listid+" AND trackid="+trackid;
-    long first = atol(get_col0(sql).c_str()) - tracksize + 1;
-
-    // replace the place holder trackid by the correct value:
-    Execute("UPDATE playlistitem SET trackid="+ltos(items[tracksize-1]->getItemid())+
-		    " WHERE playlist="+listid+" AND trackid="+trackid);
-    
-    // insert all other tracks:
-    const char *sql_prefix = "INSERT INTO playlistitem VALUES ";
-    sql = "";
-    for (unsigned int i = 0; i < tracksize-1; i++)
+    if (!Connect())
+	    return 0;
+    CreateCollection(Name);
+    string listid = KeyMaps.id(keyGdCollection,Name);
+    if (listid.empty())
+	    return 0;
+    Execute("BEGIN TRANSACTION");
+    // insert all tracks:
+    int result = 0;
+    for (unsigned int i = 0; i < items.size(); i++)
     {
-	string item = "(" + listid + "," + ltos (first + i) + "," +
-            ltos (items[i]->getItemid ()) + ")";
-	comma(sql, item);
-	if ((i%100)==99)
-	{
-    		Execute (sql_prefix+sql);
-		sql = "";
-	}
+	Execute("INSERT INTO playlistitem VALUES( " + listid + ","
+			+ ltos (items[i]->getItemid ()) +")");
+	result += m_rows;
     }
-    if (!sql.empty()) Execute (sql_prefix+sql);
-    return tracksize;
+    Execute("COMMIT");
+    return result;
 }
 
 int
@@ -577,28 +557,20 @@ mgDbGd::RemoveFromCollection (const string Name, const vector<mgItem*>&items, mg
     if (Name.empty())
 	    return 0;
     if (!Connect()) return 0;
-    string pid = KeyMaps.id(keyGdCollection,Name);
-    if (pid.empty())
+    string listid = KeyMaps.id(keyGdCollection,Name);
+    if (listid.empty())
 	    return 0;
-    what->Prepare();
-    what->tables.push_front("playlistitem as del");
-    what->clauses.push_back("del.playlist="+pid);
-    bool usesTracks = false;
-    for (list < string >::iterator it = what->tables.begin (); it != what->tables.end (); ++it)
-	if (*it == "tracks")
-	{
-		usesTracks = true;
-		break;
-	}
-    if (usesTracks)
-	what->clauses.push_back("del.trackid=tracks.id");
-    else
-	what->clauses.push_back("del.trackid=playlistitem.trackid");
-    string sql = "DELETE playlistitem";
-    sql += sql_list(" FROM",what->tables);
-    sql += sql_list(" WHERE",what->clauses," AND ");
-    Execute (sql);
-    return m_rows;
+    Execute("BEGIN TRANSACTION");
+    // remove all tracks:
+    int result = 0;
+    for (unsigned int i = 0; i < items.size(); i++)
+    {
+	Execute("DELETE FROM playlistitem WHERE playlist=" + listid +
+		" AND trackid="+ltos (items[i]->getItemid ()));
+	result += m_rows;
+    }
+    Execute("COMMIT");
+    return result;
 }
 
 bool
@@ -651,7 +623,7 @@ mgDbGd::LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valma
 	PGresult *rows = Query (sql);
 	if (rows) 
 	{
-		int ntuples = PQntuples(rows);
+		int ntuples = m_rows;
 		for (int idx=0;idx<ntuples;idx++)
 		{
 			char *r0 = PQgetvalue(rows,idx,0);
@@ -700,8 +672,7 @@ mgDbGd::LoadItemsInto(mgParts& what,vector<mgItem*>& items)
 		assert(PQnfields(rows)<50);
 		for (int rowidx=0;rowidx<50;rowidx++)
 			row[rowidx]=0;
-		int ntuples = PQntuples(rows);
-		for (int rowidx=0;rowidx<ntuples;rowidx++)
+		for (int rowidx=0;rowidx<m_rows;rowidx++)
 		{
 			for (int idx=0;idx<PQnfields(rows);idx++)
 				row[idx] = PQgetvalue(rows,rowidx,idx);
@@ -717,27 +688,29 @@ mgDbGd::LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitem
 {
     	if (!Connect())
 		return "";
-	string result = what.sql_select();		
+	string result = what.sql_select(tp!=keyGdCollectionItem);		
 	PGresult *rows = Query (result);
         if (rows)
 	{
         	listitems.clear ();
         	unsigned int num_fields = PQnfields(rows);
-		assert(num_fields>=2);
-		int ntuples = PQntuples(rows);
-		for (int idx=0;idx<ntuples;idx++)
+		assert(num_fields>=1);
+		for (int idx=0;idx<m_rows;idx++)
         	{
 			string r0 = PQgetvalue(rows,idx,0);
 			if (r0.empty()) continue;
 			mgListItem* n = new mgListItem;
+			long count=1;
+			if (num_fields>1)
+				count = atol(PQgetvalue(rows,idx,num_fields-1));
 			if (num_fields==3)
 			{
 				if (PQgetisnull(rows,idx,1))
 					continue;
-				n->set(r0,PQgetvalue(rows,idx,1),atol(PQgetvalue(rows,idx,2)));
+				n->set(r0,PQgetvalue(rows,idx,1),count);
 			}
 			else
-				n->set(KeyMaps.value(tp,r0),r0,atol(PQgetvalue(rows,idx,1)));
+				n->set(KeyMaps.value(tp,r0),r0,count);
 			listitems.push_back(n);
         	}
         	PQclear (rows);
@@ -900,7 +873,7 @@ class mgKeyGdCollection: public mgKeyNormal {
 };
 class mgKeyGdCollectionItem : public mgKeyNormal {
 	public:
-		mgKeyGdCollectionItem() : mgKeyNormal(keyGdCollectionItem,"playlistitem","tracknumber") {};
+		mgKeyGdCollectionItem() : mgKeyNormal(keyGdCollectionItem,"playlistitem","trackid") {};
 		mgParts Parts(mgDb *db,bool orderby=false) const;
 };
 
@@ -997,13 +970,11 @@ mgKeyGdCollectionItem::Parts(mgDb *db,bool orderby) const
 {
 	mgParts result;
 	result.tables.push_back("playlistitem");
-	AddIdClause(db,result,"playlistitem.tracknumber");
+	AddIdClause(db,result,"tracks.title");
 	if (orderby)
 	{
-		// tracks nur hier, fuer sql_delete_from_coll wollen wir es nicht
 		result.tables.push_back("tracks");
 		result.idfields.push_back("tracks.title");
-		result.idfields.push_back("playlistitem.tracknumber");
 	}
 	return result;
 }

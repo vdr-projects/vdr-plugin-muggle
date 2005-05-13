@@ -768,7 +768,8 @@ mgSelection::refreshValues ()  const
     mgParts p =  Parts(m_db);
     m_current_values = m_db->LoadValuesInto(
 		    p,getKeyType(m_level),listitems.items());
-    listitems.sort(m_orderByCount);
+    if (!inCollection(""))
+	    listitems.sort(m_orderByCount);
 }
 
 

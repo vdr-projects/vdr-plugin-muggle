@@ -100,8 +100,8 @@ static char *db_cmds[] =
 	  "id integer PRIMARY KEY autoincrement)",
 "drop table playlistitem",
   "CREATE TABLE playlistitem ( "
-	  "playlist integer, "
-	  "trackid int(11) not NULL)",
+	  "playlist integer NOT NULL, "
+	  "trackid int(11) NOT NULL)",
   "CREATE INDEX playlistitem_1 on playlistitem (playlist)",
   "drop table tracklistitem",
   "CREATE TABLE tracklistitem ( "
@@ -731,23 +731,26 @@ mgDbGd::LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitem
 {
     	if (!Connect())
 		return "";
-	string result = what.sql_select();		
+	string result = what.sql_select(tp!=keyGdCollectionItem);
         listitems.clear ();
 	char **table = Query(result);
-	if (table && m_rows && m_cols>=2)
+	if (table && m_rows && m_cols>=1)
 		for (int idx=1; idx<=m_rows; idx++)
 		{
 			char **row = &table[idx*m_cols];
 			if (!row[0]) continue;
 			string r0 = row[0];
 			mgListItem* n = new mgListItem;
+			long count=1;
+			if (m_cols>1)
+				count = atol(row[m_cols-1]);
 			if (m_cols==3)
 			{
 				if (!row[1]) return 0;
-				n->set(row[0],row[1],atol(row[2]));
+				n->set(row[0],row[1],count);
 			}
 			else
-       				n->set(KeyMaps.value(tp,r0),r0,atol(row[1]));
+       				n->set(KeyMaps.value(tp,r0),r0,count);
 			listitems.push_back(n);
 		}
 	sqlite3_free_table(table);
@@ -907,7 +910,7 @@ class mgKeyGdCollection: public mgKeyNormal {
 };
 class mgKeyGdCollectionItem : public mgKeyNormal {
 	public:
-		mgKeyGdCollectionItem() : mgKeyNormal(keyGdCollectionItem,"playlistitem","tracknumber") {};
+		mgKeyGdCollectionItem() : mgKeyNormal(keyGdCollectionItem,"playlistitem","trackid") {};
 		mgParts Parts(mgDb *db,bool orderby=false) const;
 };
 
@@ -1004,13 +1007,11 @@ mgKeyGdCollectionItem::Parts(mgDb *db,bool orderby) const
 {
 	mgParts result;
 	result.tables.push_back("playlistitem");
-	AddIdClause(db,result,"playlistitem.rowid");
+	AddIdClause(db,result,"tracks.title");
 	if (orderby)
 	{
-		// tracks nur hier, fuer sql_delete_from_coll wollen wir es nicht
 		result.tables.push_back("tracks");
 		result.idfields.push_back("tracks.title");
-		result.idfields.push_back("playlistitem.rowid");
 	}
 	return result;
 }
