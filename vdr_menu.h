@@ -230,7 +230,7 @@ class mgMainMenu:public cOsdMenu
 
 	void AddItem(mgAction *a);
 
-	void CollectionChanged(std::string name);
+	void CollectionChanged(std::string name,bool added);
 
 	void CloseMenu();
 
