@@ -128,7 +128,7 @@ mgSelection* mgMainMenu::getSelection(unsigned int idx)
 }
 
 void
-mgMainMenu::CollectionChanged(string name)
+mgMainMenu::CollectionChanged(string name,bool added)
 {
     delete moveselection;
     moveselection = NULL;
@@ -139,7 +139,7 @@ mgMainMenu::CollectionChanged(string name)
 	mgPlayerControl *c = PlayerControl();
 	if (c)
 	   c->ReloadPlaylist();
-	else
+	else if (added)
 	   PlayQueue();
     }
     if (CollectionEntered(name) || selection()->isCollectionlist())

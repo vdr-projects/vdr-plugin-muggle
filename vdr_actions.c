@@ -154,7 +154,7 @@ mgAddCollEntry::Execute()
                collselection()->ClearCollection(target);
 
     osd()->Message1 ("Added %s entries",itos (osd()->moveselection->AddToCollection (target)));
-    osd()->CollectionChanged(target);
+    osd()->CollectionChanged(target,true);
     return true;
 }
 
@@ -165,7 +165,7 @@ mgRemoveCollEntry::Execute()
     string target = selection()->getCurrentValue();
     int removed = osd()->moveselection->RemoveFromCollection (target);
     osd()->Message1 ("Removed %s entries",ltos(removed));
-    osd()->CollectionChanged(target);
+    osd()->CollectionChanged(target,false);
     return true;
 }
 
@@ -1039,7 +1039,7 @@ mgClearCollection::Execute()
 	{
 		string target = selection()->getCurrentValue();
 		selection()->ClearCollection(target);
-    		osd()->CollectionChanged(target);
+    		osd()->CollectionChanged(target,false);
 	}
 	return true;
 }
