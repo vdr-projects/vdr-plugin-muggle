@@ -1,0 +1,65 @@
+/*! \mainpage Muggle: Usage with postgresql
+
+This is a plugin for the Video Disk Recorder (VDR).
+
+Written by:                  Andi Kellner,
+                             Lars von Wedel <vonwedel@web.de>,
+                             Ralf Klueber <r@lf-klueber.de>, 
+                             Wolfgang Rohdewald <wolfgang@rohdewald.de>
+
+Project's homepage:          http://www.htpc-tech.de/htpc/muggle.htm
+
+Latest version available at: http://www.htpc-tech.de/htpc/muggle-dev.htm
+
+See the file COPYING for license information.
+
+\section prereq PREREQUISITES
+
+You will need:
+
+ - postgresql client libraries: Debian package postgresql-client
+ - postgresql server, possibly on another machine: Debian package postgresql
+ - postgresql-dev for the compilation
+
+Please execute these steps before starting muggle the first time:
+(tested on Debian unstable)
+
+1. log in as root
+2. su - postgres
+3. createuser vdr
+4. createdb GiantDisc
+
+
+Everything else will be done by muggle.
+
+\section install INSTALLING 
+
+Adapt the Makefile or Make.config to your system. Define HAVE_PG
+
+HAVE_PG=1
+
+
+\section SET UP MUGGLE WITH POSTGRESQL
+
+Embedded MySQL means simpler configuration because you do not have 
+to login into a remote data base server. You will only need the argument
+-d Directory. muggle will store the data base in that directory. Start
+mugglei without arguments for details.
+
+\section SET UP MUGGLE WITH REMOTE MYSQL
+
+Muggle and mugglei use a small set of parameters in order to control
+the interaction with the Postgresql server. Let's look at an example:
+
+\verbatim
+  -P'muggle -h /tmp -u vdr -t/home/music'
+\endverbatim
+
+The -h parameter says to look for a socket in /tmp (this is what I
+had to to on Debian unstable). 
+
+Start mugglei without arguments to see a list and explanation of
+all available options. They can vary slightly depending on the
+chosen data base software.
+
+*/

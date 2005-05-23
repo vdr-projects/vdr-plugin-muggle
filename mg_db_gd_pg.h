@@ -44,6 +44,7 @@ class mgDbGd : public mgDb {
    protected:
 	char* sql_Cstring(const char *s,char *buf);
 	bool SyncStart();
+	void SyncEnd();
 	void SyncFile(const char *filename);
    private:
 	bool myCreate();

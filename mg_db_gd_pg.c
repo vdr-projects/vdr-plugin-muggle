@@ -45,8 +45,8 @@ mgDbGd::mgDbGd(bool SeparateThread)
 {
         m_db = 0;
 	if (m_separate_thread)
-	if (!Threadsafe())
-		mgError("Your postgresql client library is not thread safe");
+		if (!Threadsafe())
+			mgError("Your database library is not thread safe");
 }
 
 mgDbGd::~mgDbGd()
@@ -72,20 +72,20 @@ static char *db_cmds[] =
 	  "covertxt text, "
 	  "modified date default NULL, "
 	  "genre varchar(10) default NULL, "
-	  "PRIMARY KEY  (cddbid));",
-  "CREATE INDEX alb_artist ON album (artist);",
-  "CREATE INDEX alb_title ON album (title);",
+	  "PRIMARY KEY  (cddbid))",
+  "CREATE INDEX alb_artist ON album (artist)",
+  "CREATE INDEX alb_title ON album (title)",
   "CREATE TABLE genre ("
 	  "id varchar(10) NOT NULL default '', "
 	  "id3genre smallint default NULL, "
 	  "genre varchar(255) default NULL, "
 	  "freq int default NULL, "
-	  "PRIMARY KEY (id));",
+	  "PRIMARY KEY (id))",
   "CREATE TABLE language ("
 	  "id varchar(4) NOT NULL default '', "
 	  "language varchar(40) default NULL, "
 	  "freq int default NULL, "
-	  "PRIMARY KEY  (id));",
+	  "PRIMARY KEY  (id))",
   "CREATE TABLE musictype ("
 	  "musictype varchar(40) default NULL, "
 	  "id serial, "
@@ -96,7 +96,7 @@ static char *db_cmds[] =
 	  "note varchar(255) default NULL, "
 	  "created timestamp default NULL, "
 	  "id serial, "
-	  "PRIMARY KEY  (id));",
+	  "PRIMARY KEY  (id))",
   "CREATE TABLE playlistitem ( "
 	  "playlist int NOT NULL,"
 	  "trackid int NOT NULL) WITH OIDS",
@@ -135,17 +135,17 @@ static char *db_cmds[] =
 	  "folder2 varchar(255), "
 	  "folder3 varchar(255), "
 	  "folder4 varchar(255), "
-	  "PRIMARY KEY  (id));",
-  "CREATE INDEX trk_artist ON tracks (artist);",
+	  "PRIMARY KEY  (id))",
+  "CREATE INDEX trk_artist ON tracks (artist)",
   "CREATE INDEX trk_title ON tracks (title)",
-  "CREATE INDEX trk_mp3file ON tracks (mp3file);",
-  "CREATE INDEX trk_genre1 ON tracks (genre1);",
-  "CREATE INDEX trk_genre2 ON tracks (genre2);",
-  "CREATE INDEX trk_year ON tracks (year);",
-  "CREATE INDEX trk_lang ON tracks (lang);",
-  "CREATE INDEX trk_type ON tracks (type);",
-  "CREATE INDEX trk_rating ON tracks (rating);",
-  "CREATE INDEX trk_sourceid ON tracks (sourceid);",
+  "CREATE INDEX trk_mp3file ON tracks (mp3file)",
+  "CREATE INDEX trk_genre1 ON tracks (genre1)",
+  "CREATE INDEX trk_genre2 ON tracks (genre2)",
+  "CREATE INDEX trk_year ON tracks (year)",
+  "CREATE INDEX trk_lang ON tracks (lang)",
+  "CREATE INDEX trk_type ON tracks (type)",
+  "CREATE INDEX trk_rating ON tracks (rating)",
+  "CREATE INDEX trk_sourceid ON tracks (sourceid)",
 };
 
 
@@ -524,11 +524,18 @@ mgDbGd::SyncStart()
 	struct timezone tz;
 	gettimeofday( &tv, &tz );
 	srandom( tv.tv_usec );
+	Execute("BEGIN TRANSACTION");
 	return true;
 }
 
+void
+mgDbGd::SyncEnd()
+{
+	Execute("COMMIT TRANSACTION");
+}
+
 int
-mgDbGd::AddToCollection( const string Name,const vector<mgItem*>&items, mgParts* what)
+mgDbGd::AddToCollection( const string Name, const vector<mgItem*>&items,mgParts *what)
 {
     if (Name.empty())
 	    return 0;
@@ -552,11 +559,12 @@ mgDbGd::AddToCollection( const string Name,const vector<mgItem*>&items, mgParts*
 }
 
 int
-mgDbGd::RemoveFromCollection (const string Name, const vector<mgItem*>&items, mgParts* what)
+mgDbGd::RemoveFromCollection (const string Name, const vector<mgItem*>&items,mgParts* what)
 {
     if (Name.empty())
 	    return 0;
-    if (!Connect()) return 0;
+    if (!Connect())
+	    return 0;
     string listid = KeyMaps.id(keyGdCollection,Name);
     if (listid.empty())
 	    return 0;
@@ -565,8 +573,8 @@ mgDbGd::RemoveFromCollection (const string Name, const vector<mgItem*>&items, mg
     int result = 0;
     for (unsigned int i = 0; i < items.size(); i++)
     {
-	Execute("DELETE FROM playlistitem WHERE playlist=" + listid +
-		" AND trackid="+ltos (items[i]->getItemid ()));
+	Execute("DELETE FROM playlistitem WHERE playlist="+listid+
+			" AND trackid = " + ltos (items[i]->getItemid ()));
 	result += m_rows;
     }
     Execute("COMMIT");
@@ -751,9 +759,7 @@ class mgKeyGdFolder : public mgKeyNormal {
 bool
 mgKeyGdFolder::Enabled(mgDb *db)
 {
-    if (m_enabled<0)
-	m_enabled = db->FieldExists("tracks", m_field);
-    return (m_enabled==1);
+    return true;
 }
 
 class mgKeyGdGenres : public mgKeyNormal {
@@ -793,9 +799,9 @@ string
 mgKeyGdGenres::map_sql() const
 {
 	if (genrelevel()==4)
-		return "select id,genre from genre;";
+		return "select id,genre from genre";
 	else
-		return string("select id,genre from genre where length(id)<="+ltos(genrelevel())+";");
+		return string("select id,genre from genre where length(id)<="+ltos(genrelevel()));
 }
 
 string
@@ -861,7 +867,7 @@ class mgKeyGdLanguage : public mgKeyNormal {
 		mgKeyGdLanguage() : mgKeyNormal(keyGdLanguage,"tracks","lang") {};
 		mgParts Parts(mgDb *db,bool groupby=false) const;
 	protected:
-		string map_sql() const { return "select id,language from language;"; }
+		string map_sql() const { return "select id,language from language"; }
 };
 
 class mgKeyGdCollection: public mgKeyNormal {
@@ -869,7 +875,7 @@ class mgKeyGdCollection: public mgKeyNormal {
   	  mgKeyGdCollection() : mgKeyNormal(keyGdCollection,"playlist","id") {};
 	  mgParts Parts(mgDb *db,bool groupby=false) const;
 	protected:
-	 string map_sql() const { return "select id,title from playlist;"; }
+	 string map_sql() const { return "select id,title from playlist"; }
 };
 class mgKeyGdCollectionItem : public mgKeyNormal {
 	public:

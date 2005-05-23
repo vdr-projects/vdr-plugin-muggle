@@ -203,7 +203,10 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 xxxxxxxx: Version 0.1.8-BETA
 - rewrote much of the SQL interface to allow easier implementation
   of alternative data bases
-- implemented support for SQLite. The field genre2 is not supported
-  because it would be too slow. Define HAVE_SQLITE in Make.config.
+- implemented support for SQLite. Tested with version 3.2.1. The
+  field genre2 is not supported because it would be too slow.
+  Define HAVE_SQLITE in Make.config.
   Parameters h,u,s,p,w are not supported with SQLite.
 - reimplemented mugglei option -z (DeleteStaleReferences)
+- implemented support for Postgresql. Tested with version 8.0. 
+  Define HAVE_PG in Make.config

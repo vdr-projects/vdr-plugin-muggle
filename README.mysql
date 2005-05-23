@@ -1,0 +1,85 @@
+/*! \mainpage Muggle: Usage with mysql
+
+This is a plugin for the Video Disk Recorder (VDR).
+
+Written by:                  Andi Kellner,
+                             Lars von Wedel <vonwedel@web.de>,
+                             Ralf Klueber <r@lf-klueber.de>, 
+                             Wolfgang Rohdewald <wolfgang@rohdewald.de>
+
+Project's homepage:          http://www.htpc-tech.de/htpc/muggle.htm
+
+Latest version available at: http://www.htpc-tech.de/htpc/muggle-dev.htm
+
+See the file COPYING for license information.
+
+\section prereq PREREQUISITES
+
+You will need:
+
+ - mySQL client libraries
+   (Debian package libmysqlclient-dev or 
+    http://www.mysql.org)
+ - mySQL server (tested with 4.0.18) (Debian packages mysql-server, mysql-client)
+    only needed, if you want to run the database server on a remote machine
+
+The developer versions are needed because their headers are required for compilation.
+The server need not be on the same machine as the VDR. Also, music tracks can reside somewhere else,
+if they are available through a remote filesystem (NFS, Samba). However, in this case you should
+know what you are doing in terms of networking and security issues.
+
+\section install INSTALLING 
+
+Adapt the Makefile or Make.config to your system. Define HAVE_MYSQL and HAVE_ONLY_SERVER if
+you do not want the embedded version.
+
+HAVE_MYSQL=1
+HAVE_ONLY_SERVER=1
+
+NOTE: If the package mysql-server is not installed on your machine you might
+see an error message like this:
+
+050306  9:29:14 Can't find messagefile '/usr/share/mysql/english/errmsg.sys'
+050306  9:29:14 Aborting
+
+In this case you need to obtain these files and put them there.
+
+Then you can build and install the plugin as described in README
+
+
+\section SET UP MUGGLE WITH EMBEDDED MYSQL
+
+Embedded MySQL means simpler configuration because you do not have 
+to login into a remote data base server. You will only need the argument
+-d Directory. muggle will store the data base in that directory. Start
+mugglei without arguments for details.
+
+NOTE: The embedded MySQL server cannot be used by other programs. 
+
+NOTE: The GiantDisc web interface only works with remote MySQL.
+
+
+\section SET UP MUGGLE WITH REMOTE MYSQL
+
+If you already have a MySQL server running in your network (e.g. as a basis
+for a webserver) or want to access the music database with other programs
+(e.g. the GiantDisc web interface) you may be interested in using
+
+\section config MUGGLE CONFIGURATION
+
+When using the remote MySQL server, muggle and mugglei use a small set of
+parameters in order to control the interaction with the mySQL server. Let's
+look at an example:
+
+\verbatim
+  -P'muggle -h localhost -u vdr -p pw -n GiantDisc -t/home/music'
+\endverbatim
+
+The -h parameter specifies the database host, -u specifies the user,
+-p specifies the password, -n is the database name.
+
+Start mugglei without arguments to see a list and explanation of
+all available options. They can vary slightly depending on the
+chosen data base software.
+
+*/

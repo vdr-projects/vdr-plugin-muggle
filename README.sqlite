@@ -1,0 +1,37 @@
+/*! \mainpage Muggle: Usage with SQLite
+
+This is a plugin for the Video Disk Recorder (VDR).
+
+Written by:                  Andi Kellner,
+                             Lars von Wedel <vonwedel@web.de>,
+                             Ralf Klueber <r@lf-klueber.de>, 
+                             Wolfgang Rohdewald <wolfgang@rohdewald.de>
+
+Project's homepage:          http://www.htpc-tech.de/htpc/muggle.htm
+
+Latest version available at: http://www.htpc-tech.de/htpc/muggle-dev.htm
+
+See the file COPYING for license information.
+
+\section prereq PREREQUISITES
+
+You will need:
+
+ - the sqlite3 library: Debian package sqlite3
+ - the Debian package sqlite3-dev for the compilation
+
+\section install INSTALLING 
+
+Adapt the Makefile or Make.config to your system. Define
+
+HAVE_SQLITE=1
+
+
+\section SET UP MUGGLE WITH SQLITE
+
+SQLITE means simpler configuration because you do not have 
+to login into a remote data base server. You will only need the argument
+-d Directory. muggle will store the data base in that directory. Start
+mugglei without arguments for details.
+
+*/

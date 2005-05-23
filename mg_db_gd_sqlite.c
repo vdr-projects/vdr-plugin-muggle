@@ -41,10 +41,8 @@ mgDbGd::mgDbGd(bool SeparateThread)
 {
         m_db = 0;
 	if (m_separate_thread)
-	{
 		if (!Threadsafe())
-			mgError("Your sqlite3 version is not thread safe");
-	}
+			mgError("Your database library is not thread safe");
 }
 
 mgDbGd::~mgDbGd()
@@ -195,7 +193,11 @@ mgDbGd::silent_execute( string sql)
 	const char * optsql = optimize(sql).c_str();
   	mgDebug(5,"silent_execute(%X,%s)",m_db,optsql);
 	int result = sqlite3_exec(m_db,sql.c_str(),0,0,&m_errmsg);
-  	mgDebug(5,"finishes with result %d",result);
+	if (result==SQLITE_OK)
+		m_rows = sqlite3_changes(m_db);
+	else
+		m_rows = 0;
+  	mgDebug(5,"finishes with result %d and %d rows",result,m_rows);
 	return result;
 }
 
@@ -558,10 +560,7 @@ bool
 mgDbGd::SyncStart()
 {
   	if (!Connect())
-	{
-		mgDebug(1,"could not connect");
     		return false;
-	}
 	LoadMapInto("SELECT id,genre from genre",&m_Genres,0);
 	// init random number generator
 	struct timeval tv;
@@ -586,8 +585,9 @@ mgDbGd::AddToCollection( const string Name, const vector<mgItem*>&items,mgParts 
     if (!Connect())
 	    return 0;
     CreateCollection(Name);
-    string listid = get_col0
-        ("SELECT id FROM playlist WHERE title=" + sql_string (Name));
+    string listid = KeyMaps.id(keyGdCollection,Name);
+    if (listid.empty())
+	    return 0;
     Execute("BEGIN TRANSACTION");
     // insert all tracks:
     int result = 0;
@@ -595,14 +595,14 @@ mgDbGd::AddToCollection( const string Name, const vector<mgItem*>&items,mgParts 
     {
 	Execute("INSERT INTO playlistitem VALUES( " + listid + ","
 			+ ltos (items[i]->getItemid ()) +")");
-	result += sqlite3_changes(m_db);
+	result += m_rows;
     }
     Execute("COMMIT");
     return result;
 }
 
 int
-mgDbGd::RemoveFromCollection (const string Name, const vector<mgItem*>&items,mgParts *what)
+mgDbGd::RemoveFromCollection (const string Name, const vector<mgItem*>&items,mgParts* what)
 {
     if (Name.empty())
 	    return 0;
@@ -618,7 +618,7 @@ mgDbGd::RemoveFromCollection (const string Name, const vector<mgItem*>&items,mgP
     {
 	Execute("DELETE FROM playlistitem WHERE playlist="+listid+
 			" AND trackid = " + ltos (items[i]->getItemid ()));
-	result += sqlite3_changes(m_db);
+	result += m_rows;
     }
     Execute("COMMIT");
     return result;
@@ -630,7 +630,7 @@ mgDbGd::DeleteCollection (const string Name)
     if (!Connect()) return false;
     ClearCollection(Name);
     Execute ("DELETE FROM playlist WHERE title=" + sql_string (Name));
-    return (sqlite3_changes(m_db) == 1);
+    return m_rows == 1;
 }
 
 void
@@ -648,7 +648,7 @@ mgDbGd::CreateCollection (const string Name)
     string name = sql_string(Name);
     if (exec_count("SELECT count(title) FROM playlist WHERE title = " + name)>0) 
 	return false;
-    Execute ("INSERT INTO playlist VALUES(" + name + ",'VDR',NULL,strftime('%s','now'),NULL)");
+    Execute ("INSERT INTO playlist (title,author,created) VALUES(" + name + ",'VDR',strftime('%s','now'))");
     return true;
 }
 
@@ -734,7 +734,7 @@ mgDbGd::LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitem
 	string result = what.sql_select(tp!=keyGdCollectionItem);
         listitems.clear ();
 	char **table = Query(result);
-	if (table && m_rows && m_cols>=1)
+	if (m_rows)
 		for (int idx=1; idx<=m_rows; idx++)
 		{
 			char **row = &table[idx*m_cols];

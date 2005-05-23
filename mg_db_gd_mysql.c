@@ -160,7 +160,7 @@ mysqlhandle_t::~mysqlhandle_t()
 
 static char *db_cmds[] = 
 {
-  "drop table if exists album;",
+  "drop table if exists album",
   "CREATE TABLE album ( "
 	  "artist varchar(255) default NULL, "
 	  "title varchar(255) default NULL, "
@@ -174,29 +174,29 @@ static char *db_cmds[] =
 	  "KEY title (title(10)), "
 	  "KEY genre (genre), "
 	  "KEY modified (modified)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists genre;",
+	  "TYPE=MyISAM",
+  "drop table if exists genre",
   "CREATE TABLE genre ("
 	  "id varchar(10) NOT NULL default '', "
 	  "id3genre smallint(6) default NULL, "
 	  "genre varchar(255) default NULL, "
 	  "freq int(11) default NULL, "
 	  "PRIMARY KEY (id)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists language;",
+	  "TYPE=MyISAM",
+  "drop table if exists language",
   "CREATE TABLE language ("
 	  "id varchar(4) NOT NULL default '', "
 	  "language varchar(40) default NULL, "
 	  "freq int(11) default NULL, "
 	  "PRIMARY KEY  (id)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists musictype;",
+	  "TYPE=MyISAM",
+  "drop table if exists musictype",
   "CREATE TABLE musictype ("
 	  "musictype varchar(40) default NULL, "
 	  "id tinyint(3) unsigned NOT NULL auto_increment, "
 	  "PRIMARY KEY  (id)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists player;",
+	  "TYPE=MyISAM",
+  "drop table if exists player",
   "CREATE TABLE player ( "
 	  "ipaddr varchar(255) NOT NULL default '', "
 	  "uichannel varchar(255) NOT NULL default '', "
@@ -207,8 +207,8 @@ static char *db_cmds[] =
 	  "cdrwdev varchar(255) default NULL, "
 	  "id int(11) NOT NULL default '0', "
 	  "PRIMARY KEY  (id)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists playerstate;",
+	  "TYPE=MyISAM",
+  "drop table if exists playerstate",
   "CREATE TABLE playerstate ( "
 	  "playerid int(11) NOT NULL default '0', "
 	  "playertype int(11) NOT NULL default '0', "
@@ -225,8 +225,8 @@ static char *db_cmds[] =
 	  "framestotal int(11) default NULL, "
 	  "anchortime bigint(20) default NULL, "
 	  "PRIMARY KEY  (playerid,playertype)) "
-	  "TYPE=HEAP;",
-  "drop table if exists playlist;",
+	  "TYPE=HEAP",
+  "drop table if exists playlist",
   "CREATE TABLE playlist ( "
 	  "title varchar(255) default NULL, "
 	  "author varchar(255) default NULL, "
@@ -234,22 +234,22 @@ static char *db_cmds[] =
 	  "created timestamp(8) NOT NULL, "
 	  "id int(10) unsigned NOT NULL auto_increment, "
 	  "PRIMARY KEY  (id)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists playlistitem;",
+	  "TYPE=MyISAM",
+  "drop table if exists playlistitem",
   "CREATE TABLE playlistitem ( "
 	  "playlist int(11) NOT NULL default '0', "
 	  "tracknumber mediumint(9) NOT NULL default '0', "
 	  "trackid int(11) default NULL, "
 	  "PRIMARY KEY  (playlist,tracknumber)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists playlog;",
+	  "TYPE=MyISAM",
+  "drop table if exists playlog",
   "CREATE TABLE playlog ( "
 	  "trackid int(11) default NULL, "
 	  "played date default NULL, "
 	  "id tinyint(3) unsigned NOT NULL auto_increment, "
 	  "PRIMARY KEY  (id)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists recordingitem;",
+	  "TYPE=MyISAM",
+  "drop table if exists recordingitem",
   "CREATE TABLE recordingitem ( "
 	  "trackid int(11) default NULL, "
 	  "recdate date default NULL, "
@@ -263,22 +263,22 @@ static char *db_cmds[] =
 	  "atqjob int(11) default NULL, "
 	  "id int(11) NOT NULL default '0', "
 	  "PRIMARY KEY  (id)) "
-	  "TYPE=MyISAM;",
+	  "TYPE=MyISAM",
   "drop table if exists source",
 	  "CREATE TABLE source ( "
 	  "source varchar(40) default NULL, "
 	  "id tinyint(3) unsigned NOT NULL auto_increment, "
 	  "PRIMARY KEY  (id)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists tracklistitem;",
+	  "TYPE=MyISAM",
+  "drop table if exists tracklistitem",
   "CREATE TABLE tracklistitem ( "
 	  "playerid int(11) NOT NULL default '0', "
 	  "listtype smallint(6) NOT NULL default '0', "
 	  "tracknb int(11) NOT NULL default '0', "
 	  "trackid int(11) NOT NULL default '0', "
 	  "PRIMARY KEY  (playerid,listtype,tracknb)) "
-	  "TYPE=MyISAM;",
-  "drop table if exists tracks;",
+	  "TYPE=MyISAM",
+  "drop table if exists tracks",
   "CREATE TABLE tracks ( "
 	  "artist varchar(255) default NULL, "
 	  "title varchar(255) default NULL, "
@@ -321,7 +321,7 @@ static char *db_cmds[] =
 	  "KEY rating (rating), "
 	  "KEY sourceid (sourceid), "
 	  "KEY artist (artist(10))) "
-	  "TYPE=MyISAM;"
+	  "TYPE=MyISAM"
 };
 
 
@@ -1085,9 +1085,9 @@ string
 mgKeyGdGenres::map_sql() const
 {
 	if (genrelevel()==4)
-		return "select id,genre from genre;";
+		return "select id,genre from genre";
 	else
-		return string("select id,genre from genre where length(id)<="+ltos(genrelevel())+";");
+		return string("select id,genre from genre where length(id)<="+ltos(genrelevel()));
 }
 
 string
@@ -1153,7 +1153,7 @@ class mgKeyGdLanguage : public mgKeyNormal {
 		mgKeyGdLanguage() : mgKeyNormal(keyGdLanguage,"tracks","lang") {};
 		mgParts Parts(mgDb *db,bool groupby=false) const;
 	protected:
-		string map_sql() const { return "select id,language from language;"; }
+		string map_sql() const { return "select id,language from language"; }
 };
 
 class mgKeyGdCollection: public mgKeyNormal {
@@ -1161,7 +1161,7 @@ class mgKeyGdCollection: public mgKeyNormal {
   	  mgKeyGdCollection() : mgKeyNormal(keyGdCollection,"playlist","id") {};
 	  mgParts Parts(mgDb *db,bool groupby=false) const;
 	protected:
-	 string map_sql() const { return "select id,title from playlist;"; }
+	 string map_sql() const { return "select id,title from playlist"; }
 };
 class mgKeyGdCollectionItem : public mgKeyNormal {
 	public:
