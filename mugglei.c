@@ -32,8 +32,6 @@ using namespace std;
 
 int SysLogLevel = 1;
 
-bool   create_mode;
-
 void showmessage(int duration,const char *msg,...)
 {
 	va_list ap;
@@ -52,7 +50,7 @@ void showimportcount(unsigned int importcount,bool final=false)
 bool
 create_question()
 {
-    return create_mode;
+    return the_setup.CreateMode;
 }
 
 void
@@ -67,6 +65,7 @@ const char *I18nTranslate(const char *s,const char *Plugin)
 
 int main( int argc, char *argv[] )
 {
+	the_setup.SetMugglei();
 	mgSetDebugLevel(1);
       
   if( argc < 2 )
@@ -82,95 +81,12 @@ int main( int argc, char *argv[] )
       std::cout << "Only files ending in .flac, .mp3, .ogg (ignoring case) will be imported" << std::endl;
       std::cout << "" << std::endl;
       std::cout << "Options:" << std::endl;
-#ifndef HAVE_SQLITE
-#ifdef HAVE_ONLY_SERVER
-      std::cout << "  -h <hostname>       - specify host of database server (default is 'localhost')" << std::endl;
-#else
-      std::cout << "  -h <hostname>       - specify host of database server (default is embedded')" << std::endl;
-#endif
-      std::cout << "  -s <socket>         - specify a socket for communication with database server (default is TCP)" << std::endl;
-      std::cout << "  -u <username>       - specify user of database (default is empty)" << std::endl;
-      std::cout << "  -p <password>       - specify password of user (default is empty password)" << std::endl;
-#endif
-      std::cout << "  -n <database>       - specify database name (default is 'GiantDisc')" << std::endl;
-      std::cout << "  -t <topleveldir>    - name of music top level directory" << std::endl;
-      std::cout << "  -z                  - scan all database entries and delete entries for files not found" << std::endl;
-      std::cout << "                        -z is not yet implemented" << std::endl;
-      std::cout << "  -c                  - delete the entire database and recreate a new empty one" << std::endl;
-      std::cout << "  -d <datadir>        - the data directory for embedded sql. Defaults to ./.muggle" << std::endl;
-      std::cout << "  -v                  - the wanted log level, the higher the more. Default is 1" << std::endl;
-      std::cout << std::endl << std::endl;
-      std::cout << "if the specified host is localhost, sockets will be used if possible." << std::endl;
-      std::cout << "Otherwise the -s parameter will be ignored" << std::endl;
+      std::cout << the_setup.HelpText();
 
       exit( 1 );
     }
 
-  // option defaults
-  create_mode = false;
-
-  // parse command line options
-  while( 1 )
-    {
-#ifdef HAVE_SQLITE
-      int c = getopt(argc, argv, "n:t:zcv:d:");
-#else
-      int c = getopt(argc, argv, "h:s:n:u:p:t:zcv:d:");
-#endif
-
-      if (c == -1)
-	break;
-      
-      switch (c) 
-	{
-	case 0:
-	  { // long option
-	    
-	  } break;
-#ifndef HAVE_SQLITE
-	case 'h':
-	  {
-	    the_setup.DbHost = strdup(optarg);
-	  } break;
-	case 'u':
-	  {
-	    the_setup.DbUser = strdup(optarg);
-	  } break;
-	case 'p':
-	  {
-	    the_setup.DbPass = strdup(optarg);
-	  } break;
-	case 's':
-	  {
-	    the_setup.DbSocket = strdup(optarg);
-	  } break;
-#endif
-	case 'n':
-	  {
-	    the_setup.DbName = strdup(optarg);
-	  } break;
-	case 't':
-	  {
-	    the_setup.ToplevelDir = strdup(optarg);
-	  } break;
-        case 'z':
-          {
-            the_setup.DeleteStaleReferences = true;
-          } break;
-        case 'c':
-          {
-            create_mode = true;
-          } break;
-        case 'v':
-          {
-	    mgSetDebugLevel(atol(optarg));
-          } break;
-        case 'd':
-          {
-	    the_setup.DbDatadir = strdup(optarg);
-          } break;
-	}
-    }
+  the_setup.ProcessArguments(argc,argv);
   if (optind<argc)
   {
   	mgDb *sync = GenerateDB();

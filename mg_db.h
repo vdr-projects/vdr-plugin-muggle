@@ -32,6 +32,12 @@ strlist& operator+=(strlist&a, strlist b);
 
 string sql_list (string prefix,strlist v,string sep=",",string postfix="");
 
+extern string DbName();
+
+extern void AddArguments(struct option& long_options,char *help_text, char *short_options);
+
+extern struct option& long_options;
+
 class mgReference {
 	public:
 		mgReference(string t1,string f1,string t2,string f2);
@@ -111,6 +117,8 @@ class mgDb {
 	virtual bool NeedGenre2() = 0;
 	virtual bool Threadsafe() { return false; }
 	virtual void Execute(const string sql)=0;
+	virtual const char* Options() const =0;
+	virtual const char* HelpText() const =0;
    protected:
 	int m_rows;
 	int m_cols;

@@ -57,6 +57,7 @@ class mgItem
         string m_language_id;
         string m_language;
 	bool readable(string filename) const;
+	void analyze_failure(string file) const;
 	void InitFrom(const mgItem* c);
 };
 

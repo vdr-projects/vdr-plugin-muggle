@@ -29,6 +29,27 @@
 
 using namespace std;
 
+string DbName()
+{
+	return "SQLite";
+}
+
+void Parameters(struct option& long_options,char *help_text, char *short_options)
+{
+	// we have no specific parameters for SQLite
+}
+
+const char*
+mgDbGd::Options() const
+{
+	return "";
+}
+
+const char*
+mgDbGd::HelpText() const
+{
+	return "";
+}
 
 mgDb* GenerateDB(bool SeparateThread)
 {

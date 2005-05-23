@@ -145,12 +145,14 @@ mgItemGd::InitFrom(const mgItemGd* c)
 string
 mgItemGd::getSourceFile(bool AbsolutePath) const
 {
+	int access_errno=0;
 	string tld = the_setup.ToplevelDir;
     	string result = m_mp3file;
 	if (m_validated && !m_valid)
 		return m_mp3file;
 	if (!readable(tld+"/"+result))
 	{
+		access_errno=errno;
 		result="";
 		if (!gd_music_dirs_scanned)
 		{
@@ -183,14 +185,7 @@ mgItemGd::getSourceFile(bool AbsolutePath) const
 	m_validated=true;
 	if (result.empty())
 	{
-		int nsize = m_mp3file.size();
-    		extern void showmessage(int duration,const char*,...);
-		if (nsize<30)
-			showmessage(0,"%s not readable",m_mp3file.c_str());
-		else
-			showmessage(0,"%s..%s not readable",m_mp3file.
-			substr(0,20).c_str(),m_mp3file.substr(nsize-20).c_str());
-        	esyslog ("ERROR: cannot stat %s. Meaning not found, not a valid file, or no access rights", m_mp3file.c_str ());
+		analyze_failure(tld + "/" + m_mp3file);
 		m_valid = false;
 		return m_mp3file;
 	}	

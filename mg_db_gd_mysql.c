@@ -4,9 +4,7 @@
  *
  * \version $Revision: 1.2 $
  * \date    $Date: 2005-04-13 17:42:54 +0100 (Thu, 13 Apr 2005) $
- * \author  Wolfgang Rohdewald
- * \author  Responsible author: $Author: wolfgang61 $
- */
+ * \author  Wolfgang Rohdewald * \author  Responsible author: $Author: wolfgang61 $ */
 
 #include <string>
 #include <sys/types.h>
@@ -29,6 +27,42 @@
 
 using namespace std;
 
+string DbName()
+{
+#ifdef HAVE_ONLY_SERVER
+	return "MySql";
+#else
+	return "Embedded MySql";
+#endif
+}
+
+const char*
+mgDbGd::Options() const
+{
+#if !defined(HAVE_ONLY_SERVER) && MYSQL_VERSION_ID < 40111
+	return "";
+#else
+	return "hspuw";
+#endif
+}
+
+const char*
+mgDbGd::HelpText() const
+{
+#if !defined(HAVE_ONLY_SERVER) && MYSQL_VERSION_ID < 40111
+	return "";
+#else
+	return
+	"  -h HHHH,  --host=HHHH     specify database host (default is embedded or localhost)\n"
+	"                            if the specified host is localhost, sockets will\n"
+	"                            be used if possible.\n"
+	"			     Otherwise the -s parameter will be ignored\n"
+        "  -s SSSS   --socket=PATH   specify database socket\n"
+        "  -p PPPP,  --port=PPPP     specify port of database server (default is )\n"
+        "  -u UUUU,  --user=UUUU     specify database user (default is )\n"
+        "  -w WWWW,  --password=WWWW specify database password (default is empty)\n";
+#endif
+}
 
 mgDb* GenerateDB(bool SeparateThread)
 {

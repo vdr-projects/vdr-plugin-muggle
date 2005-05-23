@@ -10,8 +10,11 @@
  */
 
 #include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
 
 #include "mg_item.h"
+#include "mg_tools.h"
 
 bool
 mgItem::Valid() const
@@ -27,7 +30,43 @@ mgItem::Valid() const
 bool
 mgItem::readable(string filename) const
 {
-	return !access(filename.c_str(),R_OK);
+	errno=0;
+	int fd = open(filename.c_str(),O_RDONLY);
+	if (fd<0)
+		return false;
+	char buf[20];
+	errno=0;
+	int i=read(fd,buf,10);
+	int err = errno;
+	close(fd);
+	if (i!=10)
+	{
+		errno = 123456;
+		return false;
+	}
+	close(fd);
+	errno = 0;
+	return true;
+}
+
+void
+mgItem::analyze_failure(string file) const
+{
+	readable(file); 	// sets errno
+	int err = errno;
+	int nsize = file.size();
+	char *p;
+	if (err==123456)
+		p="File too short";
+	else
+		p = strerror(err);
+    	extern void showmessage(int duration,const char*,...);
+	if (nsize<20)
+		showmessage(0,"%s not readable, errno=%d",file.c_str(),err);
+	else
+		showmessage(0,"%s..%s not readable, errno=%d",
+				file.substr(0,15).c_str(),file.substr(nsize-15).c_str(),err);
+	mgWarning ("cannot read %s: %s", file.c_str (),p);
 }
 
 mgItem::mgItem()

@@ -61,139 +61,14 @@ mgMuggle::Stop (void)
 const char *
 mgMuggle::CommandLineHelp (void)
 {
-// Return a string that describes all known command line options.
-    return
-#ifndef HAVE_SQLITE
-# ifdef HAVE_ONLY_SERVER
-        "  -h HHHH,  --host=HHHH     specify database host (default is localhost)\n"
-# else
-        "  -h HHHH,  --host=HHHH     specify database host (default is embedded)\n"
-# endif
-        "  -s SSSS   --socket=PATH   specify database socket\n"
-        "  -p PPPP,  --port=PPPP     specify port of database server (default is )\n"
-        "  -u UUUU,  --user=UUUU     specify database user (default is )\n"
-        "  -w WWWW,  --password=WWWW specify database password (default is empty)\n"
-#endif
-        "  -n NNNN,  --name=NNNN     specify database name (default is GiantDisc)\n"
-        "  -t TTTT,  --toplevel=TTTT specify toplevel directory for music (default is /mnt/music)\n"
-        "  -d DIRN,  --datadir=DIRN  specify directory for embedded sql data (default is $HOME/.muggle)\n"
-        "  -v,       --verbose       specify debug level. The higher the more. Default is 1\n"
-	"\n"
-#ifndef HAVE_SQLITE
-	"if the specified host is localhost, sockets will be used if possible.\n"
-	"Otherwise the -s parameter will be ignored"
-#endif
-        ;
+   return the_setup.HelpText();
 }
 
 
 bool mgMuggle::ProcessArgs (int argc, char *argv[])
 {
-    mgSetDebugLevel (1);
-    char b[1000];
-    sprintf(b,"mgMuggle::ProcessArgs ");
-    for (int i=1;i<argc;i++)
-    {
-	if (strlen(b)+strlen(argv[i]+2)>1000) break;;
-    	strcat(b,"  ");
-    	strcat(b,argv[i]);
-    }
-    mgDebug(1,b);
-
-// Implement command line argument processing here if applicable.
-    static struct option
-        long_options[] =
-    {
-#ifndef HAVE_SQLITE
-        {"host", required_argument, NULL, 'h'},
-        {"socket", required_argument, NULL, 's'},
-        {"port", required_argument, NULL, 'p'},
-        {"user", required_argument, NULL, 'u'},
-        {"password", required_argument, NULL, 'w'},
-#endif
-        {"name", required_argument, NULL, 'n'},
-        {"datadir", required_argument, NULL, 'd'},
-        {"toplevel", required_argument, NULL, 't'},
-        {"verbose", required_argument, NULL, 'v'},
-        {NULL}
-    };
-
-    int
-        c,
-        option_index = 0;
-    while ((c =
-#ifdef HAVE_SQLITE
-        getopt_long (argc, argv, "n:t:d:v:", long_options,
-#else
-        getopt_long (argc, argv, "h:s:n:p:t:u:w:d:v:", long_options,
-#endif
-        &option_index)) != -1)
-    {
-        switch (c)
-        {
-#ifndef HAVE_SQLITE
-            case 'h':
-            {
-                the_setup.DbHost = strcpyrealloc (the_setup.DbHost, optarg);
-            }
-            break;
-            case 's':
-            {
-                the_setup.DbSocket = strcpyrealloc (the_setup.DbSocket, optarg);
-            }
-            break;
-            case 'p':
-            {
-                the_setup.DbPort = atoi (optarg);
-            }
-            break;
-            case 'u':
-            {
-                the_setup.DbUser = strcpyrealloc (the_setup.DbUser, optarg);
-            }
-            break;
-            case 'w':
-            {
-                the_setup.DbPass = strcpyrealloc (the_setup.DbPass, optarg);
-            }
-            break;
-#endif
-            case 'n':
-            {
-                the_setup.DbName = strcpyrealloc (the_setup.DbName, optarg);
-            }
-            break;
-            case 'd':
-            {
-                the_setup.DbDatadir = strcpyrealloc (the_setup.DbDatadir, optarg);
-            }
-	    break;
-            case 'v':
-            {
-    		mgSetDebugLevel (atol(optarg));
-            }
-            break;
-            case 't':
-            {
-                if (optarg[strlen (optarg) - 1] != '/')
-                {
-                    std::string res = std::string (optarg) + "/";
-                    the_setup.ToplevelDir = strdup (res.c_str ());
-                }
-                else
-                {
-                    the_setup.ToplevelDir =
-                        strcpyrealloc (the_setup.ToplevelDir, optarg);
-                }
-            }
-            break;
-            default:
-                return false;
-        }
-    } 
-    return true;
+   return the_setup.ProcessArguments(argc,argv);
 }
-
 
 bool mgMuggle::Initialize (void)
 {

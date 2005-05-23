@@ -31,6 +31,27 @@
 
 using namespace std;
 
+string DbName()
+{
+	return "Postgresql";
+}
+
+const char*
+mgDbGd::Options() const
+{
+	return "hspuw";
+}
+
+const char*
+mgDbGd::HelpText() const
+{
+        return
+	"  -h HHHH,  --host=HHHH     specify database host (default is localhost)\n"
+        "  -s SSSS   --socket=PATH   specify database socket\n"
+        "  -p PPPP,  --port=PPPP     specify port of database server (default is )\n"
+        "  -u UUUU,  --user=UUUU     specify database user (default is )\n"
+        "  -w WWWW,  --password=WWWW specify database password (default is empty)\n";
+}
 
 mgDb* GenerateDB(bool SeparateThread)
 {

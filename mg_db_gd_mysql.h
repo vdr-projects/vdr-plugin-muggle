@@ -42,6 +42,8 @@ class mgDbGd : public mgDb {
 	void ServerEnd();
 	bool Threadsafe();
 	void Execute(const string sql);
+	const char* HelpText() const;
+	const char *Options() const;
    protected:
 	char* sql_Cstring(const char *s,char *buf);
 	bool SyncStart();

@@ -39,6 +39,8 @@ class mgDbGd : public mgDb {
 	string LoadItemsInto(mgParts& what,vector<mgItem*>& items);
 	string LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems);
 	bool Threadsafe();
+	const char* Options() const;
+	const char* HelpText() const;
    protected:
 	char* sql_Cstring(const char *s,char *buf);
 	bool SyncStart();
