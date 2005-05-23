@@ -41,16 +41,51 @@ bool compvalue (const mgListItem* x, const mgListItem* y)
 	return x->value()<y->value();
 }
 
+bool compid (const mgListItem* x, const mgListItem* y)
+{
+	return x->id()<y->id();
+}
+
+bool compidnum (const mgListItem* x, const mgListItem* y)
+{
+	return atol(x->id().c_str())<atol(y->id().c_str());
+}
+
 bool compcount (const mgListItem* x, const mgListItem* y)
 {
 	return x->count()>y->count();
 }
 
-void
-mgSelection::mgListItems::sort(bool bycount)
+bool compitem (const mgItem* x, const mgItem* y)
 {
+	const mgSelection *s = x->getSelection();
+	string xval;
+	string yval;
+	if (false)
+		;
+	else
+	{
+		for (unsigned int idx=s->orderlevel();idx<s->ordersize();idx++)
+		{
+			xval=x->getKeyItem(s->getKeyType (idx))->value();
+			yval=y->getKeyItem(s->getKeyType (idx))->value();
+			if (xval!=yval) break;
+		}
+		return xval<yval;
+	}
+}
+
+void
+mgSelection::mgListItems::sort(bool bycount,mgSortBy SortBy)
+{
+	if (SortBy==mgSortNone)
+		return;
 	if (bycount)
 		std::sort(m_items.begin(),m_items.end(),compcount);
+	else if (SortBy==mgSortById)
+		std::sort(m_items.begin(),m_items.end(),compid);
+	else if (SortBy==mgSortByIdNum)
+		std::sort(m_items.begin(),m_items.end(),compidnum);
 	else
 		std::sort(m_items.begin(),m_items.end(),compvalue);
 }
@@ -567,8 +602,14 @@ mgSelection::items () const
 	for (unsigned int i = m_level; i<ordersize(); i++)
 		p += Key(i)->Parts(m_db,true);
     	m_current_tracks =  m_db->LoadItemsInto(p,m_items);
-    	if (m_shuffle_mode!=SM_NONE)
-    		Shuffle();
+    	if (m_shuffle_mode==SM_NONE)
+	{
+		for (unsigned int i = 0; i<m_items.size(); i++)
+			m_items[i]->setSelection(this);
+		std::sort(m_items.begin(),m_items.end(),compitem);
+	}
+	else
+    			Shuffle();
     }
     return m_items;
 }
@@ -767,9 +808,9 @@ mgSelection::refreshValues ()  const
         return;
     mgParts p =  Parts(m_db);
     m_current_values = m_db->LoadValuesInto(
-		    p,getKeyType(m_level),listitems.items());
+		    p,getKeyType(m_level),listitems.items(),m_level<ordersize()-1);
     if (!inCollection(""))
-	    listitems.sort(m_orderByCount);
+	    listitems.sort(m_orderByCount,Keys[m_level]->SortBy());
 }
 
 

@@ -23,7 +23,7 @@ using namespace std;
 class mgItemGd : public mgItem
 {
     public:
-	mgListItem* getKeyItem(mgKeyTypes kt);
+	mgListItem* getKeyItem(mgKeyTypes kt) const;
 
 	//! \brief copy constructor
         mgItemGd(const mgItemGd* c);
@@ -57,6 +57,9 @@ class mgItemGd : public mgItem
 //! \brief returns # of channels
         int getChannels () const;
 
+//! \brief returns tracknb
+        int getTrack () const;
+
     protected:
 	void InitFrom(const mgItemGd* c);
     private:
@@ -68,7 +71,7 @@ class mgItemGd : public mgItem
         string m_bitrate;
         int m_samplerate;
         int m_channels;
+	int m_tracknb;
 };
 
-extern mgListItem zeroitem;
 #endif

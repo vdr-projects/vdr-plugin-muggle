@@ -24,7 +24,7 @@ static bool gd_music_dir_exists[100];
 static bool gd_music_dirs_scanned=false;
 
 mgListItem*
-mgItemGd::getKeyItem(mgKeyTypes kt)
+mgItemGd::getKeyItem(mgKeyTypes kt) const
 {
 	string val;
 	string id;
@@ -42,7 +42,7 @@ mgItemGd::getKeyItem(mgKeyTypes kt)
 			case keyGdDecade: val = id = string(ltos(int((getYear() % 100) / 10) * 10));break;
 			case keyGdTitle: val = id = getTitle();break;
 			case keyGdTitleABC: val = id = getTitle()[0];break;
-			case keyGdTrack: val = id = getTitle();break;
+			case keyGdTrack: val = id = getTrack();break;
 			case keyGdLanguage: val = getLanguage();id=m_language_id ; break;
 			case keyGdRating: val = id = getRating();break;
 			case keyGdFolder1:
@@ -113,6 +113,11 @@ int mgItemGd::getChannels () const
     return m_channels;
 }
 
+int mgItemGd::getTrack () const
+{
+    return m_tracknb;
+}
+
 mgItemGd::mgItemGd(const mgItemGd* c)
 {
      InitFrom(c);
@@ -139,6 +144,7 @@ mgItemGd::InitFrom(const mgItemGd* c)
     m_bitrate = c->m_bitrate;
     m_samplerate = c->m_samplerate;
     m_channels = c->m_channels;
+    m_tracknb = c->m_tracknb;
 }
 
 
@@ -253,6 +259,10 @@ mgItemGd::mgItemGd (char **row)
     	m_language_id = row[13];
     else
     	m_language_id = "NULL";
+    if (row[14])
+    	m_tracknb = atol(row[14]);
+    else
+    	m_tracknb = 0;
      m_language = KeyMaps.value(keyGdLanguage,m_language_id);
 };
 

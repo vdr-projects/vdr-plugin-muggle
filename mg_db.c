@@ -398,12 +398,15 @@ mgParts::sql_select(bool distinct)
 	string result;
 	if (distinct)
 	{
-		idfields.push_back("COUNT(*) AS mgcount");
+		idfields.push_back("COUNT(*)");
 		result = sql_list("SELECT",idfields);
 		idfields.pop_back();
 	}
 	else
-		result = sql_list("SELECT",idfields+valuefields);
+	{
+		idfields.push_back("1");
+		result = sql_list("SELECT",valuefields+idfields);
+	}
 	result += sql_list("FROM",tables);
 	result += sql_list("WHERE",clauses," AND ");
 	if (distinct)

@@ -46,4 +46,11 @@ const mgKeyTypes mgKeyTypesHigh = keyGdCollectionItem;
 //! \brief at least the number of enum elements:
 const unsigned int mgKeyTypesNr = keyGdCollectionItem;
 
+enum mgSortBy {
+	mgSortNone,
+	mgSortByValue,
+	mgSortById,
+	mgSortByIdNum
+};
+
 #endif

@@ -16,6 +16,9 @@ using namespace std;
 
 #include "mg_listitem.h"
 #include "mg_keytypes.h"
+#include "mg_selection.h"
+
+class mgSelection;
 
 //! \brief represents a content item 
 class mgItem
@@ -28,7 +31,7 @@ class mgItem
         virtual ~mgItem() {};
 	bool Valid() const;
 	virtual long getItemid() const { return m_itemid; }
-	virtual mgListItem* getKeyItem(mgKeyTypes kt) { return new mgListItem; }
+	virtual mgListItem* getKeyItem(mgKeyTypes kt) const { return new mgListItem; }
 //! \brief returns filename
         virtual string getSourceFile (bool AbsolutePath=true) const { return m_realfile; }
 //! \brief returns title
@@ -41,7 +44,8 @@ class mgItem
         int getRating () const { return m_rating; }
 //! \brief returns duration
         int getDuration () const { return m_duration; }
-
+	void setSelection(const mgSelection* sel) { m_sel=sel; }
+	const mgSelection* getSelection() const { return m_sel; }
 
     protected:
 	mutable bool m_valid;
@@ -59,6 +63,7 @@ class mgItem
 	bool readable(string filename) const;
 	void analyze_failure(string file) const;
 	void InitFrom(const mgItem* c);
+	const mgSelection* m_sel;
 };
 
 

@@ -72,7 +72,7 @@ public:
 	mgParts& operator+=(mgParts a);
 	void Prepare();
 	string sql_count();
-	string sql_select(bool distinct=true);
+	string sql_select(bool distinct);
 	bool empty() const { return tables.size()==0;}
 	string special_statement;
 	bool orderByCount;
@@ -112,7 +112,7 @@ class mgDb {
 	virtual bool FieldExists(string table, string field)=0;
 	virtual void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap)=0;
 	virtual string LoadItemsInto(mgParts& what,vector<mgItem*>& items) = 0;
-	virtual string LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems)=0;
+	virtual string LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems,bool groupby)=0;
 	string sql_string(const string s); // \todo does it need to be public?
 	virtual bool NeedGenre2() = 0;
 	virtual bool Threadsafe() { return false; }
@@ -148,6 +148,7 @@ class mgKey {
 		virtual void set(mgListItem* item) = 0;
 		virtual mgListItem* get() = 0;
 		virtual mgKeyTypes Type() const = 0;
+		virtual mgSortBy SortBy() const { return mgSortByValue; }
 		virtual bool Enabled(mgDb *db) { return true; }
 		virtual bool LoadMap() const;
 	protected:

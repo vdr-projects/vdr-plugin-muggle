@@ -44,6 +44,8 @@ mgItem::readable(string filename) const
 		errno = 123456;
 		return false;
 	}
+	else
+		errno = err;
 	close(fd);
 	errno = 0;
 	return true;
@@ -92,6 +94,7 @@ mgItem::Clone ()
 void
 mgItem::InitFrom(const mgItem* c)
 {
+    m_sel = c->m_sel;
     m_valid = c->m_valid;
     m_validated = c->m_validated;
     m_itemid = c->m_itemid;

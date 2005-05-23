@@ -38,7 +38,7 @@ class mgDbGd : public mgDb {
 	bool FieldExists(string table, string field);
 	void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap);
 	string LoadItemsInto(mgParts& what,vector<mgItem*>& items);
-	string LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems);
+	string LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems,bool distinct);
 	void ServerEnd();
 	bool Threadsafe();
 	void Execute(const string sql);

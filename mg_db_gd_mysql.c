@@ -995,6 +995,7 @@ mgDbGd::LoadItemsInto(mgParts& what,vector<mgItem*>& items)
 	what.idfields.push_back("tracks.samplerate");
 	what.idfields.push_back("tracks.channels");
 	what.idfields.push_back("tracks.lang");
+	what.idfields.push_back("tracks.tracknb");
 	what.tables.push_back("tracks");
 	what.tables.push_back("album");
 	string result = what.sql_select(false); 
@@ -1013,11 +1014,11 @@ mgDbGd::LoadItemsInto(mgParts& what,vector<mgItem*>& items)
 }
 
 string
-mgDbGd::LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems)
+mgDbGd::LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems,bool distinct)
 {
     	if (!Connect())
 		return "";
-	string result = what.sql_select();		
+	string result = what.sql_select(distinct);
 	MYSQL_RES *rows = Query (result);
         if (rows)
 	{
@@ -1048,6 +1049,7 @@ class mgKeyGdTrack : public mgKeyNormal {
 	public:
 		mgKeyGdTrack() : mgKeyNormal(keyGdTrack,"tracks","tracknb") {};
 		mgParts Parts(mgDb *db,bool groupby=false) const;
+		mgSortBy SortBy() const { return mgSortByIdNum; }
 };
 
 class mgKeyGdAlbum : public mgKeyNormal {
@@ -1201,6 +1203,7 @@ class mgKeyGdCollectionItem : public mgKeyNormal {
 	public:
 		mgKeyGdCollectionItem() : mgKeyNormal(keyGdCollectionItem,"playlistitem","tracknumber") {};
 		mgParts Parts(mgDb *db,bool groupby=false) const;
+		mgSortBy SortBy() const { return mgSortNone; }
 };
 
 class mgKeyDecade : public mgKeyNormal {
