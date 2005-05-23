@@ -240,7 +240,6 @@ mgPCMPlayer::~mgPCMPlayer ()
 {
     Detach ();
     delete m_playlist;
-    delete m_current;
     delete m_ringbuffer;
 }
 
@@ -249,10 +248,7 @@ mgPCMPlayer::PlayTrack()
 {
     mgItemGd * newcurr = dynamic_cast<mgItemGd*>(m_playlist->getCurrentItem ());
     if (newcurr)
-    {
-        delete m_current;
-        m_current = new mgItemGd(newcurr);
-    }
+        m_current = newcurr;
     Play ();
 }
 
@@ -268,7 +264,6 @@ mgPCMPlayer::Activate (bool on)
             Start ();
 
             m_started = true;
-	    delete m_current;
             m_current = 0;
 
             m_playmode_mutex.Lock ();
@@ -314,6 +309,7 @@ mgPCMPlayer::NewPlaylist (mgSelection * plist)
     Lock ();
     StopPlay ();
 
+    m_current = 0;
     delete m_playlist;
     m_playlist = plist;
     PlayTrack();
@@ -779,10 +775,8 @@ bool mgPCMPlayer::SkipFile (bool skipforward)
     if (m_playlist->skipItems (skip_direction)) 
     {
         newcurr = dynamic_cast<mgItemGd*>(m_playlist->getCurrentItem ());
-        if (newcurr) {
-	    delete m_current;
-            m_current = new mgItemGd(newcurr);
-	}
+        if (newcurr)
+            m_current = newcurr;
     }
     return (newcurr != NULL);
 }
@@ -878,8 +872,7 @@ mgPCMPlayer::Goto (int index, bool still)
     {
         Lock ();
         StopPlay ();
-	delete m_current;
-        m_current = new mgItemGd(next);
+        m_current = next;
         Play ();
         Unlock ();
     }
