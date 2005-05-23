@@ -17,6 +17,7 @@
 #include <list>
 #include <vector>
 #include <map>
+#include <tag.h>
 
 using namespace std;
 
@@ -32,11 +33,78 @@ strlist& operator+=(strlist&a, strlist b);
 
 string sql_list (string prefix,strlist v,string sep=",",string postfix="");
 
-extern string DbName();
+class mgSQLStringImp {
+	public:
+		mgSQLStringImp();
+		virtual ~mgSQLStringImp();
+		char *quoted() const;
+		virtual char *unquoted() const = 0 ;
+		const char *original() const { return m_original; }
+	protected:
+		const char *m_original;
+	private:
+		mutable char *m_quoted;
+};
 
-extern void AddArguments(struct option& long_options,char *help_text, char *short_options);
+class mgSQLString {
+	public:
+		mgSQLString(const char*s);
+		mgSQLString(string s);
+		mgSQLString(TagLib::String s);
+		~mgSQLString();
+		char *quoted() const;
+		char *unquoted() const;
+		const char *original() const;
+		void operator=(const mgSQLString& b);
+		bool operator==(const mgSQLString& b) const;
+		bool operator==(const char* b) const;
+		bool operator==(string b) const;
+		bool operator!=(const mgSQLString& b) const;
+		bool operator!=(const char* b) const;
+		bool operator!=(string b) const;
+		void operator=(const char* b);
+	private:
+		void Init(const char* s);
+		mgSQLStringImp* m_str;
+		char* m_original;
+};
 
-extern struct option& long_options;
+enum mgQueryNoise {mgQueryNormal, mgQueryWarnOnly, mgQuerySilent};
+
+class mgQueryImp {
+	public:
+		mgQueryImp(void *db,string sql,mgQueryNoise noise);
+		virtual ~mgQueryImp() {};
+		virtual char ** Next() = 0;
+		int Rows() { return m_rows; }
+		int Columns() { return m_columns; }
+		string ErrorMessage() { if (!m_errormessage) return "";else return m_errormessage; }
+	protected:
+		void HandleErrors();
+		string m_sql;
+		int m_rows;
+		int m_columns;
+		int m_rc;
+		const char* m_errormessage;
+		int m_cursor;
+		const char* m_optsql;
+		mgQueryNoise m_noise;
+		void *m_db_handle;
+};
+
+class mgQuery {
+	public:
+		mgQuery(void *db,const char*s,mgQueryNoise noise = mgQueryNormal);
+		mgQuery(void *db,string s,mgQueryNoise noise = mgQueryNormal);
+		~mgQuery();
+		int Rows() { return m_q->Rows(); }
+		int Columns() { return m_q->Columns(); }
+		char ** Next() { return m_q->Next(); }
+		string ErrorMessage() { return m_q->ErrorMessage(); }
+	private:
+		void Init(void *db,const char*s,mgQueryNoise noise);
+		mgQueryImp* m_q;
+};
 
 class mgReference {
 	public:
@@ -102,39 +170,48 @@ class mgDb {
   	bool HasFolderFields() const { return m_hasfolderfields;}
   	virtual bool Create() = 0;
 	virtual void ServerEnd() {};		// must be done explicitly. Will be called with this==0
-	virtual int AddToCollection( const string Name,const vector<mgItem*>&items,mgParts* what=0) =0;
-	virtual int RemoveFromCollection( const string Name,const vector<mgItem*>&items,mgParts* what=0) =0;
-	virtual bool DeleteCollection( const string Name) =0;
-	virtual void ClearCollection( const string Name) =0;
-	virtual bool CreateCollection( const string Name) =0;
+	virtual int AddToCollection( const string Name,const vector<mgItem*>&items,mgParts* what=0);
+	virtual int RemoveFromCollection( const string Name,const vector<mgItem*>&items,mgParts* what=0);
+	virtual bool DeleteCollection( const string Name);
+	virtual void ClearCollection( const string Name);
+	virtual bool CreateCollection( const string Name);
 
 	void Sync(char * const * path_argv = 0);
 	virtual bool FieldExists(string table, string field)=0;
-	virtual void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap)=0;
-	virtual string LoadItemsInto(mgParts& what,vector<mgItem*>& items) = 0;
-	virtual string LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems,bool groupby)=0;
-	string sql_string(const string s); // \todo does it need to be public?
+	void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap);
+	string LoadItemsInto(mgParts& what,vector<mgItem*>& items);
+	string LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems,bool groupby);
 	virtual bool NeedGenre2() = 0;
 	virtual bool Threadsafe() { return false; }
-	virtual void Execute(const string sql)=0;
+	int Execute(const string sql);
 	virtual const char* Options() const =0;
 	virtual const char* HelpText() const =0;
+	virtual void* DbHandle() const =0;
+	virtual const char* DecadeExpr()=0;
+	virtual string Now() const =0;
+	virtual string Directory() const =0;
    protected:
 	int m_rows;
 	int m_cols;
 	virtual bool SyncStart() { return true; }
 	virtual void SyncEnd() {}
-	virtual void SyncFile(const char *filename) {}
+	void SyncFile(const char *filename);
   	bool m_database_found;
   	bool m_hasfolderfields;
-	char* sql_Cstring(const string s,char *buf=0);
-	virtual char* sql_Cstring(const char *s,char *buf)=0;
 	bool m_separate_thread;
 	time_t m_connect_time;
 	time_t m_create_time;
-	char* Build_cddbid(const char* artist);
-	virtual string get_col0(const string sql) =0;
+	string get_col0(const string sql);
 	void FillTables();
+	virtual void StartTransaction() {};
+	virtual void Commit() {};
+   private:
+	TagLib::String getlanguage(const char *filename);
+	mgSQLString Build_cddbid(const mgSQLString& artist) const;
+	mgSQLString getAlbum(const char *filename,const mgSQLString& c_album,
+			const mgSQLString& c_artist);
+	map<string,string> m_Genres;
+
 };
 
 class mgKey {
@@ -166,9 +243,9 @@ class mgKeyNormal : public mgKey {
 		void set(mgListItem* item);
 		mgListItem* get();
 		mgKeyTypes Type() const { return m_kt; }
-		virtual string expr() const { return m_table + "." + m_field; }
 		virtual string table() const { return m_table; }
 	protected:
+		virtual string expr(mgDb *db) const { return m_table + "." + m_field; }
 		string IdClause(mgDb *db,string what,string::size_type start=0,string::size_type len=string::npos) const;
 		void AddIdClause(mgDb *db,mgParts &result,string what) const;
 		mgListItem *m_item;
@@ -182,7 +259,7 @@ class mgKeyABC : public mgKeyNormal {
 	public:
 		mgKeyABC(const mgKeyNormal& k) : mgKeyNormal(k) {}
 		mgKeyABC(const mgKeyTypes kt, string table, string field) : mgKeyNormal(kt,table,field) {}
-		virtual string expr() const { return "substring("+mgKeyNormal::expr()+",1,1)"; }
+		virtual string expr(mgDb*db) const { return "substring("+mgKeyNormal::expr(db)+",1,1)"; }
 	protected:
 		//void AddIdClause(mgDb *db,mgParts &result,string what) const;
 };
@@ -212,5 +289,6 @@ class mgKeyMaps {
 };
 
 extern mgKeyMaps KeyMaps;
+
 
 #endif

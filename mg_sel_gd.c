@@ -187,10 +187,10 @@ mgSelectionGd::Parts(mgDb *db,bool groupby) const
 	if (m_level==0 &&  isCollectionOrder())
 	{
 		// sql command contributed by jarny
-		result.special_statement = string("select playlist.title,playlist.id, "
-				"count(*) * case when playlistitem.playlist is null then 0 else 1 end from playlist "
-				"left join playlistitem on playlist.id = playlistitem.playlist "
-				"group by playlist.title,playlistitem.playlist,playlist.id");
+		result.special_statement = string("SELECT playlist.title,playlist.id, "
+				"COUNT(*) * CASE WHEN playlistitem.playlist IS NULL THEN 0 ELSE 1 END FROM playlist "
+				"LEFT JOIN playlistitem ON playlist.id = playlistitem.playlist "
+				"GROUP BY playlist.title,playlistitem.playlist,playlist.id");
 		return result;
 	}
 	for (unsigned int i=0;i<=m_level;i++)

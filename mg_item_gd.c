@@ -28,6 +28,9 @@ mgItemGd::getKeyItem(mgKeyTypes kt) const
 {
 	string val;
 	string id;
+	long number=0;
+	bool val_is_number=false;
+	bool id_is_number=false;
 	if (m_itemid>=0) 
 	{
 		switch (kt) {
@@ -42,9 +45,9 @@ mgItemGd::getKeyItem(mgKeyTypes kt) const
 			case keyGdDecade: val = id = string(ltos(int((getYear() % 100) / 10) * 10));break;
 			case keyGdTitle: val = id = getTitle();break;
 			case keyGdTitleABC: val = id = getTitle()[0];break;
-			case keyGdTrack: val = id = getTrack();break;
+			case keyGdTrack: val = getTitle();id_is_number=true;number=getTrack();break;
 			case keyGdLanguage: val = getLanguage();id=m_language_id ; break;
-			case keyGdRating: val = id = getRating();break;
+			case keyGdRating: id_is_number=val_is_number=true;number=getRating();break;
 			case keyGdFolder1:
 			case keyGdFolder2:
 			case keyGdFolder3:
@@ -58,6 +61,18 @@ mgItemGd::getKeyItem(mgKeyTypes kt) const
 				}
 			default: return new mgListItem;
 		}
+	}
+	if (val_is_number)
+	{
+		char valbuf[30];
+		sprintf(valbuf,"%.5ld",number);
+		val=valbuf;
+	}
+	if (id_is_number)
+	{
+		char idbuf[30];
+		sprintf(idbuf,"%.5ld",number);
+		id=idbuf;
 	}
 	return new mgListItem(val,id);
 }

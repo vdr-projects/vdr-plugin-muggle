@@ -18,10 +18,6 @@
 #include <time.h>
 #include <assert.h>
 
-#include <mpegfile.h>
-#include <flacfile.h>
-#include <id3v2tag.h>
-#include <fileref.h>
 
 #include "mg_setup.h"
 #include "mg_item_gd.h"
@@ -31,9 +27,68 @@
 
 using namespace std;
 
-string DbName()
+mgQueryPG::mgQueryPG(void* db,string sql,mgQueryNoise noise)
+	: mgQueryImp(db,sql,noise)
 {
-	return "Postgresql";
+	m_db = (PGconn*)m_db_handle;
+	m_cursor = 0;
+	m_table = PQexec(m_db,m_optsql);
+	switch ((m_rc=PQresultStatus(m_table))) {
+		case PGRES_COMMAND_OK:
+    			m_rows = atol(PQcmdTuples(m_table));
+			break;;
+		case PGRES_TUPLES_OK:
+    			m_rows = PQntuples(m_table);
+			m_columns = PQnfields(m_table);
+			break;
+		default:	
+			m_errormessage = PQresultErrorMessage (m_table);
+			break;
+	}
+	HandleErrors();
+}
+
+mgQueryPG::~mgQueryPG()
+{
+	PQclear(m_table);
+}
+
+char **
+mgQueryPG::Next()
+{
+        if (m_cursor>=Rows())
+		return 0;
+	assert(Columns()<100);
+	memset(m_rowpointers,0,sizeof(m_rowpointers));
+	for (int idx=0;idx<Columns();idx++)
+		if (!PQgetisnull(m_table,m_cursor,idx))
+			m_rowpointers[idx] = PQgetvalue(m_table,m_cursor,idx);
+	m_cursor++;
+	return m_rowpointers;
+}
+
+mgSQLStringPG::~mgSQLStringPG()
+{
+	if (m_unquoted)
+		free(m_unquoted);
+}
+
+mgSQLStringPG::mgSQLStringPG(const char*s)
+{
+	m_unquoted = 0;
+	m_original = s;
+}
+
+char* 
+mgSQLStringPG::unquoted() const
+{
+	if (!m_unquoted)
+	{
+  		int buflen=2*strlen(m_original)+5;
+  		m_unquoted = (char *) malloc( buflen);
+  		PQescapeString(m_unquoted,m_original,strlen(m_original));
+	}
+	return m_unquoted;
 }
 
 const char*
@@ -81,7 +136,6 @@ mgDbGd::Threadsafe()
 {
 	return ENABLE_THREAD_SAFETY;
 }
-
 
 static char *db_cmds[] = 
 {
@@ -157,76 +211,33 @@ static char *db_cmds[] =
 	  "folder3 varchar(255), "
 	  "folder4 varchar(255), "
 	  "PRIMARY KEY  (id))",
-  "CREATE INDEX trk_artist ON tracks (artist)",
-  "CREATE INDEX trk_title ON tracks (title)",
-  "CREATE INDEX trk_mp3file ON tracks (mp3file)",
-  "CREATE INDEX trk_genre1 ON tracks (genre1)",
-  "CREATE INDEX trk_genre2 ON tracks (genre2)",
-  "CREATE INDEX trk_year ON tracks (year)",
-  "CREATE INDEX trk_lang ON tracks (lang)",
-  "CREATE INDEX trk_type ON tracks (type)",
-  "CREATE INDEX trk_rating ON tracks (rating)",
-  "CREATE INDEX trk_sourceid ON tracks (sourceid)",
+  "CREATE INDEX tracks_title ON tracks (title)",
+  "CREATE INDEX tracks_sourceid ON tracks (sourceid)",
+  "CREATE INDEX tracks_mp3file ON tracks (mp3file)",
+  "CREATE INDEX tracks_genre1 ON tracks (genre1)",
+  "CREATE INDEX tracks_genre2 ON tracks (genre2)",
+  "CREATE INDEX tracks_year ON tracks (year)",
+  "CREATE INDEX tracks_lang ON tracks (lang)",
+  "CREATE INDEX tracks_artist ON tracks (artist)",
+  "CREATE INDEX tracks_rating ON tracks (rating)",
+  "CREATE INDEX tracks_folder1 ON tracks (folder1)",
+  "CREATE INDEX tracks_folder2 ON tracks (folder2)",
+  "CREATE INDEX tracks_folder3 ON tracks (folder3)",
+  "CREATE INDEX tracks_folder4 ON tracks (folder4)",
 };
 
-
-PGresult*
-mgDbGd::sql_query(string sql)
+void
+mgDbGd::StartTransaction()
 {
-	const char * optsql = optimize(sql).c_str();
-  	mgDebug(4,"PQexec(%X,%s)",m_db,optsql);
-	PGresult* result = PQexec(m_db,optsql);
-	switch (PQresultStatus(result)) {
-		case PGRES_COMMAND_OK:
-    			m_rows = atol(PQcmdTuples(result));
-			break;
-		case PGRES_TUPLES_OK:
-    			m_rows = PQntuples(result);
-			break;
-		default:	
-			mgError("SQL Error in %s: %s",optsql,PQresultErrorMessage (result));
-    			std::cout<<"ERROR in " << optsql << ":" << PQresultErrorMessage (result)<<std::endl;
-			break;
-	}
-	return result;
+	Execute("BEGIN TRANSACTION");
 }
 
 void
-mgDbGd::Execute(const string sql)
+mgDbGd::Commit()
 {
-	PQclear(Query(sql));
+	Execute("COMMIT");
 }
 
-PGresult*
-mgDbGd::Query( const string sql)
-{
-  if (sql.empty())
-	  return 0;
-  if (!Connect())
-	  return 0;
-  return sql_query(sql);
-}
-
-string
-mgDbGd::get_col0( const string sql)
-{
-	PGresult * sql_result = Query ( sql);
-	if (!sql_result)
-		return "NULL";
-	string result;
-	if (m_rows==0)
-		result = "NULL";
-	else
-	{
-		char *field = PQgetvalue(sql_result,0,0);
-		if (strlen(field)==0)
-			result = "NULL";
-		else
-			result = field;
-	}
-	PQclear (sql_result);
-	return result;
-}
 
 bool
 mgDbGd::Create()
@@ -243,34 +254,13 @@ mgDbGd::myCreate()
   int len = sizeof( db_cmds ) / sizeof( char* );
   for( int i=0; i < len; i ++ )
     {
-	PGresult *res=sql_query (db_cmds[i]);
-  	if (!res)
-  	{
-    		mgWarning("%20s: %s",db_cmds[i],PQerrorMessage (m_db));
+	mgQuery q(m_db,db_cmds[i],mgQueryWarnOnly);
+  	if (!q.ErrorMessage().empty())
 		return false;
-	}
     }
   m_database_found=true;
   FillTables();
   return true;
-}
-
-char*
-mgDbGd::sql_Cstring( const char *s, char *buf)
-{
-  char *b;
-  if (buf)
-	b=buf;
-  else
-  {
-  	int buflen=2*strlen(s)+5;
-  	b = (char *) malloc( buflen);
-  }
-  b[0]='\'';
-  PQescapeString(b+1,s,strlen(s));
-  *(strchr(b,0)+1)=0;
-  *(strchr(b,0))='\'';
-  return b;
 }
 
 bool
@@ -340,294 +330,23 @@ mgDbGd::NeedGenre2()
     return needGenre2;
 }
 
-char *
-mgDbGd::sql_Cstring(TagLib::String s,char *buf)
-{
-	return sql_Cstring(s.toCString(),buf);
-}
-
-
-TagLib::String
-mgDbGd::getlanguage(const char *filename)
-{
-      TagLib::String result = "";
-      TagLib::ID3v2::Tag * id3v2tag=0;
-      if (!strcasecmp(extension(filename),"flac"))
-      {
-      	TagLib::FLAC::File f(filename);
-	id3v2tag = f.ID3v2Tag();
-      	if (id3v2tag)
-      	{
-      	  TagLib::ID3v2::FrameList l = id3v2tag->frameListMap()["TLAN"];
-      	  if (!l.isEmpty())
-  	    result = l.front()->toString();
-        }
-      }
-      else if (!strcasecmp(extension(filename),"mp3"))
-      {
-      	TagLib::MPEG::File f(filename);
-	id3v2tag = f.ID3v2Tag();
-        if (id3v2tag)
-        {
-      	  TagLib::ID3v2::FrameList l = id3v2tag->frameListMap()["TLAN"];
-      	  if (!l.isEmpty())
-  	    result = l.front()->toString();
-        }
-      }
-      return result;
-}
-
-char *
-mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
-{
-	char * result;
-	char *b;
-	asprintf(&b,"SELECT cddbid FROM album"
-			" WHERE title=%s AND artist=%s",c_album,c_artist);
-	result=sql_Cstring(get_col0(b));
-	free(b);
-	if (!strcmp(result,"'NULL'"))
-	{
-		char c_directory[520];
-		sql_Cstring(filename,c_directory);
-		char *slash=strrchr(c_directory,'/');
-		if (slash)
-		{
-			*slash='\'';
-			*(slash+1)=0;
-		}
-		const char *directory="substring(tracks.mp3file from '.*/(.*)')";
-
-		char *where;
-		asprintf(&where,"WHERE tracks.sourceid=album.cddbid "
-			"AND %s=%s "
-			"AND album.title=%s",
-			directory,c_directory,
-			c_album);
-
-		// how many artists will the album have after adding this one?
-		asprintf(&b,"SELECT distinct album.artist FROM tracks, album %s ",where);
-        	PGresult *rows = Query (b);
-		free(b);
-		long new_album_artists = m_rows;
-		char buf[520];
-		if (new_album_artists==1)
-		{
-			sql_Cstring(PQgetvalue(rows,0,0),buf);
-			if (strcmp(buf,c_artist))
-				new_album_artists++;
-		}
-		else
-		if (new_album_artists>1 && strcmp(buf,"'Various Artists'"))
-			// is the album multi artist and not yet marked as such?
-		{
-			asprintf(&b,"SELECT album.cddbid FROM tracks, album %s",where);
-			free(result);
-			result=sql_Cstring(get_col0(b));
-			free(b);
-			asprintf(&b,"UPDATE album SET artist='Various Artists' WHERE cddbid=%s",result);
-			Execute(b);
-			// here we could change all tracks.sourceid to result and delete
-			// the other album entries for this album, but that should only 
-			// be needed if a pre 0.1.4 import has been done incorrectly, so we
-			// don't bother
-		}
-		else
-		{				// no usable album found
-			free(result);
-			result=Build_cddbid(c_artist);
-			asprintf(&b,"INSERT INTO album (title,artist,cddbid) VALUES(%s,%s,%s)",
-				c_album,c_artist,result);
-			Execute(b);
-			free(b);
-		}
-		PQclear(rows);	
-		free(where);
-	}
-	return result;
-}
-
-void
-mgDbGd::SyncFile(const char *filename)
-{
-      	char *ext = extension(filename);
-	if (strcasecmp(ext,"flac")
-		&& strcasecmp(ext,"ogg")
-		&& strcasecmp(ext,"mp3"))
-		return;
-	if (!strncmp(filename,"./",2))	// strip leading ./
-		filename += 2;
-	const char *cfilename=filename;
-	if (isdigit(filename[0]) && isdigit(filename[1]) && filename[2]=='/' && !strchr(filename+3,'/'))
-		cfilename=cfilename+3;
-	if (strlen(cfilename)>255)
-	{
-		mgWarning("Length of file exceeds database field capacity: %s", filename);
-		return;
-	}
-	TagLib::FileRef f( filename) ;
-	if (f.isNull())
-		return;
-	if (!f.tag())
-		return;
-	mgDebug(3,"Importing %s",filename);
-        TagLib::AudioProperties *ap = f.audioProperties();
-	char c_artist[520];
-	char c_title[520];
-	char c_album[520];
-	char c_genre1[520];
-	char c_lang[520];
-	char c_mp3file[520];
-	char c_folder1[520];
-	char c_folder2[520];
-	char c_folder3[520];
-	char c_folder4[520];
-	char *folders[4];
-	char *fbuf=SeparateFolders(filename,folders,4);
-	sql_Cstring(folders[0],c_folder1);
-	sql_Cstring(folders[1],c_folder2);
-	sql_Cstring(folders[2],c_folder3);
-	sql_Cstring(folders[3],c_folder4);
-	free(fbuf);
-        sql_Cstring(f.tag()->artist(),c_artist);
-	sql_Cstring(f.tag()->title(),c_title);
-	if (f.tag()->album()=="")
-		sql_Cstring("Unassigned",c_album);
-	else
-		sql_Cstring(f.tag()->album(),c_album);
-	TagLib::String sgenre1=f.tag()->genre();
-	const char *genrename=sgenre1.toCString();
-	const char *genreid=m_Genres[genrename].c_str();
-	if (strlen(genreid)==0)
-		genreid="NULL";
-	sql_Cstring(genreid,c_genre1);
-	sql_Cstring(getlanguage(filename),c_lang);
-	char sql[7000];
-	char *c_cddbid=getAlbum(filename,c_album,c_artist);
-	sql_Cstring(cfilename,c_mp3file);
-	sprintf(sql,"SELECT id from tracks WHERE mp3file=%s",c_mp3file);
-	string id = get_col0(sql);
-	if (id!="NULL")
-	{
-		sprintf(sql,"UPDATE tracks SET artist=%s, title=%s,year=%d,sourceid=%s,"
-			"tracknb=%d,length=%d,bitrate=%d,samplerate=%d,"
-			"channels=%d,genre1=%s,lang=%s WHERE id=%ld",
-			c_artist,c_title,f.tag()->year(),c_cddbid,
-			f.tag()->track(),ap->length(),ap->bitrate(),ap->sampleRate(),
-			ap->channels(),c_genre1,c_lang,atol(id.c_str()));
-	}
-	else
-	{
-		sprintf(sql,"INSERT INTO tracks "
-			"(artist,title,year,sourceid,"
-			"tracknb,mp3file,length,bitrate,samplerate,"
-			"channels,genre1,genre2,lang,folder1,folder2,"
-			"folder3,folder4) "
-			"VALUES (%s,%s,%u,%s,"
-			"%u,%s,%d,%d,%d,"
-			"%d,%s,'',%s,%s,%s,%s,%s)",
-			c_artist,c_title,f.tag()->year(),c_cddbid,
-			f.tag()->track(),c_mp3file,ap->length(),ap->bitrate(),ap->sampleRate(),
-			ap->channels(),c_genre1,c_lang,c_folder1,c_folder2,c_folder3,c_folder4);
-	}
-	free(c_cddbid);
-	Execute(sql);
-}
 
 bool
 mgDbGd::SyncStart()
 {
   	if (!Connect())
     		return false;
-	LoadMapInto("SELECT id,genre from genre",&m_Genres,0);
 	// init random number generator
 	struct timeval tv;
 	struct timezone tz;
 	gettimeofday( &tv, &tz );
 	srandom( tv.tv_usec );
-	Execute("BEGIN TRANSACTION");
 	return true;
 }
 
 void
 mgDbGd::SyncEnd()
 {
-	Execute("COMMIT TRANSACTION");
-}
-
-int
-mgDbGd::AddToCollection( const string Name, const vector<mgItem*>&items,mgParts *what)
-{
-    if (Name.empty())
-	    return 0;
-    if (!Connect())
-	    return 0;
-    CreateCollection(Name);
-    string listid = KeyMaps.id(keyGdCollection,Name);
-    if (listid.empty())
-	    return 0;
-    Execute("BEGIN TRANSACTION");
-    // insert all tracks:
-    int result = 0;
-    for (unsigned int i = 0; i < items.size(); i++)
-    {
-	Execute("INSERT INTO playlistitem VALUES( " + listid + ","
-			+ ltos (items[i]->getItemid ()) +")");
-	result += m_rows;
-    }
-    Execute("COMMIT");
-    return result;
-}
-
-int
-mgDbGd::RemoveFromCollection (const string Name, const vector<mgItem*>&items,mgParts* what)
-{
-    if (Name.empty())
-	    return 0;
-    if (!Connect())
-	    return 0;
-    string listid = KeyMaps.id(keyGdCollection,Name);
-    if (listid.empty())
-	    return 0;
-    Execute("BEGIN TRANSACTION");
-    // remove all tracks:
-    int result = 0;
-    for (unsigned int i = 0; i < items.size(); i++)
-    {
-	Execute("DELETE FROM playlistitem WHERE playlist="+listid+
-			" AND trackid = " + ltos (items[i]->getItemid ()));
-	result += m_rows;
-    }
-    Execute("COMMIT");
-    return result;
-}
-
-bool
-mgDbGd::DeleteCollection (const string Name)
-{
-    if (!Connect()) return false;
-    ClearCollection(Name);
-    Execute ("DELETE FROM playlist WHERE title=" + sql_string (Name));
-    return m_rows == 1;
-}
-
-void
-mgDbGd::ClearCollection (const string Name)
-{
-    if (!Connect()) return;
-    string listid = KeyMaps.id(keyGdCollection,Name);
-    Execute ("DELETE FROM playlistitem WHERE playlist="+sql_string(listid));
-}
-
-bool
-mgDbGd::CreateCollection (const string Name)
-{
-    if (!Connect()) return false;
-    string name = sql_string(Name);
-    if (exec_count("SELECT count(title) FROM playlist WHERE title = " + name)>0) 
-	return false;
-    Execute ("INSERT INTO playlist (title,author,created) VALUES(" + name + ",'VDR',CURRENT_TIMESTAMP)");
-    return true;
 }
 
 bool
@@ -642,110 +361,10 @@ mgDbGd::FieldExists(string table, string field)
 	return result;
 }
 
-void
-mgDbGd::LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap)
+const char*
+mgDbGd::DecadeExpr()
 {
-	if (!valmap && !idmap)
-		return;
-	if (!Connect())
-		return;
-	PGresult *rows = Query (sql);
-	if (rows) 
-	{
-		int ntuples = m_rows;
-		for (int idx=0;idx<ntuples;idx++)
-		{
-			char *r0 = PQgetvalue(rows,idx,0);
-			char *r1 = PQgetvalue(rows,idx,1);
-			if (r0[0] && r1[0])
-			{
-				if (valmap) (*valmap)[r0] = r1;
-				if (idmap) (*idmap)[r1] = r0;
-			}
-		}
-		PQclear (rows);
-	}
-}
-
-string
-mgDbGd::LoadItemsInto(mgParts& what,vector<mgItem*>& items)
-{
-    	if (!Connect())
-		return "";
-	what.idfields.clear();
-	what.valuefields.clear();
-	what.idfields.push_back("tracks.id");
-	what.idfields.push_back("tracks.title");
-	what.idfields.push_back("tracks.mp3file");
-	what.idfields.push_back("tracks.artist");
-	what.idfields.push_back("album.title");
-	what.idfields.push_back("tracks.genre1");
-	what.idfields.push_back("tracks.genre2");
-	what.idfields.push_back("tracks.bitrate");
-	what.idfields.push_back("tracks.year");
-	what.idfields.push_back("tracks.rating");
-	what.idfields.push_back("tracks.length");
-	what.idfields.push_back("tracks.samplerate");
-	what.idfields.push_back("tracks.channels");
-	what.idfields.push_back("tracks.lang");
-	what.idfields.push_back("tracks.tracknb");
-	what.tables.push_back("tracks");
-	what.tables.push_back("album");
-	string result = what.sql_select(false); 
-	PGresult *rows = Query (result);
-	if (rows)
-	{
-		for (unsigned int idx=0;idx<items.size();idx++)
-			delete items[idx];
-		items.clear ();
-		char *row[50];
-		assert(PQnfields(rows)<50);
-		for (int rowidx=0;rowidx<50;rowidx++)
-			row[rowidx]=0;
-		for (int rowidx=0;rowidx<m_rows;rowidx++)
-		{
-			for (int idx=0;idx<PQnfields(rows);idx++)
-				row[idx] = PQgetvalue(rows,rowidx,idx);
-			items.push_back (new mgItemGd (row));
-		}
-		PQclear (rows);
-	}
-	return result;
-}
-
-string
-mgDbGd::LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems,bool distinct)
-{
-    	if (!Connect())
-		return "";
-	string result = what.sql_select(distinct);
-	PGresult *rows = Query (result);
-        if (rows)
-	{
-        	listitems.clear ();
-        	unsigned int num_fields = PQnfields(rows);
-		assert(num_fields>=1);
-		for (int idx=0;idx<m_rows;idx++)
-        	{
-			string r0 = PQgetvalue(rows,idx,0);
-			if (r0.empty()) continue;
-			mgListItem* n = new mgListItem;
-			long count=1;
-			if (num_fields>1)
-				count = atol(PQgetvalue(rows,idx,num_fields-1));
-			if (num_fields==3)
-			{
-				if (PQgetisnull(rows,idx,1))
-					continue;
-				n->set(r0,PQgetvalue(rows,idx,1),count);
-			}
-			else
-				n->set(KeyMaps.value(tp,r0),r0,count);
-			listitems.push_back(n);
-        	}
-        	PQclear (rows);
-	}
-	return result;
+	return "substring(10 * floor(tracks.year/10),3)";
 }
 
 class mgKeyGdTrack : public mgKeyNormal {
@@ -910,7 +529,7 @@ class mgKeyGdCollectionItem : public mgKeyNormal {
 class mgKeyDecade : public mgKeyNormal {
 	public:
 		mgKeyDecade() : mgKeyNormal(keyGdDecade,"tracks","year") {}
-		string expr() const { return "substring(10 * floor(tracks.year/10),3)"; }
+		string expr(mgDb* db) const { return db->DecadeExpr(); }
 };
 
 mgKey*

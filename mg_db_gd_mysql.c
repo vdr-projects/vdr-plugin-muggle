@@ -16,24 +16,69 @@
 #include <time.h>
 #include <assert.h>
 
-#include <mpegfile.h>
-#include <flacfile.h>
-#include <id3v2tag.h>
-#include <fileref.h>
-
 #include "mg_setup.h"
 #include "mg_item_gd.h"
 #include "mg_db_gd_mysql.h"
 
 using namespace std;
 
-string DbName()
+static MYSQL* escape_db;
+
+mgSQLStringMySQL::~mgSQLStringMySQL()
 {
-#ifdef HAVE_ONLY_SERVER
-	return "MySql";
-#else
-	return "Embedded MySql";
-#endif
+	if (m_unquoted)
+		free(m_unquoted);
+}
+
+mgSQLStringMySQL::mgSQLStringMySQL(const char*s)
+{
+	m_unquoted = 0;
+	m_original = s;
+}
+
+char* 
+mgSQLStringMySQL::unquoted() const
+{
+	if (!m_unquoted)
+	{
+		int buflen=2*strlen(m_original)+3;
+  		m_unquoted = (char *) malloc( buflen);
+  		if (escape_db)
+  			mysql_real_escape_string( escape_db,
+				m_unquoted, m_original, strlen(m_original) );
+  		else
+			strcpy(m_unquoted,m_original);
+	}
+	return m_unquoted;
+}
+
+
+mgQueryMySQL::mgQueryMySQL(void* db,string sql,mgQueryNoise noise)
+	: mgQueryImp(db,sql,noise)
+{
+	m_db = (MYSQL*)m_db_handle;
+	m_table = 0;
+	if ((m_rc=mysql_query(m_db,m_optsql)))
+		m_errormessage = mysql_error (m_db);
+	else
+	{
+		m_table = mysql_store_result (m_db);
+      		m_rows = mysql_affected_rows(m_db);
+		if (m_table)
+        		m_columns = mysql_num_fields(m_table);
+	}
+	HandleErrors();
+}
+
+mgQueryMySQL::~mgQueryMySQL()
+{
+	mysql_free_result (m_table);
+}
+
+char **
+mgQueryMySQL::Next()
+{
+        return mysql_fetch_row(m_table);
 }
 
 const char*
@@ -358,60 +403,16 @@ static char *db_cmds[] =
 	  "TYPE=MyISAM"
 };
 
-
-bool
-mgDbGd::sql_query(string sql)
+void
+mgDbGd::StartTransaction()
 {
-	const char * optsql = optimize(sql).c_str();
-  	mgDebug(4,"mysql_query(%X,%s)",m_db,optsql);
-	bool result = !mysql_query(m_db,optsql);
-	if (!result)
-	{
-    		mgError("SQL Error in %s: %s",optsql,mysql_error (m_db));
-    		std::cout<<"ERROR in " << optsql << ":" << mysql_error(m_db)<<std::endl;
-	}
-	return result;
+	Execute("START TRANSACTION");
 }
 
 void
-mgDbGd::Execute(const string sql)
+mgDbGd::Commit()
 {
-  if (sql.empty())
-	  return;
-  if (!Connect())
-	  return;
-  sql_query (sql);
-}
-
-MYSQL_RES*
-mgDbGd::Query( const string sql)
-{
-  if (sql.empty())
-	  return 0;
-  if (!Connect())
-	  return 0;
-  if (!sql_query (sql))
-	  return 0;
-  else
-	  return mysql_store_result (m_db);
-}
-
-string
-mgDbGd::get_col0( const string sql)
-{
-	MYSQL_RES * sql_result = Query ( sql);
-	if (!sql_result)
-		return "NULL";
-	MYSQL_ROW row = mysql_fetch_row (sql_result);
-	string result;
-	if (row == NULL)
-		result = "NULL";
-	else if (row[0] == NULL)
-		result = "NULL";
-	else
-		result = row[0];
-	mysql_free_result (sql_result);
-	return result;
+	Execute("COMMIT");
 }
 
 bool
@@ -425,23 +426,17 @@ mgDbGd::Create()
   sprintf(buffer,"DROP DATABASE IF EXISTS %s",the_setup.DbName);
   if (strlen(buffer)>400)
 	  mgError("name of database too long: %s",the_setup.DbName);
-  if (!sql_query(buffer))
-  {
-  	mgWarning("Cannot drop %s:%s",the_setup.DbName,
-			mysql_error (m_db));
+  mgQuery q(m_db,buffer);
+  if (!q.ErrorMessage().empty())
 	return false;
-  }
   sprintf(buffer,"CREATE DATABASE %s",the_setup.DbName);
-  if (!sql_query(buffer))
-  {
-  	mgWarning("Cannot create %s:%s",the_setup.DbName,mysql_error (m_db));
+  mgQuery q1(m_db,buffer);
+  if (!q1.ErrorMessage().empty())
 	return false;
-  }
-
   if (!UsingEmbeddedMySQL())
 	sprintf(buffer,"grant all privileges on %s.* to vdr@localhost",
 			the_setup.DbName);
-  	sql_query(buffer);
+  	Execute(buffer);
   	// ignore error. If we can create the data base, we can do everything
   	// with it anyway.
 
@@ -451,11 +446,11 @@ mgDbGd::Create()
   int len = sizeof( db_cmds ) / sizeof( char* );
   for( int i=0; i < len; i ++ )
     {
-  	if (!sql_query (db_cmds[i]))
+        mgQuery q(m_db, db_cmds[i],mgQueryWarnOnly);
+	if (!q.ErrorMessage().empty())
   	{
-    		mgWarning("%20s: %s",db_cmds[i],mysql_error (m_db));
 		sprintf(buffer,"DROP DATABASE IF EXISTS %s",the_setup.DbName);
-  		sql_query(buffer);	// clean up
+		Execute(buffer);
 		return false;
 	}
     }
@@ -464,30 +459,6 @@ mgDbGd::Create()
   return true;
 }
 
-char*
-mgDbGd::sql_Cstring( const char *s, char *buf)
-{
-  char *b;
-  if (buf)
-	b=buf;
-  else
-  {
-  	int buflen;
-  	if (!this)
-	  	buflen=strlen(s)+2;
-  	else
-		buflen=2*strlen(s)+3;
-  	b = (char *) malloc( buflen);
-  }
-  b[0]='\'';
-  if (!ServerConnect())
-	strcpy(b+1,s);
-  else
-  	mysql_real_escape_string( m_db, b+1, s, strlen(s) );
-  *(strchr(b,0)+1)=0;
-  *(strchr(b,0))='\'';
-  return b;
-}
 
 bool
 mgDbGd::ServerConnect () 
@@ -529,6 +500,7 @@ mgDbGd::ServerConnect ()
 		m_db = 0;
     	}
     }
+    escape_db = m_db;
     return m_db!=0;
 }
 
@@ -586,22 +558,18 @@ mgDbGd::CreateFolderFields()
 {
   if (HasFolderFields())
 	  return;
-  sql_query("DESCRIBE tracks folder1");
-  MYSQL_RES *rows = mysql_store_result(m_db);
-  if (rows)
-    {
-      m_hasfolderfields = mysql_num_rows(rows)>0;
-      mysql_free_result(rows);
-      if (!m_hasfolderfields)
-      {
-	      m_hasfolderfields = sql_query(
-	              "alter table tracks add column folder1 varchar(255),"
-		      "add column folder2 varchar(255),"
-		      "add column folder3 varchar(255),"
-		      "add column folder4 varchar(255)");
+  mgQuery q(m_db, "DESCRIBE tracks folder1");
+  m_hasfolderfields = q.Rows()>0;
+  if (!m_hasfolderfields)
+  {
+  	mgQuery q(m_db,
+		"alter table tracks add column folder1 varchar(255),"
+    		"add column folder2 varchar(255),"
+    		"add column folder3 varchar(255),"
+    		"add column folder4 varchar(255)");
+	m_hasfolderfields = q.ErrorMessage().empty();
 
-      }
-    }
+  }
 }
 
 void
@@ -611,214 +579,11 @@ mgDbGd::ServerEnd()
 	mysqlhandle=0;
 }
 
-char *
-mgDbGd::sql_Cstring(TagLib::String s,char *buf)
-{
-	return sql_Cstring(s.toCString(),buf);
-}
-
-
-TagLib::String
-mgDbGd::getlanguage(const char *filename)
-{
-      TagLib::String result = "";
-      TagLib::ID3v2::Tag * id3v2tag=0;
-      if (!strcasecmp(extension(filename),"flac"))
-      {
-      	TagLib::FLAC::File f(filename);
-	id3v2tag = f.ID3v2Tag();
-      	if (id3v2tag)
-      	{
-      	  TagLib::ID3v2::FrameList l = id3v2tag->frameListMap()["TLAN"];
-      	  if (!l.isEmpty())
-  	    result = l.front()->toString();
-        }
-      }
-      else if (!strcasecmp(extension(filename),"mp3"))
-      {
-      	TagLib::MPEG::File f(filename);
-	id3v2tag = f.ID3v2Tag();
-        if (id3v2tag)
-        {
-      	  TagLib::ID3v2::FrameList l = id3v2tag->frameListMap()["TLAN"];
-      	  if (!l.isEmpty())
-  	    result = l.front()->toString();
-        }
-      }
-      return result;
-}
-
-char *
-mgDbGd::getAlbum(const char *filename,const char *c_album,const char *c_artist)
-{
-	char * result;
-	char *b;
-	asprintf(&b,"SELECT cddbid FROM album"
-			" WHERE title=%s AND artist=%s",c_album,c_artist);
-	result=sql_Cstring(get_col0(b));
-	free(b);
-	if (!strcmp(result,"'NULL'"))
-	{
-		char c_directory[520];
-		sql_Cstring(filename,c_directory);
-		char *slash=strrchr(c_directory,'/');
-		if (slash)
-		{
-			*slash='\'';
-			*(slash+1)=0;
-		}
-		const char *directory="substring(tracks.mp3file,1,length(tracks.mp3file)"
-			"-instr(reverse(tracks.mp3file),'/'))";
-		char *where;
-		asprintf(&where,"WHERE tracks.sourceid=album.cddbid "
-			"AND %s=%s "
-			"AND album.title=%s",
-			directory,c_directory,
-			c_album);
-
-		// how many artists will the album have after adding this one?
-		asprintf(&b,"SELECT distinct album.artist FROM tracks, album %s ",where);
-        	MYSQL_RES *rows = Query (b);
-		free(b);
-		long new_album_artists = m_db->affected_rows;
-		char buf[520];
-		if (new_album_artists==1)
-		{
-			MYSQL_ROW row = mysql_fetch_row(rows);
-			sql_Cstring(row[0],buf);
-			if (strcmp(buf,c_artist))
-				new_album_artists++;
-		}
-		else
-		if (new_album_artists>1 && strcmp(buf,"'Various Artists'"))
-			// is the album multi artist and not yet marked as such?
-		{
-			asprintf(&b,"SELECT album.cddbid FROM tracks, album %s",where);
-			free(result);
-			result=sql_Cstring(get_col0(b));
-			free(b);
-			asprintf(&b,"UPDATE album SET artist='Various Artists' WHERE cddbid=%s",result);
-			Execute(b);
-			// here we could change all tracks.sourceid to result and delete
-			// the other album entries for this album, but that should only 
-			// be needed if a pre 0.1.4 import has been done incorrectly, so we
-			// don't bother
-		}
-		else
-		{				// no usable album found
-			free(result);
-			result = Build_cddbid(c_artist);
-			asprintf(&b,"INSERT INTO album SET title=%s,artist=%s,cddbid=%s",
-				c_album,c_artist,result);
-			Execute(b);
-			free(b);
-		}
-		mysql_free_result(rows);	
-		free(where);
-	}
-	return result;
-}
-
-void
-mgDbGd::SyncFile(const char *filename)
-{
-      	char *ext = extension(filename);
-	if (strcasecmp(ext,"flac")
-		&& strcasecmp(ext,"ogg")
-		&& strcasecmp(ext,"mp3"))
-		return;
-	if (!strncmp(filename,"./",2))	// strip leading ./
-		filename += 2;
-	const char *cfilename=filename;
-	if (isdigit(filename[0]) && isdigit(filename[1]) && filename[2]=='/' && !strchr(filename+3,'/'))
-		cfilename=cfilename+3;
-	if (strlen(cfilename)>255)
-	{
-		mgWarning("Length of file exceeds database field capacity: %s", filename);
-		return;
-	}
-	TagLib::FileRef f( filename) ;
-	if (f.isNull())
-		return;
-	if (!f.tag())
-		return;
-	mgDebug(3,"Importing %s",filename);
-        TagLib::AudioProperties *ap = f.audioProperties();
-	char c_artist[520];
-	char c_title[520];
-	char c_album[520];
-	char c_genre1[520];
-	char c_lang[520];
-	char c_mp3file[520];
-	char c_folder1[520];
-	char c_folder2[520];
-	char c_folder3[520];
-	char c_folder4[520];
-	if (HasFolderFields())
-	{
-	    char *folders[4];
-	    char *fbuf=SeparateFolders(filename,folders,4);
-	    sql_Cstring(folders[0],c_folder1);
-	    sql_Cstring(folders[1],c_folder2);
-	    sql_Cstring(folders[2],c_folder3);
-	    sql_Cstring(folders[3],c_folder4);
-	    free(fbuf);
-	}
-	else
-	{
-	    c_folder1[0]=0;
-	    c_folder2[0]=0;
-	    c_folder3[0]=0;
-	    c_folder4[0]=0;
-	}
-        sql_Cstring(f.tag()->artist(),c_artist);
-	sql_Cstring(f.tag()->title(),c_title);
-	if (f.tag()->album()=="")
-		sql_Cstring("Unassigned",c_album);
-	else
-		sql_Cstring(f.tag()->album(),c_album);
-	TagLib::String sgenre1=f.tag()->genre();
-	const char *genrename=sgenre1.toCString();
-	const char *genreid=m_Genres[genrename].c_str();
-	if (strlen(genreid)==0)
-		genreid="NULL";
-	sql_Cstring(genreid,c_genre1);
-	sql_Cstring(getlanguage(filename),c_lang);
-	char sql[7000];
-	char *c_cddbid=getAlbum(filename,c_album,c_artist);
-	sql_Cstring(cfilename,c_mp3file);
-	sprintf(sql,"SELECT id from tracks WHERE mp3file=%s",c_mp3file);
-	string id = get_col0(sql);
-	if (id!="NULL")
-	{
-		sprintf(sql,"UPDATE tracks SET artist=%s, title=%s,year=%d,sourceid=%s,"
-			"tracknb=%d,length=%d,bitrate=%d,samplerate=%d,"
-			"channels=%d,genre1=%s,lang=%s WHERE id=%ld",
-			c_artist,c_title,f.tag()->year(),c_cddbid,
-			f.tag()->track(),ap->length(),ap->bitrate(),ap->sampleRate(),
-			ap->channels(),c_genre1,c_lang,atol(id.c_str()));
-	}
-	else
-	{
-		sprintf(sql,"INSERT INTO tracks SET artist=%s,title=%s,year=%u,sourceid=%s,"
-			"tracknb=%u,mp3file=%s,length=%d,bitrate=%d,samplerate=%d,"
-			"channels=%d,genre1=%s,genre2='',lang=%s,"
-			"folder1=%s,folder2=%s,folder3=%s,folder4=%s",
-			c_artist,c_title,f.tag()->year(),c_cddbid,
-			f.tag()->track(),c_mp3file,ap->length(),ap->bitrate(),ap->sampleRate(),
-			ap->channels(),c_genre1,c_lang,
-			c_folder1,c_folder2,c_folder3,c_folder4);
-	}
-	free(c_cddbid);
-	Execute(sql);
-}
-
 bool
 mgDbGd::SyncStart()
 {
   	if (!Connect())
     		return false;
-	LoadMapInto("SELECT id,genre from genre",&m_Genres,0);
 	// init random number generator
 	struct timeval tv;
 	struct timezone tz;
@@ -833,8 +598,9 @@ mgDbGd::AddToCollection( const string Name,const vector<mgItem*>&items, mgParts*
 {
     if (!Connect()) return 0;
     CreateCollection(Name);
-    string listid = sql_string (get_col0
-        ("SELECT id FROM playlist WHERE title=" + sql_string (Name)));
+    string listid = mgSQLString (get_col0
+        (string("SELECT id FROM playlist WHERE title=")
+	 + mgSQLString(Name).quoted())).quoted();
     unsigned int tracksize = items.size();
     if (tracksize==0)
 	    return 0;
@@ -901,36 +667,7 @@ mgDbGd::RemoveFromCollection (const string Name, const vector<mgItem*>&items, mg
     string sql = "DELETE playlistitem";
     sql += sql_list(" FROM",what->tables);
     sql += sql_list(" WHERE",what->clauses," AND ");
-    Execute (sql);
-    return m_db->affected_rows;
-}
-
-bool
-mgDbGd::DeleteCollection (const string Name)
-{
-    if (!Connect()) return false;
-    ClearCollection(Name);
-    Execute ("DELETE FROM playlist WHERE title=" + sql_string (Name));
-    return (m_db->affected_rows == 1);
-}
-
-void
-mgDbGd::ClearCollection (const string Name)
-{
-    if (!Connect()) return;
-    string listid = KeyMaps.id(keyGdCollection,Name);
-    Execute ("DELETE FROM playlistitem WHERE playlist="+sql_string(listid));
-}
-
-bool
-mgDbGd::CreateCollection (const string Name)
-{
-    if (!Connect()) return false;
-    string name = sql_string(Name);
-    if (exec_count("SELECT count(title) FROM playlist WHERE title = " + name)>0) 
-	return false;
-    Execute ("INSERT playlist VALUES(" + name + ",'VDR',NULL,NULL,NULL)");
-    return true;
+    return Execute (sql);
 }
 
 bool
@@ -940,109 +677,18 @@ mgDbGd::FieldExists(string table, string field)
 		return false;
     	char *b;
     	asprintf(&b,"DESCRIBE %s %s",table.c_str(),field.c_str());
-    	MYSQL_RES *rows = Query (b);
+    	mgQuery q(m_db,b);
     	free(b);
-	bool result=false;
-    	if (rows)
-	{
-		result = mysql_num_rows(rows) == 1;
-    		mysql_free_result (rows);
-	}
-	return result;
+    	if (q.Next())
+		return q.Rows() == 1;
+	else
+		return false;
 }
 
-void
-mgDbGd::LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap)
+const char*
+mgDbGd::DecadeExpr()
 {
-	if (!valmap && !idmap)
-		return;
-	if (!Connect())
-		return;
-	MYSQL_RES *rows = Query (sql);
-	if (rows) 
-	{
-		MYSQL_ROW row;
-		while ((row = mysql_fetch_row (rows)) != 0)
-		{
-			if (row[0] && row[1])
-			{
-				if (valmap) (*valmap)[row[0]] = row[1];
-				if (idmap) (*idmap)[row[1]] = row[0];
-			}
-		}
-		mysql_free_result (rows);
-	}
-}
-
-string
-mgDbGd::LoadItemsInto(mgParts& what,vector<mgItem*>& items)
-{
-    	if (!Connect())
-		return "";
-	what.idfields.clear();
-	what.valuefields.clear();
-	what.idfields.push_back("tracks.id");
-	what.idfields.push_back("tracks.title");
-	what.idfields.push_back("tracks.mp3file");
-	what.idfields.push_back("tracks.artist");
-	what.idfields.push_back("album.title");
-	what.idfields.push_back("tracks.genre1");
-	what.idfields.push_back("tracks.genre2");
-	what.idfields.push_back("tracks.bitrate");
-	what.idfields.push_back("tracks.year");
-	what.idfields.push_back("tracks.rating");
-	what.idfields.push_back("tracks.length");
-	what.idfields.push_back("tracks.samplerate");
-	what.idfields.push_back("tracks.channels");
-	what.idfields.push_back("tracks.lang");
-	what.idfields.push_back("tracks.tracknb");
-	what.tables.push_back("tracks");
-	what.tables.push_back("album");
-	string result = what.sql_select(false); 
-	MYSQL_RES *rows = Query (result);
-	if (rows)
-	{
-		for (unsigned int idx=0;idx<items.size();idx++)
-			delete items[idx];
-		items.clear ();
-		MYSQL_ROW row;
-		while ((row = mysql_fetch_row (rows)) != 0)
-			items.push_back (new mgItemGd (row));
-		mysql_free_result (rows);
-	}
-	return result;
-}
-
-string
-mgDbGd::LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems,bool distinct)
-{
-    	if (!Connect())
-		return "";
-	string result = what.sql_select(distinct);
-	MYSQL_RES *rows = Query (result);
-        if (rows)
-	{
-        	listitems.clear ();
-        	unsigned int num_fields = mysql_num_fields(rows);
-		assert(num_fields>=2);
-		MYSQL_ROW row;
-        	while ((row = mysql_fetch_row (rows)) != 0)
-        	{
-			if (!row[0]) continue;
-			string r0 = row[0];
-			mgListItem* n = new mgListItem;
-			if (num_fields==3)
-			{
-				if (!row[1]) continue;
-				n->set(row[0],row[1],atol(row[2]));
-			}
-			else
-        			n->set(KeyMaps.value(tp,r0),r0,atol(row[1]));
-			listitems.push_back(n);
-        	}
-        	mysql_free_result (rows);
-	}
-	return result;
+	return "substring(10 * floor(tracks.year/10),3)";
 }
 
 class mgKeyGdTrack : public mgKeyNormal {
@@ -1209,7 +855,7 @@ class mgKeyGdCollectionItem : public mgKeyNormal {
 class mgKeyDecade : public mgKeyNormal {
 	public:
 		mgKeyDecade() : mgKeyNormal(keyGdDecade,"tracks","year") {}
-		string expr() const { return "substring(10 * floor(tracks.year/10),3)"; }
+		string expr(mgDb* db) const { return db->DecadeExpr(); }
 };
 
 mgKey*

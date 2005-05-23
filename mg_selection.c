@@ -61,18 +61,13 @@ bool compitem (const mgItem* x, const mgItem* y)
 	const mgSelection *s = x->getSelection();
 	string xval;
 	string yval;
-	if (false)
-		;
-	else
+	for (unsigned int idx=s->orderlevel();idx<s->ordersize();idx++)
 	{
-		for (unsigned int idx=s->orderlevel();idx<s->ordersize();idx++)
-		{
-			xval=x->getKeyItem(s->getKeyType (idx))->value();
-			yval=y->getKeyItem(s->getKeyType (idx))->value();
-			if (xval!=yval) break;
-		}
-		return xval<yval;
+		xval=x->getKeyItem(s->getKeyType (idx))->value();
+		yval=y->getKeyItem(s->getKeyType (idx))->value();
+		if (xval!=yval) break;
 	}
+	return xval<yval;
 }
 
 void
@@ -604,9 +599,12 @@ mgSelection::items () const
     	m_current_tracks =  m_db->LoadItemsInto(p,m_items);
     	if (m_shuffle_mode==SM_NONE)
 	{
-		for (unsigned int i = 0; i<m_items.size(); i++)
-			m_items[i]->setSelection(this);
-		std::sort(m_items.begin(),m_items.end(),compitem);
+    		if (!inCollection(""))
+		{
+			for (unsigned int i=0;i<m_items.size();i++)
+				m_items[i]->setSelection(this);
+			std::sort(m_items.begin(),m_items.end(),compitem);
+		}
 	}
 	else
     			Shuffle();
@@ -738,6 +736,9 @@ mgSelection::CopyKeyValues(mgSelection* s)
 void
 mgSelection::InitOrder(vector<mgListItem>& items)
 {
+	mgDebug(5,"InitOrder:");
+	for (unsigned int idx = 0; idx < items.size(); idx++)
+		mgDebug(5,"%d:%s/%s",idx,items[idx].value().c_str(),items[idx].id().c_str());
 	if (ordersize()==0)
 		return;
 	for (unsigned int idx = 0; idx < ordersize(); idx++)

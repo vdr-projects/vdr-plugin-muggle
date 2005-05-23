@@ -20,46 +20,50 @@ using namespace std;
 
 #include "mg_db.h"
 
+class mgSQLStringSQLite : public mgSQLStringImp {
+	public:
+		mgSQLStringSQLite(const char* s);
+		~mgSQLStringSQLite();
+		char *unquoted() const;
+	private:
+		mutable char* m_unquoted;
+};
+
+class mgQuerySQLite : public mgQueryImp {
+	public:
+		mgQuerySQLite(void *db,string sql,mgQueryNoise noise);
+		~mgQuerySQLite();
+		char ** Next();
+	private:
+		char **m_table;
+		int m_rc;
+};
+
 class mgDbGd : public mgDb {
    public:
 	mgDbGd (bool SeparateThread=false);
 	~mgDbGd();
 	bool Connect();
   	bool Create();
-	int AddToCollection( const string Name,const vector<mgItem*>&items,mgParts* what);
-	int  RemoveFromCollection( const string Name,const vector<mgItem*>&items,mgParts* what);
-	bool DeleteCollection( const string Name);
-	void ClearCollection( const string Name);
-	bool CreateCollection( const string Name);
 	
 	bool NeedGenre2();
 	long thread_id() { return -1; }
 	bool FieldExists(string table, string field);
-	void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap);
-	string LoadItemsInto(mgParts& what,vector<mgItem*>& items);
-	string LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems,bool distinct);
 	bool Threadsafe();
 	const char* Options() const;
 	const char* HelpText() const;
+	void *DbHandle() const { return m_db; }
+	const char *DecadeExpr();
+	string Now() const { return "strftime('%s','now')"; }
+	string Directory() const { return "mgDirectory(mp3file)"; }
    protected:
-	char* sql_Cstring(const char *s,char *buf);
 	bool SyncStart();
-	void SyncFile(const char *filename);
 	void SyncEnd();
-	void Execute(const string sql);
+	void StartTransaction();
+	void Commit();
    private:
-	char ** Query(const string sql);
 	sqlite3 *m_db;
-	char ** query(const string sql);
-	int silent_execute( const string sql);
-	void execute( const string sql);
-  	string get_col0( const string sql);
-	char *sql_Cstring(TagLib::String s,char *buf=0);
-	TagLib::String getlanguage(const char *filename);
-	char * getAlbum(const char *filename,const char *c_album,const char *c_artist);
-	map<string,string> m_Genres;
-	char *m_errmsg;
-
 };
+
 
 #endif

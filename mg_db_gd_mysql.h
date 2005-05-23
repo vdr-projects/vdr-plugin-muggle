@@ -29,36 +29,49 @@ class mgDbGd : public mgDb {
   	bool Create();
 	int AddToCollection( const string Name,const vector<mgItem*>&items,mgParts* what);
 	int  RemoveFromCollection( const string Name,const vector<mgItem*>&items,mgParts* what);
-	bool DeleteCollection( const string Name);
-	void ClearCollection( const string Name);
-	bool CreateCollection( const string Name);
 	
 	bool NeedGenre2();
 	long thread_id() { return mysql_thread_id(m_db); }
 	bool FieldExists(string table, string field);
-	void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap);
-	string LoadItemsInto(mgParts& what,vector<mgItem*>& items);
-	string LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems,bool distinct);
 	void ServerEnd();
 	bool Threadsafe();
-	void Execute(const string sql);
 	const char* HelpText() const;
 	const char *Options() const;
+	void *DbHandle() const { return (void*)m_db; }
+	const char *DecadeExpr();
+	string Now() const { return "CURRENT_TIMESTAMP"; }
+	string Directory() const { return "substring(tracks.mp3file,1,length(tracks.mp3file)"
+		                        "-instr(reverse(tracks.mp3file),'/'))"; }
    protected:
-	char* sql_Cstring(const char *s,char *buf);
 	bool SyncStart();
 	void SyncFile(const char *filename);
+	void StartTransaction();
+	void Commit();
    private:
 	MYSQL *m_db;
 	void CreateFolderFields();
 	MYSQL_RES* Query( const string sql);
   	bool sql_query(string sql);
-  	string get_col0( const string sql);
-	char *sql_Cstring(TagLib::String s,char *buf=0);
-	TagLib::String getlanguage(const char *filename);
-	char * getAlbum(const char *filename,const char *c_album,const char *c_artist);
-	map<string,string> m_Genres;
 
 };
 
+class mgSQLStringMySQL : public mgSQLStringImp {
+	public:
+		mgSQLStringMySQL(const char* s);
+		~mgSQLStringMySQL();
+		char *unquoted() const;
+	private:
+		mutable char* m_unquoted;
+};
+
+class mgQueryMySQL : public mgQueryImp {
+	public:
+		mgQueryMySQL(void* db,string sql,mgQueryNoise noise);
+		~mgQueryMySQL();
+		char ** Next();
+	private:
+		MYSQL_RES *m_table;
+		int m_rc;
+		MYSQL *m_db;
+};
 #endif

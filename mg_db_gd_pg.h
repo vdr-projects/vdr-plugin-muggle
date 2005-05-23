@@ -20,6 +20,26 @@ using namespace std;
 
 #include "mg_db.h"
 
+class mgSQLStringPG : public mgSQLStringImp {
+	public:
+		mgSQLStringPG(const char* s);
+		~mgSQLStringPG();
+		char *unquoted() const;
+	private:
+		mutable char* m_unquoted;
+};
+
+class mgQueryPG : public mgQueryImp {
+	public:
+		mgQueryPG(void* db,string sql,mgQueryNoise noise);
+		~mgQueryPG();
+		char ** Next();
+	private:
+		PGresult *m_table;
+		PGconn *m_db;
+		char *m_rowpointers[100];
+};
+
 class mgDbGd : public mgDb {
    public:
 	mgDbGd (bool SeparateThread=false);
@@ -27,38 +47,26 @@ class mgDbGd : public mgDb {
 	bool ServerConnect();
 	bool Connect();
   	bool Create();
-	int AddToCollection( const string Name,const vector<mgItem*>&items,mgParts* what);
-	int  RemoveFromCollection( const string Name,const vector<mgItem*>&items,mgParts* what);
-	bool DeleteCollection( const string Name);
-	void ClearCollection( const string Name);
-	bool CreateCollection( const string Name);
 	
 	bool NeedGenre2();
 	long thread_id() { return -1; }
 	bool FieldExists(string table, string field);
-	void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap);
-	string LoadItemsInto(mgParts& what,vector<mgItem*>& items);
-	string LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems,bool distinct);
 	bool Threadsafe();
-	void Execute(const string sql);
 	const char* Options() const;
 	const char* HelpText() const;
+	const char *DecadeExpr();
+	string Now() const { return "CURRENT_TIMESTAMP";}
+	string Directory() const { return "substring(tracks.mp3file from '.*/(.*)')"; }
    protected:
-	char* sql_Cstring(const char *s,char *buf);
 	bool SyncStart();
 	void SyncEnd();
 	void SyncFile(const char *filename);
+	void StartTransaction();
+	void Commit();
+	void *DbHandle() const { return (void*)m_db;}
    private:
 	bool myCreate();
 	PGconn *m_db;
-	PGresult* Query( const string sql);
-  	PGresult* sql_query(string sql);
-  	string get_col0( const string sql);
-	char *sql_Cstring(TagLib::String s,char *buf=0);
-	TagLib::String getlanguage(const char *filename);
-	char * getAlbum(const char *filename,const char *c_album,const char *c_artist);
-	map<string,string> m_Genres;
 
 };
-
 #endif
