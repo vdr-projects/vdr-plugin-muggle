@@ -41,13 +41,6 @@ HAVE_PG=1
 
 \section SET UP MUGGLE WITH POSTGRESQL
 
-Embedded MySQL means simpler configuration because you do not have 
-to login into a remote data base server. You will only need the argument
--d Directory. muggle will store the data base in that directory. Start
-mugglei without arguments for details.
-
-\section SET UP MUGGLE WITH REMOTE MYSQL
-
 Muggle and mugglei use a small set of parameters in order to control
 the interaction with the Postgresql server. Let's look at an example:
 

@@ -31,7 +31,8 @@ HAVE_SQLITE=1
 
 SQLITE means simpler configuration because you do not have 
 to login into a remote data base server. You will only need the argument
--d Directory. muggle will store the data base in that directory. Start
-mugglei without arguments for details.
+-d Directory. muggle will store the data base in that directory. There 
+is a default, so you can even omit -d. Start mugglei without arguments
+for details.
 
 */

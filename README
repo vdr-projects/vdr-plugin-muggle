@@ -32,7 +32,6 @@ Prerequisites are described in Section 2, Notes on Compilation are in Section 3.
 you need to import your media into the database (cf. Section 4). The configuration of VDR and startup
 parameters are descibed in Section 5.
 
-\section prereq PREREQUISITES
 
 The plugin currently runs on versions 1.3.17- of VDR (including 1.2.6). It also compiles on versions
 up to at least 1.3.23 but your mileage may vary. In addition, the following pieces of software are required:
@@ -95,7 +94,7 @@ missing. Check this in case the compiler complains about a missing -lwrap.
 \section SET UP MUGGLE 
 
 First let's define what the top level directory (short TLD) is. Muggle expects
-all files to be in the same directory (and its subdirectories). Symbolic links
+all music files to be in the same directory (and its subdirectories). Symbolic links
 will be followed. You specify the TLD with the argument -t. The default is /mnt/music.
 It is recommended to store only music files in the TLD. You can organize
 files in orders per genre, album or whatever.
