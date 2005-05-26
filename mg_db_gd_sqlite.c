@@ -1,5 +1,5 @@
 /*! 
- * \file   mg_db_gd.c
+ * \file   mg_db_gd_sqlite.c
  * \brief  A capsule around database access
  *
  * \version $Revision: 1.2 $
@@ -353,24 +353,6 @@ mgDbGd::NeedGenre2()
 }
 
 bool
-mgDbGd::SyncStart()
-{
-  	if (!Connect())
-    		return false;
-	// init random number generator
-	struct timeval tv;
-	struct timezone tz;
-	gettimeofday( &tv, &tz );
-	srandom( tv.tv_usec );
-	return true;
-}
-
-void
-mgDbGd::SyncEnd()
-{
-}
-
-bool
 mgDbGd::FieldExists(string table, string field)
 {
     	if (!Connect()) 
@@ -422,7 +404,9 @@ class mgKeyGdFolder : public mgKeyNormal {
 bool
 mgKeyGdFolder::Enabled(mgDb *db)
 {
-    return true;
+    if (m_enabled<0)
+	m_enabled = db->FieldExists("tracks", m_field);
+    return (m_enabled==1);
 }
 
 class mgKeyGdGenres : public mgKeyNormal {
@@ -530,7 +514,7 @@ class mgKeyGdLanguage : public mgKeyNormal {
 		mgKeyGdLanguage() : mgKeyNormal(keyGdLanguage,"tracks","lang") {};
 		mgParts Parts(mgDb *db,bool groupby=false) const;
 	protected:
-		string map_sql() const { return "SELECT id,language from language"; }
+		string map_sql() const { return "SELECT id,language FROM language"; }
 };
 
 class mgKeyGdCollection: public mgKeyNormal {
@@ -538,7 +522,7 @@ class mgKeyGdCollection: public mgKeyNormal {
   	  mgKeyGdCollection() : mgKeyNormal(keyGdCollection,"playlist","id") {};
 	  mgParts Parts(mgDb *db,bool groupby=false) const;
 	protected:
-	 string map_sql() const { return "SELECT id,title from playlist"; }
+	 string map_sql() const { return "SELECT id,title FROM playlist"; }
 };
 class mgKeyGdCollectionItem : public mgKeyNormal {
 	public:
@@ -592,8 +576,11 @@ mgKeyGdTrack::Parts(mgDb *db,bool groupby) const
 	mgParts result;
 	result.tables.push_back("tracks");
 	AddIdClause(db,result,"tracks.tracknb");
-	result.valuefields.push_back("tracks.title");
-	result.idfields.push_back("tracks.tracknb");
+	if (groupby)
+	{
+		result.valuefields.push_back("tracks.title");
+		result.idfields.push_back("tracks.tracknb");
+	}
 	return result;
 }
 
@@ -636,11 +623,10 @@ mgKeyGdCollectionItem::Parts(mgDb *db,bool groupby) const
 {
 	mgParts result;
 	result.tables.push_back("playlistitem");
-	AddIdClause(db,result,"tracks.title");
 	if (groupby)
 	{
 		result.tables.push_back("tracks");
-		result.idfields.push_back("tracks.title");
+		result.valuefields.push_back("tracks.title");
 	}
 	return result;
 }

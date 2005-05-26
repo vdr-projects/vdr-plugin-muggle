@@ -258,6 +258,20 @@ optimize (string & spar)
 	return spar;
 }
 
+bool
+mgDb::SyncStart()
+{
+  	if (!Connect())
+    		return false;
+	// init random number generator
+	struct timeval tv;
+	struct timezone tz;
+	gettimeofday( &tv, &tz );
+	srandom( tv.tv_usec );
+	CreateFolderFields();
+	return true;
+}
+
 void
 mgDb::Sync(char * const * path_argv)
 {
@@ -578,8 +592,6 @@ mgParts::sql_select(bool distinct)
 	if (!special_statement.empty())
 		return special_statement;
 	Prepare();
-	if (idfields.empty())
-		return "";
 	string result;
 	if (distinct)
 	{
@@ -592,11 +604,14 @@ mgParts::sql_select(bool distinct)
 		idfields.push_back("1");
 		result = sql_list("SELECT",valuefields+idfields);
 	}
-	result += sql_list(" FROM",tables);
-	result += sql_list(" WHERE",clauses," AND ");
-	if (distinct)
+	if (!result.empty())
 	{
-		result += sql_list(" GROUP BY",idfields);
+		result += sql_list(" FROM",tables);
+		result += sql_list(" WHERE",clauses," AND ");
+		if (distinct)
+		{
+			result += sql_list(" GROUP BY",idfields);
+		}
 	}
 	return result;
 }
@@ -1099,6 +1114,7 @@ mgDb::LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems,
     	if (!Connect())
 		return "";
 	string result = what.sql_select(distinct);
+	mgDebug(1,"LoadValuesInto: result=%s",result.c_str());
         listitems.clear ();
 	mgQuery q(DbHandle(),result);
 	if (q.Rows())

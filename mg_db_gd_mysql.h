@@ -43,7 +43,6 @@ class mgDbGd : public mgDb {
 	string Directory() const { return "substring(tracks.mp3file,1,length(tracks.mp3file)"
 		                        "-instr(reverse(tracks.mp3file),'/'))"; }
    protected:
-	bool SyncStart();
 	void SyncFile(const char *filename);
 	void StartTransaction();
 	void Commit();

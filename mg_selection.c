@@ -59,12 +59,43 @@ bool compcount (const mgListItem* x, const mgListItem* y)
 bool compitem (const mgItem* x, const mgItem* y)
 {
 	const mgSelection *s = x->getSelection();
-	string xval;
-	string yval;
+	string xval="";
+	string yval="";
+	int xnum;
+	int ynum;
 	for (unsigned int idx=s->orderlevel();idx<s->ordersize();idx++)
 	{
-		xval=x->getKeyItem(s->getKeyType (idx))->value();
-		yval=y->getKeyItem(s->getKeyType (idx))->value();
+		mgSortBy sb = s->getKeySortBy(idx);
+		mgListItem *xitem = x->getKeyItem(s->getKeyType (idx));
+		mgListItem *yitem = y->getKeyItem(s->getKeyType (idx));
+		switch (sb) {
+			case mgSortNone:
+				xval="";
+				yval="";
+				break;
+			case mgSortById:
+				xval=xitem->id();
+				yval=yitem->id();
+				break;
+			case mgSortByIdNum:
+				xnum=atol(xitem->id().c_str());
+				ynum=atol(yitem->id().c_str());
+				if (xnum<ynum) {
+					xval="0";
+					yval="1";
+				} else if (xnum>ynum) {
+					xval="1";
+					yval="0";
+				} else {
+					xval="0";
+					yval="0";
+				}
+				break;
+			case mgSortByValue:
+				xval=xitem->value();
+				yval=yitem->value();
+				break;
+		}
 		if (xval!=yval) break;
 	}
 	return xval<yval;
@@ -74,15 +105,25 @@ void
 mgSelection::mgListItems::sort(bool bycount,mgSortBy SortBy)
 {
 	if (SortBy==mgSortNone)
+	{
 		return;
+	}
 	if (bycount)
+	{
 		std::sort(m_items.begin(),m_items.end(),compcount);
+	}
 	else if (SortBy==mgSortById)
+	{
 		std::sort(m_items.begin(),m_items.end(),compid);
+	}
 	else if (SortBy==mgSortByIdNum)
+	{
 		std::sort(m_items.begin(),m_items.end(),compidnum);
+	}
 	else
+	{
 		std::sort(m_items.begin(),m_items.end(),compvalue);
+	}
 }
 
 void
@@ -238,6 +279,13 @@ mgSelection::getKeyType (const unsigned int level) const
 {
        assert(level<Keys.size());
        return Keys[level]->Type();
+}
+
+mgSortBy
+mgSelection::getKeySortBy (const unsigned int level) const
+{
+       assert(level<Keys.size());
+       return Keys[level]->SortBy();
 }
 
 mgItem *

@@ -213,6 +213,21 @@ mgSelectionGd::Parts(mgDb *db,bool groupby) const
 				}
 			}
 		}
+		if (kt==keyGdDecade)
+		{
+			for (unsigned int j=i+1;j<=m_level;j++)
+			{
+				if (j>=Keys.size())
+					break;
+				mgKey *kn = Keys[j];
+				if (kn)
+				{
+					mgKeyTypes knt = kn->Type();
+					if (knt==keyGdYear && !kn->id().empty())
+						goto next;
+				}
+			}
+		}
 		if (i==m_level)
 		{
 			mgListItem* item = k->get();

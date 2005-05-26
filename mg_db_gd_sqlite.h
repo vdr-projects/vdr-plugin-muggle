@@ -1,5 +1,5 @@
 /*! 
- * \file   mg_db_gd.h
+ * \file   mg_db_gd_sqlite.h
  * \brief  A capsule around giantdisc database access
  *
  * \version $Revision: 1.2 $
@@ -57,8 +57,6 @@ class mgDbGd : public mgDb {
 	string Now() const { return "strftime('%s','now')"; }
 	string Directory() const { return "mgDirectory(mp3file)"; }
    protected:
-	bool SyncStart();
-	void SyncEnd();
 	void StartTransaction();
 	void Commit();
    private:

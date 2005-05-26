@@ -554,6 +554,13 @@ mgDbGd::NeedGenre2()
 }
 
 void
+mgDbGd::ServerEnd()
+{
+	delete mysqlhandle;
+	mysqlhandle=0;
+}
+
+void
 mgDbGd::CreateFolderFields()
 {
   if (HasFolderFields())
@@ -570,27 +577,6 @@ mgDbGd::CreateFolderFields()
 	m_hasfolderfields = q.ErrorMessage().empty();
 
   }
-}
-
-void
-mgDbGd::ServerEnd()
-{
-	delete mysqlhandle;
-	mysqlhandle=0;
-}
-
-bool
-mgDbGd::SyncStart()
-{
-  	if (!Connect())
-    		return false;
-	// init random number generator
-	struct timeval tv;
-	struct timezone tz;
-	gettimeofday( &tv, &tz );
-	srandom( tv.tv_usec );
-	CreateFolderFields();
-	return true;
 }
 
 int
@@ -767,9 +753,9 @@ string
 mgKeyGdGenres::map_sql() const
 {
 	if (genrelevel()==4)
-		return "select id,genre from genre";
+		return "SELECT id,genre FROM genre";
 	else
-		return string("select id,genre from genre where length(id)<="+ltos(genrelevel()));
+		return string("SELECT id,genre FROM genre WHERE LENGTH(id)<="+ltos(genrelevel()));
 }
 
 string
@@ -835,7 +821,7 @@ class mgKeyGdLanguage : public mgKeyNormal {
 		mgKeyGdLanguage() : mgKeyNormal(keyGdLanguage,"tracks","lang") {};
 		mgParts Parts(mgDb *db,bool groupby=false) const;
 	protected:
-		string map_sql() const { return "select id,language from language"; }
+		string map_sql() const { return "SELECT id,language FROM language"; }
 };
 
 class mgKeyGdCollection: public mgKeyNormal {
@@ -843,11 +829,11 @@ class mgKeyGdCollection: public mgKeyNormal {
   	  mgKeyGdCollection() : mgKeyNormal(keyGdCollection,"playlist","id") {};
 	  mgParts Parts(mgDb *db,bool groupby=false) const;
 	protected:
-	 string map_sql() const { return "select id,title from playlist"; }
+	 string map_sql() const { return "SELECT id,title FROM playlist"; }
 };
 class mgKeyGdCollectionItem : public mgKeyNormal {
 	public:
-		mgKeyGdCollectionItem() : mgKeyNormal(keyGdCollectionItem,"playlistitem","tracknumber") {};
+		mgKeyGdCollectionItem() : mgKeyNormal(keyGdCollectionItem,"playlistitem","trackid") {};
 		mgParts Parts(mgDb *db,bool groupby=false) const;
 		mgSortBy SortBy() const { return mgSortNone; }
 };
@@ -896,12 +882,11 @@ mgKeyGdTrack::Parts(mgDb *db,bool groupby) const
 {
 	mgParts result;
 	result.tables.push_back("tracks");
-	AddIdClause(db,result,"tracks.title");
+	AddIdClause(db,result,"tracks.tracknb");
 	if (groupby)
 	{
-		// if you change tracks.title, please also
-		// change mgItemGd::getKeyItem()
-		result.idfields.push_back("tracks.title");
+		result.valuefields.push_back("tracks.title");
+		result.idfields.push_back("tracks.tracknb");
 	}
 	return result;
 }
@@ -945,13 +930,10 @@ mgKeyGdCollectionItem::Parts(mgDb *db,bool groupby) const
 {
 	mgParts result;
 	result.tables.push_back("playlistitem");
-	AddIdClause(db,result,"playlistitem.tracknumber");
 	if (groupby)
 	{
-		// tracks nur hier, fuer sql_delete_from_coll wollen wir es nicht
 		result.tables.push_back("tracks");
-		result.idfields.push_back("tracks.title");
-		result.idfields.push_back("playlistitem.tracknumber");
+		result.valuefields.push_back("tracks.title");
 	}
 	return result;
 }

@@ -117,6 +117,8 @@ class mgSelection
  */
         mgKeyTypes getKeyType (const unsigned int level) const;
 
+	mgSortBy getKeySortBy (const unsigned int level) const;
+
 //! \brief return the current value of this key
         mgListItem* getKeyItem (const unsigned int level) const;
 	

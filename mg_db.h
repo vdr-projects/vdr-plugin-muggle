@@ -193,7 +193,6 @@ class mgDb {
    protected:
 	int m_rows;
 	int m_cols;
-	virtual bool SyncStart() { return true; }
 	virtual void SyncEnd() {}
 	void SyncFile(const char *filename);
   	bool m_database_found;
@@ -205,6 +204,8 @@ class mgDb {
 	void FillTables();
 	virtual void StartTransaction() {};
 	virtual void Commit() {};
+	virtual bool SyncStart();
+	virtual void CreateFolderFields() {};
    private:
 	TagLib::String getlanguage(const char *filename);
 	mgSQLString Build_cddbid(const mgSQLString& artist) const;

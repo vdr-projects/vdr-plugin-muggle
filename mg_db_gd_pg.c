@@ -332,24 +332,6 @@ mgDbGd::NeedGenre2()
 
 
 bool
-mgDbGd::SyncStart()
-{
-  	if (!Connect())
-    		return false;
-	// init random number generator
-	struct timeval tv;
-	struct timezone tz;
-	gettimeofday( &tv, &tz );
-	srandom( tv.tv_usec );
-	return true;
-}
-
-void
-mgDbGd::SyncEnd()
-{
-}
-
-bool
 mgDbGd::FieldExists(string table, string field)
 {
     	if (!Connect()) 
@@ -401,7 +383,9 @@ class mgKeyGdFolder : public mgKeyNormal {
 bool
 mgKeyGdFolder::Enabled(mgDb *db)
 {
-    return true;
+    if (m_enabled<0)
+	m_enabled = db->FieldExists("tracks", m_field);
+    return (m_enabled==1);
 }
 
 class mgKeyGdGenres : public mgKeyNormal {
@@ -441,9 +425,9 @@ string
 mgKeyGdGenres::map_sql() const
 {
 	if (genrelevel()==4)
-		return "select id,genre from genre";
+		return "SELECT id,genre FROM genre";
 	else
-		return string("select id,genre from genre where length(id)<="+ltos(genrelevel()));
+		return string("SELECT id,genre FROM genre WHERE LENGTH(id)<="+ltos(genrelevel()));
 }
 
 string
@@ -509,7 +493,7 @@ class mgKeyGdLanguage : public mgKeyNormal {
 		mgKeyGdLanguage() : mgKeyNormal(keyGdLanguage,"tracks","lang") {};
 		mgParts Parts(mgDb *db,bool groupby=false) const;
 	protected:
-		string map_sql() const { return "select id,language from language"; }
+		string map_sql() const { return "SELECT id,language FROM language"; }
 };
 
 class mgKeyGdCollection: public mgKeyNormal {
@@ -517,7 +501,7 @@ class mgKeyGdCollection: public mgKeyNormal {
   	  mgKeyGdCollection() : mgKeyNormal(keyGdCollection,"playlist","id") {};
 	  mgParts Parts(mgDb *db,bool groupby=false) const;
 	protected:
-	 string map_sql() const { return "select id,title from playlist"; }
+	 string map_sql() const { return "SELECT id,title FROM playlist"; }
 };
 class mgKeyGdCollectionItem : public mgKeyNormal {
 	public:
@@ -570,12 +554,11 @@ mgKeyGdTrack::Parts(mgDb *db,bool groupby) const
 {
 	mgParts result;
 	result.tables.push_back("tracks");
-	AddIdClause(db,result,"tracks.title");
+	AddIdClause(db,result,"tracks.tracknb");
 	if (groupby)
 	{
-		// if you change tracks.title, please also
-		// change mgItemGd::getKeyItem()
-		result.idfields.push_back("tracks.title");
+		result.valuefields.push_back("tracks.title");
+		result.idfields.push_back("tracks.tracknb");
 	}
 	return result;
 }
@@ -619,11 +602,10 @@ mgKeyGdCollectionItem::Parts(mgDb *db,bool groupby) const
 {
 	mgParts result;
 	result.tables.push_back("playlistitem");
-	AddIdClause(db,result,"tracks.title");
 	if (groupby)
 	{
 		result.tables.push_back("tracks");
-		result.idfields.push_back("tracks.title");
+		result.valuefields.push_back("tracks.title");
 	}
 	return result;
 }
