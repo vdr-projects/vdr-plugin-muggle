@@ -18,7 +18,7 @@ See the file COPYING for license information.
 You will need:
 
  - the sqlite3 library: Debian package sqlite3
- - the Debian package sqlite3-dev for the compilation
+ - the Debian package libsqlite3-dev for the compilation
 
 \section install INSTALLING 
 
