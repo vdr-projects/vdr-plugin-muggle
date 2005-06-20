@@ -1065,15 +1065,16 @@ mgMenuOrder::BuildOsd ()
 	    m_selection->InitDefaultOrder(1);
     InitOsd ();
     m_keytypes.clear();
-    m_keytypes.reserve(mgKeyTypesNr+1);
     m_keynames.clear();
-    m_keynames.reserve(50);
     m_orderbycount = m_selection->getOrderByCount();
     for (unsigned int i=0;i<m_selection->ordersize();i++)
     {
 	unsigned int kt;
 	m_keynames.push_back(m_selection->Choices(i,&kt));
 	m_keytypes.push_back(kt);
+    }
+    for (unsigned int i=0;i<m_selection->ordersize();i++)
+    {
 	char buf[20];
 	sprintf(buf,tr("Key %d"),i+1);
 	mgAction *a = actGenerateKeyItem(buf,(int*)&m_keytypes[i],m_keynames[i].size(),&m_keynames[i][0]);

@@ -35,16 +35,12 @@ enum mgKeyTypes {
 	keyGdTitleABC,
 	keyGdCollection,
 	keyGdCollectionItem,
+	keyGdUnique,
 	// here come other backends: keyXXTitle = 50, (reserve)
 	keyTypesHigh
 };
 const mgKeyTypes mgGdKeyTypesLow = keyGdGenre1;
-const mgKeyTypes mgGdKeyTypesHigh = keyGdCollectionItem;
-const mgKeyTypes mgKeyTypesLow = keyGdGenre1;
-const mgKeyTypes mgKeyTypesHigh = keyGdCollectionItem;
-
-//! \brief at least the number of enum elements:
-const unsigned int mgKeyTypesNr = keyGdCollectionItem;
+const mgKeyTypes mgGdKeyTypesHigh = keyGdUnique;
 
 enum mgSortBy {
 	mgSortNone,

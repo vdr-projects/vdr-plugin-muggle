@@ -1078,12 +1078,12 @@ mgSelection::keycount(mgKeyTypes kt) const
 {
 	if (keycounts.size()==0)
 	{
-		for (unsigned int ki=int(mgKeyTypesLow);ki<=int(mgKeyTypesHigh);ki++)
+		for (unsigned int ki=(unsigned int)(ktLow());ki<=(unsigned int)(ktHigh());ki++)
 		{
 			keycounts.push_back(-1);
 		}
 	}
-	int& kcount = keycounts[int(kt-mgKeyTypesLow)];
+	int& kcount = keycounts[int(kt-ktLow())];
 	if (kcount==-1)
 	{
 		mgKey* k = ktGenerate(kt);
