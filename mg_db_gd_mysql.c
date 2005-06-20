@@ -134,10 +134,12 @@ mgDbGd::mgDbGd(bool SeparateThread)
         if (!mysqlhandle)
                 mysqlhandle = new mysqlhandle_t;
 	if (m_separate_thread)
-	if (Threadsafe())
-		mysql_thread_init();
-	else
-		mgError("Your Mysql version is not thread safe");
+	{
+		if (Threadsafe())
+			mysql_thread_init();
+		else
+			mgError("Your Mysql version is not thread safe");
+	}
 }
 
 mgDbGd::~mgDbGd()
