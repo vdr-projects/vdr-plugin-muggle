@@ -248,7 +248,10 @@ mgPCMPlayer::PlayTrack()
 {
     mgItemGd * newcurr = dynamic_cast<mgItemGd*>(m_playlist->getCurrentItem ());
     if (newcurr)
-        m_current = newcurr;
+    {
+	delete m_current;
+        m_current = new mgItemGd(newcurr);
+    }
     Play ();
 }
 
@@ -309,6 +312,7 @@ mgPCMPlayer::NewPlaylist (mgSelection * plist)
     Lock ();
     StopPlay ();
 
+    delete m_current;
     m_current = 0;
     delete m_playlist;
     m_playlist = plist;
@@ -408,10 +412,10 @@ mgPCMPlayer::Action (void)
                     m_index = 0;
                     m_playing = m_current;
 
-                    if (m_playing)
+                    if (m_current)
                     {
-		        std::string filename = m_playing->getSourceFile ();
-                        if ((m_decoder = mgDecoders::findDecoder (m_playing))
+		        std::string filename = m_current->getSourceFile ();
+                        if ((m_decoder = mgDecoders::findDecoder (m_current))
                             && m_decoder->start ())
                         {
 			  levelgood = true;
@@ -776,7 +780,10 @@ bool mgPCMPlayer::SkipFile (bool skipforward)
     {
         newcurr = dynamic_cast<mgItemGd*>(m_playlist->getCurrentItem ());
         if (newcurr)
-            m_current = newcurr;
+	{
+	    delete m_current;
+            m_current = new mgItemGd(newcurr);
+	}
     }
     return (newcurr != NULL);
 }
@@ -872,7 +879,8 @@ mgPCMPlayer::Goto (int index, bool still)
     {
         Lock ();
         StopPlay ();
-        m_current = next;
+        delete m_current;
+	m_current = new mgItemGd(next);
         Play ();
         Unlock ();
     }
@@ -1368,7 +1376,7 @@ mgPlayerControl::ShowContents ()
                 m_menu->SetItem (buf, 6, false, false);
                 free (buf);
             }
-            if (num_items > 6)
+            if (num_items > 7)
             {
                 string sf = player->getCurrent ()->getSourceFile ();
 		char *p = strrchr(sf.c_str(),'/');
@@ -1716,12 +1724,19 @@ mgPlayerControl::StatusMsgReplaying ()
 {
     MGLOG ("mgPlayerControl::StatusMsgReplaying()");
     char *szBuf = NULL;
-    if (player && player->getCurrent () && player->getPlaylist ())
+    mgSelection * sel;
+    mgItemGd * item;
+    if (player)
+    {
+	sel = player->getPlaylist();
+        item = dynamic_cast<mgItemGd*>(player->getCurrent ());
+    }
+    if (player && sel && item)
     {
         char cLoopMode;
         char cShuffle;
 
-        switch (player->getPlaylist ()->getLoopMode ())
+        switch (sel->getLoopMode ())
         {
             default:
             case mgSelection::LM_NONE:
@@ -1735,7 +1750,7 @@ mgPlayerControl::StatusMsgReplaying ()
                 break;
         }
 
-        switch (player->getPlaylist ()->getShuffleMode ())
+        switch (sel->getShuffleMode ())
         {
             default:
             case mgSelection::SM_NONE:
@@ -1749,27 +1764,24 @@ mgPlayerControl::StatusMsgReplaying ()
                 break;
         }
 
-        mgItemGd *tmp = dynamic_cast<mgItemGd*>(player->getCurrent ());
-	if (tmp == NULL) 
-	    mgError("mgPlayerControl::StatusMsgReplaying: getCurrent() is NULL");
-        if (tmp->getArtist ().length () > 0)
+        if (item->getArtist ().length () > 0)
         {
             asprintf (&szBuf, "[%c%c] (%d/%d) %s - %s",
                 cLoopMode,
                 cShuffle,
-                player->getPlaylist ()->getItemPosition () + 1,
-                player->getPlaylist ()->items().size(),
-                player->getCurrent ()->getArtist ().c_str (),
-                player->getCurrent ()->getTitle ().c_str ());
+                sel->getItemPosition () + 1,
+                sel->items().size(),
+                item->getArtist ().c_str (),
+                item->getTitle ().c_str ());
         }
         else
         {
             asprintf (&szBuf, "[%c%c] (%d/%d) %s",
                 cLoopMode,
                 cShuffle,
-                player->getPlaylist ()->getItemPosition () + 1,
-                player->getPlaylist ()->items().size(),
-                player->getCurrent ()->getTitle ().c_str ());
+                sel->getItemPosition () + 1,
+                sel->items().size(),
+                item->getTitle ().c_str ());
         }
     }
     else
