@@ -1434,8 +1434,10 @@ mgPlayerControl::ShowProgress ()
             {
                 total_frames = SecondsToFrames (list->getLength ());
                 current_frame += SecondsToFrames (list->getCompletedLength ());
-                asprintf (&buf, "%s (%d/%d)", list->getListname ().c_str (),
-                    list->getItemPosition () + 1, list->items().size());
+                asprintf (&buf, "(%d/%d) %s:%s",
+                    list->getItemPosition () + 1, list->items().size(),
+                    player->getCurrent ()->getArtist ().c_str (),
+                    player->getCurrent ()->getTitle ().c_str ());
             }
         }
         else
