@@ -42,7 +42,7 @@ static map <mgKeyTypes, map<string,string> > map_ids;
 mgSQLString::~mgSQLString()
 {
 	delete m_str;
-	delete m_original;
+	free(m_original);
 }
 
 void
@@ -539,6 +539,15 @@ mgRefParts::mgRefParts(const mgReference* r)
 	tables.push_back(r->t1());
 	tables.push_back(r->t2());
 	clauses.push_back(r->t1() + '.' + r->f1() + '=' + r->t2() + '.' + r->f2());
+}
+
+void
+mgParts::Dump(string where) const
+{
+	mgDebug(1,"%X:%s:tables:%s",this,where.c_str(),sql_list(" FROM",tables).c_str());
+	mgDebug(1,"   clauses:%s",sql_list(" WHERE",clauses," AND ").c_str());
+	mgDebug(1,"   idfields:%s",sql_list("SELECT",idfields).c_str());
+	mgDebug(1,"   valuefields:%s",sql_list("SELECT",valuefields).c_str());
 }
 
 void
@@ -1114,7 +1123,6 @@ mgDb::LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems,
     	if (!Connect())
 		return "";
 	string result = what.sql_select(distinct);
-	mgDebug(1,"LoadValuesInto: result=%s",result.c_str());
         listitems.clear ();
 	mgQuery q(DbHandle(),result);
 	if (q.Rows())
@@ -1407,6 +1415,7 @@ ktGenerate(const mgKeyTypes kt)
 		case keyGdLanguage: result = new mgKeyGdLanguage;break;
 		case keyGdRating: result = new mgKeyNormal(kt,"tracks","rating");break;
 		case keyGdYear: result = new mgKeyNormal(kt,"tracks","year");break;
+		case keyGdUnique: result = new mgKeyNormal(kt,"tracks","id");break;
 		default: result = 0; break;
 	}
 	return result;
@@ -1469,6 +1478,7 @@ mgKeyGdCollectionItem::Parts(mgDb *db,bool groupby) const
 	{
 		result.tables.push_back("tracks");
 		result.valuefields.push_back("tracks.title");
+		result.idfields.push_back("tracks.id");
 	}
 	return result;
 }

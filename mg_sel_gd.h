@@ -23,11 +23,13 @@ class mgSelectionGd : public mgSelection
 	mgSelectionGd(const bool fall_through = false);
  	void MakeCollection();
 	vector <const char*> Choices(unsigned int level, unsigned int *current) const;
-	mgParts Parts(mgDb *db,bool groupby=true) const;
+	bool NeedKey(unsigned int i) const;
+	mgParts SelParts(bool distinct, bool deepsort) const;
 	bool inCollection(const string Name="") const;
 	bool isLanguagelist() const;
 	bool isCollectionlist() const;
 	bool InitDefaultOrder(unsigned int i=0);
+	bool keyIsUnique(mgKeyTypes kt) const { return kt==keyGdUnique;}
 
 
     protected:

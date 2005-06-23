@@ -75,20 +75,25 @@ mgSelectionGd::clean()
 	bool album_found = false;	
 	bool tracknb_found = false;	
 	bool title_found = false;	
-	bool is_unique = false;
+	bool is_sufficiently_unique = false;
 	for (i = Keys.begin () ; i != Keys.end (); ++i)
 	{
 		mgKey* k = *i;
+		if (k->Type()==keyGdUnique) 
+		{
+			truncate(i-Keys.begin());
+			break;
+		}
 		collection_found |= (k->Type()==keyGdCollection);
 		collitem_found |= (k->Type()==keyGdCollectionItem);
 		album_found |= (k->Type()==keyGdAlbum);
 		tracknb_found |= (k->Type()==keyGdTrack);
 		title_found |= (k->Type()==keyGdTitle);
-		is_unique = tracknb_found || (album_found && title_found)
+		is_sufficiently_unique = tracknb_found || (album_found && title_found)
 			|| (collection_found && collitem_found);
-		if (is_unique)
+		if (is_sufficiently_unique)
 		{
-			truncate (i+1-Keys.begin()); // \todo test this!
+			truncate (i+1-Keys.begin());
 			break;
 		}
 		if (k->Type()==keyGdYear)
@@ -102,13 +107,14 @@ mgSelectionGd::clean()
 				}
 		}
 	}
-	if (!is_unique)
+	if (!is_sufficiently_unique)
 	{
 		if (!album_found)
 			Keys.push_back(ktGenerate(keyGdAlbum));
 		if (!title_found)
 			Keys.push_back(ktGenerate(keyGdTitle));
 	}
+	Keys.push_back(ktGenerate(keyGdUnique));	// make sure we ALWAYS have a unique key
 }
 
 
@@ -124,6 +130,8 @@ mgSelectionGd::Choices(unsigned int level, unsigned int *current) const
 	for (unsigned int ki=(unsigned int)(ktLow());ki<=(unsigned int)(ktHigh());ki++)
 	{
 		mgKeyTypes kt = mgKeyTypes(ki);
+		if (kt == keyGdUnique)
+			continue;
 		if (kt==getKeyType(level))
 		{
 			*current = result.size();
@@ -178,14 +186,36 @@ mgSelectionGd::Choices(unsigned int level, unsigned int *current) const
 	return result;
 }
 
+bool
+mgSelectionGd::NeedKey(unsigned int i) const
+{
+	assert(m_level<ordersize());
+	mgKey *k = Keys[i];
+	mgKeyTypes kt = k->Type();
+	for (unsigned int j=i+1;j<=m_level;j++)
+	{
+		mgKey *kn = Keys[j];
+		if (kn && !kn->id().empty())
+		{
+			mgKeyTypes knt = kn->Type();
+			if (knt==keyGdUnique)
+				return false;
+			if (iskeyGdGenre(kt) && iskeyGdGenre(knt) && knt>kt)
+				return false;
+			if (kt==keyGdDecade && knt==keyGdYear)
+				return false;
+		}
+	}
+	return true;
+}
 
 mgParts
-mgSelectionGd::Parts(mgDb *db,bool groupby) const
+mgSelectionGd::SelParts(bool distinct, bool deepsort) const
 {
-	mgParts result;
-	result.orderByCount = m_orderByCount;
-	if (m_level==0 &&  isCollectionOrder())
+	if (distinct && !deepsort && m_level==0 &&  isCollectionOrder())
 	{
+		mgParts result;
+		result.orderByCount = m_orderByCount;
 		// sql command contributed by jarny
 		result.special_statement = string("SELECT playlist.title,playlist.id, "
 				"COUNT(*) * CASE WHEN playlistitem.playlist IS NULL THEN 0 ELSE 1 END FROM playlist "
@@ -193,55 +223,8 @@ mgSelectionGd::Parts(mgDb *db,bool groupby) const
 				"GROUP BY playlist.title,playlistitem.playlist,playlist.id");
 		return result;
 	}
-	for (unsigned int i=0;i<=m_level;i++)
-	{
-		if (i==Keys.size()) break;
-		mgKey *k = Keys[i];
-		mgKeyTypes kt = k->Type();
-		if (iskeyGdGenre(kt))
-		{
-			for (unsigned int j=i+1;j<=m_level;j++)
-			{
-				if (j>=Keys.size())
-					break;
-				mgKey *kn = Keys[j];
-				if (kn)
-				{
-					mgKeyTypes knt = kn->Type();
-					if (iskeyGdGenre(knt) && knt>kt && !kn->id().empty())
-						goto next;
-				}
-			}
-		}
-		if (kt==keyGdDecade)
-		{
-			for (unsigned int j=i+1;j<=m_level;j++)
-			{
-				if (j>=Keys.size())
-					break;
-				mgKey *kn = Keys[j];
-				if (kn)
-				{
-					mgKeyTypes knt = kn->Type();
-					if (knt==keyGdYear && !kn->id().empty())
-						goto next;
-				}
-			}
-		}
-		if (i==m_level)
-		{
-			mgListItem* item = k->get();
-			k->set(0);
-			result += k->Parts(db,groupby && (i==m_level));
-			k->set(item);
-			delete item;
-		}
-		else
-			result += k->Parts(db,groupby && (i==m_level));
-next:
-		continue;
-	}
-	return result;
+	else
+		return mgSelection::SelParts(distinct, deepsort);
 }
 
 mgKeyTypes
@@ -284,6 +267,7 @@ mgSelectionGd::ktName(const mgKeyTypes kt) const
 		case keyGdLanguage: result = "Language";break;
 		case keyGdRating: result = "Rating";break;
 		case keyGdYear: result = "Year";break;
+		case keyGdUnique: result = "ID";break;
 		default: result="not implemented";break;
 	}
 	return tr(result);
@@ -295,12 +279,13 @@ mgSelectionGd::MakeCollection()
 	clear();
 	setKey(keyGdCollection);
 	setKey(keyGdCollectionItem);
+	setKey(keyGdUnique);
 }
 
 bool
 mgSelectionGd::isCollectionOrder() const
 {
-	return (ordersize()==2
+	return (ordersize()==3
 		&& (Keys[0]->Type()==keyGdCollection)
 		&& (Keys[1]->Type()==keyGdCollectionItem));
 }
@@ -346,22 +331,24 @@ mgSelectionGd::InitDefaultOrder(unsigned int i)
 			setKey(keyGdArtist);
 			setKey(keyGdAlbum);
 			setKey(keyGdTrack);
-			return true;
+			break;
 		case 2:
 			setKey(keyGdAlbum);
 			setKey(keyGdTrack);
-			return true;
+			break;
 		case 3:
 			setKey(keyGdGenres);
 			setKey(keyGdArtist);
 			setKey(keyGdAlbum);
 			setKey(keyGdTrack);
-			return true;
+			break;
 		case 4:
 			setKey(keyGdArtist);
 			setKey(keyGdTrack);
-			return true;
+			break;
 		default:
 			return false;
 	}
+	setKey(keyGdUnique);
+	return true;
 }

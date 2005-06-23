@@ -54,7 +54,7 @@ void
 mgMuggle::Stop (void)
 {
 	mgDb *db = 0;
-	db->ServerEnd();
+	//db->ServerEnd(); \todo class Server replaces mysqlhandle_t
 }
 
 

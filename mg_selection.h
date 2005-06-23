@@ -153,11 +153,6 @@ class mgSelection
  */
         bool enter (unsigned int position);
 
-	/*! \brief like enter but if we are at the leaf level simply select
-	 * the entry at position
-	 */
-        bool select (unsigned int position);
-
 /*! \brief enter the next higher level, expanding the current position.
  * See also enter(unsigned int position)
  */
@@ -165,15 +160,6 @@ class mgSelection
         {
             return enter (gotoPosition ());
         }
-
-	/*! \brief like enter but if we are at the leaf level simply select
-	 * the current entry
-	 */
-        bool select ()
-        {
-            return select (gotoPosition ());
-        }
-
 /*! \brief enter the next higher level, expanding the position holding a certain value
  * \param value the position holding value will be expanded.
  */
@@ -181,15 +167,6 @@ class mgSelection
         {
             return enter (listitems.valindex (value));
         }
-
-	/*! \brief like enter but if we are at the leaf level simply select
-	 * the current entry
-	 */
-        bool select (const string value)
-        {
-            return select (listitems.valindex(value));
-        }
-
 /*! \brief leave the current level, go one up in the tree.
  * If fall_through (see constructor) is set to true, and the
  * level entered by leave() contains only one item, automatically
@@ -377,7 +354,8 @@ class mgSelection
 	virtual vector <const char*> Choices(unsigned int level, unsigned int *current) const = 0;
 	void setOrderByCount(bool groupbycount);
 	bool getOrderByCount() const { return m_orderByCount; }
-	virtual mgParts Parts(mgDb *db,bool groupby=true) const = 0;
+	virtual bool NeedKey(unsigned int i) const = 0;
+	virtual mgParts SelParts(bool distinct,bool deepsort) const;
 	virtual bool inCollection(const string Name="") const =0;
 	virtual bool isLanguagelist() const =0;
 	virtual bool isCollectionlist() const =0;
@@ -391,6 +369,10 @@ class mgSelection
  * of the mgSelection, so we can call it too often
  */
 	void Activate();
+
+	virtual bool keyIsUnique(mgKeyTypes kt) const = 0;
+	bool inItem() const;
+	bool inItems() const;
 
     protected:
 	void InitFrom(const mgSelection* s);
@@ -429,7 +411,9 @@ class mgSelection
         string ListFilename ();
 
 	void InitOrder(vector<mgListItem>& items);
-	string leave_one();
+	void SetLevel(unsigned int level);
+	void IncLevel();
+	void DecLevel();
 };
 
 #endif

@@ -48,11 +48,13 @@ mgStatus::OsdCurrentItem(const char* Text)
 		a->TryNotify();
 }
 
-void Play(mgSelection *sel,const bool select) {
+void Play(mgSelection *sel, bool enter)
+{
 	mgSelection *s = GenerateSelection(sel);
 	if (s->ordersize()==0)
 		s->InitDefaultOrder(1);
-	if (select) s->select();
+	if (enter)
+		s->enter();
 	s->skipItems(0);	// make sure we start with a valid item
 	if (s->empty()) 	// no valid item exists
 	{
@@ -83,10 +85,10 @@ mgMainMenu::PlayQueue()
 
 //! \brief queue the selection for playing, abort ongoing queue playing
 void
-mgMainMenu::PlayInstant(const bool select)
+mgMainMenu::PlayInstant(bool enter)
 {
 	instant_playing=true;
-	Play(selection(),select);
+	Play(selection(),enter);
 }
 
 bool
@@ -504,7 +506,8 @@ mgMainMenu::AddOrderActions(mgMenu* m)
 		mgError("AddOrderAction:selections[%u] is 0",idx);
     	mgAction *a = m->GenerateAction(actOrder,actNone);
     	assert(a);
-	const char *oname = o->Name().c_str();
+	string name = o->Name(); // do not combine these 2 lines!
+	const char *oname = name.c_str();
 	if (strlen(oname)==0)
 		oname = tr("Order is undefined");
     	a->SetText(hk(oname));
@@ -1069,12 +1072,16 @@ mgMenuOrder::BuildOsd ()
     m_orderbycount = m_selection->getOrderByCount();
     for (unsigned int i=0;i<m_selection->ordersize();i++)
     {
+	if (m_selection->getKeyType(i)==keyGdUnique)
+		break;
 	unsigned int kt;
 	m_keynames.push_back(m_selection->Choices(i,&kt));
 	m_keytypes.push_back(kt);
     }
     for (unsigned int i=0;i<m_selection->ordersize();i++)
     {
+	if (m_selection->getKeyType(i)==keyGdUnique)
+		break;
 	char buf[20];
 	sprintf(buf,tr("Key %d"),i+1);
 	mgAction *a = actGenerateKeyItem(buf,(int*)&m_keytypes[i],m_keynames[i].size(),&m_keynames[i][0]);

@@ -308,7 +308,7 @@ mgEntry::MenuName(const unsigned int idx,const mgListItem* item)
 {
 	char ct[20];
 	unsigned int selcount = item->count();
-	if (selection()->orderlevel()<selection()->ordersize()-1 || selcount>1)
+	if (!selection()->inItems())
 	{
 		char numct[20];
 		sprintf(numct,"%u",selcount);
@@ -343,13 +343,12 @@ mgEntry::MenuName(const unsigned int idx,const mgListItem* item)
 bool
 mgEntry::Execute()
 {
-	if (selection ()->enter ())
-	{
-		osd()->forcerefresh = true;
-	}
+	if (selection()->inItems())
+		m->ExecuteAction(actInstantPlay,Type());
 	else
 	{
-		m->ExecuteAction(actInstantPlay,Type());
+		selection()->enter();
+		osd()->forcerefresh = true;
 	}
 	return true;
 }
@@ -527,9 +526,7 @@ mgExternal::Execute()
         if (confirmed)
         {
             osd()->Message1 ("%s...", command->Title ());
-            selection ()->select ();
             string m3u_file = selection ()->exportM3U ();
-            selection ()->leave ();
             if (!m3u_file.empty ())
             {
                 /*char *result = (char *)*/
@@ -796,6 +793,7 @@ mgInstantPlay::Execute()
 //! \brief add selected items to a collection
 class mgAddAllToCollection:public mgCommand {
     public:
+	bool Enabled(mgActions on);
         bool Execute ();
 	//! \brief adds the whole selection to a collection
 	// \param collection the target collection. Default is the default collection
@@ -841,15 +839,12 @@ mgAddAllToCollection::ExecuteMove()
 //! \brief add selected items to default collection
 class mgAddAllToDefaultCollection:public mgCommand {
     public:
+	bool Enabled(mgActions on);
         bool Execute ();
+        const char *MenuName (const unsigned int idx,const mgListItem* item);
 	//! \brief adds the whole selection to the default collection
 	// \param collection the default collection.
         void ExecuteSelection (mgSelection *s);
-        const char *ButtonName ()
-        {
-            return tr ("Add");
-        }
-        const char *MenuName (const unsigned int idx,const mgListItem* item);
 };
 
 const char *
@@ -865,7 +860,6 @@ bool
 mgAddAllToDefaultCollection::Execute()
 {
     mgSelection *sel = GenerateSelection(selection());
-    sel->select ();
     ExecuteSelection(sel);
     delete sel;
     return true;
@@ -893,16 +887,14 @@ mgAddAllToDefaultCollection::ExecuteSelection (mgSelection *s)
     }
 }
 
+
 //! \brief add selected items to a collection
 class mgAddThisToCollection:public mgAddAllToCollection
 {
     public:
-	bool Enabled(mgActions on);
         bool Execute ();
-        const char *ButtonName ();
         const char *MenuName (const unsigned int idx,const mgListItem* item);
 };
-
 
 bool
 mgAddThisToCollection::Execute ()
@@ -910,19 +902,13 @@ mgAddThisToCollection::Execute ()
 // work on a copy, so we don't have to clear the cache of selection()
 // which would result in an osd()->forcerefresh which could scroll.
     osd()->moveselection = GenerateSelection(selection());
-    osd()->moveselection->select ();
-    mgAddAllToCollection::ExecuteMove();
+    osd()->moveselection->enter();
+    ExecuteMove();
     return true;
 }
 
-const char *
-mgAddThisToCollection::ButtonName ()
-{
-    return tr("Add");
-}
-
 bool
-mgAddThisToCollection::Enabled(mgActions on)
+mgAddAllToCollection::Enabled(mgActions on)
 {
 	return IsEntry(on);
 }
@@ -933,13 +919,24 @@ mgAddThisToCollection::MenuName (const unsigned int idx,const mgListItem* item)
     return strdup(tr("Add to a collection"));
 }
 
+
+bool
+mgAddAllToDefaultCollection::Enabled(mgActions on)
+{
+	bool result = IsEntry(on);
+	result &= (!osd()->DefaultCollectionSelected());
+	return result;
+}
+
 //! \brief add selected items to default collection
 class mgAddThisToDefaultCollection:public mgAddAllToDefaultCollection
 {
     public:
-	bool Enabled(mgActions on);
         bool Execute ();
-        const char *ButtonName ();
+        const char *ButtonName ()
+        {
+            return tr ("Add");
+        }
         const char *MenuName (const unsigned int idx,const mgListItem* item);
 };
 
@@ -950,24 +947,10 @@ mgAddThisToDefaultCollection::Execute ()
 // work on a copy, so we don't have to clear the cache of selection()
 // which would result in an osd()->forcerefresh which could scroll.
     mgSelection *sel = GenerateSelection(selection());
-    sel->select ();
-    mgAddAllToDefaultCollection::ExecuteSelection(sel);
+    sel->enter ();
+    ExecuteSelection(sel);
     delete sel;
     return true;
-}
-
-const char *
-mgAddThisToDefaultCollection::ButtonName ()
-{
-    return tr("Add");
-}
-
-bool
-mgAddThisToDefaultCollection::Enabled(mgActions on)
-{
-	bool result = IsEntry(on);
-	result &= (!osd()->DefaultCollectionSelected());
-	return result;
 }
 
 const char *
@@ -982,24 +965,38 @@ mgAddThisToDefaultCollection::MenuName (const unsigned int idx,const mgListItem*
 class mgRemoveAllFromCollection:public mgCommand
 {
     public:
+	bool Enabled(mgActions on);
         bool Execute ();
-        const char *ButtonName ()
-        {
-            return tr ("Remove");
-        }
         const char *MenuName (const unsigned int idx,const mgListItem* item);
+    protected:
+	void ExecuteRemove();
 };
 
 bool
+mgRemoveAllFromCollection::Enabled(mgActions on)
+{
+	return IsEntry(on);
+}
+
+bool
 mgRemoveAllFromCollection::Execute ()
+{
+    osd()->moveselection = GenerateSelection(selection());
+    ExecuteRemove();
+    return true;
+}
+
+void
+mgRemoveAllFromCollection::ExecuteRemove ()
 {
     if (osd() ->Menus.size()>1) 
 	    osd ()->CloseMenu();	// TODO Gebastel...
     char *b;
     asprintf(&b,tr("Remove '%s' from collection"),osd()->moveselection->getListname().c_str());
     osd ()->newmenu = new mgTreeRemoveFromCollSelector(string(b));
+    osd ()->collselection()->leave_all();
+    osd ()->newposition = osd()->collselection()->getPosition(); 
     free(b);
-    return true;
 }
 
 const char *
@@ -1063,8 +1060,8 @@ mgRemoveThisFromCollection::Execute ()
 // work on a copy, so we don't have to clear the cache of selection()
 // which would result in an osd()->forcerefresh which could scroll.
     osd()->moveselection = GenerateSelection(selection());
-    osd()->moveselection->select ();
-    mgRemoveAllFromCollection::Execute();
+    osd()->moveselection->enter();
+    ExecuteRemove();
     return true;
 }
 
@@ -1248,7 +1245,7 @@ class mgExportItemlist:public mgCommand
 bool
 mgExportItemlist::Execute ()
 {
-    selection ()->select ();
+    selection()->enter();
     string m3u_file = selection ()->exportM3U ();
     selection ()->leave ();
     osd()->Message1 ("written to %s", m3u_file);

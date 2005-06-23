@@ -35,9 +35,8 @@ enum mgKeyTypes {
 	keyGdTitleABC,
 	keyGdCollection,
 	keyGdCollectionItem,
-	keyGdUnique,
+	keyGdUnique
 	// here come other backends: keyXXTitle = 50, (reserve)
-	keyTypesHigh
 };
 const mgKeyTypes mgGdKeyTypesLow = keyGdGenre1;
 const mgKeyTypes mgGdKeyTypesHigh = keyGdUnique;

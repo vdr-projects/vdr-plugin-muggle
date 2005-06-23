@@ -136,7 +136,6 @@ public:
 	strlist idfields;
 	strlist tables;
 	strlist clauses;
-	strlist groupby;
 	mgParts& operator+=(mgParts a);
 	void Prepare();
 	string sql_count();
@@ -144,6 +143,7 @@ public:
 	bool empty() const { return tables.size()==0;}
 	string special_statement;
 	bool orderByCount;
+	void Dump(string where) const;
 private:
 	mgReferences rest;
 	mgReferences positives;
