@@ -113,11 +113,14 @@ class mgPCMPlayer:public cPlayer, cThread
 {
     private:
 
-//! \brief indicates, whether the player is currently active
+//! \brief indicates whether the player is currently active
         bool m_active;
 
-//! \brief indicates, whether the player has been started
+//! \brief indicates whether the player has been started
         bool m_started;
+
+//! \brief indicates whether the player is currently playing
+        bool m_playing;
 
 //! \brief a buffer for decoded sound
         cRingBufferFrame *m_ringbuffer;
@@ -133,9 +136,6 @@ class mgPCMPlayer:public cPlayer, cThread
 
 //! \brief the currently played or to be played item
         mgItemGd *m_current;
-
-//! \brief the currently playing item
-        mgItemGd *m_playing;
 
 //! \brief the decoder responsible for the currently playing item
         mgDecoder *m_decoder;
@@ -187,6 +187,11 @@ class mgPCMPlayer:public cPlayer, cThread
             return m_active;
         }
 
+        bool Playing ()
+        {
+            return m_playing;
+        }
+
         void Pause ();
         void Play ();
         void Forward ();
@@ -231,7 +236,7 @@ pmAudioOnlyBlack)
     m_state = msStop;
 
     m_index = 0;
-    m_playing = 0;
+    m_playing = false;
     m_current = 0;
 }
 
@@ -410,7 +415,7 @@ mgPCMPlayer::Action (void)
                 case msStart:
                 {
                     m_index = 0;
-                    m_playing = m_current;
+                    m_playing = true;
 
                     if (m_current)
                     {
@@ -607,7 +612,7 @@ mgPCMPlayer::Action (void)
                 }                                 // fall through
                 case msStop:
                 {
-                    m_playing = 0;
+                    m_playing = false;
                     if (m_decoder)
                     {                             // who deletes decoder?
                         m_decoder->stop ();
@@ -719,7 +724,7 @@ mgPCMPlayer::Action (void)
         m_decoder = 0;
     }
 
-    m_playing = 0;
+    m_playing = false;
 
     SetPlayMode (pmStopped);
 
@@ -1189,6 +1194,12 @@ mgPlayerControl::~mgPlayerControl ()
 bool mgPlayerControl::Active (void)
 {
     return player && player->Active ();
+}
+
+
+bool mgPlayerControl::Playing (void)
+{
+    return player && player->Playing ();
 }
 
 

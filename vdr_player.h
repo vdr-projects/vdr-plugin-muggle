@@ -78,6 +78,9 @@ class mgPlayerControl:public cControl
 //! \brief indicate whether the corresponding player is active
         bool Active ();
 
+//! \brief indicate whether the corresponding player is playing
+        bool Playing ();
+
 //! \brief stop the corresponding player
         void Stop ();
 
