@@ -409,4 +409,7 @@ OSD. If Stop is pressed, muggle first stops playing what was started by Instant
 Play. Muggle will then continue playing the 'play' collection. A second Stop will 
 stop playing the 'play' collection.
 
+If instant play is used while playing the 'play' collection, the latter will resume
+after instant play finishes.
+
 */

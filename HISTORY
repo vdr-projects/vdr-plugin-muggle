@@ -201,12 +201,21 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - Added incremental search
 
 xxxxxxxx: Version 0.1.8-BETA
-- rewrote much of the SQL interface to allow easier implementation
-  of alternative data bases
+- WARNING: muggle currently only works correctly with LD_ASSUME_KERNEL=2.4.1.
+  Since 1.3.27 vdr does not enforce this anymore
+- reimplemented mugglei option -z (DeleteStaleReferences), also in the
+  muggle setup menu
+- rewrote most of the SQL interface to allow easier implementation
+  of alternative data bases backends or alternative data source like EPG
+- major edits to README - split off README.mysql
 - implemented support for SQLite. Tested with version 3.2.1. The
   field genre2 is not supported because it would be too slow.
-  Define HAVE_SQLITE in Make.config.
-  Parameters h,u,s,p,w are not supported with SQLite.
-- reimplemented mugglei option -z (DeleteStaleReferences)
+  Define HAVE_SQLITE in Make.config, details see README.mysql
+  Parameters h,u,s,p,w are not needed and not supported with SQLite.
 - implemented support for Postgresql. Tested with version 8.0. 
-  Define HAVE_PG in Make.config
+  Define HAVE_PG in Make.config, details see README.postgresql
+- if instant play is used while playing from the 'play' collection,
+  the latter will be resumed after instant play finishes.
+- if you use an order like Interpret/Album/Tracks and all songs
+  have the same track number, instantly playing any of them played
+  them all. Fixed
