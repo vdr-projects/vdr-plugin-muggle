@@ -979,8 +979,12 @@ mgDb::DefineGenre(const string genre)
 	Execute("INSERT INTO genre (id,genre) VALUES('z','Extra')");
 	for (char c='a';c<='z';c++)
 	{
+		char g[20];
+		strcpy(g,"Extra");
+		if (c!='a')
+			sprintf(strchr(g,0)," %c",c);
 		char *b;
-		asprintf(&b,"INSERT INTO genre (id,genre) VALUES('z%c','Extra')",c);
+		asprintf(&b,"INSERT INTO genre (id,genre) VALUES('z%c','%s')",c,g);
 		Execute(b);
 		free(b);
 	}
