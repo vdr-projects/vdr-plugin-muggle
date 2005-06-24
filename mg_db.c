@@ -975,8 +975,17 @@ mgDb::DefineGenre(const string genre)
 {
     mgQuery q1(DbHandle(),"SELECT id FROM genre WHERE id ='z'" );
     if (q1.Rows()==0)
-	Execute("INSERT INTO genre (id,genre) VALUES('z','Extra'");
-    mgQuery q(DbHandle(),"SELECT id FROM genre WHERE id >='zaa'" );
+    {
+	Execute("INSERT INTO genre (id,genre) VALUES('z','Extra')");
+	for (char c='a';c<='z';c++)
+	{
+		char *b;
+		asprintf(&b,"INSERT INTO genre (id,genre) VALUES('z%c','Extra')",c);
+		Execute(b);
+		free(b);
+	}
+    }
+    mgQuery q(DbHandle(),"SELECT id FROM genre WHERE id LIKE 'z__'" );
     char **r;
     char *newid=0;
     while ((r = q.Next()))
