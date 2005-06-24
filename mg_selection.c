@@ -868,7 +868,7 @@ void mgSelection::InitFrom(const mgSelection* s)
 {
     InitSelection();
     if (!s)
-	    return;
+	return;
     for (unsigned int i = 0; i < s->ordersize();i++)
     {
        	mgKey *k = ktGenerate(s->getKeyType(i));
@@ -877,23 +877,20 @@ void mgSelection::InitFrom(const mgSelection* s)
     }
     m_active = s->m_active;
     SetLevel(s->m_level);
-	if (m_level)
-    assert(m_level<ordersize());
+    if (m_level)
+    	assert(m_level<ordersize());
     m_fall_through = s->m_fall_through;
     m_orderByCount = s->m_orderByCount;
     m_position = s->m_position;
     m_items_position = s->m_items_position;
     setShuffleMode (s->getShuffleMode ());
     setLoopMode (s->getLoopMode ());
-	if (m_level)
-    assert(m_level<ordersize());
 }
 
 
 void
 mgSelection::refreshValues ()  const
 {
-    assert(m_level<ordersize());
     assert(this);
     assert(m_db);
     if (!m_current_values.empty())
@@ -903,7 +900,6 @@ mgSelection::refreshValues ()  const
 		    p,getKeyType(m_level),listitems.items(),m_level<ordersize()-2);
     if (!inCollection(""))
 	    listitems.sort(m_orderByCount,Keys[m_level]->SortBy());
-    assert(m_level<ordersize());
 }
 
 
@@ -918,7 +914,6 @@ void
 mgSelection::IncLevel()
 {
 	m_level++;
-	assert(m_level<ordersize());
 	clearCache();
 }
 
@@ -926,13 +921,11 @@ void
 mgSelection::SetLevel(unsigned int level)
 {
 	m_level=level;
-	assert(m_level<ordersize());
 	clearCache();
 }
 
 bool mgSelection::enter (unsigned int position)
 {
-    assert(m_level<ordersize());
     assert(!Keys.empty());
     if (inItem())
         return false;
@@ -972,7 +965,6 @@ bool mgSelection::enter (unsigned int position)
     }
     setPosition(position);
     position = gotoPosition();
-    assert(m_level<ordersize());
     return true;
 }
 
@@ -980,7 +972,6 @@ bool
 mgSelection::leave ()
 {
     unsigned int position=m_position;
-    assert(m_level<ordersize());
     assert(!Keys.empty());
     mgListItems prev;
     if (m_level>1 && m_fall_through && listitems.size()<100)
@@ -1023,8 +1014,6 @@ mgSelection::truncate(unsigned int i)
 		delete Keys.back();
 		Keys.pop_back();
 	}
-	if (m_level)
-	assert(m_level<ordersize());
 }
 
 void
@@ -1043,9 +1032,7 @@ mgSelection::setKeys(vector<const char *>& kt)
 	{
 		setKey(ktValue(kt[i]));
 	}
-	assert(m_level<ordersize());
         clean();
-	assert(m_level<ordersize());
 }
 
 void
@@ -1073,8 +1060,6 @@ cleanagain:
 				goto cleanagain;
 			}
 	}
-	if (m_level)
-		assert(m_level<ordersize());
 }
 
 string
@@ -1113,7 +1098,6 @@ mgSelection::Key(unsigned int idx) const
 bool
 mgSelection::UsedBefore(const mgKeyTypes kt,unsigned int level) const
 {
-	assert(level<ordersize());
 	for (unsigned int lx = 0; lx < level; lx++)
 		if (getKeyType(lx)==kt)
 			return true;
