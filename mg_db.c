@@ -32,8 +32,6 @@ using namespace std;
 #include <fts.h>
 #include <mpegfile.h>
 #include <flacfile.h>
-#include <id3v2tag.h>
-#include <fileref.h>
 
 static map <mgKeyTypes, map<string,string> > map_values;
 static map <mgKeyTypes, map<string,string> > map_ids;
@@ -280,6 +278,7 @@ mgDb::Sync(char * const * path_argv)
   	extern void showimportcount(unsigned int,bool final=false);
 
 	LoadMapInto("SELECT id,genre from genre",&m_Genres,0);
+	LoadMapInto("SELECT genre,id3genre from genre",&m_GenreIds,0);
 
 	StartTransaction();
 	if (the_setup.DeleteStaleReferences)
@@ -938,33 +937,94 @@ mgDb::getAlbum(const char *filename,const mgSQLString& c_album,
 }
 
 TagLib::String
-mgDb::getlanguage(const char *filename)
+mgDb::getId3v2Tag(TagLib::ID3v2::Tag *id3v2tags,const char *name) const
 {
-      TagLib::String result = "";
-      TagLib::ID3v2::Tag * id3v2tag=0;
+      TagLib::String result;
+      TagLib::ID3v2::FrameList l = id3v2tags->frameListMap()[name];
+      if (!l.isEmpty())
+     	 result = l.front()->toString();
+      return result;
+}
+
+void
+mgDb::get_tags(TagLib::ID3v2::Tag *tags)
+{
+        if (!tags)
+		return;
+	m_TLAN = getId3v2Tag(tags,"TLAN");
+	m_TCON = getId3v2Tag(tags,"TCON");
+}
+
+void
+mgDb::get_ID3v2_Tags(const char *filename)
+{
       if (!strcasecmp(extension(filename),"flac"))
       {
       	TagLib::FLAC::File f(filename);
-	id3v2tag = f.ID3v2Tag();
-      	if (id3v2tag)
-      	{
-      	  TagLib::ID3v2::FrameList l = id3v2tag->frameListMap()["TLAN"];
-      	  if (!l.isEmpty())
-  	    result = l.front()->toString();
-        }
+	get_tags(f.ID3v2Tag());
       }
       else if (!strcasecmp(extension(filename),"mp3"))
       {
       	TagLib::MPEG::File f(filename);
-	id3v2tag = f.ID3v2Tag();
-        if (id3v2tag)
-        {
-      	  TagLib::ID3v2::FrameList l = id3v2tag->frameListMap()["TLAN"];
-      	  if (!l.isEmpty())
-  	    result = l.front()->toString();
-        }
+	get_tags(f.ID3v2Tag());
       }
-      return result;
+}
+
+void
+mgDb::DefineGenre(const string genre)
+{
+    mgQuery q1(DbHandle(),"SELECT id FROM genre WHERE id ='z'" );
+    if (q1.Rows()==0)
+	Execute("INSERT INTO genre (id,genre) VALUES('z','Extra'");
+    mgQuery q(DbHandle(),"SELECT id FROM genre WHERE id >='zaa'" );
+    char **r;
+    char *newid=0;
+    while ((r = q.Next()))
+    {
+	newid = r[0];
+    }
+    if (!newid)
+	newid="zaa";
+    else
+    {
+	newid[2]++;
+	if (newid[2]>'z')
+	{
+		newid[1]++;
+		if (newid[1]>'z')
+			return;
+		newid[2]='a';
+	}
+    }
+    char *b;
+    mgSQLString c_genre(genre);
+    asprintf(&b,"INSERT INTO genre (id,genre) VALUES('%s',%s)",newid,c_genre.quoted());
+    Execute(b);
+    free(b);
+    m_Genres[genre]=newid;
+    mgDebug(1,"Added new genre %s",genre.c_str());
+}
+
+mgSQLString 
+mgDb::getGenre1(TagLib::FileRef& f)
+{
+	string genre1 = f.tag()->genre().toCString();
+	if (genre1.empty())
+	{
+		genre1 = m_TCON.toCString();
+		const char *tcon=genre1.c_str();
+		char *rparen=strchr(tcon,')');
+		if (tcon[0]=='(' && rparen)
+		{
+			*rparen=0;
+			genre1 = m_GenreIds[tcon+1];
+		}
+	}
+	if (genre1.empty())
+		return mgSQLString("NULL");
+	if (m_Genres[genre1]=="")
+		DefineGenre(genre1);
+	return m_Genres[genre1];
 }
 
 void
@@ -992,6 +1052,7 @@ mgDb::SyncFile(const char *filename)
 		return;
 	mgDebug(2,"Importing %s",filename);
         TagLib::AudioProperties *ap = f.audioProperties();
+	get_ID3v2_Tags(filename);
 	char *folders[4];
 	char *fbuf=SeparateFolders(filename,folders,4);
 	mgSQLString c_folder1(folders[0]);
@@ -1004,11 +1065,9 @@ mgDb::SyncFile(const char *filename)
 	mgSQLString c_album(f.tag()->album());
 	if (strlen(c_album.original())==0)
 		c_album = "Unassigned";
-	mgSQLString c_genre1(m_Genres[f.tag()->genre().toCString()].c_str());
-	if (strlen(c_genre1.original())==0)
-		c_genre1="NULL";
-	mgSQLString c_lang(getlanguage(filename));
+	mgSQLString c_lang(m_TLAN);
 	char sql[7000];
+	mgSQLString c_genre1(getGenre1(f));
 	mgSQLString c_cddbid(getAlbum(filename,c_album,c_artist));
 	mgSQLString c_mp3file(cfilename);
 	sprintf(sql,"SELECT id from tracks WHERE mp3file=%s",c_mp3file.quoted());

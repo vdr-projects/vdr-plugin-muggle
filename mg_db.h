@@ -18,6 +18,8 @@
 #include <vector>
 #include <map>
 #include <tag.h>
+#include <id3v2tag.h>
+#include <fileref.h>
 
 using namespace std;
 
@@ -207,11 +209,18 @@ class mgDb {
 	virtual bool SyncStart();
 	virtual void CreateFolderFields() {};
    private:
-	TagLib::String getlanguage(const char *filename);
+	TagLib::String m_TLAN;
+	TagLib::String m_TCON;
+	TagLib::String getId3v2Tag(TagLib::ID3v2::Tag *id3v2tags,const char *name) const;
+	void get_ID3v2_Tags(const char *filename);
+	void get_tags(TagLib::ID3v2::Tag *tags);
+	void DefineGenre(const string genre);
+	mgSQLString getGenre1(TagLib::FileRef& f);
 	mgSQLString Build_cddbid(const mgSQLString& artist) const;
 	mgSQLString getAlbum(const char *filename,const mgSQLString& c_album,
 			const mgSQLString& c_artist);
 	map<string,string> m_Genres;
+	map<string,string> m_GenreIds;
 
 };
 

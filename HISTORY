@@ -216,6 +216,12 @@ xxxxxxxx: Version 0.1.8-BETA
   Define HAVE_PG in Make.config, details see README.postgresql
 - if instant play is used while playing from the 'play' collection,
   the latter will be resumed after instant play finishes.
+- progress display: if the progress of the whole selection is shown,
+  the current title displays and not the name of the selection
 - if you use an order like Interpret/Album/Tracks and all songs
   have the same track number, instantly playing any of them played
   them all. Fixed
+- muggle can now import genre1 from id3v2 tags (the TCON tag). Only the
+  first genre is imported, and refinements will be ignored. But
+  this allows you to define your own genres. If you use the genre
+  hierarchies, they will show up under 'Extra'
