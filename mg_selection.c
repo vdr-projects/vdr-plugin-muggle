@@ -660,10 +660,7 @@ mgSelection::SelParts(bool distinct, bool deepsort) const
 		if (!deepsort && i>m_level)
 			break;
 		if (NeedKey(i))
-		{
-			Keys[i]->Parts(m_db,distinct&&i==m_level).Dump("SelPart");
 			result += Keys[i]->Parts(m_db,distinct&&i==m_level);
-		}
 	}
 	if (highitem)
 	{
@@ -742,6 +739,19 @@ void mgSelection::DumpState(mgValmap& nv, const char *prefix) const
 		if (i<=m_level)
 			nv.put(getKeyItem(i)->value(),
 				"%s.Keys.%u.Position",prefix,i);
+	}
+}
+
+
+void mgSelection::ShowState(char *w) const
+{
+	mgDebug(1,"ShowState:%s,m_level=%d",w,m_level);
+    	for (unsigned int i=0;i<ordersize();i++)
+    	{
+		mgDebug(1,"  %d:Type=%s,val=%s,id=%s",
+				i,ktName(Key(i)->Type()),
+				getKeyItem(i)->value().c_str(),
+				getKeyItem(i)->id().c_str());
 	}
 }
 
@@ -840,21 +850,20 @@ mgSelection::Activate()
 	if (m_active)
 		return;
 	m_active = true;
-	for (m_level = 0; m_level < ordersize(); m_level++)
-		if (!getKeyItem(m_level))
+	m_level = 0;
+	for (unsigned int lev = 0; lev < ordersize(); lev++)
+	{
+		if (!getKeyItem(lev))
 			break;
-	if (m_level>=ordersize())
-		m_level = ordersize()-1;
-    assert(m_level<ordersize());
-	mgListItem* item = getKeyItem(0);
+		m_level = lev;
+	}
+	mgListItem* item = getKeyItem(m_level);
 	if (item)
 		setPosition(item->value());
 	else
 		setPosition(0);
-	leave(); // we are ininItem()
-	while (listitems.size()==0 && m_level>0)
-		leave();
-	assert(m_level<ordersize());
+	if (inItem())
+		DecLevel();
 }
 
 mgSelection::~mgSelection ()
@@ -951,6 +960,7 @@ bool mgSelection::enter (unsigned int position)
     	setPosition(position);
     	position = gotoPosition();		// reload adjusted position
         Key(m_level)->set (listitems[position]);
+	mgDebug(5,"enter:level=%d,set to %s",m_level,getCurrentValue().c_str());
 	IncLevel();
 	refreshValues();
         position = 0;
@@ -958,13 +968,14 @@ bool mgSelection::enter (unsigned int position)
 	    break;
         if (!m_fall_through)
             break;
-        if (inItem())
+        if (m_level>=ordersize()-2)
 	    break;
 	if (listitems.size () > 1 && !(prev==listitems))
             break;
     }
     setPosition(position);
     position = gotoPosition();
+    mgDebug(5,"enter exits:level=%d,set to %s",m_level,getCurrentValue().c_str());
     return true;
 }
 

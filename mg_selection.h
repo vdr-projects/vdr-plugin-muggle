@@ -335,6 +335,7 @@ class mgSelection
 	 * \param nv the values will be entered into this map
 	 */
         void DumpState(mgValmap& nv,const char *prefix) const;
+        void ShowState(char *w) const;
 
 	//! \brief clear the cache, next access will reload from data base
         void clearCache() const;
