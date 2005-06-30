@@ -1287,5 +1287,39 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
     },
+    {
+        "%s not readable, errno=%d",
+        "%s nicht lesbar, errno=%d",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "Ne peux pas lire %s, errno=%d",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {
+        "%s..%s not readable, errno=%d",
+        "%s..%s nicht lesbar, errno=%d",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "Ne peux pas lire %s..%s, errno=%d",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
     {NULL}
 };
