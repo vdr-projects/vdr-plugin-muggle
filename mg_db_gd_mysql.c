@@ -144,7 +144,8 @@ mgDbGd::mgDbGd(bool SeparateThread)
 
 mgDbGd::~mgDbGd()
 {
-  mysql_close (m_db);
+  if (m_db!=escape_db)
+	  mysql_close (m_db);
   m_db = 0;
 #if MYSQL_VERSION_ID >=400000
   if (m_separate_thread)
@@ -231,6 +232,8 @@ mysqlhandle_t::mysqlhandle_t()
 
 mysqlhandle_t::~mysqlhandle_t()
 {
+	if (escape_db)
+		mysql_close(escape_db);
 #ifndef HAVE_ONLY_SERVER
   mgDebug(3,"calling mysql_server_end");
   	mysql_server_end();
@@ -502,7 +505,8 @@ mgDbGd::ServerConnect ()
 		m_db = 0;
     	}
     }
-    escape_db = m_db;
+    if (!escape_db)
+	    escape_db = m_db;
     return m_db!=0;
 }
 
