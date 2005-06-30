@@ -17,11 +17,11 @@
 #include "mg_tools.h"
 
 bool
-mgItem::Valid() const
+mgItem::Valid(bool Silent) const
 {
     if (!m_validated)
     {
-	    getSourceFile();	// sets m_valid as a side effect
+	    getSourceFile(true,Silent);	// sets m_valid as a side effect
 	    m_validated=true;
     }
     return m_valid;

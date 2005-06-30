@@ -34,7 +34,7 @@ class mgItemGd : public mgItem
 	mgItemGd* Clone();
 
 //! \brief returns filename
-        string getSourceFile (bool AbsolutePath=true) const;
+        string getSourceFile (bool AbsolutePath=true,bool Silent=false) const;
 
 //! \brief returns artist
         string getArtist () const;

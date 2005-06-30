@@ -29,11 +29,11 @@ class mgItem
 	mgItem();
 	virtual mgItem* Clone();
         virtual ~mgItem() {};
-	bool Valid() const;
+	bool Valid(bool Silent=false) const;
 	virtual long getItemid() const { return m_itemid; }
 	virtual mgListItem* getKeyItem(mgKeyTypes kt) const { return new mgListItem; }
 //! \brief returns filename
-        virtual string getSourceFile (bool AbsolutePath=true) const { return m_realfile; }
+        virtual string getSourceFile (bool AbsolutePath=true,bool Silent=false) const { return m_realfile; }
 //! \brief returns title
         string getTitle () const { return m_title; }
 //! \brief returns the name of the language

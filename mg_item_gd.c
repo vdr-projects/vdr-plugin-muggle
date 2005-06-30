@@ -164,7 +164,7 @@ mgItemGd::InitFrom(const mgItemGd* c)
 
 
 string
-mgItemGd::getSourceFile(bool AbsolutePath) const
+mgItemGd::getSourceFile(bool AbsolutePath,bool Silent) const
 {
 	int access_errno=0;
 	string tld = the_setup.ToplevelDir;
@@ -206,7 +206,8 @@ mgItemGd::getSourceFile(bool AbsolutePath) const
 	m_validated=true;
 	if (result.empty())
 	{
-		analyze_failure(tld + "/" + m_mp3file);
+		if (!Silent)
+			analyze_failure(tld + "/" + m_mp3file);
 		m_valid = false;
 		return m_mp3file;
 	}	
