@@ -290,8 +290,8 @@ mgDb::Sync(char * const * path_argv)
 		for (unsigned int idx=0;idx<items.size();idx++)
 		{
 			mgItem* item = items[idx];
-			string fullpath=item->getSourceFile(true);
-			if (!item->Valid())
+			string fullpath=item->getSourceFile(true,true);
+			if (!item->Valid(true))
 			{
 				char *b;
 				asprintf(&b,"DELETE FROM tracks WHERE id=%ld",item->getItemid());
