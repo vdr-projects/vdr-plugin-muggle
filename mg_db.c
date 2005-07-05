@@ -299,10 +299,7 @@ mgDb::Sync(char * const * path_argv)
 				free(b);
 			}
 		}
-		char *b;
-		asprintf(&b,"Deleted %d entries because the file did not exist",count);
-    		extern void showmessage(int duration,const char*,...);
-		showmessage(0,b);
+		mgDebug(1,"Deleted %d entries because the file did not exist",count);
 	}
 
 	unsigned int importcount=0;

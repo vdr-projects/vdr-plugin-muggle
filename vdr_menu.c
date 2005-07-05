@@ -990,10 +990,14 @@ showmessage(int duration,const char * msg, ...)
 void
 showimportcount(unsigned int impcount,bool final=false)
 {
+#if 0
+	// we should not write to the OSD since this is not the 
+	// foreground thread. We could go thru port 2001.
 	if (final)
 		showmessage(1,"Import done:Imported %d items",impcount);
 	else
 		showmessage(2,"Imported %d items...",impcount);
+#endif
 }
 
 void
