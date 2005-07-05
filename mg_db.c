@@ -46,7 +46,15 @@ mgSQLString::~mgSQLString()
 void
 mgSQLString::Init(const char* s)
 {
+	// strip trailing spaces
+
 	m_original = strdup(s);
+	char *p=strrchr(m_original,' ');
+	if (p+1 == strchr(m_original,0))
+		while (p>=m_original && *p==' ')
+			*p-- = 0;
+
+	mgDebug(1,"Init(%s)",m_original);
 #ifdef HAVE_SQLITE
 	m_str = new mgSQLStringSQLite(m_original);
 #elif HAVE_PG
