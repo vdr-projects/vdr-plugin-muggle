@@ -144,7 +144,7 @@ mgDbGd::mgDbGd(bool SeparateThread)
 
 mgDbGd::~mgDbGd()
 {
-  if (m_db!=escape_db)
+  if (m_db && m_db!=escape_db)
 	  mysql_close (m_db);
   m_db = 0;
 #if MYSQL_VERSION_ID >=400000
