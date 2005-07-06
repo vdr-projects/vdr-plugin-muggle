@@ -433,7 +433,7 @@ bool mgSelection::CreateCollection(const string Name)
 
 string mgSelection::exportM3U ()
 {
-
+    enter();
 // open a file for writing
     string fn = "/tmp/" + ListFilename () + ".m3u";
     FILE * listfile = fopen (fn.c_str (), "w");
@@ -450,6 +450,7 @@ string mgSelection::exportM3U ()
         fprintf (listfile, "%s\n", t->getSourceFile (false).c_str ());
     }
     fclose (listfile);
+    leave();
     return fn;
 }
 

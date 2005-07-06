@@ -1245,9 +1245,7 @@ class mgExportItemlist:public mgCommand
 bool
 mgExportItemlist::Execute ()
 {
-    selection()->enter();
     string m3u_file = selection ()->exportM3U ();
-    selection ()->leave ();
     osd()->Message1 ("written to %s", m3u_file);
     return true;
 }
