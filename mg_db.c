@@ -54,7 +54,6 @@ mgSQLString::Init(const char* s)
 		while (p>=m_original && *p==' ')
 			*p-- = 0;
 
-	mgDebug(1,"Init(%s)",m_original);
 #ifdef HAVE_SQLITE
 	m_str = new mgSQLStringSQLite(m_original);
 #elif HAVE_PG
@@ -1180,6 +1179,7 @@ mgDb::LoadItemsInto(mgParts& what,vector<mgItem*>& items)
 	what.idfields.push_back("tracks.channels");
 	what.idfields.push_back("tracks.lang");
 	what.idfields.push_back("tracks.tracknb");
+	what.idfields.push_back("album.coverimg");
 	what.tables.push_back("tracks");
 	what.tables.push_back("album");
 	string result = what.sql_select(false); 

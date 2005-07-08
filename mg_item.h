@@ -44,6 +44,7 @@ class mgItem
         int getRating () const { return m_rating; }
 //! \brief returns duration
         int getDuration () const { return m_duration; }
+	virtual string getImagePath () const { return ""; }
 	void setSelection(const mgSelection* sel) { m_sel=sel; }
 	const mgSelection* getSelection() const { return m_sel; }
 

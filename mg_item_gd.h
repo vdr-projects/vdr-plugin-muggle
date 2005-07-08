@@ -48,9 +48,6 @@ class mgItemGd : public mgItem
 //! \brief returns the bitrate
         string getBitrate () const;
 
-//! \brief returns the file name of the album image
-        string getImageFile () const;
-
 //! \brief returns samplerate
         int getSampleRate () const;
 
@@ -59,6 +56,8 @@ class mgItemGd : public mgItem
 
 //! \brief returns tracknb
         int getTrack () const;
+
+	string getImagePath() const;
 
     protected:
 	void InitFrom(const mgItemGd* c);
@@ -69,9 +68,11 @@ class mgItemGd : public mgItem
         string m_genre2_id;
         string m_genre2;
         string m_bitrate;
+	mutable string m_coverimg;
         int m_samplerate;
         int m_channels;
 	int m_tracknb;
+	mutable int m_covercount;
 };
 
 #endif

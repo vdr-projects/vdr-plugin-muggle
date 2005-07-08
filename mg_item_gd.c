@@ -99,12 +99,6 @@ string mgItemGd::getBitrate () const
 }
 
 
-string mgItemGd::getImageFile () const
-{
-    return "Name of Imagefile";
-}
-
-
 string mgItemGd::getArtist () const
 {
     return m_artist;
@@ -135,6 +129,7 @@ int mgItemGd::getTrack () const
 
 mgItemGd::mgItemGd(const mgItemGd* c)
 {
+     m_covercount = 0;
      InitFrom(c);
 }
 
@@ -171,7 +166,7 @@ mgItemGd::getSourceFile(bool AbsolutePath,bool Silent) const
     	string result = m_mp3file;
 	if (m_validated && !m_valid)
 		return m_mp3file;
-	if (!readable(tld+"/"+result))
+	if (!readable(tld+'/'+result))
 	{
 		access_errno=errno;
 		result="";
@@ -216,10 +211,53 @@ mgItemGd::getSourceFile(bool AbsolutePath,bool Silent) const
 	return result;
 }
 
+string
+mgItemGd::getImagePath() const
+{
+	string result;
+	if (!m_coverimg.empty())
+	{
+		result = string(the_setup.ToplevelDir) + '/' + m_coverimg;
+		if (!readable(result))
+		{
+			analyze_failure(result);
+			m_coverimg="";
+		}
+		else
+			return result;
+	}
+	result = getSourceFile(true,true);
+	const char* jpg = ".jpg";
+	string::size_type dot = result.rfind('.');
+	if (dot==string::npos)
+		result += jpg;
+	else
+		result.replace(dot,999,jpg);
+	if (readable(result))
+		return result;
+	while (true)
+	{
+		m_covercount++;
+		result = getSourceFile();
+		dot = result.rfind('.');
+		if (dot==string::npos)
+			result += '.' + m_covercount + jpg;
+		else
+			result.replace(dot,999,'.' + m_covercount + jpg);
+		if (readable(result))
+			return result;
+		if (m_covercount == 1)
+			break;
+		m_covercount = 0;
+	}
+	return "";
+}
+
 mgItemGd::mgItemGd (char **row)
 {
     m_valid = true;
     m_validated = false;
+    m_covercount = 0;
     m_itemid = atol (row[0]);
     if (row[1])
 	m_title = row[1];
@@ -279,6 +317,10 @@ mgItemGd::mgItemGd (char **row)
     	m_tracknb = atol(row[14]);
     else
     	m_tracknb = 0;
+    if (row[15])
+    	m_coverimg = row[14];
+    else
+    	m_coverimg = "";
      m_language = KeyMaps.value(keyGdLanguage,m_language_id);
 };
 
