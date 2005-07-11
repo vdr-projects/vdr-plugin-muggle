@@ -33,7 +33,7 @@ mgSetup::mgSetup ()
     InitShuffleMode = 0;
     AudioMode = 1;
     DisplayMode = 3;
-    BackgrMode = 1;
+    BackgrMode = 2;
     TargetLevel = DEFAULT_TARGET_LEVEL;
     LimiterLevel = DEFAULT_LIMITER_LEVEL;
     Only48kHz = 0;
@@ -48,6 +48,10 @@ mgSetup::mgSetup ()
     ToplevelDir = strdup("/mnt/music/");
     CreateMode = false;
     DeleteStaleReferences = false;
+
+    // stuff related to cover image display
+    ImageCacheDir = strdup( "/tmp" );
+    UseDeviceStillPicture = true;
 }
 
 bool
@@ -71,6 +75,7 @@ mgSetup::~mgSetup ()
     free(DbPass);
     free(DbDatadir);
     free(ToplevelDir);
+    free(ImageCacheDir);
 }
 
 bool

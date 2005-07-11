@@ -28,6 +28,7 @@
 
 #include <mad.h>
 
+#include <linux/dvb/video.h>
 #include <player.h>
 #include <device.h>
 #include <thread.h>
@@ -203,23 +204,30 @@ class mgPCMPlayer:public cPlayer, cThread
         void ToggleLoop (void);
 
         virtual bool GetIndex (int &Current, int &Total, bool SnapToIFrame = false);
-//  bool GetPlayInfo(cMP3PlayInfo *rm); // LVW
+	//  bool GetPlayInfo(cMP3PlayInfo *rm); // LVW
 
         void ReloadPlaylist ();
         void NewPlaylist (mgSelection * plist);
+
         mgItemGd *getCurrent ()
         {
             return m_current;
         }
+
         mgSelection *getPlaylist ()
         {
             return m_playlist;
         }
+
+	// background image handling stuff
+	string m_current_image;
+	void CheckImage( string fileName, size_t j );
+	void ShowImage( );
+	void send_pes_packet(unsigned char *data, int len, int timestamp);	
 };
 
-mgPCMPlayer::mgPCMPlayer (mgSelection * plist):cPlayer (the_setup.
-BackgrMode ? pmAudioOnly :
-pmAudioOnlyBlack)
+mgPCMPlayer::mgPCMPlayer (mgSelection * plist)
+  : cPlayer(the_setup.BackgrMode? pmAudioOnlyBlack: pmAudioOnly )
 {
     m_playlist = plist;
 
@@ -416,6 +424,16 @@ mgPCMPlayer::Action (void)
                 {
                     m_index = 0;
                     m_playing = true;
+
+		    if( the_setup.BackgrMode == 2 )
+		      {
+			string img = m_current->getImagePath();
+			CheckImage( img, 0 );
+			if( ( !m_current_image.empty() ) || img != m_current_image )
+			  {
+			    ShowImage();
+			  }
+		      }
 
                     if (m_current)
                     {
@@ -926,232 +944,150 @@ bool mgPCMPlayer::GetIndex (int &current, int &total, bool snaptoiframe)
 }
 
 
-/*
-string mgPCMPlayer::CheckImage( string fileName, size_t j )
+void mgPCMPlayer::CheckImage( string filename, size_t j )
 {
-static char tmpFile[1024];
-char *tmp[2048];
-char *result = NULL;
-FILE *fp;
+  FILE *fp;
+  string tmpFile;
 
-sprintf (tmpFile, "%s/%s", MP3Setup.ImageCacheDir, &fileName[j]); // ???
-strcpy (strrchr (tmpFile, '.'), ".mpg");
-d(printf("mp3[%d]: cache %s\n", getpid (), tmpFile))
-if ((fp = fopen (tmpFile, "rb")))
-{
-fclose (fp);
-result = tmpFile;
-}
-else
-{
-if ((fp = fopen (fileName, "rb")))
-{
-fclose (fp);
-d(printf("mp3[%d]: image %s found\n", getpid (), fileName))
-sprintf ((char *) tmp, "image_convert.sh \"%s\" \"%s\"", fileName, tmpFile);
-system ((const char*) tmp);
-result = tmpFile;
-}
-}
-fp = fopen ("/tmp/vdr_mp3_current_image.txt", "w");
-fprintf (fp, "%s\n", fileName);
-fclose (fp);
-return result;
-}
+  // determine the filename of a (to be) cached .mpg file
+  unsigned dotpos = filename.rfind( ".", filename.length() );
+  if( dotpos == string::npos )
+    {
+      // use DefaultImagePath as a backup (a full path)
+      filename = string( the_setup.ToplevelDir ) + string( "/background.jpg");
+      dotpos = filename.rfind( ".", filename.length() );
+    }
 
-char *cMP3Player::LoadImage(const char *fullname)
-{
-size_t i, j = strlen (MP3Sources.GetSource()->BaseDir()) + 1;
-char imageFile[1024];
-static char mpgFile[1024];
-char *p, *q = NULL;
-char *imageSuffixes[] = { "png", "gif", "jpg" };
+  // assemble path from relative paths
+  tmpFile = string( the_setup.ImageCacheDir ) + string( "/" ) + filename.substr( j, dotpos ) + string( ".mpg" );
 
-d(printf("mp3[%d]: checking %s for images\n", getpid (), fullname))
-strcpy (imageFile, fullname);
-strcpy (mpgFile, "");
-//
-// track specific image, e.g. <song>.jpg
-//
-p = strrchr (imageFile, '.');
-if (p)
-{
-for (i = 0; i < sizeof (imageSuffixes) / sizeof (imageSuffixes[0]); i++)
-{
-strcpy (p + 1, imageSuffixes[i]);
-d(printf("mp3[%d]: %s\n", getpid (), imageFile))
-q = CheckImage (imageFile, j);
-if (q)
-{
-strcpy (mpgFile, q);
-}
-}
-}
-//
-// album specific image, e.g. cover.jpg in song directory
-//
-if (!strlen (mpgFile))
-{
-p = strrchr (imageFile, '/');
-if (p)
-{
-strcpy (p + 1, "cover.");
-p += 6;
-for (i = 0; i < sizeof (imageSuffixes) / sizeof (imageSuffixes[0]); i++)
-{
-strcpy (p + 1, imageSuffixes[i]);
-d(printf("mp3[%d]: %s\n", getpid (), imageFile))
-q = CheckImage (imageFile, j);
-if (q)
-{
-strcpy (mpgFile, q);
-}
-}
-}
-}
-//
-// artist specific image, e.g. artist.jpg in artist directory
-//
-if (!strlen (mpgFile))
-{
-p = strrchr (imageFile, '/');
-if (p)
-{
-*p = '\0';
-p = strrchr (imageFile, '/');
-}
-if (p)
-{
-strcpy (p + 1, "artist.");
-p += 7;
-for (i = 0; i < sizeof (imageSuffixes) / sizeof (imageSuffixes[0]); i++)
-{
-strcpy (p + 1, imageSuffixes[i]);
-d(printf("mp3[%d]: %s\n", getpid (), imageFile))
-q = CheckImage (imageFile, j);
-if (q)
-{
-strcpy (mpgFile, q);
-}
-}
-}
-}
-//
-// default background image
-//
-if (!strlen (mpgFile))
-{
-for (i = 0; i < sizeof (imageSuffixes) / sizeof (imageSuffixes[0]); i++)
-{
-sprintf (imageFile, "%s/background.%s", MP3Setup.ImageCacheDir, imageSuffixes[i]);
-d(printf("mp3[%d]: %s\n", getpid (), imageFile))
-q = CheckImage (imageFile, strlen(MP3Setup.ImageCacheDir) + 1);
-if (q)
-{
-strcpy (mpgFile, q);
-}
-}
-}
-if (!strlen (mpgFile))
-{
-sprintf (mpgFile, "%s/background.mpg", MP3Setup.ImageCacheDir);
-}
-return mpgFile;
+  // now filename and tmpFile are absolute path specs
+
+  // if this cached file can be opened, use it
+  if( (fp = fopen( tmpFile.c_str(), "rb" )) )
+    {
+      fclose(fp);
+    }
+  else
+    {
+      // otherwise run the image conversion
+      if( (fp = fopen( filename.c_str(), "rb" )) )
+	{
+	  char *tmp;
+	  // filename can be opened
+	  fclose (fp);
+	  
+	  cout << "Converting " << filename << " to " << tmpFile << endl << flush;
+	  asprintf( &tmp, "/image_convert.sh \"%s\" \"%s\"", filename.c_str(), tmpFile.c_str() );
+	  system( (const char*) tmp );
+	  delete tmp;
+	}
+    }
+  
+  m_current_image = tmpFile;
+
+  fp = fopen( "/tmp/vdr_mp3_current_image.txt", "w" );
+  fprintf( fp, "%s\n", filename.c_str() );
+  fclose( fp );
 }
 
-void mgPCMPlayer::ShowImage (char *file)
+void mgPCMPlayer::ShowImage( )
 {
-uchar *buffer;
-int fd;
-struct stat st;
-struct video_still_picture sp;
+  // show image .mpg referred in m_current_image
 
-if ((fd = open (file, O_RDONLY)) >= 0)
-{
-d(printf("mp3[%d]: cover still picture %s\n", getpid (), file))
-fstat (fd, &st);
-sp.iFrame = (char *) malloc (st.st_size);
-if (sp.iFrame)
-{
-sp.size = st.st_size;
-if (read (fd, sp.iFrame, sp.size) > 0)
-{
-buffer = (uchar *) sp.iFrame;
-d(printf("mp3[%d]: new image frame (size %d)\n", getpid(), sp.size))
-if(MP3Setup.UseDeviceStillPicture)
-DeviceStillPicture (buffer, sp.size);
-else
-{
-for (int i = 1; i <= 25; i++)
-{
-send_pes_packet (buffer, sp.size, i);
-}
-}
-}
-free (sp.iFrame);
-}
-else
-{
-esyslog ("mp3[%d]: cannot allocate memory (%d bytes) for still image",
-getpid(), (int) st.st_size);
-}
-close (fd);
-}
-else
-{
-esyslog ("mp3[%d]: cannot open image file '%s'",
-getpid(), file);
-}
+  uchar *buffer;
+  int fd;
+  struct stat st;
+  struct video_still_picture sp;
+  
+  if( (fd = open( m_current_image.c_str(), O_RDONLY ) ) >= 0 )
+    {
+      fstat (fd, &st);
+      sp.iFrame = (char *) malloc (st.st_size);
+      if( sp.iFrame )
+	{
+	  sp.size = st.st_size;
+	  if( read (fd, sp.iFrame, sp.size) > 0 )
+	    {
+	      buffer = (uchar *) sp.iFrame;
+
+	      
+	      if( the_setup.UseDeviceStillPicture )
+		{
+		  DeviceStillPicture( buffer, sp.size );
+		}
+	      else
+		{
+		  for (int i = 1; i <= 25; i++)
+		    {
+		      send_pes_packet (buffer, sp.size, i);
+		    }
+		}
+	    }
+	  free (sp.iFrame);
+	}
+      else
+	{
+	  esyslog ("mp3[%d]: cannot allocate memory (%d bytes) for still image",
+		   getpid(), (int) st.st_size);
+	}
+      close (fd);
+    }
+  else
+    {
+      esyslog ("mp3[%d]: cannot open image file '%s'",
+	       getpid(), m_current_image.c_str() );
+    }
 }
 
 void mgPCMPlayer::send_pes_packet(unsigned char *data, int len, int timestamp)
 {
 #define PES_MAX_SIZE 2048
-int ptslen = timestamp ? 5 : 1;
-static unsigned char pes_header[PES_MAX_SIZE];
+  int ptslen = timestamp ? 5 : 1;
+  static unsigned char pes_header[PES_MAX_SIZE];
 
-pes_header[0] = pes_header[1] = 0;
-pes_header[2] = 1;
-pes_header[3] = 0xe0;
+  pes_header[0] = pes_header[1] = 0;
+  pes_header[2] = 1;
+  pes_header[3] = 0xe0;
 
-while(len > 0)
-{
-int payload_size = len;
-if(6 + ptslen + payload_size > PES_MAX_SIZE)
-payload_size = PES_MAX_SIZE - (6 + ptslen);
+  while(len > 0)
+    {
+      int payload_size = len;
+      if(6 + ptslen + payload_size > PES_MAX_SIZE)
+	payload_size = PES_MAX_SIZE - (6 + ptslen);
+      
+      pes_header[4] = (ptslen + payload_size) >> 8;
+      pes_header[5] = (ptslen + payload_size) & 255;
 
-pes_header[4] = (ptslen + payload_size) >> 8;
-pes_header[5] = (ptslen + payload_size) & 255;
-
-if(ptslen == 5)
-{
-int x;
-x = (0x02 << 4) | (((timestamp >> 30) & 0x07) << 1) | 1;
-pes_header[8] = x;
-x = ((((timestamp >> 15) & 0x7fff) << 1) | 1);
-pes_header[7] = x >> 8;
-pes_header[8] = x & 255;
-x = ((((timestamp) & 0x7fff) < 1) | 1);
-pes_header[9] = x >> 8;
-pes_header[10] = x & 255;
-} else
-{
-pes_header[6] = 0x0f;
-}
-
-memcpy(&pes_header[6 + ptslen], data, payload_size);
+      if(ptslen == 5)
+	{
+	  int x;
+	  x = (0x02 << 4) | (((timestamp >> 30) & 0x07) << 1) | 1;
+	  pes_header[8] = x;
+	  x = ((((timestamp >> 15) & 0x7fff) << 1) | 1);
+	  pes_header[7] = x >> 8;
+	  pes_header[8] = x & 255;
+	  x = ((((timestamp) & 0x7fff) < 1) | 1);
+	  pes_header[9] = x >> 8;
+	  pes_header[10] = x & 255;
+	} 
+      else
+	{
+	  pes_header[6] = 0x0f;
+	}
+      
+      memcpy(&pes_header[6 + ptslen], data, payload_size);
 #if VDRVERSNUM >= 10318
-PlayPes(pes_header, 6 + ptslen + payload_size);
+      PlayPes(pes_header, 6 + ptslen + payload_size);
 #else
-PlayVideo(pes_header, 6 + ptslen + payload_size);
+      PlayVideo(pes_header, 6 + ptslen + payload_size);
 #endif
-
-len -= payload_size;
-data += payload_size;
-ptslen = 1;
+      
+      len -= payload_size;
+      data += payload_size;
+      ptslen = 1;
+    }
 }
-}
-*/
 
 // --- mgPlayerControl -------------------------------------------------------
 

@@ -50,8 +50,13 @@ class mgSetup
         char *DbUser;
         char *DbPass;
 	char *DbDatadir;
+
         int DbPort;
         char *ToplevelDir;
+
+	char *ImageCacheDir;
+	bool UseDeviceStillPicture;
+
 	int DeleteStaleReferences;
 	bool CreateMode;
 	bool IsMugglei() const;

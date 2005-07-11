@@ -11,12 +11,12 @@ PLUGIN = muggle
 
 #if you want ogg / flac support, define HAVE_VORBISFILE and/or HAVE_FLAC
 #in $VDRDIR/Make.config like this:
-# HAVE_VORBISFILE=1
-# HAVE_FLAC=1
+HAVE_VORBISFILE=1
+HAVE_FLAC=1
 
 #if you do not want to compile in code for embedded mysql,
 #define this in $VDRDIR/Make.config:
-# HAVE_ONLY_SERVER=1
+HAVE_ONLY_SERVER=1
 
 #define what database you want to use. Default is mysql. HAVE_SQLITE
 #removes mysql support and adds SQLite support
@@ -86,6 +86,7 @@ SQLLIBS += -lsqlite3
 DB_OBJ = mg_db_gd_sqlite.o
 DEFINES += -DHAVE_SQLITE
 endif
+
 ifdef HAVE_MYSQL
 INCLUDES += $(shell mysql_config --cflags) 
 DB_OBJ = mg_db_gd_mysql.o
@@ -97,6 +98,7 @@ else
 SQLLIBS = $(shell mysql_config --libmysqld-libs) 
 endif
 endif
+
 ifdef HAVE_PG
 INCLUDES += -I$(shell pg_config --includedir) 
 SQLLIBS =  -L$(shell pg_config --libdir) -lpq
@@ -140,7 +142,7 @@ mg_tables.h:	scripts/genres.txt scripts/iso_639.xml scripts/musictypes.txt scrip
 	scripts/gentables
 
 # das hier nur voruebergehend, zum einfacheren Testen, ob noch alles kompiliert:
-libvdr-$(PLUGIN).so: $(OBJS) mg_db_gd_pg.o mg_db_gd_sqlite.o mg_db_gd_mysql.o
+libvdr-$(PLUGIN).so: $(OBJS) $(DB_OBJ) mg_db_gd_mysql.o # mg_db_gd_sqlite.o mg_db_gd_pg.o 
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(PLAYLIBS) $(SQLLIBS) -o $@
 	@cp $@ $(LIBDIR)/$@.$(VDRVERSION)
 

@@ -318,7 +318,7 @@ mgItemGd::mgItemGd (char **row)
     else
     	m_tracknb = 0;
     if (row[15])
-    	m_coverimg = row[14];
+      m_coverimg = row[14];
     else
     	m_coverimg = "";
      m_language = KeyMaps.value(keyGdLanguage,m_language_id);

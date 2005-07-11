@@ -29,31 +29,31 @@
 mgMenuSetup::mgMenuSetup ()
 {
     SetSection (tr ("Muggle"));
-
+    
     Add (new
-        cMenuEditBoolItem (tr ("Setup.Muggle$Initial loop mode"),
-        &the_setup.InitLoopMode));
+	 cMenuEditBoolItem (tr ("Setup.Muggle$Initial loop mode"),
+			    &the_setup.InitLoopMode));
     Add (new
 	 cMenuEditBoolItem (tr ("Setup.Muggle$Initial shuffle mode"),
 			    &the_setup.InitShuffleMode));
     Add (new
-        cMenuEditBoolItem (tr ("Setup.Muggle$Audio mode"), &the_setup.AudioMode,
-        tr ("Round"), tr ("Dither")));
+	 cMenuEditBoolItem (tr ("Setup.Muggle$Audio mode"), &the_setup.AudioMode,
+			    tr ("Round"), tr ("Dither")));
     Add (new
-        cMenuEditBoolItem (tr ("Setup.Muggle$Use 48kHz mode only"),
-        &the_setup.Only48kHz));
+	 cMenuEditBoolItem (tr ("Setup.Muggle$Use 48kHz mode only"),
+			    &the_setup.Only48kHz));
     Add (new
-        cMenuEditIntItem (tr ("Setup.Muggle$Display mode"),
-        &the_setup.DisplayMode, 1, 3));
+	 cMenuEditIntItem (tr ("Setup.Muggle$Display mode"),
+			   &the_setup.DisplayMode, 1, 3));
     Add (new
-        cMenuEditBoolItem (tr ("Setup.Muggle$Background mode"),
-        &the_setup.BackgrMode, tr ("Black"), tr ("Live")));
+	 cMenuEditIntItem (tr ("Setup.Muggle$Background mode"),
+			   &the_setup.BackgrMode, 1, 3 ) );
     Add (new
-        cMenuEditIntItem (tr ("Setup.Muggle$Normalizer level"),
-        &the_setup.TargetLevel, 0, MAX_TARGET_LEVEL));
+	 cMenuEditIntItem (tr ("Setup.Muggle$Normalizer level"),
+			   &the_setup.TargetLevel, 0, MAX_TARGET_LEVEL));
     Add (new
-        cMenuEditIntItem (tr ("Setup.Muggle$Limiter level"),
-        &the_setup.LimiterLevel, MIN_LIMITER_LEVEL, 100));
+	 cMenuEditIntItem (tr ("Setup.Muggle$Limiter level"),
+			   &the_setup.LimiterLevel, MIN_LIMITER_LEVEL, 100));
     Add (new
 	 cMenuEditBoolItem (tr ("Setup.Muggle$Delete stale references"),
 			    &the_setup.DeleteStaleReferences));
