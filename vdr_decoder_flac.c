@@ -258,7 +258,6 @@ mgFlacDecoder::write_callback(const ::FLAC__Frame *frame,
   m_current_samples += m_len_decoded;
   m_current_time_ms += (m_len_decoded*1000) / m_pcm->samplerate; // in milliseconds
 
-  // cout << "Samples decoded: " << m_len_decoded << ", current time: " << m_current_time_ms << ", bits per sample: "<< m_nBitsPerSample << endl << flush;
 
   // append buffer to m_reservoir
   if( m_len_decoded > 0 )
@@ -287,20 +286,20 @@ void mgFlacDecoder::metadata_callback( const ::FLAC__StreamMetadata *metadata )
 
   if(metadata->type == FLAC__METADATA_TYPE_STREAMINFO) 
     {
-      m_nTotalSamples = (unsigned)(metadata->data.stream_info.total_samples & 0xfffffffful);
+      m_nTotalSamples = (long)(metadata->data.stream_info.total_samples & 0xfffffffful);
       m_nBitsPerSample = metadata->data.stream_info.bits_per_sample;
       m_nCurrentChannels = metadata->data.stream_info.channels;
       m_nCurrentSampleRate = metadata->data.stream_info.sample_rate;
       m_nFrameSize = metadata->data.stream_info.max_framesize;
       m_nBlockSize = metadata->data.stream_info.max_blocksize;
 
-      m_nCurrentSampleRate = (int)get_sample_rate();
+      // m_nCurrentSampleRate = (int)get_sample_rate();
       m_nCurrentChannels = (int)get_channels();
       m_nCurrentBitsPerSample = (int)get_bits_per_sample();
-
-      // m_nLengthMS = m_nTotalSamples * 10 / (m_nCurrentSampleRate / 100);      
       m_nBlockAlign = (m_nBitsPerSample / 8) * m_nCurrentChannels;
-      
+      m_nLengthMS = m_nTotalSamples / m_nCurrentSampleRate;
+      m_nLengthMS *= 1000;
+
       // m_nAverageBitRate = ((m_pReader->GetLength() * 8) / (m_nLengthMS / 1000) / 1000);
       // m_nCurrentBitrate = m_nAverageBitRate;
     }
@@ -342,10 +341,17 @@ bool mgFlacDecoder::skip(int seconds, int avail, int rate)
 
   if( m_playing )
     {
-      const long target_time_ms = ((seconds-avail)*rate / 1000) + m_current_time_ms;
+      float bufsecs = (float) avail / (float) (rate * (16 / 8 * 2));
+
+      const long target_time_ms = ( ( seconds - (int)bufsecs ) * 1000) + m_current_time_ms;
       const double distance =  target_time_ms / (double)m_nLengthMS;
-      const unsigned target_sample = (unsigned)(distance * (double)m_nTotalSamples);
-      
+      const long target_sample = (unsigned)(distance * (double)m_nTotalSamples);
+
+      if( target_sample < 0 )
+	{
+	  target_sample = 0;
+	}
+
       if( seek_absolute( (FLAC__uint64)target_sample) )
 	{
 	  m_current_time_ms = target_time_ms;

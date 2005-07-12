@@ -914,18 +914,20 @@ void
 mgPCMPlayer::SkipSeconds (int secs)
 {
     if (m_playmode != pmStopped)
-    {
+      {
         Lock ();
+
         if (m_playmode == pmPaused)
-        {
+	  {
             SetPlayMode (pmPlay);
-        }
-        if (m_decoder
-            && m_decoder->skip (secs, m_ringbuffer->Available (),
-            dvbSampleRate))
-        {
+	  }
+        if ( m_decoder
+             && m_decoder->skip (secs, m_ringbuffer->Available(),
+				 dvbSampleRate) )
+	  {
             levelgood = false;
-        }
+	  }
+
         Empty ();
         Unlock ();
     }
@@ -1191,11 +1193,11 @@ mgPlayerControl::Backward (void)
 
 
 void
-mgPlayerControl::SkipSeconds (int Seconds)
+mgPlayerControl::SkipSeconds(int Seconds)
 {
     if (player)
     {
-        player->SkipSeconds (Seconds);
+        player->SkipSeconds(Seconds);
     }
 }
 
@@ -1522,17 +1524,26 @@ eOSState mgPlayerControl::ProcessKey (eKeys key)
             case kUp:
             {
                 if (m_visible && !m_progress_view && !m_track_view)
-			Backward();
+		  {
+		    Backward();
+		  }
 		else
-			Forward ();
+		  {
+		    Forward ();
+		  }
+		Display();
             }
             break;
             case kDown:
             {
                 if (m_visible && !m_progress_view && !m_track_view)
-			Forward ();
+		  {
+		    Forward ();
+		  }
 		else
-			Backward();
+		  {
+		    Backward();
+		  }
             }
             break;
             case kRed:
@@ -1658,6 +1669,16 @@ eOSState mgPlayerControl::ProcessKey (eKeys key)
                 return osEnd;
             }
             break;
+	    case kLeft:
+	    {
+	      SkipSeconds( -60 );
+	      Display();
+	    } break;
+	    case kRight:
+	    {
+	      SkipSeconds( 60 );
+	      Display();
+	    } break;
             default:
             {
                 return osUnknown;

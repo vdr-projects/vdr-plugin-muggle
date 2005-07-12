@@ -396,7 +396,7 @@ int secs, int avail, int dvbrate)
 }
 
 
-bool mgMP3Decoder::skip (int seconds, int avail, int rate)
+bool mgMP3Decoder::skip(int seconds, int avail, int rate)
 {
     lock ();
 
