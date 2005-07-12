@@ -36,6 +36,7 @@
 #include <tools.h>
 #include <recording.h>
 #include <status.h>
+#include <plugin.h>
 
 #include "vdr_player.h"
 #include "vdr_decoder.h"
@@ -223,6 +224,7 @@ class mgPCMPlayer:public cPlayer, cThread
 	string m_current_image;
 	void CheckImage( string fileName, size_t j );
 	void ShowImage( );
+	void TransferImageTFT( string cover );
 	void send_pes_packet(unsigned char *data, int len, int timestamp);	
 };
 
@@ -425,9 +427,14 @@ mgPCMPlayer::Action (void)
                     m_index = 0;
                     m_playing = true;
 
+		    string img = m_current->getImagePath();
+
+		    // check for TFT display of image
+		    TransferImageTFT( img );
+
+		    // check for background display of image
 		    if( the_setup.BackgrMode == 2 )
 		      {
-			string img = m_current->getImagePath();
 			CheckImage( img, 0 );
 			if( ( !m_current_image.empty() ) || img != m_current_image )
 			  {
@@ -1089,6 +1096,16 @@ void mgPCMPlayer::send_pes_packet(unsigned char *data, int len, int timestamp)
       data += payload_size;
       ptslen = 1;
     }
+}
+
+void mgPCMPlayer::TransferImageTFT( string cover )
+{
+  cPlugin * graphtft = cPluginManager::GetPlugin("graphtft");
+  
+  if( graphtft ) 
+    {
+      graphtft->SetupParse( "CoverImage", cover.c_str() );
+    } 
 }
 
 // --- mgPlayerControl -------------------------------------------------------
