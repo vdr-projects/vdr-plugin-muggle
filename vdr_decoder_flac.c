@@ -347,17 +347,21 @@ bool mgFlacDecoder::skip(int seconds, int avail, int rate)
       const double distance =  target_time_ms / (double)m_nLengthMS;
       const long target_sample = (unsigned)(distance * (double)m_nTotalSamples);
 
-      if( target_sample < 0 )
+      if( target_sample > 0 )
 	{
-	  target_sample = 0;
-	}
-
-      if( seek_absolute( (FLAC__uint64)target_sample) )
-	{
-	  m_current_time_ms = target_time_ms;
+	  if( seek_absolute( (FLAC__uint64)target_sample) )
+	    {
+	      m_current_time_ms = target_time_ms;
+	    }
+	  else
+	    {
+	      seek_absolute( 0 );
+	      m_current_time_ms = 0;
+	    }
 	  res = true;
 	}
     }
+  
   unlock();
   return res;
 }
