@@ -171,7 +171,6 @@ class mgDb {
   	virtual bool Connect() = 0;
   	bool HasFolderFields() const { return m_hasfolderfields;}
   	virtual bool Create() = 0;
-	virtual void ServerEnd() {};		// must be done explicitly. Will be called with this==0
 	virtual int AddToCollection( const string Name,const vector<mgItem*>&items,mgParts* what=0);
 	virtual int RemoveFromCollection( const string Name,const vector<mgItem*>&items,mgParts* what=0);
 	virtual bool DeleteCollection( const string Name);
@@ -188,7 +187,7 @@ class mgDb {
 	int Execute(const string sql);
 	virtual const char* Options() const =0;
 	virtual const char* HelpText() const =0;
-	virtual void* DbHandle() const =0;
+	void* DbHandle();
 	virtual const char* DecadeExpr()=0;
 	virtual string Now() const =0;
 	virtual string Directory() const =0;
@@ -208,6 +207,7 @@ class mgDb {
 	virtual void Commit() {};
 	virtual bool SyncStart();
 	virtual void CreateFolderFields() {};
+	virtual void* ImplDbHandle() const = 0;
    private:
 	TagLib::String m_TLAN;
 	TagLib::String m_TCON;
@@ -300,5 +300,14 @@ class mgKeyMaps {
 
 extern mgKeyMaps KeyMaps;
 
+class mgDbServer {
+	public:
+		mgDbServer() {};
+		mgDb* EscapeDb() const { return m_escape_db; }
+	protected:
+		mgDb* m_escape_db;
+};
+
+extern mgDbServer* DbServer;
 
 #endif

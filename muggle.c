@@ -53,8 +53,8 @@ mgMuggle::mgMuggle (void)
 void
 mgMuggle::Stop (void)
 {
-	mgDb *db = 0;
-	//db->ServerEnd(); \todo class Server replaces mysqlhandle_t
+	delete DbServer;
+	DbServer = 0;
 }
 
 

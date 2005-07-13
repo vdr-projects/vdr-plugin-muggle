@@ -14,7 +14,7 @@
 #include <string>
 #include <tag.h>
 #include <map>
-#include <postgresql/libpq-fe.h>
+#include <libpq-fe.h>
 
 using namespace std;
 
@@ -61,7 +61,7 @@ class mgDbGd : public mgDb {
 	void SyncFile(const char *filename);
 	void StartTransaction();
 	void Commit();
-	void *DbHandle() const { return (void*)m_db;}
+	void *ImplDbHandle() const { return (void*)m_db;}
    private:
 	bool myCreate();
 	PGconn *m_db;

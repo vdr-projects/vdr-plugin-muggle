@@ -36,6 +36,7 @@ using namespace std;
 static map <mgKeyTypes, map<string,string> > map_values;
 static map <mgKeyTypes, map<string,string> > map_ids;
 
+mgDbServer* DbServer;
 
 mgSQLString::~mgSQLString()
 {
@@ -238,6 +239,12 @@ mgDb::mgDb(bool SeparateThread)
 
 mgDb::~mgDb()
 {
+}
+
+void *
+mgDb::DbHandle() {
+	ServerConnect();
+	return ImplDbHandle();
 }
 
 string
@@ -1559,4 +1566,3 @@ mgKeyGdCollectionItem::Parts(mgDb *db,bool groupby) const
 	}
 	return result;
 }
-

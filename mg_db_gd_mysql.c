@@ -22,8 +22,6 @@
 
 using namespace std;
 
-static MYSQL* escape_db;
-
 mgSQLStringMySQL::~mgSQLStringMySQL()
 {
 	if (m_unquoted)
@@ -43,8 +41,9 @@ mgSQLStringMySQL::unquoted() const
 	{
 		int buflen=2*strlen(m_original)+3;
   		m_unquoted = (char *) malloc( buflen);
-  		if (escape_db)
-  			mysql_real_escape_string( escape_db,
+		mgDb* esc = DbServer->EscapeDb();
+  		if (esc)
+  			mysql_real_escape_string( (MYSQL*)esc->DbHandle(),
 				m_unquoted, m_original, strlen(m_original) );
   		else
 			strcpy(m_unquoted,m_original);
@@ -112,27 +111,19 @@ mgDbGd::HelpText() const
 mgDb* GenerateDB(bool SeparateThread)
 {
 	// \todo should return different backends according to the_setup.Variant
+	if (!DbServer)
+		DbServer = new mgDbServerMySQL;
 	return new mgDbGd(SeparateThread);
 }
 
 static bool needGenre2;
 static bool needGenre2_set=false;
 
-class mysqlhandle_t {
-	public:
-		mysqlhandle_t();
-		~mysqlhandle_t();
-};
-
-static mysqlhandle_t* mysqlhandle;
-
 bool UsingEmbeddedMySQL();
 
 mgDbGd::mgDbGd(bool SeparateThread)
 {
         m_db = 0;
-        if (!mysqlhandle)
-                mysqlhandle = new mysqlhandle_t;
 	if (m_separate_thread)
 	{
 		if (Threadsafe())
@@ -144,8 +135,8 @@ mgDbGd::mgDbGd(bool SeparateThread)
 
 mgDbGd::~mgDbGd()
 {
-  if (m_db && m_db!=escape_db)
-	  mysql_close (m_db);
+  if (m_db)
+	 mysql_close (m_db);
   m_db = 0;
 #if MYSQL_VERSION_ID >=400000
   if (m_separate_thread)
@@ -182,7 +173,7 @@ wrong_embedded_mysql_for_external_server(int version)
 }
 #endif
 
-mysqlhandle_t::mysqlhandle_t()
+mgDbServerMySQL::mgDbServerMySQL()
 {
 #ifndef HAVE_ONLY_SERVER
 	static char *mysql_embedded_groups[] =
@@ -228,12 +219,13 @@ mysqlhandle_t::mysqlhandle_t()
 		abort();
 	}
 #endif
+	m_escape_db = new mgDbGd;
 }
 
-mysqlhandle_t::~mysqlhandle_t()
+mgDbServerMySQL::~mgDbServerMySQL()
 {
-	if (escape_db)
-		mysql_close(escape_db);
+	delete m_escape_db;
+	m_escape_db=0;
 #ifndef HAVE_ONLY_SERVER
   mgDebug(3,"calling mysql_server_end");
   	mysql_server_end();
@@ -505,8 +497,6 @@ mgDbGd::ServerConnect ()
 		m_db = 0;
     	}
     }
-    if (!escape_db)
-	    escape_db = m_db;
     return m_db!=0;
 }
 
@@ -557,13 +547,6 @@ mgDbGd::NeedGenre2()
 	needGenre2=exec_count("SELECT COUNT(DISTINCT genre2) FROM tracks")>1;
     }
     return needGenre2;
-}
-
-void
-mgDbGd::ServerEnd()
-{
-	delete mysqlhandle;
-	mysqlhandle=0;
 }
 
 void

@@ -23,7 +23,7 @@
 #include "mg_item_gd.h"
 #include "mg_db_gd_pg.h"
 
-#include <postgresql/pg_config.h>
+#include <pg_config.h>
 
 using namespace std;
 

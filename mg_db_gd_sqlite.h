@@ -52,7 +52,7 @@ class mgDbGd : public mgDb {
 	bool Threadsafe();
 	const char* Options() const;
 	const char* HelpText() const;
-	void *DbHandle() const { return m_db; }
+	void *ImplDbHandle() const { return m_db; }
 	const char *DecadeExpr();
 	string Now() const { return "strftime('%s','now')"; }
 	string Directory() const { return "mgDirectory(mp3file)"; }

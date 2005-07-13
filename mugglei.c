@@ -91,8 +91,8 @@ int main( int argc, char *argv[] )
   {
   	mgDb *sync = GenerateDB();
 	sync->Sync(argv+optind);
-  	sync->ServerEnd();
   	delete sync;
+	delete DbServer;
   }
   return 0;
 }

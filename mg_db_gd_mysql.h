@@ -37,7 +37,6 @@ class mgDbGd : public mgDb {
 	bool Threadsafe();
 	const char* HelpText() const;
 	const char *Options() const;
-	void *DbHandle() const { return (void*)m_db; }
 	const char *DecadeExpr();
 	string Now() const { return "CURRENT_TIMESTAMP"; }
 	string Directory() const { return "substring(tracks.mp3file,1,length(tracks.mp3file)"
@@ -46,12 +45,19 @@ class mgDbGd : public mgDb {
 	void SyncFile(const char *filename);
 	void StartTransaction();
 	void Commit();
+	void *ImplDbHandle() const { return (void*)m_db; }
    private:
 	MYSQL *m_db;
 	void CreateFolderFields();
 	MYSQL_RES* Query( const string sql);
   	bool sql_query(string sql);
 
+};
+
+class mgDbServerMySQL : public mgDbServer {
+	public:
+		mgDbServerMySQL();
+		~mgDbServerMySQL();
 };
 
 class mgSQLStringMySQL : public mgSQLStringImp {
