@@ -177,7 +177,7 @@ class mgDb {
 	virtual void ClearCollection( const string Name);
 	virtual bool CreateCollection( const string Name);
 
-	void Sync(char * const * path_argv = 0);
+	void Sync(char * const * path_argv);
 	virtual bool FieldExists(string table, string field)=0;
 	void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap);
 	string LoadItemsInto(mgParts& what,vector<mgItem*>& items);
@@ -195,7 +195,7 @@ class mgDb {
 	int m_rows;
 	int m_cols;
 	virtual void SyncEnd() {}
-	void SyncFile(const char *filename);
+	bool SyncFile(const char *filename);
   	bool m_database_found;
   	bool m_hasfolderfields;
 	bool m_separate_thread;

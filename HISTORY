@@ -228,3 +228,7 @@ xxxxxxxx: Version 0.1.8-BETA
 - import items from the setup menu: This is done by a background thread.
   Those threads are not allowed to access the OSD, so we removed the
   status messages of the import progress.
+- mugglei: import counter counts only successes.
+- mugglei: do not change directory to TLD before starting the import.
+  mugglei has to be started in TLD or below. This way wildcards will
+  always be expanded as expected.

@@ -1216,6 +1216,8 @@ import()
     mgThreadSync *s = mgThreadSync::get_instance();
     if (!s)
 	    return false;
-    s->Sync();
+    static char *tld_arg[] = { 0, 0};
+    tld_arg[0] = the_setup.ToplevelDir;
+    s->Sync(tld_arg);
     return true;
 }

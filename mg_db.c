@@ -317,14 +317,8 @@ mgDb::Sync(char * const * path_argv)
 	}
 
 	unsigned int importcount=0;
-	chdir(the_setup.ToplevelDir);
 	FTS *fts;
 	FTSENT *ftsent;
-	if (!path_argv)
-	{
-		static char *default_args[] = { ".", 0};
-		path_argv = default_args;
-	}
 	fts = fts_open( path_argv, FTS_LOGICAL, 0);
 	if (fts)
 	{
@@ -335,8 +329,8 @@ mgDb::Sync(char * const * path_argv)
 				mgDebug(1,"Importing from %s",ftsent->fts_path);
 			if (!(mode&S_IFREG))
 				continue;
-			SyncFile(ftsent->fts_path);
-			importcount++;
+			if (SyncFile(ftsent->fts_path))
+				importcount++;
 			if (importcount%1000==0)
 				showimportcount(importcount);
 		}
@@ -1051,14 +1045,14 @@ mgDb::getGenre1(TagLib::FileRef& f)
 	return m_Genres[genre1];
 }
 
-void
+bool
 mgDb::SyncFile(const char *filename)
 {
       	char *ext = extension(filename);
 	if (strcasecmp(ext,"flac")
 		&& strcasecmp(ext,"ogg")
 		&& strcasecmp(ext,"mp3"))
-		return;
+		return false;
 	if (!strncmp(filename,"./",2))	// strip leading ./
 		filename += 2;
 	const char *cfilename=filename;
@@ -1067,13 +1061,13 @@ mgDb::SyncFile(const char *filename)
 	if (strlen(cfilename)>255)
 	{
 		mgWarning("Length of file exceeds database field capacity: %s", filename);
-		return;
+		return false;
 	}
 	TagLib::FileRef f( filename) ;
 	if (f.isNull())
-		return;
+		return false;
 	if (!f.tag())
-		return;
+		return false;
 	mgDebug(2,"Importing %s",filename);
         TagLib::AudioProperties *ap = f.audioProperties();
 	get_ID3v2_Tags(filename);
@@ -1123,6 +1117,7 @@ mgDb::SyncFile(const char *filename)
 			c_folder3.quoted(),c_folder4.quoted());
 	}
 	Execute(sql);
+	return true;
 }
 
 string

@@ -63,6 +63,23 @@ const char *I18nTranslate(const char *s,const char *Plugin)
 	return s;
 }
 
+bool
+path_within_tld()
+{
+	char path[5000];
+	if (!getcwd(path,4999))
+	{
+		std::cout << "Path too long" << std::endl;
+		exit (1);
+	}
+  	int tldlen = strlen(the_setup.ToplevelDir);
+	strcat(path,"/");
+	int pathlen = strlen(path);
+	if (pathlen<tldlen)
+		return false;
+  	return !strncmp(path,the_setup.ToplevelDir,tldlen);
+}
+
 int main( int argc, char *argv[] )
 {
 	the_setup.SetMugglei();
@@ -83,10 +100,17 @@ int main( int argc, char *argv[] )
       std::cout << "Options:" << std::endl;
       std::cout << the_setup.HelpText();
 
-      exit( 1 );
+      exit( 2 );
     }
 
   the_setup.ProcessArguments(argc,argv);
+
+  if (!path_within_tld())
+  {
+      std::cout << "you should be in " << the_setup.ToplevelDir
+	      << " or below" << std::endl;
+      exit( 2 );
+  }
   if (optind<argc)
   {
   	mgDb *sync = GenerateDB();
