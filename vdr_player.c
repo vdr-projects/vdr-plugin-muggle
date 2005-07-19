@@ -444,7 +444,7 @@ mgPCMPlayer::Action (void)
 
                     if (m_current)
                     {
-		        std::string filename = m_current->getSourceFile ();
+		        string filename = m_current->getSourceFile ();
                         if ((m_decoder = mgDecoders::findDecoder (m_current))
                             && m_decoder->start ())
                         {
@@ -1023,6 +1023,7 @@ void mgPCMPlayer::ShowImage( )
 	      
 	      if( the_setup.UseDeviceStillPicture )
 		{
+		  sleep(1);
 		  DeviceStillPicture( buffer, sp.size );
 		}
 	      else
