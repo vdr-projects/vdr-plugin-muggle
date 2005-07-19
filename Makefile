@@ -11,9 +11,9 @@ PLUGIN = muggle
 
 #if you want ogg / flac support, define HAVE_VORBISFILE and/or HAVE_FLAC
 #in $VDRDIR/Make.config like this:
-#HAVE_VORBISFILE=1
-#HAVE_FLAC=1
-#HAVE_SNDFILE=1
+HAVE_VORBISFILE=1
+HAVE_FLAC=1
+HAVE_SNDFILE=1
 
 #if you do not want to compile in code for embedded mysql,
 #define this in $VDRDIR/Make.config:

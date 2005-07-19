@@ -71,7 +71,7 @@ class mgPlayInfo
  */
 enum mgMediaType
 {
-    MT_MP3, MT_MP3_STREAM, MT_OGG, MT_FLAC, MT_UNKNOWN
+    MT_MP3, MT_MP3_STREAM, MT_OGG, MT_FLAC, MT_SND, MT_UNKNOWN
 };
 
 /*!
