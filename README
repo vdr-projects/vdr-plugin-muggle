@@ -54,10 +54,17 @@ up to at least 1.3.23 but your mileage may vary. In addition, the following piec
     http://www.xiph.org/ogg/vorbis/)
  - optionally libFLAC++ to replay FLAC files
    (Debian package libflac++-dev or sources from flac.sourceforge.net)
+
 The developer versions are needed because their headers are required for compilation.
 The server need not be on the same machine as the VDR. Also, music tracks can reside somewhere else,
 if they are available through a remote filesystem (NFS, Samba). However, in this case you should
 know what you are doing in terms of networking and security issues.
+
+Support for using a libsndfile decoder requires libsndfile1-dev as a debian package or a corresponding library installation.
+
+Since relase 0.1.8 Muggle is able to display cover pictures. The required packages are 
+ - mjpegtools (Debian package mjpegtools)
+ - netpbm (Debian package netpbm)
 
 \section install INSTALLING 
 
@@ -233,9 +240,10 @@ muggle can display cover images. This is how it tries to find them:
    does not exist, try parent directory. Repeat until the TLD is
    reached.
 
-So if you want a default background for all tracks you should put
-it into TLD/cover.jpg
-
+So if you want a default background for all tracks you should put it 
+into TLD/cover.jpg. During installation, make sure that the script 
+called image_convert.sh (from the scripts directory) is somewhere on
+your path.
 
 \section quickuse QUICK INTRO
 
