@@ -14,6 +14,8 @@
  * (C) 2001-2003 Stefan Huelswitt <huels@iname.com>
  */
 
+#include "mg_tools.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -21,8 +23,6 @@
 #include <iostream>
 
 #include <interface.h>
-
-#include "mg_tools.h"
 
 // #include "setup-mp3.h"
 #include "vdr_stream.h"
