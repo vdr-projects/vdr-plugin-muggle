@@ -15,6 +15,7 @@
 
 #include "mg_item.h"
 #include "mg_tools.h"
+#include "mg_setup.h"
 
 bool
 mgItem::Valid(bool Silent) const
@@ -31,7 +32,9 @@ bool
 mgItem::readable(string filename) const
 {
 	errno=0;
-	int fd = open(filename.c_str(),O_RDONLY);
+	string fullname;
+	fullname = the_setup.ToplevelDir + filename;
+	int fd = open(fullname.c_str(),O_RDONLY);
 	if (fd<0)
 		return false;
 	char buf[20];
@@ -52,11 +55,11 @@ mgItem::readable(string filename) const
 }
 
 void
-mgItem::analyze_failure(string file) const
+mgItem::analyze_failure(string filename) const
 {
-	readable(file); 	// sets errno
+	readable(filename); 	// sets errno
 	int err = errno;
-	int nsize = file.size();
+	int nsize = filename.size();
 	char *p;
 	if (err==123456)
 		p="File too short";
@@ -64,11 +67,11 @@ mgItem::analyze_failure(string file) const
 		p = strerror(err);
     	extern void showmessage(int duration,const char*,...);
 	if (nsize<20)
-		showmessage(0,"%s not readable, errno=%d",file.c_str(),err);
+		showmessage(0,"%s not readable, errno=%d",filename.c_str(),err);
 	else
 		showmessage(0,"%s..%s not readable, errno=%d",
-				file.substr(0,15).c_str(),file.substr(nsize-15).c_str(),err);
-	mgWarning ("cannot read %s: %s", file.c_str (),p);
+				filename.substr(0,15).c_str(),filename.substr(nsize-15).c_str(),err);
+	mgWarning ("cannot read %s: %s", filename.c_str (),p);
 }
 
 mgItem::mgItem()

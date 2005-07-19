@@ -161,12 +161,20 @@ mgItemGd::InitFrom(const mgItemGd* c)
 string
 mgItemGd::getSourceFile(bool AbsolutePath,bool Silent) const
 {
-	int access_errno=0;
+	string result;
 	string tld = the_setup.ToplevelDir;
-    	string result = m_mp3file;
+	if (AbsolutePath)
+	{
+		result = getSourceFile(false,Silent);
+		if (!result.empty())
+			result = tld + result;
+		return result;
+	}
+	int access_errno=0;
+    	result = m_mp3file;
 	if (m_validated && !m_valid)
 		return m_mp3file;
-	if (!readable(tld+'/'+result))
+	if (!readable(result))
 	{
 		access_errno=errno;
 		result="";
@@ -188,7 +196,7 @@ mgItemGd::getSourceFile(bool AbsolutePath,bool Silent) const
 				continue;
 			char *file;
 			asprintf(&file,"%02d/%s",i,m_mp3file.c_str());
-			if (readable(tld+file))
+			if (readable(file))
 			{
 				m_mp3file = file;
 				result = m_mp3file;
@@ -202,22 +210,27 @@ mgItemGd::getSourceFile(bool AbsolutePath,bool Silent) const
 	if (result.empty())
 	{
 		if (!Silent)
-			analyze_failure(tld + "/" + m_mp3file);
+			analyze_failure(m_mp3file);
 		m_valid = false;
 		return m_mp3file;
 	}	
-	if (AbsolutePath)
-		result = tld +"/" + result;
 	return result;
 }
 
 string
-mgItemGd::getImagePath() const
+mgItemGd::getImagePath(bool AbsolutePath) const
 {
 	string result;
+	if (AbsolutePath)
+	{
+		result = getImagePath(false);
+		if (!result.empty())
+			result = string(the_setup.ToplevelDir) + result;
+		return result;
+	}
 	if (!m_coverimg.empty())
 	{
-		result = string(the_setup.ToplevelDir) + '/' + m_coverimg;
+		result = m_coverimg;
 		if (!readable(result))
 		{
 			analyze_failure(result);
@@ -226,7 +239,7 @@ mgItemGd::getImagePath() const
 		else
 			return result;
 	}
-	result = getSourceFile(true,true);
+	result = getSourceFile(false,true);
 	const char* jpg = ".jpg";
 	string::size_type dot = result.rfind('.');
 	if (dot==string::npos)
@@ -235,10 +248,11 @@ mgItemGd::getImagePath() const
 		result.replace(dot,999,jpg);
 	if (readable(result))
 		return result;
+#ifdef DIAS
 	while (true)
 	{
 		m_covercount++;
-		result = getSourceFile();
+		result = getSourceFile(false,true);
 		dot = result.rfind('.');
 		if (dot==string::npos)
 			result += '.' + m_covercount + jpg;
@@ -249,6 +263,21 @@ mgItemGd::getImagePath() const
 		if (m_covercount == 1)
 			break;
 		m_covercount = 0;
+	}
+#endif
+	result = getSourceFile(false,true);
+	while (true)
+	{
+		string::size_type slash = result.rfind('/');
+		if (slash == string::npos)
+		{
+			if (readable("cover.jpg"))
+				return "cover.jpg";
+			break;
+		}
+		result.replace(slash,999,"");
+		if (readable(result+"/cover.jpg"))
+			return result+"/cover.jpg";
 	}
 	return "";
 }

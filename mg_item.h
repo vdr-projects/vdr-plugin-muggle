@@ -44,7 +44,7 @@ class mgItem
         int getRating () const { return m_rating; }
 //! \brief returns duration
         int getDuration () const { return m_duration; }
-	virtual string getImagePath () const { return ""; }
+	virtual string getImagePath (bool AbsolutePath=true) const { return ""; }
 	void setSelection(const mgSelection* sel) { m_sel=sel; }
 	const mgSelection* getSelection() const { return m_sel; }
 
@@ -62,7 +62,7 @@ class mgItem
         string m_language_id;
         string m_language;
 	bool readable(string filename) const;
-	void analyze_failure(string file) const;
+	void analyze_failure(string filename) const;
 	void InitFrom(const mgItem* c);
 	const mgSelection* m_sel;
 };

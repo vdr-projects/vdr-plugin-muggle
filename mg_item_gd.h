@@ -57,7 +57,7 @@ class mgItemGd : public mgItem
 //! \brief returns tracknb
         int getTrack () const;
 
-	string getImagePath() const;
+	string getImagePath(bool AbsolutePath=true) const;
 
     protected:
 	void InitFrom(const mgItemGd* c);

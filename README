@@ -202,14 +202,14 @@ database, evaluate ID3 tags from files and write the tags into the database.
    mugglei -t /home/music .
 \endverbatim
 
-(Notice the single dot) will import all music files (*.mp3., *.ogg, *.flac) below the TLD
-/home/music. As already explained, it is important that you always use the same value
+(Notice the single dot) will import all music files (*.mp3., *.ogg, *.flac) in
+the directory . (the single dot stands for the current directory)
+As already explained, it is important that you always use the same value
 for -t whenever you import so that filenames are relative to exactly the same
 directory (e.g. /home/music in the example case).
 
-NOTE: If you use wild cards for specifying what to import, you must be in the
-directory where the files or directories are that you want to import. Otherwise
-the wild cards will not be expanded to what you would expect.
+NOTE: mugglei can only be called in the TLD or in some subdirectory of the TLD.
+Otherwise mugglei displays an error and does nothing.
 
 As with the muggle plugin, you may need additional options for the
 database host, user, etc.
@@ -221,6 +221,21 @@ If a track has no ID3 tags, the following defaults will be applied:
 - Album: "Unassigned"
 - Track: 0
 - Year: 0
+
+\section covers COVERS
+
+muggle can display cover images. This is how it tries to find them:
+1. if the database field album.coverimg contains something: This is 
+   displayed. If the image file does not exist, show an error.
+2. else: take the track filename and replace its extension by .jpg
+   if this file exists, display it
+3. else try the file "cover.jpg" in the current directory. If it
+   does not exist, try parent directory. Repeat until the TLD is
+   reached.
+
+So if you want a default background for all tracks you should put
+it into TLD/cover.jpg
+
 
 \section quickuse QUICK INTRO
 
