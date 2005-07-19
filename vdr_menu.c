@@ -1217,7 +1217,13 @@ import()
     if (!s)
 	    return false;
     static char *tld_arg[] = { ".", 0};
-    chdir(the_setup.ToplevelDir);
+    int res = chdir(the_setup.ToplevelDir);
+    if (res)
+    {
+	    showmessage(2,tr("Cannot access directory %s:%d"),
+			    the_setup.ToplevelDir,errno);
+	    return false;
+    }
     s->Sync(tld_arg);
     return true;
 }
