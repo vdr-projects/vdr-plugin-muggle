@@ -90,7 +90,8 @@ bool mgSndfileDecoder::valid(void)
   return res;
 }
 
-mgPlayInfo *playInfo ()
+mgPlayInfo *
+mgSndfileDecoder::playInfo ()
 {
   mgPlayInfo *pi = NULL;
 
