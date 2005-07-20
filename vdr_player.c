@@ -144,14 +144,14 @@ class mgPCMPlayer:public cPlayer, cThread
 
         cFrame *m_rframe, *m_pframe;
 
-        enum ePlayMode
+        enum emgPlayMode
         {
             pmPlay,
             pmStopped,
             pmPaused,
             pmStartup
         };
-        ePlayMode m_playmode;
+        emgPlayMode m_playmode;
 
         enum eState
         {
@@ -173,8 +173,8 @@ class mgPCMPlayer:public cPlayer, cThread
 	void PlayTrack();
         void StopPlay ();
 
-        void SetPlayMode (ePlayMode mode);
-        void WaitPlayMode (ePlayMode mode, bool inv);
+        void SetPlayMode (emgPlayMode mode);
+        void WaitPlayMode (emgPlayMode mode, bool inv);
 
     protected:
         virtual void Activate (bool On);
@@ -336,7 +336,7 @@ mgPCMPlayer::NewPlaylist (mgSelection * plist)
 }
 
 void
-mgPCMPlayer::SetPlayMode (ePlayMode mode)
+mgPCMPlayer::SetPlayMode (emgPlayMode mode)
 {
     m_playmode_mutex.Lock ();
     if (mode != m_playmode)
@@ -349,7 +349,7 @@ mgPCMPlayer::SetPlayMode (ePlayMode mode)
 
 
 void
-mgPCMPlayer::WaitPlayMode (ePlayMode mode, bool inv)
+mgPCMPlayer::WaitPlayMode (emgPlayMode mode, bool inv)
 {
 // must be called with m_playmode_mutex LOCKED !!!
 
