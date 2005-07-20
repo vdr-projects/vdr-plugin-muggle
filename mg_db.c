@@ -1050,6 +1050,7 @@ mgDb::SyncFile(const char *filename)
 {
       	char *ext = extension(filename);
 	if (strcasecmp(ext,"flac")
+		&& strcasecmp(ext,"wav")
 		&& strcasecmp(ext,"ogg")
 		&& strcasecmp(ext,"mp3"))
 		return false;
