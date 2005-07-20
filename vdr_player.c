@@ -222,7 +222,7 @@ class mgPCMPlayer:public cPlayer, cThread
 
 	// background image handling stuff
 	string m_current_image;
-	void CheckImage( string fileName, size_t j );
+	void CheckImage( string fileName );
 	void ShowImage( );
 	void TransferImageTFT( string cover );
 	void send_pes_packet(unsigned char *data, int len, int timestamp);	
@@ -435,11 +435,19 @@ mgPCMPlayer::Action (void)
 		    // check for background display of image
 		    if( the_setup.BackgrMode == 2 )
 		      {
-			CheckImage( img, 0 );
-			if( ( !m_current_image.empty() ) || img != m_current_image )
-			  {
-			    ShowImage();
-			  }
+			if (img.empty())
+			{
+				m_current_image="";
+//    				cDevice::PrimaryDevice()->SetPlayMode(pmAudioOnly);
+			}
+			else
+			{
+//    				cDevice::PrimaryDevice()->SetPlayMode(pmAudioOnlyBlack);
+				string prev_mpg = m_current_image;
+				CheckImage( img );
+				if( ( prev_mpg != m_current_image ))
+			    		ShowImage();
+			}
 		      }
 
                     if (m_current)
@@ -953,22 +961,16 @@ bool mgPCMPlayer::GetIndex (int &current, int &total, bool snaptoiframe)
 }
 
 
-void mgPCMPlayer::CheckImage( string filename, size_t j )
+void mgPCMPlayer::CheckImage( string filename )
 {
   FILE *fp;
   string tmpFile;
 
   // determine the filename of a (to be) cached .mpg file
   unsigned dotpos = filename.rfind( ".", filename.length() );
-  if( dotpos == string::npos )
-    {
-      // use DefaultImagePath as a backup (a full path)
-      filename = string( the_setup.ToplevelDir ) + string( "/background.jpg");
-      dotpos = filename.rfind( ".", filename.length() );
-    }
 
   // assemble path from relative paths
-  tmpFile = string( the_setup.ImageCacheDir ) + string( "/" ) + filename.substr( j, dotpos ) + string( ".mpg" );
+  tmpFile = string( the_setup.ImageCacheDir ) + string( "/" ) + filename.substr( 0, dotpos ) + string( ".mpg" );
 
   // now filename and tmpFile are absolute path specs
 
@@ -995,9 +997,6 @@ void mgPCMPlayer::CheckImage( string filename, size_t j )
   
   m_current_image = tmpFile;
 
-  fp = fopen( "/tmp/vdr_mp3_current_image.txt", "w" );
-  fprintf( fp, "%s\n", filename.c_str() );
-  fclose( fp );
 }
 
 void mgPCMPlayer::ShowImage( )
