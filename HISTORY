@@ -233,3 +233,5 @@ xxxxxxxx: Version 0.1.8-BETA
   mugglei has to be started in TLD or below. This way wildcards will
   always be expanded as expected.
 - display covers on the TV and with graphTFT. Details see README
+- when tracks are added to the playing list, the playlist progress
+  did not get updated.
