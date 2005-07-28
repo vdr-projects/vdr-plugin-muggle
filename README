@@ -241,9 +241,12 @@ muggle can display cover images. This is how it tries to find them:
    reached.
 
 So if you want a default background for all tracks you should put it 
-into TLD/cover.jpg. During installation, make sure that the script 
-called image_convert.sh (from the scripts directory) is somewhere on
-your path.
+into TLD/cover.jpg. It is strongly recommended to define such a default
+background. Otherwise if no cover is found for a track, the previously
+displayed cover stays on the screen.
+
+During installation, make sure that the script called image_convert.sh
+(from the scripts directory) is somewhere on your path.
 
 \section quickuse QUICK INTRO
 
