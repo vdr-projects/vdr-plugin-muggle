@@ -48,6 +48,8 @@
 
 // ----------------------------------------------------------------
 
+// #define DEBUGPES
+
 // TODO: check for use of constants
 #define OUT_BITS 16                               // output 16 bit samples to DVB driver
 #define OUT_FACT (OUT_BITS/8*2)                   // output factor is 16 bit & 2 channels -> 4 bytes
@@ -383,6 +385,10 @@ mgPCMPlayer::Action (void)
     int beat = 0;
 #endif
 
+#ifdef DEBUGPES
+    FILE *peslog = fopen( "pes.dump", "w" );
+#endif
+
     dsyslog ("muggle: player thread started (pid=%d)", getpid ());
 
     memset (&lpcmFrame, 0, sizeof (lpcmFrame));
@@ -391,6 +397,8 @@ mgPCMPlayer::Action (void)
     lpcmFrame.PES[6] = 0x87;
     lpcmFrame.LPCM[0] = 0xa0;                     // substream ID
     lpcmFrame.LPCM[1] = 0xff;
+    lpcmFrame.LPCM[2] = 0;
+    lpcmFrame.LPCM[3] = 4;    
     lpcmFrame.LPCM[5] = 0x01;
     lpcmFrame.LPCM[6] = 0x80;
 
@@ -551,8 +559,8 @@ mgPCMPlayer::Action (void)
                         {                         // If one of the supported frequencies, do it without resampling.
                             case 96000:
                             {                     // Select a "even" upsampling frequency if possible, too.
-                                lpcmFrame.LPCM[5] |= 1 << 4;
-                                dvbSampleRate = 96000;
+			      lpcmFrame.LPCM[5] |= 1 << 4;
+			      dvbSampleRate = 96000;
                             }
                             break;
 
@@ -564,16 +572,18 @@ mgPCMPlayer::Action (void)
                             case 22050:
                             case 44100:
                             {
-                                lpcmFrame.LPCM[5] |= 2 << 4;
-                                dvbSampleRate = 44100;
+			      // lpcmFrame.LPCM[5] |= 2 << 4;
+			      lpcmFrame.LPCM[5] |= 0x20;
+			      dvbSampleRate = 44100;
                             }
                             break;
                             case 8000:
                             case 16000:
                             case 32000:
                             {
-                                lpcmFrame.LPCM[5] |= 3 << 4;
-                                dvbSampleRate = 32000;
+			      // lpcmFrame.LPCM[5] |= 3 << 4;
+			      lpcmFrame.LPCM[5] |= 0x30;
+			      dvbSampleRate = 32000;
                             }
                             break;
                         }
@@ -616,13 +626,19 @@ mgPCMPlayer::Action (void)
                         amRound);
                         if (outlen)
                         {
-                            outlen += sizeof (lpcmFrame.LPCM) + LEN_CORR;
-                            lpcmFrame.PES[4] = outlen >> 8;
-                            lpcmFrame.PES[5] = outlen;
-                            m_rframe = new cFrame ((unsigned char *) &lpcmFrame,
-                                outlen +
-                                sizeof (lpcmFrame.PES) -
-                                LEN_CORR);
+			  outlen += sizeof (lpcmFrame.LPCM) + LEN_CORR;
+			  lpcmFrame.PES[4] = outlen >> 8;
+			  lpcmFrame.PES[5] = outlen;
+			  
+			  // lPCM has 600 fps which is 80 samples at 48kHz per channel
+			  // Frame size = (sample_rate * quantization * channels)/4800
+			  size_t frame_size = 2 * (dvbSampleRate*16)/4800;
+			    
+			  lpcmFrame.LPCM[1] = (outlen - LPCM_SIZE)/frame_size;
+			  m_rframe = new cFrame ((unsigned char *) &lpcmFrame,
+						 outlen +
+						 sizeof (lpcmFrame.PES) -
+						 LEN_CORR);
                         }
                     }
                     else
@@ -695,6 +711,10 @@ mgPCMPlayer::Action (void)
 
         if (m_pframe)
         {
+#ifdef DEBUGPES
+	  fwrite( (void *)p, pc, sizeof( char ), peslog );
+#endif
+
 #if VDRVERSNUM >= 10318
             int w = PlayPes (p, pc);
 #else
@@ -760,6 +780,10 @@ mgPCMPlayer::Action (void)
     m_playing = false;
 
     SetPlayMode (pmStopped);
+
+#ifdef DEBUGPES
+    fclose( peslog );
+#endif
 
     Unlock ();
 
