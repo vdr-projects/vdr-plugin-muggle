@@ -1125,7 +1125,7 @@ mgPCMPlayer (plist))
 
     m_szLastShowStatusMsg = NULL;
 
-// Notify all cStatusMonitor
+    // Notify all cStatusMonitor
     StatusMsgReplaying ();
 }
 
@@ -1161,6 +1161,7 @@ bool mgPlayerControl::Playing (void)
 void
 mgPlayerControl::Stop (void)
 {
+  cStatus::MsgReplaying( this, NULL );
     if (player)
     {
         delete player;
@@ -1664,10 +1665,10 @@ eOSState mgPlayerControl::ProcessKey (eKeys key)
             case kStop:
             case kBlue:
             {
-                InternalHide ();
-                Stop ();
+		  InternalHide ();
+		  Stop ();
 
-                return osEnd;
+		  return osEnd;
             }
             break;
             case kOk:
