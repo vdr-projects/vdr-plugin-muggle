@@ -58,7 +58,7 @@ class mgFlacDecoder : public mgDecoder,
 
  public:
 
-   mgFlacDecoder( mgContentItem *item );
+   mgFlacDecoder( mgItemGd *item );
   ~mgFlacDecoder();
 
   virtual mgPlayInfo *playInfo();

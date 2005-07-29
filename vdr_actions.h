@@ -18,7 +18,7 @@
 #include <osd.h>
 #include <plugin.h>
 
-#include "mg_order.h"
+#include "mg_selection.h"
 
 using namespace std;
 
@@ -92,7 +92,7 @@ class mgAction
 	virtual bool Enabled(mgActions on = mgActions(0));
 
 	//! \brief the action to be executed
-        virtual void Execute () {}
+        virtual bool Execute () {return true;}
 
 	//! \brief handles the kBack key
 	virtual eOSState Back();
@@ -109,7 +109,7 @@ class mgAction
  * to execute this. The returned C string must be freeable at any time.
  * \param value a string that can be used for building the menu name.
  */
-        virtual const char *MenuName (const unsigned int idx=0,const mgListItem& item=zeroitem)
+        virtual const char *MenuName (const unsigned int idx=0,const mgListItem* item=0)
 	{
 	    return strdup(ButtonName());
 	}

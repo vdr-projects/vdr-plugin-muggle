@@ -25,20 +25,36 @@
 
 #include "mg_tools.h"
 #include "mg_setup.h"
-#include "mg_sync.h"
+#include "mg_db.h"
 
 
 using namespace std;
 
 int SysLogLevel = 1;
 
-bool import_assorted, delete_mode, create_mode;
-
-void showmessage(const char *msg,int duration)
+void showmessage(int duration,const char *msg,...)
 {
+	va_list ap;
+	va_start(ap,msg);
+	vfprintf(stderr,msg,ap);
+	fprintf(stderr,"\n");
+	va_end(ap);
 }
 
-void showimportcount(unsigned int count,bool final=false)
+void showimportcount(unsigned int importcount,bool final=false)
+{
+	if (final)
+		mgDebug(1,"Imported %d tracks",importcount);
+}
+
+bool
+create_question()
+{
+    return the_setup.CreateMode;
+}
+
+void
+import()
 {
 }
 
@@ -47,8 +63,26 @@ const char *I18nTranslate(const char *s,const char *Plugin)
 	return s;
 }
 
+bool
+path_within_tld()
+{
+	char path[5000];
+	if (!getcwd(path,4999))
+	{
+		std::cout << "Path too long" << std::endl;
+		exit (1);
+	}
+  	int tldlen = strlen(the_setup.ToplevelDir);
+	strcat(path,"/");
+	int pathlen = strlen(path);
+	if (pathlen<tldlen)
+		return false;
+  	return !strncmp(path,the_setup.ToplevelDir,tldlen);
+}
+
 int main( int argc, char *argv[] )
 {
+	the_setup.SetMugglei();
 	mgSetDebugLevel(1);
       
   if( argc < 2 )
@@ -64,110 +98,26 @@ int main( int argc, char *argv[] )
       std::cout << "Only files ending in .flac, .mp3, .ogg (ignoring case) will be imported" << std::endl;
       std::cout << "" << std::endl;
       std::cout << "Options:" << std::endl;
-#ifdef HAVE_ONLY_SERVER
-      std::cout << "  -h <hostname>       - specify host of mySql database server (default is 'localhost')" << std::endl;
-#else
-      std::cout << "  -h <hostname>       - specify host of mySql database server (default is mysql embedded')" << std::endl;
-#endif
-      std::cout << "  -s <socket>         - specify a socket for mySQL communication (default is TCP)" << std::endl;
-      std::cout << "  -n <database>       - specify database name (default is 'GiantDisc')" << std::endl;
-      std::cout << "  -u <username>       - specify user of mySql database (default is empty)" << std::endl;
-      std::cout << "  -p <password>       - specify password of user (default is empty password)" << std::endl;
-      std::cout << "  -t <topleveldir>    - name of music top level directory" << std::endl;
-      std::cout << "  -z                  - scan all database entries and delete entries for files not found" << std::endl;
-      std::cout << "                        -z is not yet implemented" << std::endl;
-      std::cout << "  -c                  - delete the entire database and recreate a new empty one" << std::endl;
-#ifndef HAVE_ONLY_SERVER
-      std::cout << "  -d <datadir>        - the data directory for the embedded mysql server. Defaults to ./.muggle" << std::endl;
-#endif
-      std::cout << "  -v                  - the wanted log level, the higher the more. Default is 1" << std::endl;
-      std::cout << std::endl << std::endl;
-      std::cout << "if the specified host is localhost, sockets will be used if possible." << std::endl;
-      std::cout << "Otherwise the -s parameter will be ignored" << std::endl;
+      std::cout << the_setup.HelpText();
 
-      exit( 1 );
+      exit( 2 );
     }
 
-  // option defaults
-  import_assorted = false;
-  delete_mode = false;
-  create_mode = false;
-#ifndef HAVE_ONLY_SERVER
-  char *buf;
-  asprintf(&buf,"%s/.muggle",getenv("HOME"));
-  set_datadir(buf);
-  free(buf);
-#endif
+  the_setup.ProcessArguments(argc,argv);
 
-  // parse command line options
-  while( 1 )
-    {
-#ifndef HAVE_ONLY_SERVER
-      int c = getopt(argc, argv, "h:s:n:u:p:t:zcv:d:");
-#else
-      int c = getopt(argc, argv, "h:s:n:u:p:t:zcv:");
-#endif
-
-      if (c == -1)
-	break;
-      
-      switch (c) 
-	{
-	case 0:
-	  { // long option
-	    
-	  } break;
-	case 'h':
-	  {
-	    the_setup.DbHost = strdup(optarg);
-	  } break;
-	case 'n':
-	  {
-	    the_setup.DbName = strdup(optarg);
-	  } break;
-	case 'u':
-	  {
-	    the_setup.DbUser = strdup(optarg);
-	  } break;
-	case 'p':
-	  {
-	    the_setup.DbPass = strdup(optarg);
-	  } break;
-	case 's':
-	  {
-	    the_setup.DbSocket = strdup(optarg);
-	  } break;
-	case 't':
-	  {
-	    the_setup.ToplevelDir = strdup(optarg);
-	  } break;
-        case 'z':
-          {
-            delete_mode = true;
-          } break;
-        case 'c':
-          {
-            create_mode = true;
-          } break;
-        case 'v':
-          {
-	    mgSetDebugLevel(atol(optarg));
-          } break;
-#ifndef HAVE_ONLY_SERVER
-        case 'd':
-          {
-	    set_datadir(optarg);
-          } break;
-#endif
-	}
-    }
-  mgDbGd *sync = new mgDbGd; // because we want to delete it before database_end
-  if (create_mode)
-	  sync->Create();
+  if (!path_within_tld())
+  {
+      std::cout << "you should be in " << the_setup.ToplevelDir
+	      << " or below" << std::endl;
+      exit( 2 );
+  }
   if (optind<argc)
-	  sync->Sync(argv+optind,delete_mode);
-  delete sync;
-  database_end();
+  {
+  	mgDb *sync = GenerateDB();
+	sync->Sync(argv+optind);
+  	delete sync;
+	delete DbServer;
+  }
   return 0;
 }
 

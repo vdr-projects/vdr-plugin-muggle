@@ -21,7 +21,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Sort by count",       			// TODO
         "",                                       // TODO
-        "Järjestä lukumäärän mukaan",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -38,7 +38,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Key %d",           			// TODO
         "",                                       // TODO
-        "Avain %d",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -55,7 +55,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Nouveau",           			// TODO
         "",                                       // TODO
-        "Luo",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -72,7 +72,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Naviguer",           // TODO
         "",                                       // TODO
-        "Selaa",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -89,7 +89,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Ordre",           // TODO
         "",                                       // TODO
-        "Järjestä",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -106,7 +106,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Collections",               // TODO
         "",                                       // TODO
-        "Kokoelmat",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -123,7 +123,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Vider la collection?",               // TODO
         "",                                       // TODO
-        "Tyhjennetäänkö kokoelma?",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -140,7 +140,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Effacer la collection?",               // TODO
         "",                                       // TODO
-        "Tuhotaanko kokoelma?",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -157,7 +157,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Créer un ordre nouveaux",            // TODO
         "",                                       // TODO
-        "Luo järjestys",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -174,7 +174,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Créer une nouvelle collection",            // TODO
         "",                                       // TODO
-        "Luo kokoelma",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -191,7 +191,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Effacer la collection",                  // TODO
         "",                                       // TODO
-        "Tuhoa kokoelma",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -208,7 +208,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Effacer la collection '%s'",                  // TODO
         "",                                       // TODO
-        "Tuhoa kokoelma '%s'",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -225,7 +225,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Collections",                    // TODO
         "",                                       // TODO
-        "Kokoelmat",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -242,7 +242,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Commandes",                    // TODO
         "",                                       // TODO
-        "Komennot",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -259,7 +259,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Commandes:%s",                    // TODO
         "",                                       // TODO
-        "Komennot: %s",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -276,7 +276,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Collection",                             // TODO
         "",                                       // TODO
-        "Kokoelma",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -293,7 +293,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Liste",                                  // TODO
         "",                                       // TODO
-        "Lista",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -310,7 +310,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Exporter",                      // TODO
         "",                                       // TODO
-        "Vie",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -319,7 +319,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {
-        "Export track list",
+        "Export item list",
         "Stückliste exportieren",
         "",                                       // TODO
         "",                                       // TODO
@@ -327,7 +327,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Exporter la liste",                      // TODO
         "",                                       // TODO
-        "Vie kappalelista",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -344,7 +344,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "commande externe playlist",              // TODO
         "",                                       // TODO
-        "Ulkoiset soittolistakomennot",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -361,7 +361,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Déclancher le mode répétition",          // TODO
         "",                                       // TODO
-        "Jatkuvasoitto poissa",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -378,7 +378,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Mode répétition titre seul",             // TODO
         "",                                       // TODO
-        "Jatkuvasoitto kappaleelle",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -395,7 +395,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Mode répétition playlist",               // TODO
         "",                                       // TODO
-        "Jatkuvasoitto soittolistalle",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -412,7 +412,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "mode allèatoire déclenché",              // TODO
         "",                                       // TODO
-        "Satunnaissoitto poissa",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -429,7 +429,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Mode allèatoire normal",                 // TODO
         "",                                       // TODO
-        "Satunnaissoitto päällä",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -446,7 +446,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Interprète",
         "",                                       // TODO
-        "Artisti",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -463,7 +463,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "InterprèteABC",
         "",                                       // TODO
-        "ArtistiABC",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -480,7 +480,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Jouer tout",
         "",                                       // TODO
-        "Soita kaikki",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -497,7 +497,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Définir",
         "",                                       // TODO
-        "Aseta",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -514,7 +514,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Jouer en direct",
         "",                                       // TODO
-        "Soita nyt",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -531,7 +531,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Jouer '%s' en direct",
         "",                                       // TODO
-        "Soita '%s' nyt",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -548,7 +548,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Mode allèatoire fêtes",                  // TODO
         "",                                       // TODO
-        "Satunnaissoitto biletykseen",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -565,7 +565,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Destinataire", // TODO
         "",                                       // TODO
-        "Oletus",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -582,7 +582,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Ajoute '%s' à une collection",                                       // TODO
         "",                                       // TODO
-        "'%s' kokoelmaan",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -599,7 +599,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Changer destination à la collection '%s'",                                       // TODO
         "",                                       // TODO
-        "Aseta kokoelma '%s' oletukseksi",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -616,7 +616,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "La collection destinataire est maintenant '%s'",                                       // TODO
         "",                                       // TODO
-        "Oletuskokoelma on nyt '%s'",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -633,7 +633,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Ajouter",                                       // TODO
         "",                                       // TODO
-        "Lisää",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -650,7 +650,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Ajouter à une collection",               // TODO
         "",                                       // TODO
-        "Lisää kokoelmaan",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -667,7 +667,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Ajouter à '%s'",                         // TODO
         "",                                       // TODO
-        "Lisää kokoelmaan '%s'",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -684,7 +684,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Effacer",                                // TODO
         "",                                       // TODO
-        "Poista",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -701,7 +701,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Vider",                                // TODO
         "",                                       // TODO
-        "Tyhjennä",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -718,7 +718,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Vider la collection",                    // TODO
         "",                                       // TODO
-        "Tyhjennä kokoelma",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -735,7 +735,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Effacer d'une collection",                                       // TODO
         "",                                       // TODO
-        "Poista kokoelmasta",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -752,7 +752,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Ajouter une collection",                 // TODO
         "",                                       // TODO
-        "Uusi kokoelma",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -769,7 +769,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Effacer cette collection",               // TODO
         "",                                       // TODO
-        "Poista tämä kokoelma",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -786,7 +786,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Effacer de cette collection",            // TODO
         "",                                       // TODO
-        "Poista kappale kokoelmasta",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -803,7 +803,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Ajouté %s pièces",                       // TODO
         "",                                       // TODO
-        "Lisätty %s kappaletta",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -820,7 +820,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Effacé %s pièces",                       // TODO
         "",                                       // TODO
-        "Poistettu %s kappaletta",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -837,7 +837,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Effacé toutes les pièces",               // TODO
         "",                                       // TODO
-        "Poistettu kaikki kappaleet",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -854,7 +854,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "En jouant",                              // TODO
         "",                                       // TODO
-        "Nyt soitetaan",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -871,7 +871,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "Arvosana",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -888,7 +888,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Décade",                                 // TODO
         "",                                       // TODO
-        "Vuosikymmen",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -905,7 +905,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Année",                                  // TODO
         "",                                       // TODO
-        "Vuosi",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -922,7 +922,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Album",                                  // TODO
         "",                                       // TODO
-        "Albumi",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -939,7 +939,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Folder1",                                // TODO
         "",                                       // TODO
-        "Kansio1",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -956,7 +956,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Folder2",                                // TODO
         "",                                       // TODO
-        "Kansio2",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -973,7 +973,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Folder3",                                // TODO
         "",                                       // TODO
-        "Kansio3",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -990,7 +990,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Folder4",                                // TODO
         "",                                       // TODO
-        "Kansio4",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1007,7 +1007,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Genre",                                // TODO
         "",                                       // TODO
-        "Tyylilaji",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1024,7 +1024,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Genre 2",                                // TODO
         "",                                       // TODO
-        "Tyylilaji 2",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1041,7 +1041,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Titre",                                  // TODO
         "",                                       // TODO
-        "Nimi",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1058,7 +1058,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "TitreABC",                                  // TODO
         "",                                       // TODO
-        "NimiABC",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1076,7 +1076,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Pièce",                                  // TODO
         "",                                       // TODO
-        "Kappale",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1092,7 +1092,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "jouer",                                 // TODO
         "",                                       // TODO
-        "soita",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1109,7 +1109,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Pièce de collection",                    // TODO
         "",                                       // TODO
-        "Kokoelma",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1126,7 +1126,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Collection '%s' PAS effacée",            // TODO
         "",                                       // TODO
-        "Kokoelmaa '%s' ei tuhottu",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1143,7 +1143,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Collection '%s' effacée",                // TODO
         "",                                       // TODO
-        "Kokoelma '%s' tuhottu",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1160,7 +1160,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Choisir un ordre",       // TODO
         "",                                       // TODO
-        "Valitse järjestys",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1177,7 +1177,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Synchroniser la base des données",       // TODO
         "",                                       // TODO
-        "Tahdista tietokanta",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1194,7 +1194,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Générer la base des données %s?",       // TODO
         "",                                       // TODO
-        "Luodaanko tietokanta %s?",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1211,7 +1211,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Synchroniser la base des données avec les tracks?",       // TODO
         "",                                       // TODO
-        "Tahdistetaanko tietokanta kappaleilla?",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1220,15 +1220,15 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {
-        "Import tracks?",
-        "Tracks importieren?",
+        "Import items?",
+        "Titel importieren?",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "Importer les tracks?",       // TODO
+        "Importer les titres?",       // TODO
         "",                                       // TODO
-        "Tuodaanko kappaleet?",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1245,7 +1245,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "%d titres importés...",       // TODO
         "",                                       // TODO
-        "Tuotiin %d kappaletta...",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1262,7 +1262,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "Import finis:%d titres importés...",       // TODO
         "",                                       // TODO
-        "Tuonti valmis: %d kappaletta",
+        "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1270,33 +1270,16 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
     },
-    {   
-        "Muggle",
+    {
+        "Order is undefined",
+        "Sortierung ist nicht definiert",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
+        "Ordre pas défini",       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "",                                       // TODO
-        "Muggle",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-    },
-    {   
-        "Media juggle plugin for VDR",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "Muggle-levyautomaatti jästeille",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1304,33 +1287,16 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
     },
-    {   
-        "Setup.Muggle$Initial loop mode",
+    {
+        "%s not readable, errno=%d",
+        "%s nicht lesbar, errno=%d",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
+        "Ne peux pas lire %s, errno=%d",
         "",                                       // TODO
         "",                                       // TODO
-        "",                                       // TODO
-        "Jatkuvasoitto oletuksena",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-    },
-    {      
-        "Setup.Muggle$Initial shuffle mode",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "Satunnaissoitto oletuksena",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1338,186 +1304,16 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
     },
-    {      
-        "Setup.Muggle$Audio mode",
+    {
+        "%s..%s not readable, errno=%d",
+        "%s..%s nicht lesbar, errno=%d",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
+        "Ne peux pas lire %s..%s, errno=%d",
         "",                                       // TODO
         "",                                       // TODO
-        "",                                       // TODO
-        "Äänimoodi",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-    },
-    {      
-        "Round",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "pyöristetty",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-    },
-    {      
-        "Dither",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "ditteroitu",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-    },
-    {      
-        "Setup.Muggle$Use 48kHz mode only",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "Käytä vain 48kHz moodia",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-    },
-    {      
-        "Setup.Muggle$Display mode",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "Näyttömoodi",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-    },
-    {      
-        "Setup.Muggle$Background mode",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "Taustamoodi",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-    },
-    {      
-        "Black",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "musta",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-    },
-    {   
-        "Live",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "live",   
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-    },
-    {   
-        "Setup.Muggle$Normalizer level",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "Normalisoinnin taso",   
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-    },
-    {   
-        "Setup.Muggle$Limiter level",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "Rajoittimen taso",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-    },
-    {   
-        "Setup.Muggle$Delete stale references",
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "",                                       // TODO
-        "Tuhoa vanhentuneet viittaukset",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO

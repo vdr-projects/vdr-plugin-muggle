@@ -19,9 +19,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "vdr_setup.h"
-
-#include "mg_content.h"
 
 // --- mgOggFile ----------------------------------------------------------------
 
@@ -237,7 +234,7 @@ mgOggFile::stream (short *buffer, int samples)
 
 // --- mgOggDecoder -------------------------------------------------------------
 
-mgOggDecoder::mgOggDecoder (mgContentItem * item):mgDecoder (item)
+mgOggDecoder::mgOggDecoder (mgItemGd * item):mgDecoder (item)
 {
   m_filename = item->getSourceFile ();
   m_file = new mgOggFile (m_filename);

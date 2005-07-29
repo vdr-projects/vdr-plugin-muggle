@@ -117,6 +117,7 @@
 
     - Import playlist from m3u
     - Run import/update from within OSD?
+    - define regexp per import field for things like s'/^The//'
 
     \subsection midcode Code issues
     

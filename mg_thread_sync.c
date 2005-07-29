@@ -1,8 +1,15 @@
 
 #include "mg_thread_sync.h"
-#include "mg_sync.h"
+#include "mg_db.h"
+#include "mg_tools.h"
 
 static mgThreadSync* the_instance = NULL;
+
+mgThreadSync::mgThreadSync()
+{
+	m_path = 0;
+	m_has_args = false;
+}
 
 mgThreadSync* mgThreadSync::get_instance()
 {
@@ -22,20 +29,19 @@ mgThreadSync* mgThreadSync::get_instance()
     }
 }
 
-void mgThreadSync::SetArguments( char * const * path_argv, bool delete_missing )
+void mgThreadSync::SetArguments( char * const * path_argv)
 {
   m_path = path_argv;
-  m_delete = delete_missing;
+  m_has_args = true;
 }
 
-bool mgThreadSync::Sync(char * const * path_argv, bool delete_missing )
+bool mgThreadSync::Sync(char * const * path_argv)
 {
   mgThreadSync *s = mgThreadSync::get_instance();
   if( s )
     {
-      s->SetArguments( path_argv, delete_missing );
+      s->SetArguments( path_argv);
       s->Start();
-      
       return true;
     }
   else
@@ -47,10 +53,11 @@ bool mgThreadSync::Sync(char * const * path_argv, bool delete_missing )
 void
 mgThreadSync::Action()
 {
-  if( m_path )
+  if( m_has_args )
     {
-      mgDbGd s(true);
-      s.Sync( m_path, m_delete );
+      mgDb *s = GenerateDB(true);
+      s->Sync( m_path );
+      delete s;
     }
 }
 

@@ -27,11 +27,13 @@
 #include <interface.h>
 
 
-#include "vdr_setup.h"
 #include "vdr_decoder.h"
 #include "vdr_decoder_mp3.h"
+#include "vdr_decoder_ogg.h"
+#include "vdr_decoder_flac.h"
+#include "vdr_decoder_sndfile.h"
 
-extern void showmessage(const char *,int duration=0);
+extern void showmessage(int duration,const char *,...);
 
 #ifdef HAVE_VORBISFILE
 #include "vdr_decoder_ogg.h"
@@ -79,7 +81,18 @@ mgMediaType mgDecoders::getMediaType (std::string s)
 #else
 	      	mgWarning("Support for flac not compiled in, define HAVE_FLAC in Makefile");
 #endif
-	    }	    
+	    }
+	  else
+	    {
+	      if( !strcasecmp( p, ".wav" ) )
+		{
+#ifdef HAVE_SNDFILE
+		  mt = MT_SND;
+#else
+		  mgWarning("Support for wav files not compiled in, define HAVE_SNDFILE in Makefile" );
+#endif
+		}
+	    }
 	}
     }
   return mt;
@@ -87,7 +100,7 @@ mgMediaType mgDecoders::getMediaType (std::string s)
 
 
 mgDecoder *
-mgDecoders::findDecoder (mgContentItem * item)
+mgDecoders::findDecoder (mgItemGd * item)
 {
     mgDecoder *decoder = 0;
 
@@ -111,17 +124,17 @@ mgDecoders::findDecoder (mgContentItem * item)
 	  decoder = new mgFlacDecoder( item );
 	} break;
 #endif
-	/*
-	  case MT_MP3_STREAM: decoder = new mgMP3StreamDecoder(full); break;
-	  #ifdef HAVE_SNDFILE
-	  case MT_SND:  decoder = new cSndDecoder(full); break;
-	  #endif
-	*/
+#ifdef HAVE_SNDFILE
+      case MT_SND:  
+	{
+	  decoder = new mgSndfileDecoder( item ); 
+	} break;
+#endif
       default:
-        {
+	{
 	  esyslog ("ERROR: unknown media type ");
-        }
-        break;
+	}
+	break;
       }
     
     if (decoder && !decoder->valid ())
@@ -139,7 +152,7 @@ mgDecoders::findDecoder (mgContentItem * item)
 
 // --- mgDecoder ----------------------------------------------------------------
 
-mgDecoder::mgDecoder (mgContentItem * item)
+mgDecoder::mgDecoder (mgItemGd * item)
 {
     m_item = item;
     m_locked = 0;

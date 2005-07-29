@@ -30,8 +30,10 @@
 class mgSetup
 {
     public:
-        mgSetup (void);
+        mgSetup ();
 	~mgSetup (void);
+	const char *HelpText();
+	bool ProcessArguments(int argc, char *argv[]);
 	bool NoHost() const;
         int InitLoopMode;
         int InitShuffleMode;
@@ -47,11 +49,20 @@ class mgSetup
         char *DbName;
         char *DbUser;
         char *DbPass;
+	char *DbDatadir;
+
         int DbPort;
         char *ToplevelDir;
 
-	int DeleteStaleReferences;
+	char *ImageCacheDir;
+	bool UseDeviceStillPicture;
 
+	int DeleteStaleReferences;
+	bool CreateMode;
+	bool IsMugglei() const;
+	void SetMugglei();
+    private:
+	bool m_mugglei;
 
 };
 

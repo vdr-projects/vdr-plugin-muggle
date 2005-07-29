@@ -28,7 +28,7 @@
 //! \param select if true, play only what the current position selects
 void Play(mgSelection *sel,const bool select=false);
 
-void showmessage(const char *msg,int duration=2);
+void showmessage(int duration, const char *msg, ...);
 void showimportcount(unsigned int count);
 
 class cCommands;
@@ -63,25 +63,25 @@ class mgStatus : public cStatus
 class mgMainMenu:public cOsdMenu
 {
     private:
-        mgSelection *m_treesel;
         mgSelection *m_playsel;
         mgSelection *m_collectionsel;
 	char *m_message;
 	void showMessage();
 	void LoadExternalCommands();
-	vector<mgOrder*> orders;
-	unsigned int m_current_order;
-	void DumpOrders(mgValmap& nv);
-	void LoadOrders(mgValmap& nv);
+	vector<mgSelection*> selections;
+	unsigned int m_current_selection;
+	void DumpSelections(mgValmap& nv);
+	void LoadSelections(mgValmap& nv);
 	mgMenu *m_root;
 	bool m_save_warned;
     public:
-	void AddOrder();
-	void DeleteOrder();
+	void AddSelection();
+	void DeleteSelection();
 	void AddOrderActions(mgMenu *m);
-	unsigned int getCurrentOrder() { return m_current_order; }
-	mgOrder* getOrder(unsigned int idx);
-	void setOrder(mgSelection *sel, unsigned int idx);
+	unsigned int getCurrentSelection() { return m_current_selection; }
+	void setSelection(unsigned int idx,mgSelection *s);
+	mgSelection* getSelection(unsigned int idx);
+	bool SwitchSelection();
 
 	mgSelection *moveselection;
 	mgActions CurrentType();
@@ -204,7 +204,7 @@ class mgMainMenu:public cOsdMenu
             if (UsingCollection) 
 		   return m_collectionsel;
 	    else
-		   return m_treesel;
+		   return selections[m_current_selection];
         }
 
 	//! \brief the collection selection
@@ -230,7 +230,7 @@ class mgMainMenu:public cOsdMenu
 
 	void AddItem(mgAction *a);
 
-	void CollectionChanged(std::string name);
+	void CollectionChanged(std::string name,bool added);
 
 	void CloseMenu();
 
@@ -262,10 +262,7 @@ class mgMenu
 	int m_parent_index;
 	std::string m_parent_name;
     public:
-	/*! sets the correct help keys.
-	 * \todo without data from mysql, no key is shown,
-	 * not even yellow or blue
-	 */
+	//! sets the correct help keys.
 	void SetHelpKeys(mgActions on = mgActions(0));
 //! \brief generates an object for the wanted action
 	mgAction* GenerateAction(const mgActions action,mgActions on);
@@ -382,7 +379,7 @@ class mgSubmenu:public mgMenu
         void BuildOsd ();
 };
 
-//! \brief an mgMenu class for selecting an order
+//! \brief an mgMenu class for selecting a selection
 class mgMenuOrders:public mgMenu
 {
     public:
@@ -399,13 +396,14 @@ class mgMenuOrder : public mgMenu
         ~mgMenuOrder();
 //! \brief computes the title
 	std::string Title() const;
-	bool ChangeOrder(eKeys key);
-	void SaveOrder();
+	bool ChangeSelection(eKeys key);
+	void SaveSelection();
     protected:
         void BuildOsd ();
     private:
-	void AddKeyActions(mgMenu *m,mgOrder *o);
-	mgOrder * m_order;
+	void AddKeyActions(mgMenu *m,mgSelection *o);
+	mgSelection * m_orgselection;
+	mgSelection * m_selection;
 	int m_orderbycount;
 	vector<int> m_keytypes;
 	vector < vector <const char*> > m_keynames;
@@ -443,5 +441,7 @@ class mgTreeRemoveFromCollSelector:public mgTreeCollSelector
     protected:
 	virtual mgActions coll_action() { return actRemoveCollEntry; }
 };
+
+mgSelection* GenerateSelection(const mgSelection *s=0);
 
 #endif

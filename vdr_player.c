@@ -28,6 +28,7 @@
 
 #include <mad.h>
 
+#include <linux/dvb/video.h>
 #include <player.h>
 #include <device.h>
 #include <thread.h>
@@ -35,16 +36,19 @@
 #include <tools.h>
 #include <recording.h>
 #include <status.h>
+#include <plugin.h>
 
 #include "vdr_player.h"
 #include "vdr_decoder.h"
 #include "vdr_config.h"
-#include "vdr_setup.h"
+#include "mg_setup.h"
 #include "i18n.h"
 
 #include "mg_tools.h"
 
 // ----------------------------------------------------------------
+
+// #define DEBUGPES
 
 // TODO: check for use of constants
 #define OUT_BITS 16                               // output 16 bit samples to DVB driver
@@ -113,11 +117,14 @@ class mgPCMPlayer:public cPlayer, cThread
 {
     private:
 
-//! \brief indicates, whether the player is currently active
+//! \brief indicates whether the player is currently active
         bool m_active;
 
-//! \brief indicates, whether the player has been started
+//! \brief indicates whether the player has been started
         bool m_started;
+
+//! \brief indicates whether the player is currently playing
+        bool m_playing;
 
 //! \brief a buffer for decoded sound
         cRingBufferFrame *m_ringbuffer;
@@ -132,24 +139,21 @@ class mgPCMPlayer:public cPlayer, cThread
         mgSelection *m_playlist;
 
 //! \brief the currently played or to be played item
-        mgContentItem *m_current;
-
-//! \brief the currently playing item
-        mgContentItem *m_playing;
+        mgItemGd *m_current;
 
 //! \brief the decoder responsible for the currently playing item
         mgDecoder *m_decoder;
 
         cFrame *m_rframe, *m_pframe;
 
-        enum ePlayMode
+        enum emgPlayMode
         {
             pmPlay,
             pmStopped,
             pmPaused,
             pmStartup
         };
-        ePlayMode m_playmode;
+        emgPlayMode m_playmode;
 
         enum eState
         {
@@ -171,8 +175,8 @@ class mgPCMPlayer:public cPlayer, cThread
 	void PlayTrack();
         void StopPlay ();
 
-        void SetPlayMode (ePlayMode mode);
-        void WaitPlayMode (ePlayMode mode, bool inv);
+        void SetPlayMode (emgPlayMode mode);
+        void WaitPlayMode (emgPlayMode mode, bool inv);
 
     protected:
         virtual void Activate (bool On);
@@ -187,6 +191,11 @@ class mgPCMPlayer:public cPlayer, cThread
             return m_active;
         }
 
+        bool Playing ()
+        {
+            return m_playing;
+        }
+
         void Pause ();
         void Play ();
         void Forward ();
@@ -198,23 +207,31 @@ class mgPCMPlayer:public cPlayer, cThread
         void ToggleLoop (void);
 
         virtual bool GetIndex (int &Current, int &Total, bool SnapToIFrame = false);
-//  bool GetPlayInfo(cMP3PlayInfo *rm); // LVW
+	//  bool GetPlayInfo(cMP3PlayInfo *rm); // LVW
 
         void ReloadPlaylist ();
         void NewPlaylist (mgSelection * plist);
-        mgContentItem *getCurrent ()
+
+        mgItemGd *getCurrent ()
         {
             return m_current;
         }
+
         mgSelection *getPlaylist ()
         {
             return m_playlist;
         }
+
+	// background image handling stuff
+	string m_current_image;
+	void CheckImage( string fileName );
+	void ShowImage( );
+	void TransferImageTFT( string cover );
+	void send_pes_packet(unsigned char *data, int len, int timestamp);	
 };
 
-mgPCMPlayer::mgPCMPlayer (mgSelection * plist):cPlayer (the_setup.
-BackgrMode ? pmAudioOnly :
-pmAudioOnlyBlack)
+mgPCMPlayer::mgPCMPlayer (mgSelection * plist)
+  : cPlayer(the_setup.BackgrMode? pmAudioOnlyBlack: pmAudioOnly )
 {
     m_playlist = plist;
 
@@ -231,7 +248,7 @@ pmAudioOnlyBlack)
     m_state = msStop;
 
     m_index = 0;
-    m_playing = 0;
+    m_playing = false;
     m_current = 0;
 }
 
@@ -240,18 +257,17 @@ mgPCMPlayer::~mgPCMPlayer ()
 {
     Detach ();
     delete m_playlist;
-    delete m_current;
     delete m_ringbuffer;
 }
 
 void
 mgPCMPlayer::PlayTrack()
 {
-    mgContentItem * newcurr = m_playlist->getCurrentItem ();
+    mgItemGd * newcurr = dynamic_cast<mgItemGd*>(m_playlist->getCurrentItem ());
     if (newcurr)
     {
-        delete m_current;
-        m_current = new mgContentItem(newcurr);
+	delete m_current;
+        m_current = new mgItemGd(newcurr);
     }
     Play ();
 }
@@ -268,7 +284,6 @@ mgPCMPlayer::Activate (bool on)
             Start ();
 
             m_started = true;
-	    delete m_current;
             m_current = 0;
 
             m_playmode_mutex.Lock ();
@@ -314,6 +329,8 @@ mgPCMPlayer::NewPlaylist (mgSelection * plist)
     Lock ();
     StopPlay ();
 
+    delete m_current;
+    m_current = 0;
     delete m_playlist;
     m_playlist = plist;
     PlayTrack();
@@ -321,7 +338,7 @@ mgPCMPlayer::NewPlaylist (mgSelection * plist)
 }
 
 void
-mgPCMPlayer::SetPlayMode (ePlayMode mode)
+mgPCMPlayer::SetPlayMode (emgPlayMode mode)
 {
     m_playmode_mutex.Lock ();
     if (mode != m_playmode)
@@ -334,7 +351,7 @@ mgPCMPlayer::SetPlayMode (ePlayMode mode)
 
 
 void
-mgPCMPlayer::WaitPlayMode (ePlayMode mode, bool inv)
+mgPCMPlayer::WaitPlayMode (emgPlayMode mode, bool inv)
 {
 // must be called with m_playmode_mutex LOCKED !!!
 
@@ -368,6 +385,10 @@ mgPCMPlayer::Action (void)
     int beat = 0;
 #endif
 
+#ifdef DEBUGPES
+    FILE *peslog = fopen( "pes.dump", "w" );
+#endif
+
     dsyslog ("muggle: player thread started (pid=%d)", getpid ());
 
     memset (&lpcmFrame, 0, sizeof (lpcmFrame));
@@ -376,6 +397,8 @@ mgPCMPlayer::Action (void)
     lpcmFrame.PES[6] = 0x87;
     lpcmFrame.LPCM[0] = 0xa0;                     // substream ID
     lpcmFrame.LPCM[1] = 0xff;
+    lpcmFrame.LPCM[2] = 0;
+    lpcmFrame.LPCM[3] = 4;    
     lpcmFrame.LPCM[5] = 0x01;
     lpcmFrame.LPCM[6] = 0x80;
 
@@ -410,12 +433,35 @@ mgPCMPlayer::Action (void)
                 case msStart:
                 {
                     m_index = 0;
-                    m_playing = m_current;
+                    m_playing = true;
 
-                    if (m_playing)
+		    string img = m_current->getImagePath();
+
+		    // check for TFT display of image
+		    TransferImageTFT( img );
+
+		    // check for background display of image
+		    if( the_setup.BackgrMode == 2 )
+		      {
+			if (img.empty())
+			{
+				m_current_image="";
+//    				cDevice::PrimaryDevice()->SetPlayMode(pmAudioOnly);
+			}
+			else
+			{
+//    				cDevice::PrimaryDevice()->SetPlayMode(pmAudioOnlyBlack);
+				string prev_mpg = m_current_image;
+				CheckImage( img );
+				if( ( prev_mpg != m_current_image ))
+			    		ShowImage();
+			}
+		      }
+
+                    if (m_current)
                     {
-		        std::string filename = m_playing->getSourceFile ();
-                        if ((m_decoder = mgDecoders::findDecoder (m_playing))
+		        string filename = m_current->getSourceFile ();
+                        if ((m_decoder = mgDecoders::findDecoder (m_current))
                             && m_decoder->start ())
                         {
 			  levelgood = true;
@@ -513,8 +559,8 @@ mgPCMPlayer::Action (void)
                         {                         // If one of the supported frequencies, do it without resampling.
                             case 96000:
                             {                     // Select a "even" upsampling frequency if possible, too.
-                                lpcmFrame.LPCM[5] |= 1 << 4;
-                                dvbSampleRate = 96000;
+			      lpcmFrame.LPCM[5] |= 1 << 4;
+			      dvbSampleRate = 96000;
                             }
                             break;
 
@@ -526,16 +572,18 @@ mgPCMPlayer::Action (void)
                             case 22050:
                             case 44100:
                             {
-                                lpcmFrame.LPCM[5] |= 2 << 4;
-                                dvbSampleRate = 44100;
+			      // lpcmFrame.LPCM[5] |= 2 << 4;
+			      lpcmFrame.LPCM[5] |= 0x20;
+			      dvbSampleRate = 44100;
                             }
                             break;
                             case 8000:
                             case 16000:
                             case 32000:
                             {
-                                lpcmFrame.LPCM[5] |= 3 << 4;
-                                dvbSampleRate = 32000;
+			      // lpcmFrame.LPCM[5] |= 3 << 4;
+			      lpcmFrame.LPCM[5] |= 0x30;
+			      dvbSampleRate = 32000;
                             }
                             break;
                         }
@@ -578,13 +626,19 @@ mgPCMPlayer::Action (void)
                         amRound);
                         if (outlen)
                         {
-                            outlen += sizeof (lpcmFrame.LPCM) + LEN_CORR;
-                            lpcmFrame.PES[4] = outlen >> 8;
-                            lpcmFrame.PES[5] = outlen;
-                            m_rframe = new cFrame ((unsigned char *) &lpcmFrame,
-                                outlen +
-                                sizeof (lpcmFrame.PES) -
-                                LEN_CORR);
+			  outlen += sizeof (lpcmFrame.LPCM) + LEN_CORR;
+			  lpcmFrame.PES[4] = outlen >> 8;
+			  lpcmFrame.PES[5] = outlen;
+			  
+			  // lPCM has 600 fps which is 80 samples at 48kHz per channel
+			  // Frame size = (sample_rate * quantization * channels)/4800
+			  size_t frame_size = 2 * (dvbSampleRate*16)/4800;
+			    
+			  lpcmFrame.LPCM[1] = (outlen - LPCM_SIZE)/frame_size;
+			  m_rframe = new cFrame ((unsigned char *) &lpcmFrame,
+						 outlen +
+						 sizeof (lpcmFrame.PES) -
+						 LEN_CORR);
                         }
                     }
                     else
@@ -607,7 +661,7 @@ mgPCMPlayer::Action (void)
                 }                                 // fall through
                 case msStop:
                 {
-                    m_playing = 0;
+                    m_playing = false;
                     if (m_decoder)
                     {                             // who deletes decoder?
                         m_decoder->stop ();
@@ -657,6 +711,10 @@ mgPCMPlayer::Action (void)
 
         if (m_pframe)
         {
+#ifdef DEBUGPES
+	  fwrite( (void *)p, pc, sizeof( char ), peslog );
+#endif
+
 #if VDRVERSNUM >= 10318
             int w = PlayPes (p, pc);
 #else
@@ -719,9 +777,13 @@ mgPCMPlayer::Action (void)
         m_decoder = 0;
     }
 
-    m_playing = 0;
+    m_playing = false;
 
     SetPlayMode (pmStopped);
+
+#ifdef DEBUGPES
+    fclose( peslog );
+#endif
 
     Unlock ();
 
@@ -772,16 +834,17 @@ mgPCMPlayer::StopPlay ()
 bool mgPCMPlayer::SkipFile (bool skipforward)
 {
     MGLOG("mgPCMPlayer::SkipFile");
-    mgContentItem * newcurr = NULL;
+    mgItemGd * newcurr = NULL;
     int skip_direction=1;
     if (!skipforward)
 	    skip_direction=-1;
     if (m_playlist->skipItems (skip_direction)) 
     {
-        newcurr = m_playlist->getCurrentItem ();
-        if (newcurr) {
+        newcurr = dynamic_cast<mgItemGd*>(m_playlist->getCurrentItem ());
+        if (newcurr)
+	{
 	    delete m_current;
-            m_current = new mgContentItem(newcurr);
+            m_current = new mgItemGd(newcurr);
 	}
     }
     return (newcurr != NULL);
@@ -872,14 +935,14 @@ void
 mgPCMPlayer::Goto (int index, bool still)
 {
     m_playlist->GotoItemPosition (index - 1);
-    mgContentItem *next = m_playlist->getCurrentItem ();
+    mgItemGd *next = dynamic_cast<mgItemGd*>(m_playlist->getCurrentItem ());
 
     if (next)
     {
         Lock ();
         StopPlay ();
-	delete m_current;
-        m_current = new mgContentItem(next);
+        delete m_current;
+	m_current = new mgItemGd(next);
         Play ();
         Unlock ();
     }
@@ -890,18 +953,20 @@ void
 mgPCMPlayer::SkipSeconds (int secs)
 {
     if (m_playmode != pmStopped)
-    {
+      {
         Lock ();
+
         if (m_playmode == pmPaused)
-        {
+	  {
             SetPlayMode (pmPlay);
-        }
-        if (m_decoder
-            && m_decoder->skip (secs, m_ringbuffer->Available (),
-            dvbSampleRate))
-        {
+	  }
+        if ( m_decoder
+             && m_decoder->skip (secs, m_ringbuffer->Available(),
+				 dvbSampleRate) )
+	  {
             levelgood = false;
-        }
+	  }
+
         Empty ();
         Unlock ();
     }
@@ -920,232 +985,152 @@ bool mgPCMPlayer::GetIndex (int &current, int &total, bool snaptoiframe)
 }
 
 
-/*
-string mgPCMPlayer::CheckImage( string fileName, size_t j )
+void mgPCMPlayer::CheckImage( string filename )
 {
-static char tmpFile[1024];
-char *tmp[2048];
-char *result = NULL;
-FILE *fp;
+  FILE *fp;
+  string tmpFile;
 
-sprintf (tmpFile, "%s/%s", MP3Setup.ImageCacheDir, &fileName[j]); // ???
-strcpy (strrchr (tmpFile, '.'), ".mpg");
-d(printf("mp3[%d]: cache %s\n", getpid (), tmpFile))
-if ((fp = fopen (tmpFile, "rb")))
-{
-fclose (fp);
-result = tmpFile;
-}
-else
-{
-if ((fp = fopen (fileName, "rb")))
-{
-fclose (fp);
-d(printf("mp3[%d]: image %s found\n", getpid (), fileName))
-sprintf ((char *) tmp, "image_convert.sh \"%s\" \"%s\"", fileName, tmpFile);
-system ((const char*) tmp);
-result = tmpFile;
-}
-}
-fp = fopen ("/tmp/vdr_mp3_current_image.txt", "w");
-fprintf (fp, "%s\n", fileName);
-fclose (fp);
-return result;
-}
+  // determine the filename of a (to be) cached .mpg file
+  unsigned dotpos = filename.rfind( ".", filename.length() );
 
-char *cMP3Player::LoadImage(const char *fullname)
-{
-size_t i, j = strlen (MP3Sources.GetSource()->BaseDir()) + 1;
-char imageFile[1024];
-static char mpgFile[1024];
-char *p, *q = NULL;
-char *imageSuffixes[] = { "png", "gif", "jpg" };
+  // assemble path from relative paths
+  tmpFile = string( the_setup.ImageCacheDir ) + string( "/" ) + filename.substr( 0, dotpos ) + string( ".mpg" );
 
-d(printf("mp3[%d]: checking %s for images\n", getpid (), fullname))
-strcpy (imageFile, fullname);
-strcpy (mpgFile, "");
-//
-// track specific image, e.g. <song>.jpg
-//
-p = strrchr (imageFile, '.');
-if (p)
-{
-for (i = 0; i < sizeof (imageSuffixes) / sizeof (imageSuffixes[0]); i++)
-{
-strcpy (p + 1, imageSuffixes[i]);
-d(printf("mp3[%d]: %s\n", getpid (), imageFile))
-q = CheckImage (imageFile, j);
-if (q)
-{
-strcpy (mpgFile, q);
-}
-}
-}
-//
-// album specific image, e.g. cover.jpg in song directory
-//
-if (!strlen (mpgFile))
-{
-p = strrchr (imageFile, '/');
-if (p)
-{
-strcpy (p + 1, "cover.");
-p += 6;
-for (i = 0; i < sizeof (imageSuffixes) / sizeof (imageSuffixes[0]); i++)
-{
-strcpy (p + 1, imageSuffixes[i]);
-d(printf("mp3[%d]: %s\n", getpid (), imageFile))
-q = CheckImage (imageFile, j);
-if (q)
-{
-strcpy (mpgFile, q);
-}
-}
-}
-}
-//
-// artist specific image, e.g. artist.jpg in artist directory
-//
-if (!strlen (mpgFile))
-{
-p = strrchr (imageFile, '/');
-if (p)
-{
-*p = '\0';
-p = strrchr (imageFile, '/');
-}
-if (p)
-{
-strcpy (p + 1, "artist.");
-p += 7;
-for (i = 0; i < sizeof (imageSuffixes) / sizeof (imageSuffixes[0]); i++)
-{
-strcpy (p + 1, imageSuffixes[i]);
-d(printf("mp3[%d]: %s\n", getpid (), imageFile))
-q = CheckImage (imageFile, j);
-if (q)
-{
-strcpy (mpgFile, q);
-}
-}
-}
-}
-//
-// default background image
-//
-if (!strlen (mpgFile))
-{
-for (i = 0; i < sizeof (imageSuffixes) / sizeof (imageSuffixes[0]); i++)
-{
-sprintf (imageFile, "%s/background.%s", MP3Setup.ImageCacheDir, imageSuffixes[i]);
-d(printf("mp3[%d]: %s\n", getpid (), imageFile))
-q = CheckImage (imageFile, strlen(MP3Setup.ImageCacheDir) + 1);
-if (q)
-{
-strcpy (mpgFile, q);
-}
-}
-}
-if (!strlen (mpgFile))
-{
-sprintf (mpgFile, "%s/background.mpg", MP3Setup.ImageCacheDir);
-}
-return mpgFile;
+  // now filename and tmpFile are absolute path specs
+
+  // if this cached file can be opened, use it
+  if( (fp = fopen( tmpFile.c_str(), "rb" )) )
+    {
+      fclose(fp);
+    }
+  else
+    {
+      // otherwise run the image conversion
+      if( (fp = fopen( filename.c_str(), "rb" )) )
+	{
+	  char *tmp;
+	  // filename can be opened
+	  fclose (fp);
+	  
+	  cout << "Converting " << filename << " to " << tmpFile << endl << flush;
+	  asprintf( &tmp, "image_convert.sh \"%s\" \"%s\"", filename.c_str(), tmpFile.c_str() );
+	  system( (const char*) tmp );
+	  delete tmp;
+	}
+    }
+  
+  m_current_image = tmpFile;
+
 }
 
-void mgPCMPlayer::ShowImage (char *file)
+void mgPCMPlayer::ShowImage( )
 {
-uchar *buffer;
-int fd;
-struct stat st;
-struct video_still_picture sp;
+  // show image .mpg referred in m_current_image
 
-if ((fd = open (file, O_RDONLY)) >= 0)
-{
-d(printf("mp3[%d]: cover still picture %s\n", getpid (), file))
-fstat (fd, &st);
-sp.iFrame = (char *) malloc (st.st_size);
-if (sp.iFrame)
-{
-sp.size = st.st_size;
-if (read (fd, sp.iFrame, sp.size) > 0)
-{
-buffer = (uchar *) sp.iFrame;
-d(printf("mp3[%d]: new image frame (size %d)\n", getpid(), sp.size))
-if(MP3Setup.UseDeviceStillPicture)
-DeviceStillPicture (buffer, sp.size);
-else
-{
-for (int i = 1; i <= 25; i++)
-{
-send_pes_packet (buffer, sp.size, i);
-}
-}
-}
-free (sp.iFrame);
-}
-else
-{
-esyslog ("mp3[%d]: cannot allocate memory (%d bytes) for still image",
-getpid(), (int) st.st_size);
-}
-close (fd);
-}
-else
-{
-esyslog ("mp3[%d]: cannot open image file '%s'",
-getpid(), file);
-}
+  uchar *buffer;
+  int fd;
+  struct stat st;
+  struct video_still_picture sp;
+  
+  if( (fd = open( m_current_image.c_str(), O_RDONLY ) ) >= 0 )
+    {
+      fstat (fd, &st);
+      sp.iFrame = (char *) malloc (st.st_size);
+      if( sp.iFrame )
+	{
+	  sp.size = st.st_size;
+	  if( read (fd, sp.iFrame, sp.size) > 0 )
+	    {
+	      buffer = (uchar *) sp.iFrame;
+
+	      
+	      if( the_setup.UseDeviceStillPicture )
+		{
+		  sleep(1);
+		  DeviceStillPicture( buffer, sp.size );
+		}
+	      else
+		{
+		  for (int i = 1; i <= 25; i++)
+		    {
+		      send_pes_packet (buffer, sp.size, i);
+		    }
+		}
+	    }
+	  free (sp.iFrame);
+	}
+      else
+	{
+	  esyslog ("mp3[%d]: cannot allocate memory (%d bytes) for still image",
+		   getpid(), (int) st.st_size);
+	}
+      close (fd);
+    }
+  else
+    {
+      esyslog ("mp3[%d]: cannot open image file '%s'",
+	       getpid(), m_current_image.c_str() );
+    }
 }
 
 void mgPCMPlayer::send_pes_packet(unsigned char *data, int len, int timestamp)
 {
 #define PES_MAX_SIZE 2048
-int ptslen = timestamp ? 5 : 1;
-static unsigned char pes_header[PES_MAX_SIZE];
+  int ptslen = timestamp ? 5 : 1;
+  static unsigned char pes_header[PES_MAX_SIZE];
 
-pes_header[0] = pes_header[1] = 0;
-pes_header[2] = 1;
-pes_header[3] = 0xe0;
+  pes_header[0] = pes_header[1] = 0;
+  pes_header[2] = 1;
+  pes_header[3] = 0xe0;
 
-while(len > 0)
-{
-int payload_size = len;
-if(6 + ptslen + payload_size > PES_MAX_SIZE)
-payload_size = PES_MAX_SIZE - (6 + ptslen);
+  while(len > 0)
+    {
+      int payload_size = len;
+      if(6 + ptslen + payload_size > PES_MAX_SIZE)
+	payload_size = PES_MAX_SIZE - (6 + ptslen);
+      
+      pes_header[4] = (ptslen + payload_size) >> 8;
+      pes_header[5] = (ptslen + payload_size) & 255;
 
-pes_header[4] = (ptslen + payload_size) >> 8;
-pes_header[5] = (ptslen + payload_size) & 255;
-
-if(ptslen == 5)
-{
-int x;
-x = (0x02 << 4) | (((timestamp >> 30) & 0x07) << 1) | 1;
-pes_header[8] = x;
-x = ((((timestamp >> 15) & 0x7fff) << 1) | 1);
-pes_header[7] = x >> 8;
-pes_header[8] = x & 255;
-x = ((((timestamp) & 0x7fff) < 1) | 1);
-pes_header[9] = x >> 8;
-pes_header[10] = x & 255;
-} else
-{
-pes_header[6] = 0x0f;
-}
-
-memcpy(&pes_header[6 + ptslen], data, payload_size);
+      if(ptslen == 5)
+	{
+	  int x;
+	  x = (0x02 << 4) | (((timestamp >> 30) & 0x07) << 1) | 1;
+	  pes_header[8] = x;
+	  x = ((((timestamp >> 15) & 0x7fff) << 1) | 1);
+	  pes_header[7] = x >> 8;
+	  pes_header[8] = x & 255;
+	  x = ((((timestamp) & 0x7fff) < 1) | 1);
+	  pes_header[9] = x >> 8;
+	  pes_header[10] = x & 255;
+	} 
+      else
+	{
+	  pes_header[6] = 0x0f;
+	}
+      
+      memcpy(&pes_header[6 + ptslen], data, payload_size);
 #if VDRVERSNUM >= 10318
-PlayPes(pes_header, 6 + ptslen + payload_size);
+      PlayPes(pes_header, 6 + ptslen + payload_size);
 #else
-PlayVideo(pes_header, 6 + ptslen + payload_size);
+      PlayVideo(pes_header, 6 + ptslen + payload_size);
 #endif
+      
+      len -= payload_size;
+      data += payload_size;
+      ptslen = 1;
+    }
+}
 
-len -= payload_size;
-data += payload_size;
-ptslen = 1;
+void mgPCMPlayer::TransferImageTFT( string cover )
+{
+  cPlugin * graphtft = cPluginManager::GetPlugin("graphtft");
+  
+  if( graphtft ) 
+    {
+      graphtft->SetupParse( "CoverImage", cover.c_str() );
+    } 
 }
-}
-*/
 
 // --- mgPlayerControl -------------------------------------------------------
 
@@ -1164,7 +1149,7 @@ mgPCMPlayer (plist))
 
     m_szLastShowStatusMsg = NULL;
 
-// Notify all cStatusMonitor
+    // Notify all cStatusMonitor
     StatusMsgReplaying ();
 }
 
@@ -1191,9 +1176,16 @@ bool mgPlayerControl::Active (void)
 }
 
 
+bool mgPlayerControl::Playing (void)
+{
+    return player && player->Playing ();
+}
+
+
 void
 mgPlayerControl::Stop (void)
 {
+  cStatus::MsgReplaying( this, NULL );
     if (player)
     {
         delete player;
@@ -1243,11 +1235,11 @@ mgPlayerControl::Backward (void)
 
 
 void
-mgPlayerControl::SkipSeconds (int Seconds)
+mgPlayerControl::SkipSeconds(int Seconds)
 {
     if (player)
     {
-        player->SkipSeconds (Seconds);
+        player->SkipSeconds(Seconds);
     }
 }
 
@@ -1348,7 +1340,14 @@ mgPlayerControl::ShowContents ()
                 m_menu->SetItem (buf, 3, false, false);
                 free (buf);
             }
-            if (num_items > 4)
+	    if( num_items > 4 )
+	      {
+                asprintf (&buf, "Year:\t%d",
+			  player->getCurrent ()->getYear () );
+                m_menu->SetItem (buf, 4, false, false);
+                free (buf);
+	      }
+            if (num_items > 5)
             {
                 int len = player->getCurrent ()->getDuration ();
                 asprintf (&buf, "Length:\t%s",
@@ -1357,30 +1356,30 @@ mgPlayerControl::ShowContents ()
 #else
                     IndexToHMSF (SecondsToFrames (len)));
 #endif
-                m_menu->SetItem (buf, 4, false, false);
-                free (buf);
-            }
-            if (num_items > 5)
-            {
-                asprintf (&buf, "Bit rate:\t%s",
-                    player->getCurrent ()->getBitrate ().c_str ());
                 m_menu->SetItem (buf, 5, false, false);
                 free (buf);
             }
             if (num_items > 6)
             {
-                int sr = player->getCurrent ()->getSampleRate ();
-
-                asprintf (&buf, "Sampling rate:\t%d", sr);
+                asprintf (&buf, "Bit rate:\t%s",
+                    player->getCurrent ()->getBitrate ().c_str ());
                 m_menu->SetItem (buf, 6, false, false);
                 free (buf);
             }
-            if (num_items > 6)
+            if (num_items > 7)
+            {
+                int sr = player->getCurrent ()->getSampleRate ();
+
+                asprintf (&buf, "Sampling rate:\t%d", sr);
+                m_menu->SetItem (buf, 7, false, false);
+                free (buf);
+            }
+            if (num_items > 8)
             {
                 string sf = player->getCurrent ()->getSourceFile ();
 		char *p = strrchr(sf.c_str(),'/');
                 asprintf (&buf, "File name:\t%s", p+1);
-                m_menu->SetItem (buf, 7, false, false);
+                m_menu->SetItem (buf, 8, false, false);
                 free (buf);
 	    }
         }
@@ -1397,7 +1396,7 @@ mgPlayerControl::ShowContents ()
                 int cur = list->getItemPosition ();
                 for (int i = 0; i < num_items; i++)
                 {
-                    mgContentItem *item = list->getItem (cur - 3 + i);
+                    mgItemGd *item = dynamic_cast<mgItemGd*>(list->getItem (cur - 3 + i));
                     if (item)
                     {
                         char *buf;
@@ -1433,8 +1432,10 @@ mgPlayerControl::ShowProgress ()
             {
                 total_frames = SecondsToFrames (list->getLength ());
                 current_frame += SecondsToFrames (list->getCompletedLength ());
-                asprintf (&buf, "%s (%d/%d)", list->getListname ().c_str (),
-                    list->getItemPosition () + 1, list->getNumItems ());
+                asprintf (&buf, "(%d/%d) %s:%s",
+                    list->getItemPosition () + 1, list->items().size(),
+                    player->getCurrent ()->getArtist ().c_str (),
+                    player->getCurrent ()->getTitle ().c_str ());
             }
         }
         else
@@ -1572,17 +1573,26 @@ eOSState mgPlayerControl::ProcessKey (eKeys key)
             case kUp:
             {
                 if (m_visible && !m_progress_view && !m_track_view)
-			Backward();
+		  {
+		    Backward();
+		  }
 		else
-			Forward ();
+		  {
+		    Forward ();
+		  }
+		Display();
             }
             break;
             case kDown:
             {
                 if (m_visible && !m_progress_view && !m_track_view)
-			Forward ();
+		  {
+		    Forward ();
+		  }
 		else
-			Backward();
+		  {
+		    Backward();
+		  }
             }
             break;
             case kRed:
@@ -1686,10 +1696,10 @@ eOSState mgPlayerControl::ProcessKey (eKeys key)
             case kStop:
             case kBlue:
             {
-                InternalHide ();
-                Stop ();
+		  InternalHide ();
+		  Stop ();
 
-                return osEnd;
+		  return osEnd;
             }
             break;
             case kOk:
@@ -1708,6 +1718,16 @@ eOSState mgPlayerControl::ProcessKey (eKeys key)
                 return osEnd;
             }
             break;
+	    case kLeft:
+	    {
+	      SkipSeconds( -60 );
+	      Display();
+	    } break;
+	    case kRight:
+	    {
+	      SkipSeconds( 60 );
+	      Display();
+	    } break;
             default:
             {
                 return osUnknown;
@@ -1723,12 +1743,19 @@ mgPlayerControl::StatusMsgReplaying ()
 {
     MGLOG ("mgPlayerControl::StatusMsgReplaying()");
     char *szBuf = NULL;
-    if (player && player->getCurrent () && player->getPlaylist ())
+    mgSelection * sel;
+    mgItemGd * item;
+    if (player)
+    {
+	sel = player->getPlaylist();
+        item = dynamic_cast<mgItemGd*>(player->getCurrent ());
+    }
+    if (player && sel && item)
     {
         char cLoopMode;
         char cShuffle;
 
-        switch (player->getPlaylist ()->getLoopMode ())
+        switch (sel->getLoopMode ())
         {
             default:
             case mgSelection::LM_NONE:
@@ -1742,7 +1769,7 @@ mgPlayerControl::StatusMsgReplaying ()
                 break;
         }
 
-        switch (player->getPlaylist ()->getShuffleMode ())
+        switch (sel->getShuffleMode ())
         {
             default:
             case mgSelection::SM_NONE:
@@ -1756,27 +1783,24 @@ mgPlayerControl::StatusMsgReplaying ()
                 break;
         }
 
-        mgContentItem *tmp = player->getCurrent ();
-	if (tmp == NULL) 
-	    mgError("mgPlayerControl::StatusMsgReplaying: getCurrent() is NULL");
-        if (tmp->getArtist ().length () > 0)
+        if (item->getArtist ().length () > 0)
         {
             asprintf (&szBuf, "[%c%c] (%d/%d) %s - %s",
                 cLoopMode,
                 cShuffle,
-                player->getPlaylist ()->getItemPosition () + 1,
-                player->getPlaylist ()->getNumItems (),
-                player->getCurrent ()->getArtist ().c_str (),
-                player->getCurrent ()->getTitle ().c_str ());
+                sel->getItemPosition () + 1,
+                sel->items().size(),
+                item->getArtist ().c_str (),
+                item->getTitle ().c_str ());
         }
         else
         {
             asprintf (&szBuf, "[%c%c] (%d/%d) %s",
                 cLoopMode,
                 cShuffle,
-                player->getPlaylist ()->getItemPosition () + 1,
-                player->getPlaylist ()->getNumItems (),
-                player->getCurrent ()->getTitle ().c_str ());
+                sel->getItemPosition () + 1,
+                sel->items().size(),
+                item->getTitle ().c_str ());
         }
     }
     else

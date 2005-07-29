@@ -14,7 +14,10 @@
 #define _MUGGLE_TOOLS_H
 
 #include <iostream>
+#include <sstream>
 #include <string>
+
+using namespace std;
 
 /*!
  * \brief Logging utilities
@@ -27,7 +30,6 @@ void mgSetDebugLevel (int new_level);
 void mgDebug (int level, const char *fmt, ...);
 void mgDebug (const char *fmt, ...);
 void mgWarning (const char *fmt, ...);
-//! \todo mgError should display the message on the OSD. How?
 void mgError (const char *fmt, ...); 
 //@}
 
@@ -58,12 +60,12 @@ class mgLog
             LOG, WARNING, ERROR, FATAL
         } mgLogLevel;
 
-        std::ostream & getStream ()
+        ostream & getStream ()
         {
             return std::cout;
         }
 
-        mgLog (std::string methodname):m_methodname (methodname)
+        mgLog (string methodname):m_methodname (methodname)
         {
             getStream () << m_methodname << " entered" << std::endl;
         };
@@ -75,40 +77,27 @@ class mgLog
 
     private:
 
-        std::string m_methodname;
+        string m_methodname;
 
 };
 
-std::string trim(std::string const& source, char const* delims = " \t\r\n");
+string trim(string const& source, char const* delims = " \t\r\n");
 
 char *SeparateFolders(const char *filename, char * folders[],unsigned int fcount);
 
-enum mgKeyTypes {
-	keyGenre1=1, // the genre types must have exactly this order!
-	keyGenre2,
-	keyGenre3,
-	keyGenres,
-	keyDecade,
-	keyYear,
-	keyArtist,
-	keyAlbum,
-	keyTitle,
-	keyTrack,
-	keyLanguage,
-	keyRating,
-	keyFolder1,
-	keyFolder2,
-	keyFolder3,
-	keyFolder4,
-	keyCreated,
-	keyModified,
-	keyArtistABC,
-	keyTitleABC,
-	keyCollection,
-	keyCollectionItem,
-};
-const mgKeyTypes mgKeyTypesLow = keyGenre1;
-const mgKeyTypes mgKeyTypesHigh = keyCollectionItem;
-const unsigned int mgKeyTypesNr = keyCollectionItem;
+//! \brief adds string n to string s, using string sep to separate them
+string& addsep (string & s, string sep, string n);
 
+//! \brief adds string n to string s, using a comma to separate them
+string comma (string &s, string n);
+
+//! \brief converts long to string
+string itos (int i);
+
+//! \brief convert long to string
+string ltos (long l);
+
+char *extension (const char *filename);
+
+bool notempty(const char *s);
 #endif                                            /*  _MUGGLE_TOOLS_H */

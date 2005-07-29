@@ -20,10 +20,11 @@ using namespace std;
 
 #include "mg_tools.h"
 #include "mg_valmap.h"
-#include "mg_order.h"
-#include "mg_content.h"
+#include "mg_item.h"
+#include "mg_db.h"
 
 typedef vector<string> strvector;
+typedef vector<mgKey*> keyvector;
 
 /*!
  * \brief the only interface to the database.
@@ -35,31 +36,7 @@ typedef vector<string> strvector;
 class mgSelection
 {
     public:
-	class mgListItems 
-	{
-		public:
-			mgListItems() { m_sel=0; }
-			void setOwner(mgSelection* sel);
-			mgListItem& operator[](unsigned int idx);
-			string& id(unsigned int);
-			unsigned int count(unsigned int);
-			bool operator==(const mgListItems&x) const;
-			size_t size() const;
-        		unsigned int valindex (const string v) const;
-        		unsigned int idindex (const string i) const;
-			void clear();
-			void push_back(mgListItem& item) { m_items.push_back(item); }
-		private:
-        		unsigned int index (const string s,bool val,bool second_try=false) const;
-			vector<mgListItem> m_items;
-			mgSelection* m_sel;
-	};
-
-//! \brief defines an order to be used 
-        void setOrder(mgOrder *o);
-
-	mgOrder& getOrder() { return order; }
-
+	void CopyKeyValues(mgSelection* s);
 /*! \brief define various ways to play music in random order
  * \todo Party mode is not implemented, does same as SM_NORMAL
  */
@@ -77,6 +54,29 @@ class mgSelection
             LM_SINGLE,                            //!< \brief loop a single item
             LM_FULL                               //!< \brief loop the whole item list
         };
+
+	class mgListItems 
+	{
+		public:
+			mgListItems() { m_sel=0; }
+			void setOwner(mgSelection* sel);
+			mgListItem* operator[](unsigned int idx);
+			string& id(unsigned int);
+			unsigned int count(unsigned int);
+			bool operator==(const mgListItems&x) const;
+			size_t size() const;
+       			int search (const string v) const;
+       			unsigned int valindex (const string v) const;
+       			unsigned int idindex (const string i) const;
+			void clear();
+			void push_back(mgListItem* item) { m_items.push_back(item); }
+			vector<mgListItem*>& items() { return m_items; }	//! \brief use only for loading!
+			void sort(bool bycount,mgSortBy SortBy);
+		private:
+       			unsigned int index (const string s,bool val,bool second_try=false) const;
+			vector<mgListItem*> m_items;
+			mgSelection* m_sel;
+	};
 
 /*! \brief the main constructor
  * \param fall_through if TRUE: If enter() returns a choice
@@ -98,12 +98,13 @@ class mgSelection
  */
         mgSelection (const mgSelection* s);
 
+ 	virtual void MakeCollection() =0;
 
 //! \brief initializes from a map.
-	void InitFrom(mgValmap& nv);
+	void InitFrom(const char *prefix,mgValmap& nv);
 
 //! \brief the normal destructor
-        ~mgSelection ();
+        virtual ~mgSelection ();
 
 /*! \brief represents all items for the current level. The result
  * is cached, subsequent accesses to values only incur a
@@ -116,21 +117,18 @@ class mgSelection
  */
         mgKeyTypes getKeyType (const unsigned int level) const;
 
+	mgSortBy getKeySortBy (const unsigned int level) const;
+
 //! \brief return the current value of this key
-        mgListItem& getKeyItem (const unsigned int level) const;
+        mgListItem* getKeyItem (const unsigned int level) const;
 	
+/*! \brief returns an item value
+ */
+	string getValue(unsigned int idx) const;
+
 /*! \brief returns the current item from the value() list
  */
 	string getCurrentValue();
-
-//! \brief returns a map (new allocated) for all used key fields and their values
-	map<mgKeyTypes,string> UsedKeyValues();
-
-//! \brief the number of key fields used for the query
-        unsigned int ordersize () { return order.size(); }
-
-//! \brief the number of music items currently selected
-        unsigned int count () const;
 
 //! \brief the current position
         unsigned int getPosition ()const;
@@ -138,7 +136,6 @@ class mgSelection
 	//! \brief go to the current position. If it does not exist,
 	// go to the nearest.
         unsigned int gotoPosition ();
-
 
 //! \brief the current position in the item list
         unsigned int getItemPosition () const;
@@ -156,11 +153,6 @@ class mgSelection
  */
         bool enter (unsigned int position);
 
-	/*! \brief like enter but if we are at the leaf level simply select
-	 * the entry at position
-	 */
-        bool select (unsigned int position);
-
 /*! \brief enter the next higher level, expanding the current position.
  * See also enter(unsigned int position)
  */
@@ -168,15 +160,6 @@ class mgSelection
         {
             return enter (gotoPosition ());
         }
-
-	/*! \brief like enter but if we are at the leaf level simply select
-	 * the current entry
-	 */
-        bool select ()
-        {
-            return select (gotoPosition ());
-        }
-
 /*! \brief enter the next higher level, expanding the position holding a certain value
  * \param value the position holding value will be expanded.
  */
@@ -184,22 +167,6 @@ class mgSelection
         {
             return enter (listitems.valindex (value));
         }
-
-	/*! \brief like enter but if we are at the leaf level simply select
-	 * the current entry
-	 */
-        bool select (const string value)
-        {
-            return select (listitems.valindex(value));
-        }
-
-	bool selectid (const string i)
-	{
-	    return select(listitems.idindex(i));
-	}
-
-	void selectfrom(mgOrder& oldorder,mgContentItem* o);
-
 /*! \brief leave the current level, go one up in the tree.
  * If fall_through (see constructor) is set to true, and the
  * level entered by leave() contains only one item, automatically
@@ -217,11 +184,20 @@ class mgSelection
  */
         void leave_all ();
 
-//! \brief the current level in the tree. This is at most order.size().
-        unsigned int level () const
-        {
-            return m_level;
-        }
+	unsigned int ordersize() const
+	{
+	    return Keys.size();
+	}
+/*! \brief the orderlevel is 0 for the top level. After initializing
+ * an mgSelection from file or from another mgSelection, it is 0.
+ * It will only be correct after Activate() has been called. This
+ * is so because setting it correctly needs to access the database.
+ * We do not want to do that before we really need to.
+ */
+	unsigned int orderlevel() const
+	{
+	    return m_level;
+	}
 
 	//! \brief true if the selection holds no items
 	bool empty();
@@ -233,17 +209,17 @@ class mgSelection
  * loss of performance. See value(), the same warning applies.
  * \todo call this more seldom. See getNumItems()
  */
-        const vector < mgContentItem > &items () const;
+        const vector < mgItem* > &items () const;
 
 /*! \brief returns an item from the items() list
  * \param position the position in the items() list
  * \return returns NULL if position is out of range
  */
-        mgContentItem* getItem (unsigned int position);
+        mgItem* getItem (unsigned int position);
 
 /*! \brief returns the current item from the items() list
  */
-        mgContentItem* getCurrentItem ()
+        mgItem* getCurrentItem ()
         {
             return getItem (gotoItemPosition());
         }
@@ -320,10 +296,13 @@ class mgSelection
 /*! \brief go to the position with value in the current level
  * \param value the value of the wanted position
  */
-        void setPosition (const string value)
-        {
-            setPosition (listitems.valindex (value));
-        }
+        void setPosition (string value);
+
+/*! \brief search the first position starting with search in the current level
+ * \param search the search string
+ * \return the new position
+ */
+        unsigned int searchPosition (string search);
 
 /*! \brief go to a position in the item list
  * \param position the wanted position. If it is too big, go to the 
@@ -346,41 +325,17 @@ class mgSelection
  */
         unsigned long getCompletedLength () const;
 
-/*! returns the number of items in the item list
- *  \todo should not call items () which loads all item info.
- *  instead, only count the items. If the size differs from
- *  m_items.size(), invalidate m_items
- */
-        unsigned int getNumItems () const
-        {
-            return items ().size ();
-        }
 
 /*! returns the name of the current play list. If no play list is active,
  * the name is built from the name of the key fields.
  */
         string getListname () const;
 
-/*! \brief true if this selection currently selects a list of collections
- */
-        bool isCollectionlist () const;
-
-/*! \brief true if this selection currently selects a list of languages
- */
-        bool isLanguagelist () const;
-
-	//! \brief true if we have entered a collection
-	bool inCollection(const string Name="") const;
-
 	/*! \brief dumps the entire state of this selection into a map,
 	 * \param nv the values will be entered into this map
 	 */
-        void DumpState(mgValmap& nv) const;
-
-        /*! \brief creates a new selection using saved definitions
-	 * \param nv this map contains the saved definitions
-	 */
-	mgSelection(mgValmap&  nv);
+        void DumpState(mgValmap& nv,const char *prefix) const;
+        void ShowState(char *w) const;
 
 	//! \brief clear the cache, next access will reload from data base
         void clearCache() const;
@@ -392,55 +347,74 @@ class mgSelection
 	{
 		return (m_current_values=="" && m_current_tracks=="");
 	}
-	string value(mgKeyTypes kt, string idstr) const;
-	string value(mgKey* k, string idstr) const;
-	string value(mgKey* k) const;
-	string id(mgKeyTypes kt, string val) const;
-	string id(mgKey* k, string val) const;
-	string id(mgKey* k) const;
-	unsigned int keycount(mgKeyTypes kt);
-	unsigned int valcount (string val);
-	bool Connected() { return m_db.Connected(); }
+
+	void setKeys(vector<const char*>& kt);
+	string Name();
+	bool SameOrder(const mgSelection* other);
+	mgKey* Key(unsigned int idx) const;
+	virtual vector <const char*> Choices(unsigned int level, unsigned int *current) const = 0;
+	void setOrderByCount(bool groupbycount);
+	bool getOrderByCount() const { return m_orderByCount; }
+	virtual bool NeedKey(unsigned int i) const = 0;
+	virtual mgParts SelParts(bool distinct,bool deepsort) const;
+	virtual bool inCollection(const string Name="") const =0;
+	virtual bool isLanguagelist() const =0;
+	virtual bool isCollectionlist() const =0;
+/*! \brief sets a default order. Every backend can define any number of
+ * default orders. \param i references the wanted order
+ * \return If i is higher than the highest default order, we return false
+ */
+	virtual bool InitDefaultOrder(unsigned int i=0) =0;
+/*! \brief prepare for use: initialize m_level and go to the 
+ * correct position. This will execute only once after creation
+ * of the mgSelection, so we can call it too often
+ */
+	void Activate();
+
+	virtual bool keyIsUnique(mgKeyTypes kt) const = 0;
+	bool inItem() const;
+	bool inItems() const;
+
+    protected:
+	void InitFrom(const mgSelection* s);
+	virtual bool DeduceKeyValue(mgKeyTypes new_kt,const mgSelection *s,
+		vector<mgListItem>& items) {return false;}
+	virtual void clean();
+        virtual void InitSelection ();
+	virtual bool isCollectionOrder() const=0;
+	keyvector Keys;
+	unsigned int m_level;
+        mutable mgDb* m_db;
+	bool m_orderByCount;
+	bool UsedBefore(const mgKeyTypes kt,unsigned int level) const;
+	unsigned int keycount(mgKeyTypes kt) const;
+	virtual mgKeyTypes ktLow() const =0;
+	virtual mgKeyTypes ktHigh() const =0;
+	virtual const char * const ktName(const mgKeyTypes kt) const=0;
+	mgKeyTypes ktValue(const char * name) const;
+	void truncate(unsigned int i);
+	void clear();
+	void setKey ( const mgKeyTypes kt);
 
     private:
-	mutable map <mgKeyTypes, map<string,string> > map_values;
-	mutable map <mgKeyTypes, map<string,string> > map_ids;
+	bool m_active;
         mutable string m_current_values;
         mutable string m_current_tracks;
 //! \brief be careful when accessing this, see mgSelection::items()
-        mutable vector < mgContentItem > m_items;
-	//! \brief initializes maps for id/value mapping in both direction
-	bool loadvalues (mgKeyTypes kt) const;
+        mutable vector < mgItem* > m_items;
         bool m_fall_through;
         unsigned int m_position;
         mutable unsigned int m_items_position;
         ShuffleMode m_shuffle_mode;
         void Shuffle() const;
         LoopMode m_loop_mode;
-        mutable mgmySql m_db;
-        unsigned int m_level;
-        long m_itemid;
 
-        mgOrder order;
-        void InitSelection ();
-	/*! \brief returns the SQL command for getting all values. 
-	 * For the leaf level, all values are returned. For upper
-	 * levels, every distinct value is returned only once.
-	 * This must be so for the leaf level because otherwise
-	 * the value() entries do not correspond to the track()
-	 * entries and the wrong items might be played.
-	 */
-        string sql_values ();
         string ListFilename ();
-        string m_Directory;
-        void loadgenres ();
 
-	void InitFrom(const mgSelection* s);
-
+	void InitOrder(vector<mgListItem>& items);
+	void SetLevel(unsigned int level);
+	void IncLevel();
+	void DecLevel();
 };
 
-
-unsigned int randrange (const unsigned int high);
-
-
-#endif                                            // _DB_H
+#endif

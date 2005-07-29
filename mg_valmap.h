@@ -2,6 +2,7 @@
 #define _MG_VALMAP_H
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <string>
 #include <map>
 
@@ -21,32 +22,27 @@ class mgValmap : public map<string,string> {
 		//! \brief write to file
 		void Write(FILE *f);
 		//! \brief enter a string value
-		void put(const char*name, string value);
+		void put(string value,const char*name, ...);
 		//! \brief enter a C string value
-		void put(const char*name, const char* value);
+		void put(const char*value, const char* name, ...);
 		//! \brief enter a long value
-		void put(const char*name, long value);
+		void put(long value, const char*name, ...);
 		//! \brief enter a int value
-		void put(const char*name, int value);
+		void put(int value, const char*name, ... );
 		//! \brief enter a unsigned int value
-		void put(const char*name, unsigned int value);
+		void put(unsigned int value, const char*name, ...);
 		//! \brief enter a bool value
-		void put(const char*name, bool value);
+		void put(bool value, const char*name, ...);
 	 //! \brief return a string
-	 string getstr(const char* name) {
-		 return (*this)[name];
-	 }
-	 //! \brief return a C string
-	 bool getbool(const char* name) {
-		 return (getstr(name)=="true");
-	 }
+	 string getstr(const char* name, ...);
+	 //! \brief return a bool
+	 bool getbool(const char* name, ...);
 	 //! \brief return a long
-	 long getlong(const char* name) {
-		 return atol(getstr(name).c_str());
-	 }
+	 long getlong(const char* name, ...);
 	 //! \brief return an unsigned int
-	 unsigned int getuint(const char* name) {
-		 return (unsigned long)getlong(name);
-	 }
+	 unsigned int getuint(const char* name, ...);
+	private:
+		void my_put(const string value, const char *name, va_list& ap);
+		string my_get(const char *name, va_list& ap);
 };
 #endif

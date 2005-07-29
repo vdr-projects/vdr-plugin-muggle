@@ -30,7 +30,6 @@
 #endif
 
 class mgStream;
-class mgContentItem;
 
 // ----------------------------------------------------------------
 
@@ -79,7 +78,7 @@ class mgMP3Decoder:public mgDecoder
 /*!
  * \brief construct a decoder from a filename
  */
-        mgMP3Decoder (mgContentItem * item, bool preinit = true);
+        mgMP3Decoder (mgItemGd * item, bool preinit = true);
 
 /*!
  * \brief the destructor

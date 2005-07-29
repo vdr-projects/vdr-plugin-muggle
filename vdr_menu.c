@@ -26,17 +26,15 @@
 #include <skins.h>
 #endif
 
-#include "vdr_setup.h"
+#include "mg_setup.h"
 #include "vdr_menu.h"
 #include "vdr_player.h"
-
 #include "mg_incremental_search.h"
-#include "mg_selection.h"
-
+#include "mg_thread_sync.h"
 #include "i18n.h"
 
-#define DEBUG
 #include "mg_tools.h"
+#include "mg_sel_gd.h"
 
 void
 mgStatus::OsdCurrentItem(const char* Text)
@@ -50,9 +48,13 @@ mgStatus::OsdCurrentItem(const char* Text)
 		a->TryNotify();
 }
 
-void Play(mgSelection *sel,const bool select) {
-	mgSelection *s = new mgSelection(sel);
-	if (select) s->select();
+void Play(mgSelection *sel, bool enter)
+{
+	mgSelection *s = GenerateSelection(sel);
+	if (s->ordersize()==0)
+		s->InitDefaultOrder(1);
+	if (enter)
+		s->enter();
 	s->skipItems(0);	// make sure we start with a valid item
 	if (s->empty()) 	// no valid item exists
 	{
@@ -66,6 +68,11 @@ void Play(mgSelection *sel,const bool select) {
 		cControl::Launch (new mgPlayerControl (s));
 }
 
+mgSelection*
+GenerateSelection(const mgSelection* s)
+{
+	return new mgSelectionGd(s);
+}
 
 //! \brief queue the selection for playing, abort ongoing instant play
 void
@@ -78,35 +85,52 @@ mgMainMenu::PlayQueue()
 
 //! \brief queue the selection for playing, abort ongoing queue playing
 void
-mgMainMenu::PlayInstant(const bool select)
+mgMainMenu::PlayInstant(bool enter)
 {
 	instant_playing=true;
-	Play(selection(),select);
+	Play(selection(),enter);
 }
 
-void
-mgMainMenu::setOrder(mgSelection *sel,unsigned int idx)
+bool
+mgMainMenu::SwitchSelection()
 {
-	mgOrder* o = getOrder(idx);
-	if (o->size()>0)
+	UseNormalSelection();
+	mgSelection* newsel = getSelection(Current());
+	if (newsel->ordersize()>0)
 	{
-		m_current_order = idx;
-		sel->setOrder(o);
+		newsel->CopyKeyValues(selection());
+		newsel->Activate();
+		m_current_selection = Current();
+		newposition = selection()->getPosition();
+		SaveState();
+		return true;
 	}
 	else
-		mgWarning("mgMainMenu::setOrder: orders[%u] is empty",idx);
+	{
+		Message1(tr("Order is undefined"),"");
+		return false;
+	}
 }
 
-mgOrder* mgMainMenu::getOrder(unsigned int idx)
+void mgMainMenu::setSelection(unsigned int idx,mgSelection *s)
 {
-	if (idx>=orders.size())
-		mgError("mgMainMenu::getOrder(%u): orders.size() is %d",
-				idx,orders.size());
-	return orders[idx];
+	if (idx>=selections.size())
+		mgError("mgMainMenu::getSelection(%u): selections.size() is %d",
+				idx,selections.size());
+	delete selections[idx];
+	selections[idx] = s;
+}
+
+mgSelection* mgMainMenu::getSelection(unsigned int idx)
+{
+	if (idx>=selections.size())
+		mgError("mgMainMenu::getSelection(%u): selections.size() is %d",
+				idx,selections.size());
+	return selections[idx];
 }
 
 void
-mgMainMenu::CollectionChanged(string name)
+mgMainMenu::CollectionChanged(string name,bool added)
 {
     delete moveselection;
     moveselection = NULL;
@@ -117,7 +141,7 @@ mgMainMenu::CollectionChanged(string name)
 	mgPlayerControl *c = PlayerControl();
 	if (c)
 	   c->ReloadPlaylist();
-	else
+	else if (added)
 	   PlayQueue();
     }
     if (CollectionEntered(name) || selection()->isCollectionlist())
@@ -127,7 +151,7 @@ mgMainMenu::CollectionChanged(string name)
 bool
 mgMainMenu::ShowingCollections()
 {
-    return (UsingCollection && selection ()->level () == 0);
+    return (UsingCollection && selection ()->orderlevel () == 0);
 }
 
 
@@ -142,8 +166,8 @@ bool
 mgMainMenu::CollectionEntered(string name)
 {
     if (!UsingCollection) return false;
-    if (selection()->level()==0) return false;
-    return trim(selection ()->getKeyItem(0).value()) == name;
+    if (selection()->orderlevel()==0) return false;
+    return trim(selection ()->getKeyItem(0)->value()) == name;
 }
 
 
@@ -217,53 +241,60 @@ mgMenu::mgMenu ()
 
 
 void
-mgMainMenu::DumpOrders(mgValmap& nv)
+mgMainMenu::DumpSelections(mgValmap& nv)
 {
-	for (unsigned int idx=0;idx<orders.size();idx++)
+	for (unsigned int idx=0;idx<selections.size();idx++)
 	{
-		mgOrder *o = orders[idx];
-		if (!o) 
-			mgError("DumpOrders:order[%u] is 0",idx);
+		mgSelection *s = selections[idx];
+		if (!s) 
+			mgError("DumpSelections:selection[%u] is 0",idx);
 		char prefix[20];
 		sprintf(prefix,"order%u",idx);
-		o->DumpState(nv,prefix);
+		s->DumpState(nv,prefix);
 	}
 }
 
 void
 mgMainMenu::SaveState()
 {
-    char *b;
-    asprintf(&b,"%s/muggle.state",cPlugin::ConfigDirectory ("muggle"));
-    FILE *f = fopen(b,"w");
+    char *oldfile;
+    char *newfile;
+    char *statefile;
+    mgValmap nmain("MainMenu");
+    mgValmap nsel("tree");
+    mgValmap ncol("collection");
+    asprintf(&oldfile,"%s/muggle.state.old",cPlugin::ConfigDirectory ("muggle"));
+    asprintf(&newfile,"%s/muggle.state.new",cPlugin::ConfigDirectory ("muggle"));
+    asprintf(&statefile,"%s/muggle.state",cPlugin::ConfigDirectory ("muggle"));
+    FILE *f = fopen(newfile,"w");
     if (!f) 
     {
 	    if (!m_save_warned)
-		    mgWarning("Cannot write %s",b);
+		    mgWarning("Cannot write %s",newfile);
 	    m_save_warned=true;
-    	    free(b);
-	    return;
+	    goto err_exit;
     }
-    free(b);
-    mgValmap nmain("MainMenu");
-    nmain.put("DefaultCollection",default_collection);
-    nmain.put("UsingCollection",UsingCollection);
-    nmain.put("TreeRedAction",int(Menus.front()->TreeRedAction));
-    nmain.put("TreeGreenAction",int(Menus.front()->TreeGreenAction));
-    nmain.put("TreeYellowAction",int(Menus.front()->TreeYellowAction));
-    nmain.put("CollRedAction",int(Menus.front()->CollRedAction));
-    nmain.put("CollGreenAction",int(Menus.front()->CollGreenAction));
-    nmain.put("CollYellowAction",int(Menus.front()->CollYellowAction));
-    nmain.put("CurrentOrder",m_current_order);
-    DumpOrders(nmain);
-    mgValmap nsel("tree");
-    m_treesel->DumpState(nsel);
-    mgValmap ncol("collection");
-    m_collectionsel->DumpState(ncol);
+    nmain.put(default_collection,"DefaultCollection");
+    nmain.put(UsingCollection,"UsingCollection");
+    nmain.put(int(Menus.front()->TreeRedAction),"TreeRedAction");
+    nmain.put(int(Menus.front()->TreeGreenAction),"TreeGreenAction");
+    nmain.put(int(Menus.front()->TreeYellowAction),"TreeYellowAction");
+    nmain.put(int(Menus.front()->CollRedAction),"CollRedAction");
+    nmain.put(int(Menus.front()->CollGreenAction),"CollGreenAction");
+    nmain.put(int(Menus.front()->CollYellowAction),"CollYellowAction");
+    nsel.put(m_current_selection,"CurrentSelection");
+    DumpSelections(nsel);
+    m_collectionsel->DumpState(ncol,"collection");
     nmain.Write(f);
     nsel.Write(f);
     ncol.Write(f);
     fclose(f);
+    rename(statefile,oldfile);
+    rename(newfile,statefile);
+err_exit:
+    free(oldfile);
+    free(newfile);
+    free(statefile);
 }
 
 mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
@@ -282,15 +313,17 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
     mgValmap nmain("MainMenu");
 
     // define defaults for values missing in state file:
-    nsel.put("FallThrough",true);
-    nmain.put("DefaultCollection",play_collection);
-    nmain.put("UsingCollection","false");
-    nmain.put("TreeRedAction",int(actAddThisToCollection));
-    nmain.put("TreeGreenAction",int(actInstantPlay));
-    nmain.put("TreeYellowAction",int(actToggleSelection));
-    nmain.put("CollRedAction",int(actAddThisToCollection));
-    nmain.put("CollGreenAction",int(actInstantPlay));
-    nmain.put("CollYellowAction",int(actToggleSelection));
+    nsel.put(true,"FallThrough");
+    nmain.put(play_collection,"DefaultCollection");
+    nmain.put(false,"UsingCollection");
+    nmain.put(int(actAddThisToCollection),"TreeRedAction");
+    nmain.put(int(actInstantPlay),"TreeGreenAction");
+    nmain.put(int(actToggleSelection),"TreeYellowAction");
+    nmain.put(int(actAddThisToCollection),"CollRedAction");
+    nmain.put(int(actInstantPlay),"CollGreenAction");
+    nmain.put(int(actToggleSelection),"CollYellowAction");
+    nmain.put(0,"CurrentOrder");
+
 
     // load values from state file
     char *b;
@@ -305,36 +338,29 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
     }
 
     // get values from mgValmaps
-    LoadOrders(nmain);
-    default_collection = nmain.getstr("DefaultCollection");
-    UsingCollection = nmain.getbool("UsingCollection");
     InitMapFromSetup(nsel);
     InitMapFromSetup(ncol);
-    m_treesel = new mgSelection;
-    m_treesel->setOrder(getOrder(m_current_order));
-    m_treesel->InitFrom (nsel);
-    m_treesel->CreateCollection(default_collection);
+    LoadSelections(nsel);
+    default_collection = nmain.getstr("DefaultCollection");
+    UsingCollection = nmain.getbool("UsingCollection");
+    selections[m_current_selection]->CreateCollection(default_collection);
     if (default_collection!=play_collection)
-	    m_treesel->CreateCollection(play_collection);
-    vector<mgKeyTypes> kt;
-    kt.push_back(keyCollection);
-    kt.push_back(keyCollectionItem);
-    mgOrder o;
-    o.setKeys(kt);
-    m_collectionsel = new mgSelection;
-    m_collectionsel->setOrder(&o);
-    m_collectionsel->InitFrom (ncol);
-    m_playsel = new mgSelection;
-    m_playsel->setOrder(&o);
-    m_playsel->InitFrom(ncol);
-
+	    selections[m_current_selection]->CreateCollection(play_collection);
+    m_collectionsel = GenerateSelection();
+    m_collectionsel->InitFrom ("order0",ncol);
+    m_collectionsel->MakeCollection();
+    m_playsel = GenerateSelection();
+    m_playsel->InitFrom("order0",ncol);
+    m_playsel->MakeCollection();
     // initialize
-    if (m_playsel->level()!=1)
+    if (m_playsel->orderlevel()!=1)
     {
     	m_playsel->leave_all();
     	m_playsel->enter(play_collection);
     }
-    UseNormalSelection ();
+    mgSelection *s = selections[m_current_selection];
+    s->CopyKeyValues(s);
+    s->Activate();
     unsigned int posi = selection()->gotoPosition();
     LoadExternalCommands();	// before AddMenu()
     m_root = new mgTree;
@@ -349,56 +375,54 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
 }
 
 void
-mgMainMenu::AddOrder()
+mgMainMenu::AddSelection()
 {
-	orders.push_back(new mgOrder);
+	selections.push_back(GenerateSelection());
+	newposition = selections.size()-1;
 }
 
 void
-mgMainMenu::DeleteOrder()
+mgMainMenu::DeleteSelection()
 {
-	mgOrder *o = orders[Current()];
+	mgSelection *o = selections[Current()];
 	delete o;
-	orders.erase(orders.begin()+Current());
+	selections.erase(selections.begin()+Current());
 }
 
 void
-mgMainMenu::LoadOrders(mgValmap& nv)
+mgMainMenu::LoadSelections(mgValmap& nv)
 {
 	for (unsigned int idx=0;idx<1000;idx++) 
 	{
-		char b[10];
-		sprintf(b,"order%u",idx);
-		mgOrder *o = new mgOrder(nv,b);
-		if (o->size()==0)
+		char prefix[10];
+		sprintf(prefix,"order%u",idx);
+		mgSelection *s = GenerateSelection();
+		s->InitFrom(prefix,nv);
+		if (s->ordersize())
+			selections.push_back(s);
+		else
 		{
-			delete o;
+			delete s;
 			break;
 		}
-		orders.push_back(o);
 	}
-    	m_current_order = nv.getuint("CurrentOrder");
-	if (m_current_order >= orders.size())
-		m_current_order=0;
-	if (orders.size()>0) return;
-
-    	nv.put("order0.Keys.0.Type",keyArtist);
-    	nv.put("order0.Keys.1.Type",keyAlbum);
-    	nv.put("order0.Keys.2.Type",keyTrack);
-
-    	nv.put("order1.Keys.0.Type",keyAlbum);
-    	nv.put("order1.Keys.1.Type",keyTrack);
-	
-    	nv.put("order2.Keys.0.Type",keyGenres);
-    	nv.put("order2.Keys.1.Type",keyArtist);
-    	nv.put("order2.Keys.2.Type",keyAlbum);
-    	nv.put("order2.Keys.3.Type",keyTrack);
-
-    	nv.put("order3.Keys.0.Type",keyArtist);
-    	nv.put("order3.Keys.1.Type",keyTrack);
-	
-    	nv.put("CurrentOrder",0);
-	LoadOrders(nv);
+	if (selections.size()==0)
+	{
+		for (unsigned int i=1; i<100;i++)
+		{
+			mgSelection* s=GenerateSelection();
+			if (s->InitDefaultOrder(i))
+				selections.push_back(s);
+			else
+			{
+				delete s;
+				break;
+			}
+		}
+	}
+    	m_current_selection = nv.getuint("CurrentSelection");
+	if (m_current_selection >= selections.size())
+		m_current_selection=0;
 }
 
 void
@@ -429,15 +453,14 @@ mgMainMenu::LoadExternalCommands()
 
 mgMainMenu::~mgMainMenu()
 {
-	delete m_treesel;
 	delete m_collectionsel;
 	delete m_playsel;
 	delete m_Status;
 	delete moveselection;
 	delete m_root;
 	delete external_commands;
-	for (unsigned int i=0;i<orders.size();i++)
-		delete orders[i];
+	for (unsigned int i=0;i<selections.size();i++)
+		delete selections[i];
 }
 
 void
@@ -476,14 +499,18 @@ mgMenu::AddExternalAction(const mgActions action, const char *title)
 void
 mgMainMenu::AddOrderActions(mgMenu* m)
 {
-    for (unsigned int idx=0;idx<orders.size();idx++)
+    for (unsigned int idx=0;idx<selections.size();idx++)
     {
-        mgOrder *o = orders[idx];
+        mgSelection *o = selections[idx];
 	if (!o) 
-			mgError("AddOrderAction:orders[%u] is 0",idx);
+		mgError("AddOrderAction:selections[%u] is 0",idx);
     	mgAction *a = m->GenerateAction(actOrder,actNone);
     	assert(a);
-    	a->SetText(hk(o->Name().c_str()));
+	string name = o->Name(); // do not combine these 2 lines!
+	const char *oname = name.c_str();
+	if (strlen(oname)==0)
+		oname = tr("Order is undefined");
+    	a->SetText(hk(oname));
     	AddItem(a);
     }
 }
@@ -491,20 +518,12 @@ mgMainMenu::AddOrderActions(mgMenu* m)
 void
 mgMenu::AddSelectionItems (mgSelection *sel,mgActions act)
 {
+    sel->Activate();
     for (unsigned int i = 0; i < sel->listitems.size (); i++)
     {
     	mgAction *a = GenerateAction(act, actEntry);
 	if (!a) continue;
 	const char *name = a->MenuName(i+1,sel->listitems[i]);
-	// add incremental filter here
-#if 0
-	// example:
-	if (name[0]!='C')
-		continue;
-	// adapt newposition since it refers to position in mgSelection:
-	if ((signed int)i==osd()->newposition)
-		osd()->newposition = osd()->Count();
-#endif
 	a->SetText(name,false);
 	a->setHandle(i);
         osd()->AddItem(a);
@@ -697,22 +716,10 @@ mgMenu::Process (eKeys key)
 void
 mgTree::UpdateSearchPosition()
 {
-  int position = -1;
   if( !m_incsearch || m_filter.empty() )
-	  position = m_start_position;
+	osd()->newposition = m_start_position;
   else
-  {
-      // find the first item starting with m_filter
-      mgSelection::mgListItems& listitems = osd()->selection()->listitems;
-      for (unsigned int idx = 0 ; idx < listitems.size(); idx++)
-	  if( strncasecmp( listitems[idx].value().c_str(), m_filter.c_str(), m_filter.size() )>=0 )
-	  {
-	      position = idx;
-	      break;
-	  }
-  }
-  osd()->newposition = position;
-  osd()->DisplayGoto();
+	osd()->newposition = osd()->selection()->searchPosition(m_filter);
 }
 
 bool
@@ -830,7 +837,7 @@ eOSState mgMainMenu::ProcessKey (eKeys key)
     mgPlayerControl * c = PlayerControl ();
     if (c)
     {
-        if (!c->Active ())
+        if (!c->Playing ())
 	{
             	c->Shutdown ();
 		if (instant_playing && queue_playing) {
@@ -926,10 +933,7 @@ otherkeys:
     else if (newmenu != Menus.back ())
         AddMenu (newmenu,newposition);
 
-    if (UsingCollection)
-    	forcerefresh |= m_collectionsel->cacheIsEmpty();
-    else
-    	forcerefresh |= m_treesel->cacheIsEmpty();
+    forcerefresh |= selection()->cacheIsEmpty();
 
     forcerefresh |= (newposition>=0);
 
@@ -959,46 +963,48 @@ mgMainMenu::showMessage()
 {
     if (m_message)
     {
-	showmessage(m_message);
+	showmessage(0,m_message);
 	free(m_message);
 	m_message = NULL;
     }
 }
 
 void
-showmessage(const char * msg,int duration)
+showmessage(int duration,const char * msg, ...)
 {
+	va_list ap;
+	va_start(ap,msg);
+	char buffer[200];
+	vsnprintf(buffer,199,tr(msg),ap);
 #if VDRVERSNUM >= 10307
-    	Skins.Message (mtInfo, msg,duration);
+	if (!duration) duration=2;
+    	Skins.Message (mtInfo, buffer,duration);
     	Skins.Flush ();
 #else
-    	Interface->Status (msg);
+    	Interface->Status (buffer);
     	Interface->Flush ();
 #endif
+	va_end(ap);
 }
 
 void
-showimportcount(unsigned int count,bool final=false)
+showimportcount(unsigned int impcount,bool final=false)
 {
-	char b[100];
+#if 0
+	// we should not write to the OSD since this is not the 
+	// foreground thread. We could go thru port 2001.
 	if (final)
-	{
-		sprintf(b,tr("Import done:Imported %d items"),count);
-		assert(strlen(b)<100);
-		showmessage(b,1);
-	}
+		showmessage(1,"Import done:Imported %d items",impcount);
 	else
-	{
-		sprintf(b,tr("Imported %d items..."),count);
-		assert(strlen(b)<100);
-		showmessage(b);
-	}
+		showmessage(2,"Imported %d items...",impcount);
+#endif
 }
 
 void
 mgMainMenu::AddMenu (mgMenu * m,unsigned int position)
 {
     Menus.push_back (m);
+    selection()->Activate();
     m->setosd (this);
     m->setParentIndex(Current());
     if (Get(Current()))
@@ -1039,40 +1045,47 @@ mgMenuOrders::BuildOsd ()
 
 mgMenuOrder::mgMenuOrder()
 {
-    m_order=0;
+    m_selection=0;
+    m_orgselection = 0;
 }
 
 mgMenuOrder::~mgMenuOrder()
 {
-    if (m_order)
-	    delete m_order;
+    if (m_selection)
+	    delete m_selection;
 }
 
 string
 mgMenuOrder::Title() const
 {
-	return m_order->Name();
+	return m_selection->Name();
 }
 
 void
 mgMenuOrder::BuildOsd ()
 {
-    if (!m_order)
-    {
-        m_order = new mgOrder;
-	*m_order = *(osd()->getOrder(getParentIndex()));
-    }
+    if (!m_orgselection)
+	    m_orgselection = osd()->getSelection(getParentIndex());;
+    if (!m_selection)
+        m_selection = GenerateSelection(m_orgselection);
+    if (m_selection->ordersize()==0)
+	    m_selection->InitDefaultOrder(1);
     InitOsd ();
     m_keytypes.clear();
-    m_keytypes.reserve(mgKeyTypesNr+1);
     m_keynames.clear();
-    m_keynames.reserve(50);
-    m_orderbycount = m_order->getOrderByCount();
-    for (unsigned int i=0;i<m_order->size();i++)
+    m_orderbycount = m_selection->getOrderByCount();
+    for (unsigned int i=0;i<m_selection->ordersize();i++)
     {
+	if (m_selection->getKeyType(i)==keyGdUnique)
+		break;
 	unsigned int kt;
-	m_keynames.push_back(m_order->Choices(i,&kt));
+	m_keynames.push_back(m_selection->Choices(i,&kt));
 	m_keytypes.push_back(kt);
+    }
+    for (unsigned int i=0;i<m_selection->ordersize();i++)
+    {
+	if (m_selection->getKeyType(i)==keyGdUnique)
+		break;
 	char buf[20];
 	sprintf(buf,tr("Key %d"),i+1);
 	mgAction *a = actGenerateKeyItem(buf,(int*)&m_keytypes[i],m_keynames[i].size(),&m_keynames[i][0]);
@@ -1085,31 +1098,39 @@ mgMenuOrder::BuildOsd ()
 }
 
 bool
-mgMenuOrder::ChangeOrder(eKeys key)
+mgMenuOrder::ChangeSelection(eKeys key)
 {
-    vector <mgKeyTypes> newtypes;
+    vector <const char*> newtypes;
     newtypes.clear();
     for (unsigned int i=0; i<m_keytypes.size();i++)
-    	newtypes.push_back(ktValue(m_keynames[i][m_keytypes[i]]));
-    mgOrder n = mgOrder(newtypes);
-    n.setOrderByCount(m_orderbycount);
-    bool result = !(n == *m_order);
-    *m_order = n;
-    if (result)
+    	newtypes.push_back(m_keynames[i][m_keytypes[i]]);
+    mgSelection *newsel = GenerateSelection(m_orgselection);
+    newsel->setKeys(newtypes);
+    newsel->setOrderByCount(m_orderbycount);
+    bool changed = !newsel->SameOrder(m_selection);
+    if (changed)
     {
+	delete m_selection;
+	m_selection = newsel;
     	osd()->forcerefresh = true;
 	int np = osd()->Current();
 	if (key==kUp && np) np--;
 	if (key==kDown) np++;
     	osd()->newposition = np;
     }
-    return result;
+    else
+	delete newsel;
+    return changed;
 }
 
 void
-mgMenuOrder::SaveOrder()
+mgMenuOrder::SaveSelection()
 {
-    *(osd()->getOrder(getParentIndex())) = *m_order;
+    m_selection->CopyKeyValues(osd()->selection());
+    m_selection->Activate();
+    osd()->setSelection(getParentIndex(),m_selection);
+    m_selection = 0;
+    m_orgselection = 0;
     osd()->SaveState();
 }
 
@@ -1177,3 +1198,32 @@ mgMenu::Display ()
     osd ()->DisplayGoto ();
 }
 
+bool
+create_question()
+{
+    char *b;
+    asprintf(&b,tr("Create database %s?"),the_setup.DbName);
+    bool result = Interface->Confirm(b);
+    free(b);
+    return result;
+}
+
+bool
+import()
+{
+    if (!Interface->Confirm(tr("Import items?")))
+	    return false;
+    mgThreadSync *s = mgThreadSync::get_instance();
+    if (!s)
+	    return false;
+    static char *tld_arg[] = { ".", 0};
+    int res = chdir(the_setup.ToplevelDir);
+    if (res)
+    {
+	    showmessage(2,tr("Cannot access directory %s:%d"),
+			    the_setup.ToplevelDir,errno);
+	    return false;
+    }
+    s->Sync(tld_arg);
+    return true;
+}

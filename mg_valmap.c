@@ -1,5 +1,7 @@
+#include <stdarg.h>
+
 #include "mg_valmap.h"
-#include "mg_order.h"
+#include "mg_tools.h"
 
 mgValmap::mgValmap(const char *key) {
 	m_key = key;
@@ -36,35 +38,105 @@ void mgValmap::Write(FILE *f) {
 	}
 }
 
-void mgValmap::put(const char* name, const string value) {
-	if (value.empty()) return;
-	(*this)[string(name)] = value;
+void mgValmap::put(const string value, const char* name, ... ) {
+	va_list ap;
+	va_start(ap, name);
+	my_put(value,name,ap);
 }
 
-void mgValmap::put(const char* name, const char* value) {
-	if (!value || *value==0) return;
-	(*this)[string(name)] = value;
+void mgValmap::put(int value, const char* name, ...) {
+	va_list ap;
+	va_start(ap, name);
+	my_put(ltos(value),name,ap);
+	va_end(ap);
 }
 
-void mgValmap::put(const char* name, const int value) {
-	put(name,ltos(value));
+void mgValmap::put(unsigned int value, const char* name, ...) {
+	va_list ap;
+	va_start(ap, name);
+	my_put(ltos(value),name,ap);
+	va_end(ap);
 }
 
-void mgValmap::put(const char* name, const unsigned int value) {
-	put(name,ltos(value));
+void mgValmap::put(long value,const char* name, ...) {
+	va_list ap;
+	va_start(ap, name);
+	my_put(ltos(value),name,ap);
+	va_end(ap);
 }
 
-void mgValmap::put(const char* name, const long value) {
-	put(name,ltos(value));
-}
-
-void mgValmap::put(const char* name, const bool value) {
-	string s;
+void mgValmap::put(const bool value,const char* name, ...) {
+	string  s;
 	if (value)
 		s = "true";
 	else
 		s = "false";
-	put(name,s);
+	va_list ap;
+	va_start(ap, name);
+	my_put(s,name,ap);
+	va_end(ap);
 }
 
+void mgValmap::put(const char* value, const char* name, ...)
+{
+	if (!value) return;
+	va_list ap;
+	va_start(ap, name);
+	my_put(value, name, ap);
+	va_end(ap);
+}
 
+string
+mgValmap::getstr(const char* name, ...)
+{
+	va_list ap;
+	va_start(ap, name);
+	string result = my_get(name, ap);
+	va_end(ap);
+	return result;
+}
+
+bool
+mgValmap::getbool(const char* name, ...)
+{
+	va_list ap;
+	va_start(ap, name);
+	bool result = my_get(name, ap)=="true";
+	va_end(ap);
+	return result;
+}
+	
+long
+mgValmap::getlong(const char* name, ...)
+{
+	va_list ap;
+	va_start(ap, name);
+	long result = atol(my_get(name, ap).c_str());
+	va_end(ap);
+	return result;
+}
+	
+unsigned int
+mgValmap::getuint(const char* name, ...)
+{
+	va_list ap;
+	va_start(ap, name);
+	unsigned int result = atol(my_get(name, ap).c_str());
+	va_end(ap);
+	return result;
+}
+	
+void mgValmap::my_put(const string value, const char* name, va_list& ap)
+{
+	char buffer[600];
+	vsnprintf(buffer, 599, name, ap);
+	(*this)[string(buffer)] = value;
+}
+
+string
+mgValmap::my_get(const char *name, va_list& ap)
+{
+	char buffer[600];
+	vsnprintf(buffer, 599, name, ap);
+	return (*this)[buffer];
+}

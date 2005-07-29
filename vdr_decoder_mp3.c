@@ -26,10 +26,8 @@
 #include "vdr_config.h"
 #include "vdr_decoder_mp3.h"
 #include "vdr_stream.h"
-#include "vdr_setup.h"
 
 #include "mg_tools.h"
-#include "mg_content.h"
 
 #define d(x) x
 
@@ -54,7 +52,7 @@ mgMadStream (struct mad_stream *stream, mgStream * str)
 
 // --- mgMP3Decoder -------------------------------------------------------------
 
-mgMP3Decoder::mgMP3Decoder (mgContentItem * item, bool preinit):mgDecoder
+mgMP3Decoder::mgMP3Decoder (mgItemGd * item, bool preinit):mgDecoder
 (item)
 {
     m_stream = 0;
@@ -398,7 +396,7 @@ int secs, int avail, int dvbrate)
 }
 
 
-bool mgMP3Decoder::skip (int seconds, int avail, int rate)
+bool mgMP3Decoder::skip(int seconds, int avail, int rate)
 {
     lock ();
 

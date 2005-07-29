@@ -17,10 +17,10 @@
 class mgThreadSync : public cThread
 {
  public:
-
+  mgThreadSync();
   static mgThreadSync* get_instance();
 
-  bool Sync(char * const * path_argv, bool delete_missing );
+  bool Sync(char * const * path_argv=0);
 
  protected:
   /*! \brief Runs the import routine as a separate thread
@@ -29,9 +29,10 @@ class mgThreadSync : public cThread
 
  private:
 
-  void SetArguments( char * const * path_argv, bool delete_missing );
+  void SetArguments( char * const * path_argv);
   
   char * const *m_path;
+  bool m_has_args;
   bool m_delete;
 
 };
