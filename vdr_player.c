@@ -1340,7 +1340,14 @@ mgPlayerControl::ShowContents ()
                 m_menu->SetItem (buf, 3, false, false);
                 free (buf);
             }
-            if (num_items > 4)
+	    if( num_items > 4 )
+	      {
+                asprintf (&buf, "Year:\t%d",
+			  player->getCurrent ()->getYear () );
+                m_menu->SetItem (buf, 4, false, false);
+                free (buf);
+	      }
+            if (num_items > 5)
             {
                 int len = player->getCurrent ()->getDuration ();
                 asprintf (&buf, "Length:\t%s",
@@ -1349,30 +1356,30 @@ mgPlayerControl::ShowContents ()
 #else
                     IndexToHMSF (SecondsToFrames (len)));
 #endif
-                m_menu->SetItem (buf, 4, false, false);
-                free (buf);
-            }
-            if (num_items > 5)
-            {
-                asprintf (&buf, "Bit rate:\t%s",
-                    player->getCurrent ()->getBitrate ().c_str ());
                 m_menu->SetItem (buf, 5, false, false);
                 free (buf);
             }
             if (num_items > 6)
             {
-                int sr = player->getCurrent ()->getSampleRate ();
-
-                asprintf (&buf, "Sampling rate:\t%d", sr);
+                asprintf (&buf, "Bit rate:\t%s",
+                    player->getCurrent ()->getBitrate ().c_str ());
                 m_menu->SetItem (buf, 6, false, false);
                 free (buf);
             }
             if (num_items > 7)
             {
+                int sr = player->getCurrent ()->getSampleRate ();
+
+                asprintf (&buf, "Sampling rate:\t%d", sr);
+                m_menu->SetItem (buf, 7, false, false);
+                free (buf);
+            }
+            if (num_items > 8)
+            {
                 string sf = player->getCurrent ()->getSourceFile ();
 		char *p = strrchr(sf.c_str(),'/');
                 asprintf (&buf, "File name:\t%s", p+1);
-                m_menu->SetItem (buf, 7, false, false);
+                m_menu->SetItem (buf, 8, false, false);
                 free (buf);
 	    }
         }

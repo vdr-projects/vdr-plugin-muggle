@@ -1076,11 +1076,12 @@ mgDb::SyncFile(const char *filename)
 		return false;
 	}
 	TagLib::FileRef f( filename) ;
+
 	if( f.isNull() || !f.tag() )
 	  {
 	    if( !strcasecmp( ext, "wav" ) )
 	      {
-		mgDebug(2,"Importing wav %s",filename);
+		mgDebug(2,"Importing %s",filename);
 		char *folders[4];
 		char *fbuf=SeparateFolders(filename,folders,4);
 		mgSQLString c_folder1(folders[0]);
@@ -1092,26 +1093,24 @@ mgDb::SyncFile(const char *filename)
 		mgSQLString c_artist("Unknown");
 		mgSQLString c_title("Unknown");
 		mgSQLString c_album("Unassigned");
-		mgSQLString c_lang("DE");
-		mgSQLString c_genre1("Pop");
+		mgSQLString c_lang("");
+		mgSQLString c_genre1("");
 		mgSQLString c_cddbid( getAlbum(filename, c_album, c_artist) );
 		mgSQLString c_mp3file(cfilename);
 		sprintf(sql,"SELECT id from tracks WHERE mp3file=%s",c_mp3file.quoted());
-		
+
 		string id = get_col0(sql);
 		if (id!="NULL")
 		  {
-		    mgDebug(2,"Assembling query for UPDATE");
 		    sprintf( sql,"UPDATE tracks SET artist=%s, title=%s,year=%d,sourceid=%s,"
 			     "tracknb=%d,length=%d,bitrate=%d,samplerate=%d,"
 			     "channels=%d,genre1=%s,lang=%s WHERE id=%ld",
 			     c_artist.quoted(),c_title.quoted(),f.tag()->year(),c_cddbid.quoted(),
-			     0, 0, 0, 0,
+			     f.tag()->track(), 0, 0, 0,
 			     2, c_genre1.quoted(), c_lang.quoted(), atol(id.c_str() ) );
 		  }
 		else
 		  {
-		    mgDebug(2,"Assembling query for INSERT");
 		    sprintf( sql,"INSERT INTO tracks "
 			     "(artist,title,year,sourceid,"
 			     "tracknb,mp3file,length,bitrate,samplerate,"
@@ -1121,14 +1120,12 @@ mgDb::SyncFile(const char *filename)
 			     "%u,%s,%d,%d,%d,"
 			     "%d,%s,'',%s,%s,%s,%s,%s)",
 			     c_artist.quoted(),c_title.quoted(), 0, c_cddbid.quoted(),
-			     0, c_mp3file.quoted(), 0,
+			     f.tag()->track(), c_mp3file.quoted(), 0,
 			     0, 0,
 			     2, c_genre1.quoted(), c_lang.quoted(),
 			     c_folder1.quoted(),c_folder2.quoted(),
 			     c_folder3.quoted(),c_folder4.quoted());
 		  }		
-		mgDebug(2,"SQL query assembled.");
-
 		Execute(sql);
 		return true;
 	      }
@@ -1137,58 +1134,55 @@ mgDb::SyncFile(const char *filename)
 		return false;
 	      }
 	  }
+	mgDebug(2,"Importing %s",filename);
+        TagLib::AudioProperties *ap = f.audioProperties();
+	get_ID3v2_Tags(filename);
+	char *folders[4];
+	char *fbuf=SeparateFolders(filename,folders,4);
+	mgSQLString c_folder1(folders[0]);
+	mgSQLString c_folder2(folders[1]);
+	mgSQLString c_folder3(folders[2]);
+	mgSQLString c_folder4(folders[3]);
+	free(fbuf);
+	mgSQLString c_artist(f.tag()->artist());
+	mgSQLString c_title(f.tag()->title());
+	mgSQLString c_album(f.tag()->album());
+	if (strlen(c_album.original())==0)
+		c_album = "Unassigned";
+	mgSQLString c_lang(m_TLAN);
+	mgSQLString c_genre1(getGenre1(f));
+	mgSQLString c_cddbid(getAlbum(filename,c_album,c_artist));
+	mgSQLString c_mp3file(cfilename);
+	sprintf(sql,"SELECT id from tracks WHERE mp3file=%s",c_mp3file.quoted());
+	string id = get_col0(sql);
+	if (id!="NULL")
+	  {
+	    sprintf(sql,"UPDATE tracks SET artist=%s, title=%s,year=%d,sourceid=%s,"
+		    "tracknb=%d,length=%d,bitrate=%d,samplerate=%d,"
+		    "channels=%d,genre1=%s,lang=%s WHERE id=%ld",
+		    c_artist.quoted(),c_title.quoted(),f.tag()->year(),c_cddbid.quoted(),
+		    f.tag()->track(),ap->length(),ap->bitrate(),ap->sampleRate(),
+		    ap->channels(),c_genre1.quoted(),c_lang.quoted(),atol(id.c_str()));
+	  }
 	else
 	  {
-	    mgDebug(2,"Importing %s",filename);
-	    TagLib::AudioProperties *ap = f.audioProperties();
-	    get_ID3v2_Tags(filename);
-	    char *folders[4];
-	    char *fbuf=SeparateFolders(filename,folders,4);
-	    mgSQLString c_folder1(folders[0]);
-	    mgSQLString c_folder2(folders[1]);
-	    mgSQLString c_folder3(folders[2]);
-	    mgSQLString c_folder4(folders[3]);
-	    free(fbuf);
-	    mgSQLString c_artist(f.tag()->artist());
-	    mgSQLString c_title(f.tag()->title());
-	    mgSQLString c_album(f.tag()->album());
-	    if (strlen(c_album.original())==0)
-	      c_album = "Unassigned";
-	    mgSQLString c_lang(m_TLAN);
-	    mgSQLString c_genre1(getGenre1(f));
-	    mgSQLString c_cddbid(getAlbum(filename,c_album,c_artist));
-	    mgSQLString c_mp3file(cfilename);
-	    sprintf(sql,"SELECT id from tracks WHERE mp3file=%s",c_mp3file.quoted());
-	    string id = get_col0(sql);
-	    if (id!="NULL")
-	      {
-		sprintf(sql,"UPDATE tracks SET artist=%s, title=%s,year=%d,sourceid=%s,"
-			"tracknb=%d,length=%d,bitrate=%d,samplerate=%d,"
-			"channels=%d,genre1=%s,lang=%s WHERE id=%ld",
-			c_artist.quoted(),c_title.quoted(),f.tag()->year(),c_cddbid.quoted(),
-			f.tag()->track(),ap->length(),ap->bitrate(),ap->sampleRate(),
-			ap->channels(),c_genre1.quoted(),c_lang.quoted(),atol(id.c_str()));
-	      }
-	    else
-	      {
-		sprintf(sql,"INSERT INTO tracks "
-			"(artist,title,year,sourceid,"
-			"tracknb,mp3file,length,bitrate,samplerate,"
-			"channels,genre1,genre2,lang,folder1,folder2,"
-			"folder3,folder4) "
-			"VALUES (%s,%s,%u,%s,"
-			"%u,%s,%d,%d,%d,"
-			"%d,%s,'',%s,%s,%s,%s,%s)",
-			c_artist.quoted(),c_title.quoted(),f.tag()->year(),c_cddbid.quoted(),
-			f.tag()->track(),c_mp3file.quoted(),ap->length(),
-			ap->bitrate(),ap->sampleRate(),
-			ap->channels(),c_genre1.quoted(),c_lang.quoted(),
-			c_folder1.quoted(),c_folder2.quoted(),
-			c_folder3.quoted(),c_folder4.quoted());
-	      }
-	    Execute(sql);
-	    return true;
+	    sprintf(sql,"INSERT INTO tracks "
+		    "(artist,title,year,sourceid,"
+		    "tracknb,mp3file,length,bitrate,samplerate,"
+		    "channels,genre1,genre2,lang,folder1,folder2,"
+		    "folder3,folder4) "
+		    "VALUES (%s,%s,%u,%s,"
+		    "%u,%s,%d,%d,%d,"
+		    "%d,%s,'',%s,%s,%s,%s,%s)",
+		    c_artist.quoted(),c_title.quoted(),f.tag()->year(),c_cddbid.quoted(),
+		    f.tag()->track(),c_mp3file.quoted(),ap->length(),
+		    ap->bitrate(),ap->sampleRate(),
+		    ap->channels(),c_genre1.quoted(),c_lang.quoted(),
+		    c_folder1.quoted(),c_folder2.quoted(),
+		    c_folder3.quoted(),c_folder4.quoted());
 	  }
+	Execute(sql);
+	return true;
 }
 
 string
