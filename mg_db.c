@@ -633,6 +633,7 @@ string
 mgParts::sql_count()
 {
 	Prepare();
+#if defined (HAVE_PG) || defined(HAVE_SQLITE) || MYSQL_VERSION_ID >= 40111
 	string result = sql_list("SELECT COUNT(*) FROM ( SELECT",idfields,",","");
 	if (result.empty())
 		return result;
@@ -640,6 +641,14 @@ mgParts::sql_count()
 	result += sql_list(" WHERE",clauses," AND ");
 	result += sql_list(" GROUP BY",idfields);
 	result += ") AS xx";
+#else
+	string result = sql_list("SELECT COUNT(DISTINCT",idfields,",",")");
+	if (result.empty())
+		return result;
+	result += sql_list(" FROM",tables);
+	result += sql_list(" WHERE",clauses," AND ");
+	optimize(result);
+#endif
 	return result;
 }
 
