@@ -73,13 +73,13 @@ For example (paths and version numbers may vary)
 
 \verbatim
    cd /usr/local/src/VDR/PLUGINS/src
-   tar xvjf muggle-0.1.1.tgz
+   tar xvjf muggle-0.1.8.tgz
 \endverbatim
 
 Establish a symlink as you would for other plugins:
 
 \verbatim
-   ln -s muggle-0.1.1 muggle
+   ln -s muggle-0.1.8 muggle
 \endverbatim
 
 Adapt the Makefile to your system. Or better yet adapt your Make.config. This file might
