@@ -63,7 +63,8 @@ know what you are doing in terms of networking and security issues.
 Support for using a libsndfile decoder requires libsndfile1-dev as a debian package or a corresponding library installation.
 
 Since relase 0.1.8 Muggle is able to display cover pictures. The required packages are 
- - mjpegtools (Debian package mjpegtools)
+ - mjpegtools (Debian package mjpegtools. This is not a standard Debian package. You can get it by 
+   adding this line to /etc/apt/sources.list: "deb ftp://ftp.nerim.net/debian-marillat/ stable main")
  - netpbm (Debian package netpbm)
 
 \section install INSTALLING 
@@ -83,7 +84,7 @@ Establish a symlink as you would for other plugins:
 \endverbatim
 
 Adapt the Makefile to your system. Or better yet adapt your Make.config. This file might
-be in /usr/include.  Define HAVE_VORBIS and/or HAVE_FLAC and the database
+be in /usr/include.  Define HAVE_VORBIS, HAVE_FLAC, HAVE_SNDFILE as wanted and the database
 definitions as described in README.mysql, README.postgresql, README.SQLite.
 
 Then, within the VDR main directory (e.g. /usr/local/src/VDR) issue
