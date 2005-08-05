@@ -9,15 +9,17 @@
 #
 PLUGIN = muggle
 
+#no HAVE_* flags should ever be changed in this Makefile. Instead
+#edit $VDRDIR/Make.config
+
 #if you want ogg / flac support, define HAVE_VORBISFILE and/or HAVE_FLAC
-#in $VDRDIR/Make.config like this:
-HAVE_VORBISFILE=1
-HAVE_FLAC=1
-HAVE_SNDFILE=1
+# HAVE_VORBISFILE=1
+# HAVE_FLAC=1
+# HAVE_SNDFILE=1
 
 #if you do not want to compile in code for embedded mysql,
-#define this in $VDRDIR/Make.config:
-HAVE_ONLY_SERVER=1
+#define this:
+# HAVE_ONLY_SERVER=1
 
 #define what database you want to use. Default is mysql. HAVE_SQLITE
 #removes mysql support and adds SQLite support
