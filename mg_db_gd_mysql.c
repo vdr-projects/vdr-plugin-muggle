@@ -111,8 +111,6 @@ mgDbGd::HelpText() const
 mgDb* GenerateDB(bool SeparateThread)
 {
 	// \todo should return different backends according to the_setup.Variant
-	if (!DbServer)
-		DbServer = new mgDbServerMySQL;
 	return new mgDbGd(SeparateThread);
 }
 
@@ -465,6 +463,8 @@ mgDbGd::ServerConnect ()
     if (time(0)<m_connect_time+10)
 	return false;
     m_connect_time=time(0);
+    if (!DbServer)
+	DbServer = new mgDbServerMySQL;
     m_db = mysql_init (0);
     if (!m_db)
         return false;
