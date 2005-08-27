@@ -42,7 +42,7 @@ mgSQLStringMySQL::unquoted() const
 		int buflen=2*strlen(m_original)+3;
   		m_unquoted = (char *) malloc( buflen);
 		mgDb* esc = DbServer->EscapeDb();
-  		if (esc)
+  		if (esc && esc->DbHandle())
   			mysql_real_escape_string( (MYSQL*)esc->DbHandle(),
 				m_unquoted, m_original, strlen(m_original) );
   		else
