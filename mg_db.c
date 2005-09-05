@@ -883,7 +883,9 @@ mgDb::Build_cddbid(const mgSQLString& artist) const
 {
 	char *s;
 	asprintf(&s,"%ld-%.9s",random(),artist.original());
-	return mgSQLString(s);
+	mgSQLString result = mgSQLString(s);
+	free(s);
+	return result;
 }
 
 mgSQLString
