@@ -943,8 +943,10 @@ mgDb::getAlbum(const char *filename,const mgSQLString& c_album,
 			asprintf(&b,"INSERT INTO album (title,artist,cddbid) "
 					"VALUES(%s,%s,%s)",
 				c_album.quoted(),c_artist.quoted(),result.quoted());
-			Execute(b);
+			int rows = Execute(b);
 			free(b);
+			if (!rows)
+				result="NULL";
 		}
 		free(where);
 	}
@@ -1127,8 +1129,7 @@ mgDb::SyncFile(const char *filename)
 			     c_folder1.quoted(),c_folder2.quoted(),
 			     c_folder3.quoted(),c_folder4.quoted());
 		  }		
-		Execute(sql);
-		return true;
+		return Execute(sql) == 1;
 	      }
 	    else
 	      {
@@ -1182,8 +1183,7 @@ mgDb::SyncFile(const char *filename)
 		    c_folder1.quoted(),c_folder2.quoted(),
 		    c_folder3.quoted(),c_folder4.quoted());
 	  }
-	Execute(sql);
-	return true;
+	return Execute(sql) == 1;
 }
 
 string
