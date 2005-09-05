@@ -138,6 +138,8 @@ void
 mgSQLString::operator=(const char* b)
 {
 	delete m_str;
+	free(m_original);
+	m_original = 0;
 	Init(b);
 }
 
@@ -145,6 +147,8 @@ void
 mgSQLString::operator=(const mgSQLString& b)
 {
 	delete m_str;
+	free(m_original);
+	m_original = 0;
 	Init(b.original());
 }
 
