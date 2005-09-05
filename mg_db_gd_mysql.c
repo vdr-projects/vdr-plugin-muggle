@@ -72,12 +72,16 @@ mgQueryMySQL::mgQueryMySQL(void* db,string sql,mgQueryNoise noise)
 mgQueryMySQL::~mgQueryMySQL()
 {
 	mysql_free_result (m_table);
+	m_table = 0;
 }
 
 char **
 mgQueryMySQL::Next()
 {
-        return mysql_fetch_row(m_table);
+	if (!m_table)
+		return 0;
+	else
+        	return mysql_fetch_row(m_table);
 }
 
 const char*
