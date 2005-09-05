@@ -30,11 +30,12 @@
 #include <unistd.h>
 #include <math.h>
 
-#include <tools.h>
 
 #include "mg_setup.h"
 #include "vdr_decoder_sndfile.h"
 #include "i18n.h"
+
+#include <tools.h>
 
 #ifndef SNDFILE_1
 #error You must use libsndfile version 1.x.x

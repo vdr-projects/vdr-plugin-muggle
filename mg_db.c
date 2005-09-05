@@ -1120,7 +1120,7 @@ mgDb::SyncFile(const char *filename)
 			     "%u,%s,%d,%d,%d,"
 			     "%d,%s,'',%s,%s,%s,%s,%s)",
 			     c_artist.quoted(),c_title.quoted(), 0, c_cddbid.quoted(),
-			     f.tag()->track(), c_mp3file.quoted(), 0,
+			     0, c_mp3file.quoted(), 0,
 			     0, 0,
 			     2, c_genre1.quoted(), c_lang.quoted(),
 			     c_folder1.quoted(),c_folder2.quoted(),

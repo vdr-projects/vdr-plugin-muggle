@@ -42,7 +42,7 @@ mgSQLStringMySQL::unquoted() const
 		int buflen=2*strlen(m_original)+3;
   		m_unquoted = (char *) malloc( buflen);
 		mgDb* esc = DbServer->EscapeDb();
-  		if (esc)
+  		if (esc && esc->DbHandle())
   			mysql_real_escape_string( (MYSQL*)esc->DbHandle(),
 				m_unquoted, m_original, strlen(m_original) );
   		else
@@ -111,8 +111,6 @@ mgDbGd::HelpText() const
 mgDb* GenerateDB(bool SeparateThread)
 {
 	// \todo should return different backends according to the_setup.Variant
-	if (!DbServer)
-		DbServer = new mgDbServerMySQL;
 	return new mgDbGd(SeparateThread);
 }
 
@@ -465,6 +463,8 @@ mgDbGd::ServerConnect ()
     if (time(0)<m_connect_time+10)
 	return false;
     m_connect_time=time(0);
+    if (!DbServer)
+	DbServer = new mgDbServerMySQL;
     m_db = mysql_init (0);
     if (!m_db)
         return false;

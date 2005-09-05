@@ -200,7 +200,7 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
   first track restarted the first track. Now it goes to the last track.
 - Added incremental search
 
-xxxxxxxx: Version 0.1.8-BETA
+2005-07-30: Version 0.1.8-BETA
 - WARNING: muggle currently only works correctly with LD_ASSUME_KERNEL=2.4.1.
   Since 1.3.27 vdr does not enforce this anymore
 - reimplemented mugglei option -z (DeleteStaleReferences), also in the
@@ -216,6 +216,16 @@ xxxxxxxx: Version 0.1.8-BETA
   Define HAVE_PG in Make.config, details see README.postgresql
 - if instant play is used while playing from the 'play' collection,
   the latter will be resumed after instant play finishes.
+- display covers on the TV and with graphTFT. Details see README
+- Support .wav files using libsndfile (Define HAVE_SNDFILE=1 in Makefile).
+  Note that taglib cannot import any ID3 tags for wav files so that
+  currently all tracks are stored under Artist 'Unknown', Album 'Unassigned'
+  and track title being identical to the filename. Also, the progress
+  display currently does not work with .wav files.
+- Using the left and right keys during replay one can jump within the current
+  track.
+- Bug which rendered incremental search unusable implemented (thanks 
+  to sundin from vdrportal)
 - progress display: if the progress of the whole selection is shown,
   the current title will be displayed and not the name of the selection
 - if you use an order like Interpret/Album/Tracks and all songs
@@ -232,6 +242,5 @@ xxxxxxxx: Version 0.1.8-BETA
 - mugglei: do not change directory to TLD before starting the import.
   mugglei has to be started in TLD or below. This way wildcards will
   always be expanded as expected.
-- display covers on the TV and with graphTFT. Details see README
 - when tracks are added to the playing list, the playlist progress
   did not get updated.
