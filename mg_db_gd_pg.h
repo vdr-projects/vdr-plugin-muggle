@@ -20,6 +20,9 @@ using namespace std;
 
 #include "mg_db.h"
 
+class mgDbServerPG : public mgDbServerImp {
+};
+
 class mgSQLStringPG : public mgSQLStringImp {
 	public:
 		mgSQLStringPG(const char* s);

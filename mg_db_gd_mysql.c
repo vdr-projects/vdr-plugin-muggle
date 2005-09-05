@@ -72,12 +72,16 @@ mgQueryMySQL::mgQueryMySQL(void* db,string sql,mgQueryNoise noise)
 mgQueryMySQL::~mgQueryMySQL()
 {
 	mysql_free_result (m_table);
+	m_table = 0;
 }
 
 char **
 mgQueryMySQL::Next()
 {
-        return mysql_fetch_row(m_table);
+	if (!m_table)
+		return 0;
+	else
+        	return mysql_fetch_row(m_table);
 }
 
 const char*
@@ -222,8 +226,6 @@ mgDbServerMySQL::mgDbServerMySQL()
 
 mgDbServerMySQL::~mgDbServerMySQL()
 {
-	delete m_escape_db;
-	m_escape_db=0;
 #ifndef HAVE_ONLY_SERVER
   mgDebug(3,"calling mysql_server_end");
   	mysql_server_end();
@@ -331,7 +333,7 @@ static char *db_cmds[] =
 	  "reclength int(11) default NULL, "
 	  "enddate date default NULL, "
 	  "endtime time default NULL,  "
-	  "repeat varchar(10) default NULL, "
+	  "repeating varchar(10) default NULL, "
 	  "initcmd varchar(255) default NULL, "
 	  "parameters varchar(255) default NULL, "
 	  "atqjob int(11) default NULL, "
@@ -367,7 +369,7 @@ static char *db_cmds[] =
 	  "sourceid varchar(20) default NULL, "
 	  "tracknb tinyint(3) unsigned default NULL, "
 	  "mp3file varchar(255) default NULL, "
-	  "condition tinyint(3) unsigned default NULL, "
+	  "conditions tinyint(3) unsigned default NULL, "
 	  "voladjust smallint(6) default '0', "
 	  "lengthfrm mediumint(9) default '0', "
 	  "startfrm mediumint(9) default '0', "
@@ -464,7 +466,7 @@ mgDbGd::ServerConnect ()
 	return false;
     m_connect_time=time(0);
     if (!DbServer)
-	DbServer = new mgDbServerMySQL;
+	DbServer = new mgDbServer;
     m_db = mysql_init (0);
     if (!m_db)
         return false;

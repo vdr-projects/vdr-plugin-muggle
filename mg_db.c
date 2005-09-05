@@ -38,6 +38,25 @@ static map <mgKeyTypes, map<string,string> > map_ids;
 
 mgDbServer* DbServer;
 
+mgDbServer::mgDbServer()
+{
+	printf("mgDbServer\n");
+#ifdef HAVE_SQLITE
+	m_server = new mgDbServerSQLite;
+#elif HAVE_PG
+	m_server = new mgDbServerPG;
+#else
+	m_server = new mgDbServerMySQL;
+#endif
+}
+
+mgDbServer::~mgDbServer()
+{
+	printf("~mgDbServer\n");
+	delete m_server;
+	m_server = 0;
+}
+
 mgSQLString::~mgSQLString()
 {
 	delete m_str;
@@ -138,6 +157,8 @@ void
 mgSQLString::operator=(const char* b)
 {
 	delete m_str;
+	free(m_original);
+	m_original = 0;
 	Init(b);
 }
 
@@ -145,6 +166,8 @@ void
 mgSQLString::operator=(const mgSQLString& b)
 {
 	delete m_str;
+	free(m_original);
+	m_original = 0;
 	Init(b.original());
 }
 
@@ -882,7 +905,9 @@ mgDb::Build_cddbid(const mgSQLString& artist) const
 {
 	char *s;
 	asprintf(&s,"%ld-%.9s",random(),artist.original());
-	return mgSQLString(s);
+	mgSQLString result = mgSQLString(s);
+	free(s);
+	return result;
 }
 
 mgSQLString
@@ -942,8 +967,10 @@ mgDb::getAlbum(const char *filename,const mgSQLString& c_album,
 			asprintf(&b,"INSERT INTO album (title,artist,cddbid) "
 					"VALUES(%s,%s,%s)",
 				c_album.quoted(),c_artist.quoted(),result.quoted());
-			Execute(b);
+			int rows = Execute(b);
 			free(b);
+			if (!rows)
+				result="NULL";
 		}
 		free(where);
 	}
@@ -1077,65 +1104,7 @@ mgDb::SyncFile(const char *filename)
 	}
 	TagLib::FileRef f( filename) ;
 
-	if( f.isNull() || !f.tag() )
-	  {
-	    if( !strcasecmp( ext, "wav" ) )
-	      {
-		mgDebug(2,"Importing %s",filename);
-		char *folders[4];
-		char *fbuf=SeparateFolders(filename,folders,4);
-		mgSQLString c_folder1(folders[0]);
-		mgSQLString c_folder2(folders[1]);
-		mgSQLString c_folder3(folders[2]);
-		mgSQLString c_folder4(folders[3]);
-		free(fbuf);
-		
-		mgSQLString c_artist("Unknown");
-		mgSQLString c_title("Unknown");
-		mgSQLString c_album("Unassigned");
-		mgSQLString c_lang("");
-		mgSQLString c_genre1("");
-		mgSQLString c_cddbid( getAlbum(filename, c_album, c_artist) );
-		mgSQLString c_mp3file(cfilename);
-		sprintf(sql,"SELECT id from tracks WHERE mp3file=%s",c_mp3file.quoted());
-
-		string id = get_col0(sql);
-		if (id!="NULL")
-		  {
-		    sprintf( sql,"UPDATE tracks SET artist=%s, title=%s,year=%d,sourceid=%s,"
-			     "tracknb=%d,length=%d,bitrate=%d,samplerate=%d,"
-			     "channels=%d,genre1=%s,lang=%s WHERE id=%ld",
-			     c_artist.quoted(),c_title.quoted(),f.tag()->year(),c_cddbid.quoted(),
-			     f.tag()->track(), 0, 0, 0,
-			     2, c_genre1.quoted(), c_lang.quoted(), atol(id.c_str() ) );
-		  }
-		else
-		  {
-		    sprintf( sql,"INSERT INTO tracks "
-			     "(artist,title,year,sourceid,"
-			     "tracknb,mp3file,length,bitrate,samplerate,"
-			     "channels,genre1,genre2,lang,folder1,folder2,"
-			     "folder3,folder4) "
-			     "VALUES (%s,%s,%u,%s,"
-			     "%u,%s,%d,%d,%d,"
-			     "%d,%s,'',%s,%s,%s,%s,%s)",
-			     c_artist.quoted(),c_title.quoted(), 0, c_cddbid.quoted(),
-			     0, c_mp3file.quoted(), 0,
-			     0, 0,
-			     2, c_genre1.quoted(), c_lang.quoted(),
-			     c_folder1.quoted(),c_folder2.quoted(),
-			     c_folder3.quoted(),c_folder4.quoted());
-		  }		
-		Execute(sql);
-		return true;
-	      }
-	    else
-	      {
-		return false;
-	      }
-	  }
 	mgDebug(2,"Importing %s",filename);
-        TagLib::AudioProperties *ap = f.audioProperties();
 	get_ID3v2_Tags(filename);
 	char *folders[4];
 	char *fbuf=SeparateFolders(filename,folders,4);
@@ -1144,13 +1113,39 @@ mgDb::SyncFile(const char *filename)
 	mgSQLString c_folder3(folders[2]);
 	mgSQLString c_folder4(folders[3]);
 	free(fbuf);
-	mgSQLString c_artist(f.tag()->artist());
-	mgSQLString c_title(f.tag()->title());
-	mgSQLString c_album(f.tag()->album());
+	mgSQLString c_artist("Unknown");
+	mgSQLString c_album("Unassigned");
+	mgSQLString c_title("Unknown");
+	mgSQLString c_genre1("NULL");
+	int year = 0;
+	int track = 0;
+	int length = 0;
+	int bitrate = 0;
+	int samplerate = 0;
+	int channels = 0;
+        if (!f.isNull())
+	{
+		TagLib::AudioProperties *ap = f.audioProperties();
+		if (ap)
+		{
+			length = ap->length();
+			bitrate = ap->bitrate();
+			samplerate = ap->sampleRate();
+			channels = ap->channels();
+		}
+	}
+	if (!f.isNull() && f.tag())
+	{
+		c_artist = f.tag()->artist();
+		c_album = f.tag()->album();
+		c_title = f.tag()->title();
+		c_genre1 = getGenre1(f);
+		year = f.tag()->year();
+		year = f.tag()->track();
+	}
 	if (strlen(c_album.original())==0)
 		c_album = "Unassigned";
 	mgSQLString c_lang(m_TLAN);
-	mgSQLString c_genre1(getGenre1(f));
 	mgSQLString c_cddbid(getAlbum(filename,c_album,c_artist));
 	mgSQLString c_mp3file(cfilename);
 	sprintf(sql,"SELECT id from tracks WHERE mp3file=%s",c_mp3file.quoted());
@@ -1160,9 +1155,9 @@ mgDb::SyncFile(const char *filename)
 	    sprintf(sql,"UPDATE tracks SET artist=%s, title=%s,year=%d,sourceid=%s,"
 		    "tracknb=%d,length=%d,bitrate=%d,samplerate=%d,"
 		    "channels=%d,genre1=%s,lang=%s WHERE id=%ld",
-		    c_artist.quoted(),c_title.quoted(),f.tag()->year(),c_cddbid.quoted(),
-		    f.tag()->track(),ap->length(),ap->bitrate(),ap->sampleRate(),
-		    ap->channels(),c_genre1.quoted(),c_lang.quoted(),atol(id.c_str()));
+		    c_artist.quoted(),c_title.quoted(),year,c_cddbid.quoted(),
+		    track,length,bitrate,samplerate,
+		    channels,c_genre1.quoted(),c_lang.quoted(),atol(id.c_str()));
 	  }
 	else
 	  {
@@ -1174,15 +1169,13 @@ mgDb::SyncFile(const char *filename)
 		    "VALUES (%s,%s,%u,%s,"
 		    "%u,%s,%d,%d,%d,"
 		    "%d,%s,'',%s,%s,%s,%s,%s)",
-		    c_artist.quoted(),c_title.quoted(),f.tag()->year(),c_cddbid.quoted(),
-		    f.tag()->track(),c_mp3file.quoted(),ap->length(),
-		    ap->bitrate(),ap->sampleRate(),
-		    ap->channels(),c_genre1.quoted(),c_lang.quoted(),
+		    c_artist.quoted(),c_title.quoted(),year,c_cddbid.quoted(),
+		    track,c_mp3file.quoted(),length,bitrate,samplerate,
+		    channels,c_genre1.quoted(),c_lang.quoted(),
 		    c_folder1.quoted(),c_folder2.quoted(),
 		    c_folder3.quoted(),c_folder4.quoted());
 	  }
-	Execute(sql);
-	return true;
+	return Execute(sql) == 1;
 }
 
 string

@@ -54,7 +54,7 @@ class mgDbGd : public mgDb {
 
 };
 
-class mgDbServerMySQL : public mgDbServer {
+class mgDbServerMySQL : public mgDbServerImp {
 	public:
 		mgDbServerMySQL();
 		~mgDbServerMySQL();
