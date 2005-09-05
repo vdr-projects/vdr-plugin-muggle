@@ -226,8 +226,6 @@ mgDbServerMySQL::mgDbServerMySQL()
 
 mgDbServerMySQL::~mgDbServerMySQL()
 {
-	delete m_escape_db;
-	m_escape_db=0;
 #ifndef HAVE_ONLY_SERVER
   mgDebug(3,"calling mysql_server_end");
   	mysql_server_end();
@@ -468,7 +466,7 @@ mgDbGd::ServerConnect ()
 	return false;
     m_connect_time=time(0);
     if (!DbServer)
-	DbServer = new mgDbServerMySQL;
+	DbServer = new mgDbServer;
     m_db = mysql_init (0);
     if (!m_db)
         return false;

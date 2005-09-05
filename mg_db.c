@@ -38,6 +38,25 @@ static map <mgKeyTypes, map<string,string> > map_ids;
 
 mgDbServer* DbServer;
 
+mgDbServer::mgDbServer()
+{
+	printf("mgDbServer\n");
+#ifdef HAVE_SQLITE
+	m_server = new mgDbServerSQLite;
+#elif HAVE_PG
+	m_server = new mgDbServerPG;
+#else
+	m_server = new mgDbServerMySQL;
+#endif
+}
+
+mgDbServer::~mgDbServer()
+{
+	printf("~mgDbServer\n");
+	delete m_server;
+	m_server = 0;
+}
+
 mgSQLString::~mgSQLString()
 {
 	delete m_str;

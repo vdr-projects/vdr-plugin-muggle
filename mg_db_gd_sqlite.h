@@ -20,6 +20,9 @@ using namespace std;
 
 #include "mg_db.h"
 
+class mgDbServerSQLite : public mgDbServerImp {
+};
+
 class mgSQLStringSQLite : public mgSQLStringImp {
 	public:
 		mgSQLStringSQLite(const char* s);

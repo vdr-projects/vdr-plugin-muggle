@@ -300,12 +300,22 @@ class mgKeyMaps {
 
 extern mgKeyMaps KeyMaps;
 
-class mgDbServer {
+class mgDbServerImp {
 	public:
-		mgDbServer() {};
-		mgDb* EscapeDb() const { return m_escape_db; }
+		mgDbServerImp() {m_escape_db = 0;}
+		virtual ~mgDbServerImp() {delete m_escape_db;}
+		mgDb* EscapeDb() const { return m_escape_db;}
 	protected:
 		mgDb* m_escape_db;
+};
+
+class mgDbServer {
+	private:
+		mgDbServerImp *m_server;
+	public:
+		mgDbServer();
+		~mgDbServer();
+		mgDb* EscapeDb() { return m_server->EscapeDb(); }
 };
 
 extern mgDbServer* DbServer;
