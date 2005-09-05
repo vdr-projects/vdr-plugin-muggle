@@ -207,6 +207,7 @@ mgQueryImp::mgQueryImp(void *db,string sql,mgQueryNoise noise)
 	m_cursor = 0;
 	m_errormessage=0;
 	m_optsql = optimize(m_sql).c_str();
+	m_rc = 0;
 }
 
 void
