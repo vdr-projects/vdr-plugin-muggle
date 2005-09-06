@@ -180,6 +180,7 @@ mgSQLStringImp::~mgSQLStringImp()
 {
 	if (m_quoted)
 		free(m_quoted);
+	m_quoted=0;
 }
 
 
@@ -926,6 +927,8 @@ mgDb::getAlbum(const char *filename,const mgSQLString& c_album,
 		char *slash=strrchr(directory,'/');
 		if (slash)
 			*slash=0;
+		else
+			*directory=0;
 		mgSQLString c_directory(directory);
 		free(directory);
 		char *where;
