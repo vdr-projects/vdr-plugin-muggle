@@ -88,6 +88,11 @@ mgSQLString::mgSQLString(const char*s)
 	Init(s);
 }
 
+mgSQLString::mgSQLString(const mgSQLString& s)
+{
+	Init(s.original());
+}
+
 mgSQLString::mgSQLString(string s)
 {
 	Init(s.c_str());
@@ -959,6 +964,7 @@ mgDb::getAlbum(const char *filename,const mgSQLString& c_album,
 			free(b);
 			asprintf(&b,"UPDATE album SET artist='Various Artists' WHERE cddbid=%s",result.quoted());
 			Execute(b);
+			free(b);
 			// here we could change all tracks.sourceid to result and delete
 			// the other album entries for this album, but that should only 
 			// be needed if a pre 0.1.4 import has been done incorrectly, so we

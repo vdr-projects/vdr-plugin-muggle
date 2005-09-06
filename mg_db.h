@@ -53,6 +53,7 @@ class mgSQLString {
 		mgSQLString(const char*s);
 		mgSQLString(string s);
 		mgSQLString(TagLib::String s);
+		mgSQLString(const mgSQLString& s);
 		~mgSQLString();
 		char *quoted() const;
 		char *unquoted() const;
