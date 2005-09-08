@@ -125,6 +125,8 @@ bool mgMuggle::SetupParse (const char *Name, const char *Value)
         the_setup.LimiterLevel = atoi (Value);
     else if (!strcasecmp (Name, "Only48kHz"))
         the_setup.Only48kHz = atoi (Value);
+    else if (!strcasecmp (Name, "DeleteStaleReferences"))
+        the_setup.DeleteStaleReferences = atoi (Value);
     else
         return false;
 
