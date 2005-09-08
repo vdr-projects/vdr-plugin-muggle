@@ -151,8 +151,7 @@ $(DEPFILE): Makefile
 mg_tables.h:	scripts/genres.txt scripts/iso_639.xml scripts/musictypes.txt scripts/sources.txt
 	scripts/gentables
 
-# das hier nur voruebergehend, zum einfacheren Testen, ob noch alles kompiliert:
-libvdr-$(PLUGIN).so: $(OBJS) $(DB_OBJ) mg_db_gd_mysql.o # mg_db_gd_sqlite.o mg_db_gd_pg.o 
+libvdr-$(PLUGIN).so: $(OBJS) $(DB_OBJ)
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(PLAYLIBS) $(SQLLIBS) -o $@
 	@cp $@ $(LIBDIR)/$@.$(VDRVERSION)
 
