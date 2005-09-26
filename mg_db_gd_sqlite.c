@@ -186,7 +186,7 @@ static char *db_cmds[] =
 	  "sourceid varchar(20) default NULL, "
 	  "tracknb tinyint(3) default NULL, "
 	  "mp3file varchar(255) default NULL, "
-	  "condition tinyint(3) default NULL, "
+	  "quality tinyint(3) default NULL, "
 	  "voladjust smallint(6) default '0', "
 	  "lengthfrm mediumint(9) default '0', "
 	  "startfrm mediumint(9) default '0', "
@@ -331,16 +331,19 @@ mgDbGd::Connect ()
 	return false;
      }
      if (!FieldExists("tracks","id"))
+	m_database_found=false;
+     if (m_database_found)
+	return true;
+     extern bool create_question();
+     if (!create_question())
      {
-     	extern bool create_question();
-     	if (!create_question())
-     		return false;
-     	if (!Create())
-		return false;
-     	extern bool import();
-     	import();
+	mgWarning("Database not created");
+     	return false;
      }
-     return true;
+     m_database_found = Create();
+     if (!m_database_found)
+	     mgWarning("Cannot create database:%s",sqlite3_errmsg);
+     return m_database_found;
 }
 
 bool 

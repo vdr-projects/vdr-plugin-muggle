@@ -240,6 +240,7 @@ static char *db_cmds[] =
   "CREATE TABLE album ( "
 	  "artist varchar(255) default NULL, "
 	  "title varchar(255) default NULL, "
+	  "composer varchar(255) default NULL, "
 	  "cddbid varchar(20) NOT NULL default '', "
 	  "coverimg varchar(255) default NULL, "
 	  "covertxt mediumtext, "
@@ -358,6 +359,7 @@ static char *db_cmds[] =
   "CREATE TABLE tracks ( "
 	  "artist varchar(255) default NULL, "
 	  "title varchar(255) default NULL, "
+	  "composer varchar(255) default NULL, "
 	  "genre1 varchar(10) default NULL, "
 	  "genre2 varchar(10) default NULL, "
 	  "year smallint(5) unsigned default NULL, "
@@ -369,12 +371,13 @@ static char *db_cmds[] =
 	  "sourceid varchar(20) default NULL, "
 	  "tracknb tinyint(3) unsigned default NULL, "
 	  "mp3file varchar(255) default NULL, "
-	  "conditions tinyint(3) unsigned default NULL, "
+	  "quality tinyint(3) unsigned default NULL, "
 	  "voladjust smallint(6) default '0', "
 	  "lengthfrm mediumint(9) default '0', "
 	  "startfrm mediumint(9) default '0', "
 	  "bpm smallint(6) default '0', "
 	  "lyrics mediumtext, "
+	  "moreinfo mediumtext, "
 	  "bitrate varchar(10) default NULL, "
 	  "created date default NULL, "
 	  "modified date default NULL, "
@@ -527,17 +530,15 @@ mgDbGd::Connect ()
     if (m_database_found)
 	return true;
     extern bool create_question();
-    extern bool import();
-    if (create_question())
+    if (!create_question())
     {
-	    if (Create())
-	    {
-	    	import();
-		return true;
-	    }
+    	mgWarning("Database not created");
+    	return false;
     }
-    mgWarning(mysql_error(m_db));
-    return false;
+    m_database_found = Create();
+    if (!m_database_found)
+    	mgWarning("Cannot create database:%s",mysql_error(m_db));
+    return m_database_found;
 }
 
 bool 

@@ -193,7 +193,7 @@ static char *db_cmds[] =
 	  "sourceid varchar(20) default NULL, "
 	  "tracknb smallint default NULL, "
 	  "mp3file varchar(255) default NULL, "
-	  "condition smallint default NULL, "
+	  "quality smallint default NULL, "
 	  "voladjust smallint default '0', "
 	  "lengthfrm int default '0', "
 	  "startfrm int default '0', "
@@ -304,19 +304,15 @@ mgDbGd::Connect ()
 	return false;
     m_create_time=time(0);
     extern bool create_question();
-    extern bool import();
-    if (create_question())
+    if (!create_question())
     {
-	    m_database_found = true;
-	    if (myCreate())
-	    {
-	    	import();
-		return true;
-	    }
+	    mgWarning("Database not created");
+	    return false;
     }
-    m_database_found = false;
-    mgWarning(PQerrorMessage(m_db));
-    return false;
+    m_database_found = myCreate();
+    if (!m_database_found)
+	    mgWarning("Cannot create database:%s",PQerrorMessage(m_db));
+    return m_database_found;
 }
 
 bool 
