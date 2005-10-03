@@ -10,103 +10,28 @@
   \section urgent Urgent/Short-term issues
 
     \subsection bugs Bugs and testing needed
+       - Cover images from id3 tags
 
     \subsection urgentosd OSD-related Issues
+       - Move items within playlists
 
     \subsection urgentcode Code polishing
-
-        - Clean up coding style and documentation in general
-        - Logging
-          - extend mgLog with static logging methods
-          - in DEBUG mode, issue logs, warnings, errors to stderr
-          - otherwise issue errors only to syslog
-          - Check for unnecessary log commands
         - Generate HTML documentation using doxygen,
           - use dotty/gv for state machines of player
-          - make available online
-        - Clean up mugglei (abstract code where possible)
-	- extend mgSelection with all SQL code needed by mugglei.c, maybe something like mgSelection.SyncWithPath(const char *path, options)
-	- then remove all SQL code from mugglei.c
-        - Check for memory leaks
-        - Check for (reasonably) consistent usage of char pointers and strings
-	- mgPlayer used what for?
-	  - Could save IP/host name and associate last playlist/index loaded
 
     \subsection urgentcontent Content handling    
-        - Save on exit
-	- Think, whether type (mp3, ogg, flac) should be stored in database
-          - could be used in searching/structuring as well
-        - Party mode (see iTunes)
-          - initialization
-            - find 15 titles according to the scheme below
-          - playing 
-            - before entering next title perform track selection
-	    - do not increment the playcount
-	    - if more than 5 titles are found, make sure the same title is not directly repeated
-          - track selection
-  	    - generate a random uid
-	    - if file exists:
-	      - determine maximum playcount of all tracks
-	      - generate a random number n
-	        - if n < playcount / max. playcount
-	          - add the file to the end of the list
 
     \subsection urgentplayer Player extensions
         - Possible to resume play instead of restarting list from the beginning?
-	- Display covers
-          - Import filename
-          - Show image during replay
-	- Add FLAC decoder
-	- Determine max. framecount (needed for rewinding?)
 	- Init scale/level/normalize?
 	  - The max. level should be recognized during play
 	  - Store max. level in the database
-        - Display covers
 
-    \subsection deploy Deployment
-
-    - Script to publish a version
-      - make dist
-      - copy .tgz, README, CHANGES, HISTORY into web directory
-      - generate documentation
-      - copy into web directory
-      - sync with web
-      - How to track bugs and feature requests?
-
-	\verbatim
-	# $1: version name (e.g. 0.0.5-BETA)
-	# how to determine current path?
-	svn copy ... http://.../svn/muggle/tags/$1
-
-	make dist
-	# obtain name from output? or copy commands and make correctly
-	mv vdr-muggle-0.0.1.tgz ~/Web/current/htpc/muggle/vdr-muggle-$1.tgz
-
-	cp README ...
-	cp TODO ...
-	cp CHANGES ...
-
-	doxygen muggle.doxygen
-	cp -R doc ~/Web/current/htpc/muggle/
-
-	sitecopy --update htpctech
-	\endverbatim
-      
   \section mid ToDo items of moderate importance
   
     \subsection midimport Import stuff
     
-    - Handle updates in both directions
-      - Check modification date in DB/fstat
-      - if file is newer: update tags into db
-      - if DB is newer: update db into tags
-      - Second pass: check for all tracks, whether files do exist
-        - delete DB entry if not
-
     - Album
-      - Cover images (based on filename or tag)
-      - Genre
-      - Modified
       - Cover text
 
     - Tracks
@@ -116,7 +41,6 @@
       - Lyrics
 
     - Import playlist from m3u
-    - Run import/update from within OSD?
     - define regexp per import field for things like s'/^The//'
 
     \subsection midcode Code issues
@@ -124,8 +48,6 @@
 	\subsection midosd OSD-related issues
         - can mgMenu and mgMainMenu be combined into one class?	
 	- can mgActions inherit from cOsdItem?
-	- Incremental search 
-          - Type numbers to enter characters and jump to first title accordingly
 	- Check whether submenus (as implemented in VDR) are more suitable
 	    - do not permit jumping to arbitrary menus though
 
@@ -144,31 +66,22 @@
 
 	- Handle ratings (increase/decrease during replay)
 	    - Keys to directly increase
-	    - handle a playcounter
-	        - when playfrequency reaches lower level x from above: decrease rating
-	        - when playfrequency reaches lower level x from below: increase rating
-	        - when playfrequency reaches upper level y from above: decrease rating
-	        - when playfrequency reaches upper level y from below: increase rating
+	    - handle a playcounter and use it to influence rating
 
 	\subsection midplayer Player issues
 	
         - Use single CD files with cuesheets in metadata for FLAC
 	- Handle recoding samplerate, limiter etc correctly
+        - Let decoding run in a thread of its own
     
 	\section vision Long term ideas and visions
 
-	- daapd integration?
-	- netjuke integration?
-	- Display arbitrary images while playing music
-
 	- handle off-line media (CDs, DVDs, recordings)
-	- handle streams (live TV with channel list, MP3 radio,..., EPG)
-	
+	- handle streams (live TV with channel list, MP3 radio,..., EPG)	
 	- handle images (possibly in sync with music/radio)
 	- muggle content syndication (e.g. via DAAPD)
 	  - access media on someone elses computer
 	- provide a stream (e.g. icecast) of the currently played music?
-      - allow remote stations to attach to this
 
   \section done Done
   
