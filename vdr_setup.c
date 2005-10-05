@@ -33,41 +33,41 @@ mgMenuSetup::mgMenuSetup ()
 
     // Audio stuff    
     Add (new
-	 cMenuEditBoolItem (tr ("Setup.Muggle$Initial loop mode"),
+	 cMenuEditBoolItem (tr ("Initial loop mode"),
 			    &the_setup.InitLoopMode));
     Add (new
-	 cMenuEditBoolItem (tr ("Setup.Muggle$Initial shuffle mode"),
+	 cMenuEditBoolItem (tr ("Initial shuffle mode"),
 			    &the_setup.InitShuffleMode));
     Add (new
-	 cMenuEditBoolItem (tr ("Setup.Muggle$Audio mode"), &the_setup.AudioMode,
+	 cMenuEditBoolItem (tr ("Audio mode"), &the_setup.AudioMode,
 			    tr ("Round"), tr ("Dither")));
     Add (new
-	 cMenuEditBoolItem (tr ("Setup.Muggle$Use 48kHz mode only"),
+	 cMenuEditBoolItem (tr ("Use 48kHz mode only"),
 			    &the_setup.Only48kHz));
     Add (new
-	 cMenuEditIntItem (tr ("Setup.Muggle$Normalizer level"),
+	 cMenuEditIntItem (tr ("Normalizer level"),
 			   &the_setup.TargetLevel, 0, MAX_TARGET_LEVEL));
     Add (new
-	 cMenuEditIntItem (tr ("Setup.Muggle$Limiter level"),
+	 cMenuEditIntItem (tr ("Limiter level"),
 			   &the_setup.LimiterLevel, MIN_LIMITER_LEVEL, 100));
 
     // Image/cover display
     Add (new
-	 cMenuEditIntItem (tr ("Setup.Muggle$Background mode"),
+	 cMenuEditIntItem (tr ("Background mode"),
 			   &the_setup.BackgrMode, 1, 3 ) );
     Add (new
-	 cMenuEditIntItem (tr ("Setup.Muggle$Image show duration"),
+	 cMenuEditIntItem (tr ("Image show duration"),
 			   &the_setup.ImageShowDuration, 1, 100));
     Add (new
-	 cMenuEditStrItem (tr ("Setup.Muggle$Image cache directory"),
+	 cMenuEditStrItem (tr ("Image cache directory"),
 			   the_setup.ImageCacheDir, 256, chars_allowed ) );
     Add (new
-	 cMenuEditBoolItem (tr ("Setup.Muggle$Use DVB still picture"),
+	 cMenuEditBoolItem (tr ("Use DVB still picture"),
 			    &the_setup.UseDeviceStillPicture));
 
     // Synchronization    
     Add (new
-	 cMenuEditBoolItem (tr ("Setup.Muggle$Delete stale references"),
+	 cMenuEditBoolItem (tr ("Delete stale references"),
 			    &the_setup.DeleteStaleReferences));
 
     mgAction *a = actGenerate(actSync);
