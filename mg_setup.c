@@ -51,7 +51,7 @@ mgSetup::mgSetup ()
 
     // stuff related to cover image display
     ImageCacheDir = strdup( "/tmp" );
-    UseDeviceStillPicture = true;
+    UseDeviceStillPicture = 1;
     ImageShowDuration = 10;
 }
 

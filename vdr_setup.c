@@ -23,6 +23,7 @@
 #include "vdr_actions.h"
 #include "i18n.h"
 
+static char* chars_allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_./";
 
 // --- mgMenuSetup -----------------------------------------------------------
 
@@ -59,7 +60,7 @@ mgMenuSetup::mgMenuSetup ()
 			   &the_setup.ImageShowDuration, 1, 100));
     Add (new
 	 cMenuEditStrItem (tr ("Setup.Muggle$Image cache directory"),
-			   &the_setup.ImageCacheDir, 256, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_./" ) );
+			   the_setup.ImageCacheDir, 256, chars_allowed ) );
     Add (new
 	 cMenuEditBoolItem (tr ("Setup.Muggle$Use DVB still picture"),
 			    &the_setup.UseDeviceStillPicture));

@@ -56,7 +56,7 @@ class mgSetup
 
 	int  ImageShowDuration;
 	char *ImageCacheDir;
-	bool UseDeviceStillPicture;
+	int UseDeviceStillPicture;
 
 	int DeleteStaleReferences;
 	bool CreateMode;
