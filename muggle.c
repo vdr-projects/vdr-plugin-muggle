@@ -133,5 +133,38 @@ bool mgMuggle::SetupParse (const char *Name, const char *Value)
     return true;
 }
 
+bool mgMuggle::Service( const char *Id, void *Data )
+{
+  bool result = false;
+  
+  if( !strcmp( Id, "ReplayDirectoryImages" ) )
+    {
+      if( Data )
+	{
+	  // check whether there is a current player and signal the new image playlist to it
+	  mgPlayerControl *c = PlayerControl();
+	  if( c )
+	    {
+	      cout << "Found running muggle player to display image playlist in " << (char *) Data << endl << flush;
+	      c->NewImagePlaylist( (char*) Data );
+	      cout << "New image playlist signaled." << endl << flush;
+	      result = true;
+	    }
+	  // return false otherwise (never start an extra player for this)
+	  else
+	    {
+	      result = false;
+	    }
+	}
+      else
+	{
+	  // generally we can handle this
+	  result = true;
+	}
+    }
+  
+  return result;
+}
+
 
 VDRPLUGINCREATOR (mgMuggle);                      // Don't touch this!

@@ -73,6 +73,8 @@ class mgItemGd : public mgItem
         int m_channels;
 	int m_tracknb;
 	mutable int m_covercount;
+
+	
 };
 
 #endif

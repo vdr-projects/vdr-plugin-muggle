@@ -13,9 +13,10 @@ PLUGIN = muggle
 #edit $VDRDIR/Make.config
 
 #if you want ogg / flac support, define HAVE_VORBISFILE and/or HAVE_FLAC
-# HAVE_VORBISFILE=1
-# HAVE_FLAC=1
-# HAVE_SNDFILE=1
+#in $VDRDIR/Make.config like this:
+#HAVE_VORBISFILE=1
+#HAVE_FLAC=1
+#HAVE_SNDFILE=1
 
 #if you do not want to compile in code for embedded mysql,
 #define this:
@@ -79,7 +80,7 @@ DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
 OBJS = $(PLUGIN).o i18n.o mg_valmap.o mg_db.o mg_thread_sync.o \
 	mg_item.o mg_item_gd.o mg_listitem.o mg_selection.o mg_sel_gd.o vdr_actions.o vdr_menu.o mg_tools.o \
 	vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o \
-	vdr_setup.o mg_setup.o mg_incremental_search.o
+	vdr_setup.o mg_setup.o mg_incremental_search.o mg_image_provider.o
 
 PLAYLIBS = -lmad $(shell taglib-config --libs)
 MILIBS =  $(shell taglib-config --libs)

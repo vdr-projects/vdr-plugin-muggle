@@ -42,6 +42,7 @@
 #include "vdr_decoder.h"
 #include "vdr_config.h"
 #include "mg_setup.h"
+#include "mg_image_provider.h"
 #include "i18n.h"
 
 #include "mg_tools.h"
@@ -113,7 +114,7 @@ struct LPCMFrame
  * VDR as a player and inherits from cThread in order to implement a separate thread
  * for the decoding process.
  */
-class mgPCMPlayer:public cPlayer, cThread
+class mgPCMPlayer : public cPlayer, cThread
 {
     private:
 
@@ -143,6 +144,9 @@ class mgPCMPlayer:public cPlayer, cThread
 
 //! \brief the decoder responsible for the currently playing item
         mgDecoder *m_decoder;
+
+//! \brief the image provider
+	mgImageProvider *m_img_provider;
 
         cFrame *m_rframe, *m_pframe;
 
@@ -211,6 +215,7 @@ class mgPCMPlayer:public cPlayer, cThread
 
         void ReloadPlaylist ();
         void NewPlaylist (mgSelection * plist);
+        void NewImagePlaylist (const char *directory);
 
         mgItemGd *getCurrent ()
         {
@@ -223,6 +228,7 @@ class mgPCMPlayer:public cPlayer, cThread
         }
 
 	// background image handling stuff
+	int m_image_delaycounter;
 	string m_current_image;
 	void CheckImage( string fileName );
 	void ShowImage( );
@@ -250,6 +256,8 @@ mgPCMPlayer::mgPCMPlayer (mgSelection * plist)
     m_index = 0;
     m_playing = false;
     m_current = 0;
+
+    m_img_provider = mgImageProvider::Create();
 }
 
 
@@ -338,6 +346,19 @@ mgPCMPlayer::NewPlaylist (mgSelection * plist)
 }
 
 void
+mgPCMPlayer::NewImagePlaylist( const char *directory )
+{
+    MGLOG ("mgPCMPlayer::NewImagePlaylist");
+
+    Lock ();
+
+    delete m_img_provider;
+    m_img_provider = mgImageProvider::Create( directory );
+
+    Unlock ();
+}
+
+void
 mgPCMPlayer::SetPlayMode (emgPlayMode mode)
 {
     m_playmode_mutex.Lock ();
@@ -417,7 +438,7 @@ mgPCMPlayer::Action (void)
             std::
                 cout << "mgPCMPlayer::Action: heartbeat buffer=" << m_ringbuffer->
                 Available () << std::endl << std::flush;
-            scale.Stats ();
+           scale.Stats ();
             if (haslevel)
                 norm.Stats ();
             beat = time (0);
@@ -432,32 +453,12 @@ mgPCMPlayer::Action (void)
             {
                 case msStart:
                 {
-                    m_index = 0;
+		  m_img_provider->updateItem( m_current );
+                  m_image_delaycounter = 0;
+
+		  m_index = 0;
                     m_playing = true;
-
-		    string img = m_current->getImagePath();
-
-		    // check for TFT display of image
-		    TransferImageTFT( img );
-
-		    // check for background display of image
-		    if( the_setup.BackgrMode == 2 )
-		      {
-			if (img.empty())
-			{
-				m_current_image="";
-//    				cDevice::PrimaryDevice()->SetPlayMode(pmAudioOnly);
-			}
-			else
-			{
-//    				cDevice::PrimaryDevice()->SetPlayMode(pmAudioOnlyBlack);
-				string prev_mpg = m_current_image;
-				CheckImage( img );
-				if( ( prev_mpg != m_current_image ))
-			    		ShowImage();
-			}
-		      }
-
+		    
                     if (m_current)
                     {
 		        string filename = m_current->getSourceFile ();
@@ -486,7 +487,32 @@ mgPCMPlayer::Action (void)
                 }
                 break;
                 case msDecode:
-                {
+                {		  
+		  if( m_image_delaycounter % 1000 == 0 )
+		    { // all n decoding steps
+		      m_current_image = m_img_provider->getImagePath( );
+		  
+		      // check for TFT display of image
+		      TransferImageTFT( m_current_image );
+
+		      // check for background display of image
+		      if( the_setup.BackgrMode == 2 )
+			{
+			  if( m_current_image.empty() )
+			    {
+			      m_current_image="";
+			      //  cDevice::PrimaryDevice()->SetPlayMode(pmAudioOnly);
+			    }
+			  else
+			    {
+			      //	cDevice::PrimaryDevice()->SetPlayMode(pmAudioOnlyBlack);
+			      cout << "Showing image " << m_current_image << endl << flush;
+			      ShowImage();
+			    }
+			}
+		    }
+		  m_image_delaycounter += 1;
+		  
                     ds = m_decoder->decode ();
                     switch (ds->status)
                     {
@@ -500,7 +526,7 @@ mgPCMPlayer::Action (void)
                         case dsSkip:
                         case dsSoftError:
                         {
-// skipping, state unchanged, next decode
+			  // skipping, state unchanged, next decode
                         }
                         break;
                         case dsEof:
@@ -1046,7 +1072,7 @@ void mgPCMPlayer::ShowImage( )
 	      
 	      if( the_setup.UseDeviceStillPicture )
 		{
-		  sleep(1);
+		  usleep(80000);
 		  DeviceStillPicture( buffer, sp.size );
 		}
 	      else
@@ -1288,6 +1314,16 @@ mgPlayerControl::NewPlaylist (mgSelection * plist)
     if (player)
     {
         player->NewPlaylist (plist);
+    }
+}
+
+void
+mgPlayerControl::NewImagePlaylist( const char *directory )
+{
+    if (player)
+    {
+      cout << "Signaling new image playlist to player: " << directory << endl << flush;
+      player->NewImagePlaylist (directory);
     }
 }
 

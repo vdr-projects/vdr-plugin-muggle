@@ -244,3 +244,5 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
   always be expanded as expected.
 - when tracks are added to the playing list, the playlist progress
   did not get updated.
+
+branch muggle-images: from r800

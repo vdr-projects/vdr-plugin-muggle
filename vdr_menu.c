@@ -209,7 +209,6 @@ mgMenu::ExecuteAction(const mgActions action,mgActions on)
     return osUnknown;
 }
 
-
 mgPlayerControl *
 PlayerControl ()
 {
@@ -220,7 +219,6 @@ PlayerControl ()
         result = static_cast < mgPlayerControl * >(control);
     return result;
 }
-
 
 mgMenu::mgMenu ()
 {

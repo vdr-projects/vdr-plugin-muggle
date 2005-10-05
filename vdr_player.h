@@ -130,6 +130,14 @@ class mgPlayerControl:public cControl
  */
         void NewPlaylist (mgSelection * plist);
 
+/*! \brief signal a new image playlist
+ *
+ *  A directory is passed and all images (.jpg, .png) contained in this dir are to be displayed during playback.
+ *
+ *  \param directory - the directory containing images to be replayed
+ */
+        void NewImagePlaylist (const char *directory);
+
 //! \brief a progress display
         void ShowProgress ();
 
