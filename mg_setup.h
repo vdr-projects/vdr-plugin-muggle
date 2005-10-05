@@ -54,6 +54,7 @@ class mgSetup
         int DbPort;
         char *ToplevelDir;
 
+	int  ImageShowDuration;
 	char *ImageCacheDir;
 	bool UseDeviceStillPicture;
 

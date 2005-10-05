@@ -29,7 +29,8 @@
 mgMenuSetup::mgMenuSetup ()
 {
     SetSection (tr ("Muggle"));
-    
+
+    // Audio stuff    
     Add (new
 	 cMenuEditBoolItem (tr ("Setup.Muggle$Initial loop mode"),
 			    &the_setup.InitLoopMode));
@@ -43,22 +44,31 @@ mgMenuSetup::mgMenuSetup ()
 	 cMenuEditBoolItem (tr ("Setup.Muggle$Use 48kHz mode only"),
 			    &the_setup.Only48kHz));
     Add (new
-	 cMenuEditIntItem (tr ("Setup.Muggle$Display mode"),
-			   &the_setup.DisplayMode, 1, 3));
-    Add (new
-	 cMenuEditIntItem (tr ("Setup.Muggle$Background mode"),
-			   &the_setup.BackgrMode, 1, 3 ) );
-    Add (new
 	 cMenuEditIntItem (tr ("Setup.Muggle$Normalizer level"),
 			   &the_setup.TargetLevel, 0, MAX_TARGET_LEVEL));
     Add (new
 	 cMenuEditIntItem (tr ("Setup.Muggle$Limiter level"),
 			   &the_setup.LimiterLevel, MIN_LIMITER_LEVEL, 100));
+
+    // Image/cover display
+    Add (new
+	 cMenuEditIntItem (tr ("Setup.Muggle$Background mode"),
+			   &the_setup.BackgrMode, 1, 3 ) );
+    Add (new
+	 cMenuEditIntItem (tr ("Setup.Muggle$Image show duration"),
+			   &the_setup.ImageShowDuration, 1, 100));
+    Add (new
+	 cMenuEditStrItem (tr ("Setup.Muggle$Image cache directory"),
+			   &the_setup.ImageCacheDir, 256, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_./" ) );
+    Add (new
+	 cMenuEditBoolItem (tr ("Setup.Muggle$Use DVB still picture"),
+			    &the_setup.UseDeviceStillPicture));
+
+    // Synchronization    
     Add (new
 	 cMenuEditBoolItem (tr ("Setup.Muggle$Delete stale references"),
 			    &the_setup.DeleteStaleReferences));
-    
-    
+
     mgAction *a = actGenerate(actSync);
     const char *mn = a->MenuName();
     a->SetText(mn);
