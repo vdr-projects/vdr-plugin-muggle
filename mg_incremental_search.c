@@ -58,7 +58,7 @@ string mgIncrementalSearch::KeyStroke( unsigned key )
       // position remains
       m_repeats ++;
       
-      if( (unsigned) m_repeats >= strlen( keys[m_position] ) )
+      if( (unsigned) m_repeats >= strlen( keys[key] ) )
 	{
 	  // wrap around to first char
 	  m_repeats = 0;
@@ -73,6 +73,10 @@ string mgIncrementalSearch::Backspace()
   if( !m_buffer.empty() )
     {
       m_buffer.erase( m_buffer.size()-1, 1 );
+      m_position--;
+      m_last_key=100;
+      m_last_keypress=0.0;
+      m_repeats=0;
     }
   return m_buffer;
 }
