@@ -314,6 +314,12 @@ mgDb::SyncStart()
 	return true;
 }
 
+bool
+mgDb::DatabaseEmpty() 
+{
+	return (exec_count("SELECT COUNT FROM TRACKS")>0);
+}
+
 void
 mgDb::Sync(char * const * path_argv)
 {

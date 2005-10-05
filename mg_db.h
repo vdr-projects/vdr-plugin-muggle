@@ -192,6 +192,7 @@ class mgDb {
 	virtual const char* DecadeExpr()=0;
 	virtual string Now() const =0;
 	virtual string Directory() const =0;
+	bool DatabaseEmpty();
    protected:
 	int m_rows;
 	int m_cols;

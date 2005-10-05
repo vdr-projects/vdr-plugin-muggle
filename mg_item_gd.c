@@ -18,7 +18,7 @@
 #include "mg_db.h"
 
 // this one last because of swap() redefinition:
-#include <tools.h>
+// #include <tools.h>
 
 static bool gd_music_dir_exists[100];
 static bool gd_music_dirs_scanned=false;
