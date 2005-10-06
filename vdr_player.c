@@ -488,7 +488,9 @@ mgPCMPlayer::Action (void)
                 break;
                 case msDecode:
                 {		  
-		  if( m_image_delaycounter % 1000 == 0 )
+		  int secs = SecondsToFrames( m_index) ;
+	
+		  if( secs % the_setup.ImageShowDuration == 0 )
 		    { // all n decoding steps
 		      m_current_image = m_img_provider->getImagePath( );
 		  
@@ -566,10 +568,9 @@ mgPCMPlayer::Action (void)
                         static unsigned int oldrate = 0;
                         if (oldrate != pcm->samplerate)
                         {
-                            std::
-                                cout << "mgPCMPlayer::Action: new input sample rate "
-                                << pcm->samplerate << std::endl << std::flush;
-                            oldrate = pcm->samplerate;
+			  std::cout << "mgPCMPlayer::Action: new input sample rate "
+				    << pcm->samplerate << std::endl << std::flush;
+			  oldrate = pcm->samplerate;
                         }
                     }
 #endif
