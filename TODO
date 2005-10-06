@@ -10,8 +10,6 @@
   \section urgent Urgent/Short-term issues
 
     \subsection bugs Bugs and testing needed
-       - Cover images from id3 tags
-       - When no tags in file can be found and no 
 
     \subsection urgentosd OSD-related Issues
        - Move items within playlists

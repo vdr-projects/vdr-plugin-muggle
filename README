@@ -231,24 +231,26 @@ If a track has no ID3 tags, the following defaults will be applied:
 
 \section covers COVERS
 
-muggle can display cover images. Currently, muggle simply displays all
-images which reside in the same directory as the current file. 
+Muggle can display cover images (and others). Set the setup entry "Background mode"
+to "Image" to enable this feature. The images are found like this:
 
-#1. if the database field album.coverimg contains something: This is 
-#   displayed. If the image file does not exist, show an error.
-#2. else: take the track filename and replace its extension by .jpg
-#   if this file exists, display it
-#3. else try the file "cover.jpg" in the current directory. If it
-#   does not exist, try parent directory. Repeat until the TLD is
-#   reached.
+1. Check whether there are images in the APIC id3v2 tag of the file.
+   If so, expand these and show them on the screen during replay.
+2. Otherwise, check all image files in the directory of the current song
+3. Recursively look into parent directories (up to top level) until at least
+   one image is found and display it.
+4. If no images can be found at all, nothing is displayed.
 
 So if you want a default background for all tracks you should put it 
-into TLD/cover.jpg. It is strongly recommended to define such a default
-background. Otherwise if no cover is found for a track, the previously
-displayed cover stays on the screen.
+into the toplevel directory (e.g. cover.jpg). It is strongly recommended to
+define such a default background. Otherwise if no cover is found for a track,
+the previously displayed cover stays on the screen. This is a known "behavior".
+
+Currently, the database entry (album.coverimg) is not taken into account.
 
 During installation, make sure that the script called image_convert.sh
-(from the scripts directory) is somewhere on your path.
+(from the scripts directory) is somewhere on your path. Also, make sure to use
+the -c flag if you use a runvdr (or similar) script.
 
 \section quickuse QUICK INTRO
 
