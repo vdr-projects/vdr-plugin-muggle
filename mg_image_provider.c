@@ -5,14 +5,11 @@
 #include "mg_tools.h"
 #include "mg_setup.h"
 
-#include <id3v2tag.h>
-#include <id3v2frame.h>
 #include <id3v2header.h>
 #include <flacfile.h>
 #include <vorbisfile.h>
 #include <mpegfile.h>
 #include <attachedpictureframe.h>
-#include <tbytevector.h>
 
 #include <iostream>
 #include <stdio.h>
@@ -83,6 +80,7 @@ mgImageProvider::mgImageProvider( string dir )
   // iterate all files in dir and put them into m_image_list
   m_mode = IM_PLAYLIST;
   m_image_index = 0;
+  m_delete_imgs_from_tag = false;
 
   fillImageList( dir );
   Start();
@@ -92,6 +90,7 @@ mgImageProvider::mgImageProvider( )
 {
   m_mode = IM_ITEM_DIR;
   m_image_index = 0;
+  m_delete_imgs_from_tag = false;
 }
 
 mgImageProvider* mgImageProvider::Create( string dir )
@@ -114,7 +113,22 @@ void mgImageProvider::updateItem( mgItemGd *item )
     {
       // do not try to acquire new images when we are playing back a separate directory
 
+      if( m_delete_imgs_from_tag )
+	{
+	  for( vector<string>::iterator iter = m_image_list.begin(); iter != m_image_list.end(); iter ++ )
+	    {
+	      // remove( (*iter).c_str() );
+	      cout << "Removing " << *iter << endl;
+	    }
+	  m_delete_imgs_from_tag = false;
+	}
       m_image_list.clear();
+
+      for( vector<string>::iterator iter = m_converted_images.begin(); iter != m_converted_images.end(); iter ++ )
+	{
+	  // remove( (*iter).c_str() );
+	  cout << "Removing " << *iter << endl;
+	}
       m_converted_images.clear();
       // clear temporary image directory
       
@@ -226,7 +240,7 @@ void mgImageProvider::fillImageList( string dir )
     }
 }
 
-void writeImage( TagLib::ByteVector &image, int num, string &image_cache )
+void mgImageProvider::writeImage( TagLib::ByteVector &image, int num, string &image_cache )
 {
   char* image_data = image.data();
   int len = image.size();
@@ -241,12 +255,13 @@ void writeImage( TagLib::ByteVector &image, int num, string &image_cache )
   free( buf );
 }
 
-string treatFrameList( TagLib::ID3v2::FrameList &l, string &image_cache )
+string mgImageProvider::treatFrameList( TagLib::ID3v2::FrameList &l, string &image_cache )
 {
   string result;
 
   if( !l.isEmpty() )
     {
+      m_delete_imgs_from_tag = true;
       TagLib::ID3v2::FrameList::ConstIterator it = l.begin();
   
       int num = 0;
@@ -287,9 +302,7 @@ string mgImageProvider::extractImagesFromTag( string f )
     {
       TagLib::MPEG::File f(filename);
       l = f.ID3v2Tag()->frameListMap()["APIC"];
-      dir = treatFrameList( l, image_cache );
-
-      
+      dir = treatFrameList( l, image_cache );      
     }
   else if( !strcasecmp(extension(filename), "ogg") )
     {
