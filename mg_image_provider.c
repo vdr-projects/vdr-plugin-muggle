@@ -115,6 +115,7 @@ void mgImageProvider::updateItem( mgItemGd *item )
       // do not try to acquire new images when we are playing back a separate directory
 
       m_image_list.clear();
+      m_converted_images.clear();
       // clear temporary image directory
       
       // check whether the item has cover images in tags?
@@ -123,29 +124,37 @@ void mgImageProvider::updateItem( mgItemGd *item )
 	{
 	  // no images in tags, find images in the directory of the file itself
 	  dir = dirname( (char *) (item->getSourceFile().c_str()) );
-
-	  // go up hierarchy until we find at least one image or reach toplevel dir 
+	  cout << "No images in tags. Looking in " << dir << endl;
+	  
+	  // do something, when there are no images here, either:
+	  // simply go up one step in the directory hierarchy, until we reach top level directory      
 	  bool toplevel_reached = false;
-	  while( !m_image_list.size() || toplevel_reached )
+	  while( !m_image_list.size() )
 	    {
 	      if( samedir( dir.c_str(), the_setup.ToplevelDir ) )
 		{
+		  cout << "Toplevel reached at " << dir << endl;
 		  toplevel_reached = true;
 		}
 
 	      fillImageList( dir );
+	      cout << "Images in " << dir << ": " << m_image_list.size() << endl;
 	      
 	      if( !m_image_list.size() )
 		{
+		  cout << "Nothing found in " << dir << endl;
+
 		  // nothing found, turn up one directory level
 		  dir = dirname( (char *)dir.c_str() );
+		  cout << "Looking further in " << dir << endl;
 		}
 	    }
+	  cout << "Finished." << endl;
 	}
-
-      // think of something, when there are no images here, either:
-      // simply go up one step in the directory hierarchy, until we reach top level directory
-      
+      else
+	{
+	  fillImageList( dir );
+	}
 
       // start a thread to convert all images in 'dir into .mpg format in the background
       Start();
@@ -210,14 +219,10 @@ void mgImageProvider::fillImageList( string dir )
 	{
 	  string fname = dir + "/" + string( files[i]->d_name );
 	  m_image_list.push_back( fname );
-	  
+	  cout << "Added " << fname << endl;
 	  free( files[i] );
 	}
       free( files );
-    }
-  else
-    {
-      m_image_list.push_back( string(the_setup.ToplevelDir) + "/cover.jpg" );
     }
 }
 
@@ -283,6 +288,8 @@ string mgImageProvider::extractImagesFromTag( string f )
       TagLib::MPEG::File f(filename);
       l = f.ID3v2Tag()->frameListMap()["APIC"];
       dir = treatFrameList( l, image_cache );
+
+      
     }
   else if( !strcasecmp(extension(filename), "ogg") )
     {
