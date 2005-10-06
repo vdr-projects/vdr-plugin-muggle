@@ -100,4 +100,7 @@ string ltos (long l);
 char *extension (const char *filename);
 
 bool notempty(const char *s);
+
+bool samedir(const char *s1, const char *s2);
+
 #endif                                            /*  _MUGGLE_TOOLS_H */

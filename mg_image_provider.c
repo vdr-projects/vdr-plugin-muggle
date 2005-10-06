@@ -121,12 +121,27 @@ void mgImageProvider::updateItem( mgItemGd *item )
       string dir = extractImagesFromTag( filename );
       if( dir == "" )
 	{
-	  // no images in tags, find images in the directory itself
+	  // no images in tags, find images in the directory of the file itself
 	  dir = dirname( (char *) (item->getSourceFile().c_str()) );
-	}
 
-      // finally put all image filenames here
-      fillImageList( dir );
+	  // go up hierarchy until we find at least one image or reach toplevel dir 
+	  bool toplevel_reached = false;
+	  while( !m_image_list.size() || toplevel_reached )
+	    {
+	      if( samedir( dir.c_str(), the_setup.ToplevelDir ) )
+		{
+		  toplevel_reached = true;
+		}
+
+	      fillImageList( dir );
+	      
+	      if( !m_image_list.size() )
+		{
+		  // nothing found, turn up one directory level
+		  dir = dirname( (char *)dir.c_str() );
+		}
+	    }
+	}
 
       // think of something, when there are no images here, either:
       // simply go up one step in the directory hierarchy, until we reach top level directory

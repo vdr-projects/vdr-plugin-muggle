@@ -175,3 +175,45 @@ notempty(const char *s)
 	else
 		return strlen(s);
 }
+
+bool samedir( const char *d1, const char *d2 )
+{
+  bool result;
+
+  if( !strcmp( d1, d2 ) )
+    {
+      result = true;
+    }
+  else
+    {
+      // check for trailing slash
+      int l1 = strlen( d1 );
+      int l2 = strlen( d2 );
+      
+      if( l1 == l2 + 1 )
+	{
+	  if( !strncmp( d1, d2, l2 ) && d1[l1-1] == '/' )
+	    {
+	      result = true;
+	    }
+	  else
+	    {
+	      result = false;
+	    }
+	}
+      else
+	{
+	  if( l2 == l1 + 1 )
+	    {
+	      if( !strncmp( d1, d2, l1 ) && d2[l2-1] == '/' )
+		{
+		  result = true;
+		}
+	      else
+		{
+		  result = false;
+		}
+	    }
+	}
+    }
+}

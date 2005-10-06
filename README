@@ -231,14 +231,16 @@ If a track has no ID3 tags, the following defaults will be applied:
 
 \section covers COVERS
 
-muggle can display cover images. This is how it tries to find them:
-1. if the database field album.coverimg contains something: This is 
-   displayed. If the image file does not exist, show an error.
-2. else: take the track filename and replace its extension by .jpg
-   if this file exists, display it
-3. else try the file "cover.jpg" in the current directory. If it
-   does not exist, try parent directory. Repeat until the TLD is
-   reached.
+muggle can display cover images. Currently, muggle simply displays all
+images which reside in the same directory as the current file. 
+
+#1. if the database field album.coverimg contains something: This is 
+#   displayed. If the image file does not exist, show an error.
+#2. else: take the track filename and replace its extension by .jpg
+#   if this file exists, display it
+#3. else try the file "cover.jpg" in the current directory. If it
+#   does not exist, try parent directory. Repeat until the TLD is
+#   reached.
 
 So if you want a default background for all tracks you should put it 
 into TLD/cover.jpg. It is strongly recommended to define such a default

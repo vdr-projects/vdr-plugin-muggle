@@ -496,7 +496,7 @@ mgPCMPlayer::Action (void)
 		      TransferImageTFT( m_current_image );
 
 		      // check for background display of image
-		      if( the_setup.BackgrMode == 2 )
+		      if( the_setup.BackgrMode == 1 )
 			{
 			  if( m_current_image.empty() )
 			    {

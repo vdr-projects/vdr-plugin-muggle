@@ -71,7 +71,6 @@ mgMenuSetup::mgMenuSetup ()
     Add (new
 	 cMenuEditBoolItem (tr ("Use DVB still picture"), &the_setup.UseDeviceStillPicture,
 			    tr("yes"), tr("no") ) );
-			    
 
     // Synchronization    
     Add (new
