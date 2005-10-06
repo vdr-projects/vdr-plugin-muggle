@@ -25,6 +25,8 @@
 
 static char* chars_allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_./";
 
+static const char *bgmodes[3];
+
 // --- mgMenuSetup -----------------------------------------------------------
 
 mgMenuSetup::mgMenuSetup ()
@@ -55,7 +57,6 @@ mgMenuSetup::mgMenuSetup ()
 			   &the_setup.LimiterLevel, MIN_LIMITER_LEVEL, 100));
 
     // Image/cover display
-    const char *bgmodes[3];
     bgmodes[0] = tr("Black");
     bgmodes[1] = tr("Image");
     bgmodes[2] = tr("Live");
