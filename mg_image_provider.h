@@ -10,6 +10,10 @@ class mgItemGd;
 #include <string>
 #include <vector>
 
+#include <id3v2frame.h>
+#include <tbytevector.h>
+#include <id3v2tag.h>
+
 class mgImageProvider : public cThread
 {
  public:
@@ -46,6 +50,9 @@ class mgImageProvider : public cThread
    */
   void fillImageList( std::string dir );
 
+  void writeImage( TagLib::ByteVector &image, int num, std::string &image_cache );
+  std::string treatFrameList( TagLib::ID3v2::FrameList &l, std::string &image_cache );
+
   /*! \brief save images from APIC tag and save to file. returns directory where images were saved or empty string if no images were found in the APIC tag
    */
   std::string extractImagesFromTag( std::string filename );
@@ -70,6 +77,8 @@ class mgImageProvider : public cThread
   std::vector<std::string> m_converted_images;
   
   std::string m_source_dir;  
+
+  bool m_delete_imgs_from_tag;
 };
 
 #endif
