@@ -201,58 +201,78 @@ void mgImageProvider::fillImageList( string dir )
     }
 }
 
+void writeImage( TagLib::ByteVector &image, int num, string &image_cache )
+{
+  char* image_data = image.data();
+  int len = image.size();
+  
+  // save image_data to temporary file  
+  char *buf;
+  asprintf( &buf, "%s/image-%d.jpg", image_cache.c_str(), num );
+
+  FILE *f = fopen( buf, "w+" );
+  fwrite( image_data, sizeof(char), len, f );
+  fclose( f );
+  free( buf );
+}
+
+string  treatFrameList( TagLib::ID3v2::FrameList &l, string &image_cache )
+{
+  string result;
+
+  if( !l.isEmpty() )
+    {
+      TagLib::ID3v2::FrameList::ConstIterator it = l.begin();
+  
+      int num = 0;
+      while( !(it == l.end()) )
+	{
+	  TagLib::ID3v2::AttachedPictureFrame *picframe = (TagLib::ID3v2::AttachedPictureFrame*) (*it);
+
+	  TagLib::ByteVector image = picframe->picture();
+	  writeImage( image, num, image_cache );
+	  
+	  it++;
+	  num++;
+	}
+      result = image_cache;
+    }
+  else
+    {
+      result = "";
+    }
+  
+  return result;
+}
+
 string mgImageProvider::extractImagesFromTag( string f )
 {
-  // currently not working due to bug #113770 in taglib
-  // see http://bugs.kde.org/show_bug.cgi?id=113770
-  return "";
-  
   TagLib::ID3v2::FrameList l;
   const char *filename = f.c_str();
+  string image_cache = string( the_setup.ImageCacheDir );
+  string dir = "";
 
   if( !strcasecmp(extension(filename), "flac") )
     {
       TagLib::FLAC::File f(filename);
       l = f.ID3v2Tag()->frameListMap()["APIC"];
+      dir = treatFrameList( l, image_cache );
     }
-  else if ( !strcasecmp(extension(filename), "mp3") )
+  else if( !strcasecmp(extension(filename), "mp3") )
     {
       TagLib::MPEG::File f(filename);
       l = f.ID3v2Tag()->frameListMap()["APIC"];
+      dir = treatFrameList( l, image_cache );
     }
   else if( !strcasecmp(extension(filename), "ogg") )
     {
       TagLib::Vorbis::File f(filename);
       // l = f.ID3v2Tag()->frameListMap()["APIC"];
+      dir = treatFrameList( l, image_cache );
     }
-  
-  string image_cache = string( the_setup.ImageCacheDir ); // TODO: obtain from setup!
-  if( !l.isEmpty() )
-    {
-      TagLib::ID3v2::FrameList::ConstIterator it = l.begin();
-      int num = 0;
-      for(; it != l.end(); it++)
-	{
-	  TagLib::ID3v2::AttachedPictureFrame *picframe = (TagLib::ID3v2::AttachedPictureFrame*) (*it);
-	  TagLib::ByteVector image = picframe->picture();
-	  char* image_data = image.data();
-	  
-	  // save image_data to temporary file  
-	  char *buf;
-	  asprintf( &buf, "%s/image-%d.jpg", image_cache.c_str(), num );
-	  FILE *f = fopen( buf, "w+" );
-	  fprintf( f, "%s", image_data );
-	  fclose( f );
-	  free( buf );
-	    
-	  num ++;
-	}
-      return image_cache;
-    }
-  else
-    {
-      return "";
-    }
+
+  // returns empty if no images were found in tags
+  return dir;
 }
 
 string mgImageProvider::getDefaultImage()
