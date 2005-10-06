@@ -178,42 +178,20 @@ notempty(const char *s)
 
 bool samedir( const char *d1, const char *d2 )
 {
-  bool result;
+  int path_max;
+  
+#ifdef PATH_MAX
+  path_max = PATH_MAX;
+#else
+  path_max = pathconf (path, _PC_PATH_MAX);
+  if (path_max <= 0)
+    path_max = 4096;
+#endif
+  
+  char rp1[path_max], rp2[path_max];
 
-  if( !strcmp( d1, d2 ) )
-    {
-      result = true;
-    }
-  else
-    {
-      // check for trailing slash
-      int l1 = strlen( d1 );
-      int l2 = strlen( d2 );
-      
-      if( l1 == l2 + 1 )
-	{
-	  if( !strncmp( d1, d2, l2 ) && d1[l1-1] == '/' )
-	    {
-	      result = true;
-	    }
-	  else
-	    {
-	      result = false;
-	    }
-	}
-      else
-	{
-	  if( l2 == l1 + 1 )
-	    {
-	      if( !strncmp( d1, d2, l1 ) && d2[l2-1] == '/' )
-		{
-		  result = true;
-		}
-	      else
-		{
-		  result = false;
-		}
-	    }
-	}
-    }
+  realpath(d1, rp1);
+  realpath(d2, rp2);
+
+  return (!strcmp( d1, d2 ) );
 }
