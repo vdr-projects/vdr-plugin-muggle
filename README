@@ -252,6 +252,13 @@ During installation, make sure that the script called image_convert.sh
 (from the scripts directory) is somewhere on your path. Also, make sure to use
 the -c flag if you use a runvdr (or similar) script.
 
+An interesting feature can be achieved with recent VDR versions (>= 1.3.30) in conjunction
+with the image plugin. Through the new service interface, the image plugin can send
+a list of images to Muggle which will then take care of displaying them as a background
+(instead of covers). This way, one can have an image playlist together with a
+music playlist replayed side by side! In order to enable this behavior, apply the
+patch (vdr-image-0.2.3.diff) to the image plugin sources and recompile.
+
 \section quickuse QUICK INTRO
 
 Quick version: select Muggle on the OSD, browse titles (using up/down and Ok),
