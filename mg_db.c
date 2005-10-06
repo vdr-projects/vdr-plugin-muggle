@@ -1157,7 +1157,7 @@ mgDb::SyncFile(const char *filename)
 		c_title = f.tag()->title();
 		c_genre1 = getGenre1(f);
 		year = f.tag()->year();
-		year = f.tag()->track();
+		track = f.tag()->track();
 	}
 	if (strlen(c_album.original())==0)
 		c_album = "Unassigned";
