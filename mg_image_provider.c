@@ -112,6 +112,8 @@ void mgImageProvider::updateItem( mgItemGd *item )
 
   if( m_mode == IM_ITEM_DIR )
     {
+      // do not try to acquire new images when we are playing back a separate directory
+
       m_image_list.clear();
       // clear temporary image directory
       
@@ -125,7 +127,11 @@ void mgImageProvider::updateItem( mgItemGd *item )
 
       // finally put all image filenames here
       fillImageList( dir );
+
+      // think of something, when there are no images here, either:
+      // simply go up one step in the directory hierarchy, until we reach top level directory
       
+
       // start a thread to convert all images in 'dir into .mpg format in the background
       Start();
 
@@ -188,9 +194,8 @@ void mgImageProvider::fillImageList( string dir )
       for ( int i=0; i < count; i++ )
 	{
 	  string fname = dir + "/" + string( files[i]->d_name );
-	  cout << "Adding to image list " << fname << endl << flush;
 	  m_image_list.push_back( fname );
-
+	  
 	  free( files[i] );
 	}
       free( files );
@@ -216,7 +221,7 @@ void writeImage( TagLib::ByteVector &image, int num, string &image_cache )
   free( buf );
 }
 
-string  treatFrameList( TagLib::ID3v2::FrameList &l, string &image_cache )
+string treatFrameList( TagLib::ID3v2::FrameList &l, string &image_cache )
 {
   string result;
 
@@ -251,7 +256,7 @@ string mgImageProvider::extractImagesFromTag( string f )
   const char *filename = f.c_str();
   string image_cache = string( the_setup.ImageCacheDir );
   string dir = "";
-
+  
   if( !strcasecmp(extension(filename), "flac") )
     {
       TagLib::FLAC::File f(filename);
@@ -266,16 +271,14 @@ string mgImageProvider::extractImagesFromTag( string f )
     }
   else if( !strcasecmp(extension(filename), "ogg") )
     {
+      // what to do here?
+
       TagLib::Vorbis::File f(filename);
       // l = f.ID3v2Tag()->frameListMap()["APIC"];
-      dir = treatFrameList( l, image_cache );
+      // dir = treatFrameList( l, image_cache );
     }
 
   // returns empty if no images were found in tags
   return dir;
 }
 
-string mgImageProvider::getDefaultImage()
-{
-  return string(the_setup.ToplevelDir) + "/cover.jpg";
-}

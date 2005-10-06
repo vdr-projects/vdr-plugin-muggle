@@ -36,10 +36,6 @@ class mgImageProvider : public cThread
    */
   virtual void Action();
 
-  /*! \brief Obtain a default image in case no other can be found
-   */  
-  std::string getDefaultImage();
-
  private:
 
   mgImageProvider( std::string dir );
