@@ -1413,10 +1413,17 @@ mgPlayerControl::ShowContents ()
             }
             if (num_items > 8)
             {
+		int t = player->getCurrent ()->getTrack();
+                asprintf (&buf, "File name:\t%d", t);
+                m_menu->SetItem (buf, 8, false, false);
+                free (buf);
+	    }
+            if (num_items > 9)
+            {
                 string sf = player->getCurrent ()->getSourceFile ();
 		char *p = strrchr(sf.c_str(),'/');
                 asprintf (&buf, "File name:\t%s", p+1);
-                m_menu->SetItem (buf, 8, false, false);
+                m_menu->SetItem (buf, 9, false, false);
                 free (buf);
 	    }
         }
