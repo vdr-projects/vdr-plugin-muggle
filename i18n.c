@@ -1306,7 +1306,7 @@ const tI18nPhrase Phrases[] =
     },
     {   
         "Initial loop mode",
-        "",                                       // TODO
+        "Schleifenmodus beim Start",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1323,7 +1323,7 @@ const tI18nPhrase Phrases[] =
     },
     {      
         "Initial shuffle mode",
-        "",                                       // TODO
+        "Zufallsmodus beim Start",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1339,8 +1339,42 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {      
-        "Audio mode",
+        "on",
+        "an",
         "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {      
+        "off",
+        "aus",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {      
+        "Audio mode",
+        "Audio Modus",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1391,7 +1425,7 @@ const tI18nPhrase Phrases[] =
     },
     {      
         "Use 48kHz mode only",
-        "",                                       // TODO
+        "Nu 48kHz nutzen",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1408,7 +1442,7 @@ const tI18nPhrase Phrases[] =
     },
     {   
         "Normalizer level",
-        "",                                       // TODO
+        "Normalizer Level",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1442,7 +1476,7 @@ const tI18nPhrase Phrases[] =
     },
     {      
         "Display mode",
-        "",                                       // TODO
+        "Anzeigemodus",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1459,7 +1493,7 @@ const tI18nPhrase Phrases[] =
     },
     {      
         "Background mode",
-        "",                                       // TODO
+        "Hintergrundmous",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1476,7 +1510,7 @@ const tI18nPhrase Phrases[] =
     },
     {      
         "Black",
-        "",                                       // TODO
+        "Aus (schwarz)",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1492,8 +1526,25 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {   
-        "Live",
+        "Image",
+        "Bilder",
         "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "live",   
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {   
+        "Live",
+        "TV-Bild",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1510,7 +1561,7 @@ const tI18nPhrase Phrases[] =
     },
     {   
         "Image show duration",
-        "",                                       // TODO
+        "Anzeigedauer für Bilder",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1527,7 +1578,7 @@ const tI18nPhrase Phrases[] =
     },
     {   
         "Image cache directory",
-        "",                                       // TODO
+        "Verzeichnis für konvertierte Bilder",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1544,7 +1595,7 @@ const tI18nPhrase Phrases[] =
     },
     {   
         "Use DVB still picture",
-        "",                                       // TODO
+        "DVB still picture nutzen",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1561,7 +1612,7 @@ const tI18nPhrase Phrases[] =
     },
     {   
         "Delete stale references",
-        "",                                       // TODO
+        "Datenbankeintrag löschen, wenn Datei fehlt",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1569,6 +1620,40 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
         "Tuhoa vanhentuneet viittaukset",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {   
+        "yes",
+        "Ja",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+    },
+    {   
+        "no",
+        "Nein",
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",                                       // TODO
+        "",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO

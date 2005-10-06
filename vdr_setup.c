@@ -33,17 +33,20 @@ mgMenuSetup::mgMenuSetup ()
 
     // Audio stuff    
     Add (new
-	 cMenuEditBoolItem (tr ("Initial loop mode"),
-			    &the_setup.InitLoopMode));
+	 cMenuEditBoolItem (tr ("Initial loop mode"),&the_setup.InitLoopMode,
+			    tr("on"), tr("off") ) );
     Add (new
-	 cMenuEditBoolItem (tr ("Initial shuffle mode"),
-			    &the_setup.InitShuffleMode));
+	 cMenuEditBoolItem (tr ("Initial shuffle mode"), &the_setup.InitShuffleMode,
+			    tr("on"), tr("off") ) );
+
     Add (new
 	 cMenuEditBoolItem (tr ("Audio mode"), &the_setup.AudioMode,
 			    tr ("Round"), tr ("Dither")));
+
     Add (new
-	 cMenuEditBoolItem (tr ("Use 48kHz mode only"),
-			    &the_setup.Only48kHz));
+	 cMenuEditBoolItem (tr ("Use 48kHz mode only"), &the_setup.Only48kHz,
+			    tr("on"), tr("off") ) );
+			    
     Add (new
 	 cMenuEditIntItem (tr ("Normalizer level"),
 			   &the_setup.TargetLevel, 0, MAX_TARGET_LEVEL));
@@ -52,23 +55,28 @@ mgMenuSetup::mgMenuSetup ()
 			   &the_setup.LimiterLevel, MIN_LIMITER_LEVEL, 100));
 
     // Image/cover display
+    const char *bgmodes[3];
+    bgmodes[0] = tr("Black");
+    bgmodes[1] = tr("Image");
+    bgmodes[2] = tr("Live");
     Add (new
-	 cMenuEditIntItem (tr ("Background mode"),
-			   &the_setup.BackgrMode, 1, 3 ) );
+	 cMenuEditStraItem (tr ("Background mode"), &the_setup.BackgrMode, 
+			    3, bgmodes ) );
     Add (new
-	 cMenuEditIntItem (tr ("Image show duration"),
+	 cMenuEditIntItem (tr ("Image show duration (secs)"),
 			   &the_setup.ImageShowDuration, 1, 100));
     Add (new
 	 cMenuEditStrItem (tr ("Image cache directory"),
 			   the_setup.ImageCacheDir, 256, chars_allowed ) );
     Add (new
-	 cMenuEditBoolItem (tr ("Use DVB still picture"),
-			    &the_setup.UseDeviceStillPicture));
+	 cMenuEditBoolItem (tr ("Use DVB still picture"), &the_setup.UseDeviceStillPicture,
+			    tr("yes"), tr("no") ) );
+			    
 
     // Synchronization    
     Add (new
-	 cMenuEditBoolItem (tr ("Delete stale references"),
-			    &the_setup.DeleteStaleReferences));
+	 cMenuEditBoolItem (tr ("Delete stale references"), &the_setup.DeleteStaleReferences,
+			    tr("yes"), tr("no") ));
 
     mgAction *a = actGenerate(actSync);
     const char *mn = a->MenuName();
