@@ -207,7 +207,7 @@ void mgImageProvider::Action()
 	  char *tmp;
 	  asprintf( &tmp, "image_convert.sh \"%s\" \"%s\"", filename.c_str(), tmpFile.c_str() );
 	  system( (const char*) tmp );
-	  delete tmp;
+	  free(tmp);
 
 	  // add to the list of converted images
 	  Lock();
