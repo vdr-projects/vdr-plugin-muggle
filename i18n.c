@@ -1425,7 +1425,7 @@ const tI18nPhrase Phrases[] =
     },
     {      
         "Use 48kHz mode only",
-        "Nu 48kHz nutzen",
+        "Nur 48kHz nutzen",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
