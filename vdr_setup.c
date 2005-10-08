@@ -98,5 +98,8 @@ mgMenuSetup::Store (void)
     SetupStore ("LimiterLevel", the_setup.LimiterLevel);
     SetupStore ("Only48kHz", the_setup.Only48kHz);
     SetupStore ("DeleteStaleReferences", the_setup.DeleteStaleReferences);
+    SetupStore ("ImageShowDuration", the_setup.ImageShowDuration);
+    SetupStore ("ImageCacheDir", the_setup.ImageCacheDir);
+    SetupStore ("UseStillPicture", the_setup.UseDeviceStillPicture );
 }
 
