@@ -152,7 +152,7 @@ $(DEPFILE): Makefile
 mg_tables.h:	scripts/genres.txt scripts/iso_639.xml scripts/musictypes.txt scripts/sources.txt
 	scripts/gentables
 
-libvdr-$(PLUGIN).so: $(OBJS) $(DB_OBJ)
+libvdr-$(PLUGIN).so: $(OBJS)
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(PLAYLIBS) $(SQLLIBS) -o $@
 	@cp $@ $(LIBDIR)/$@.$(VDRVERSION)
 
