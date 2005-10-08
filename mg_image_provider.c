@@ -93,6 +93,25 @@ mgImageProvider::mgImageProvider( )
   m_delete_imgs_from_tag = false;
 }
 
+mgImageProvider::~mgImageProvider()
+{
+  if( m_delete_imgs_from_tag )
+    {
+      for( vector<string>::iterator iter = m_image_list.begin(); iter != m_image_list.end(); iter ++ )
+	{
+	  // remove( (*iter).c_str() );
+	  cout << "Removing " << *iter << endl;
+	}
+      m_delete_imgs_from_tag = false;
+    }
+      
+  for( vector<string>::iterator iter = m_converted_images.begin(); iter != m_converted_images.end(); iter ++ )
+    {
+      // remove( (*iter).c_str() );
+      cout << "Removing " << *iter << endl;
+    }  
+}
+
 mgImageProvider* mgImageProvider::Create( string dir )
 {
   return new mgImageProvider( dir );
@@ -103,7 +122,7 @@ mgImageProvider* mgImageProvider::Create( )
   return new mgImageProvider();
 }
 
-void mgImageProvider::updateItem( mgItemGd *item )
+bool mgImageProvider::updateItem( mgItemGd *item )
 {
   // clean up stuff from previous item ?
 
@@ -176,6 +195,12 @@ void mgImageProvider::updateItem( mgItemGd *item )
       m_image_index = 0;
     }
   // else: nothing todo when changing the item currently being played
+
+  Lock();
+  bool result = m_image_list.size() > 0;
+  Unlock();
+
+  return result;
 }
 
 void mgImageProvider::Action()

@@ -22,9 +22,9 @@ class mgImageProvider : public cThread
    */
   std::string getImagePath();
 
-  /*! \brief tell the image provider that we are replaying a different item now
+  /*! \brief tell the image provider that we are replaying a different item now. Return, whether images were found.
    */
-  void updateItem( mgItemGd *item );
+  bool updateItem( mgItemGd *item );
 
   /*! \brief Initialize image provider with all files in the given directory
    */
@@ -33,6 +33,10 @@ class mgImageProvider : public cThread
   /*! \brief Initialize image provider for use with a Giantdisc item
    */
   static mgImageProvider* Create();
+
+  /*! \brief destroy instance and delete remaining temporary files
+   */
+  ~mgImageProvider();
 
  protected:
 
