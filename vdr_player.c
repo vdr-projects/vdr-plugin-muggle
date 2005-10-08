@@ -1763,8 +1763,8 @@ mgPlayerControl::StatusMsgReplaying ()
 {
     MGLOG ("mgPlayerControl::StatusMsgReplaying()");
     char *szBuf = NULL;
-    mgSelection * sel;
-    mgItemGd * item;
+    mgSelection * sel = NULL;
+    mgItemGd * item = NULL;
     if (player)
     {
 	sel = player->getPlaylist();
