@@ -255,3 +255,4 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - Fix for incremental search entered again
 - Setup is now more verbose. NOTE: the enumeration for background mode may have changed!
 - Several minor fixes
+- Improved and more thorough translations
