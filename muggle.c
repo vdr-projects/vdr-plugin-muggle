@@ -17,6 +17,7 @@
 #include "mg_tools.h"
 
 #include "i18n.h"
+#include <tools.h>
 #include <getopt.h>
 #include <config.h>
 
@@ -127,6 +128,12 @@ bool mgMuggle::SetupParse (const char *Name, const char *Value)
         the_setup.Only48kHz = atoi (Value);
     else if (!strcasecmp (Name, "DeleteStaleReferences"))
         the_setup.DeleteStaleReferences = atoi (Value);
+    else if (!strcasecmp (Name, "ImageShowDuration"))
+        the_setup.ImageShowDuration = atoi (Value);
+    else if (!strcasecmp (Name, "ImageCacheDir"))
+        strn0cpy (the_setup.ImageCacheDir, Value, MAX_PATH);
+    else if (!strcasecmp (Name, "UseStillPicture"))
+        the_setup.UseDeviceStillPicture = atoi (Value);
     else
         return false;
 
