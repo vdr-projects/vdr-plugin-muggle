@@ -229,8 +229,9 @@ class mgPCMPlayer : public cPlayer, cThread
 
 	// background image handling stuff
 	int m_lastshow;
+	bool m_hasimages;
 	string m_current_image;
-	void CheckImage( string fileName );
+	void CheckImage( );
 	void ShowImage( );
 	void TransferImageTFT( string cover );
 	void send_pes_packet(unsigned char *data, int len, int timestamp);	
@@ -354,6 +355,7 @@ mgPCMPlayer::NewImagePlaylist( const char *directory )
 
     delete m_img_provider;
     m_img_provider = mgImageProvider::Create( directory );
+    m_hasimages = true;
 
     Unlock ();
 }
@@ -453,7 +455,7 @@ mgPCMPlayer::Action (void)
             {
                 case msStart:
 		  {
-		    m_img_provider->updateItem( m_current );
+		    m_hasimages = m_img_provider->updateItem( m_current );
 
 		    m_index = 0;
 		    m_lastshow = -1; // never showed a picture during this replay
@@ -488,41 +490,18 @@ mgPCMPlayer::Action (void)
                 }
                 break;
                 case msDecode:
-                {		  
-		  if( ( m_index % the_setup.ImageShowDuration == 0 && m_index > m_lastshow) || m_lastshow < 0 )
-		    { // all n decoding steps
-		      m_current_image = m_img_provider->getImagePath( );
+                {	
+		  CheckImage();
 		  
-		      // check for TFT display of image
-		      TransferImageTFT( m_current_image );
-
-		      // check for background display of image
-		      if( the_setup.BackgrMode == 1 )
+		  ds = m_decoder->decode ();
+		  switch (ds->status)
 			{
-			  if( m_current_image.empty() )
-			    {
-			      m_current_image="";
-			      //  cDevice::PrimaryDevice()->SetPlayMode(pmAudioOnly);
-			    }
-			  else
-			    {
-			      //	cDevice::PrimaryDevice()->SetPlayMode(pmAudioOnlyBlack);
-			      cout << m_index << ": Showing image " << m_current_image << endl << flush;
-			      ShowImage();
-			      m_lastshow = m_index;
-			    }
-			}
-		    }
-		  
-                    ds = m_decoder->decode ();
-                    switch (ds->status)
-                    {
                         case dsPlay:
-                        {
+			  {
                             pcm = ds->pcm;
                             m_index = ds->index / 1000;
                             m_state = msNormalize;
-                        }
+			  }
                         break;
                         case dsSkip:
                         case dsSoftError:
@@ -688,6 +667,11 @@ mgPCMPlayer::Action (void)
                 case msStop:
                 {
                     m_playing = false;
+		    if( m_img_provider )
+		      {
+			delete m_img_provider;
+		      }
+
                     if (m_decoder)
                     {                             // who deletes decoder?
                         m_decoder->stop ();
@@ -1011,42 +995,35 @@ bool mgPCMPlayer::GetIndex (int &current, int &total, bool snaptoiframe)
 }
 
 
-void mgPCMPlayer::CheckImage( string filename )
+void mgPCMPlayer::CheckImage()
 {
-  FILE *fp;
-  string tmpFile;
-
-  // determine the filename of a (to be) cached .mpg file
-  unsigned dotpos = filename.rfind( ".", filename.length() );
-
-  // assemble path from relative paths
-  tmpFile = string( the_setup.ImageCacheDir ) + string( "/" ) + filename.substr( 0, dotpos ) + string( ".mpg" );
-
-  // now filename and tmpFile are absolute path specs
-
-  // if this cached file can be opened, use it
-  if( (fp = fopen( tmpFile.c_str(), "rb" )) )
+  if( m_hasimages) 
     {
-      fclose(fp);
-    }
-  else
-    {
-      // otherwise run the image conversion
-      if( (fp = fopen( filename.c_str(), "rb" )) )
-	{
-	  char *tmp;
-	  // filename can be opened
-	  fclose (fp);
+      if( ( m_index % the_setup.ImageShowDuration == 0 && m_index > m_lastshow) || m_lastshow < 0 )
+	{ // all n decoding steps
+	  m_current_image = m_img_provider->getImagePath( );
 	  
-	  cout << "Converting " << filename << " to " << tmpFile << endl << flush;
-	  asprintf( &tmp, "image_convert.sh \"%s\" \"%s\"", filename.c_str(), tmpFile.c_str() );
-	  system( (const char*) tmp );
-	  delete tmp;
+	  // check for TFT display of image
+	  TransferImageTFT( m_current_image );
+	  
+	  // check for background display of image
+	  if( the_setup.BackgrMode == 1 )
+	    {
+	      if( m_current_image.empty() )
+		{
+		  m_current_image="";
+		  //  cDevice::PrimaryDevice()->SetPlayMode(pmAudioOnly);
+		}
+	      else
+		{
+		  //	cDevice::PrimaryDevice()->SetPlayMode(pmAudioOnlyBlack);
+		  cout << m_index << ": Showing image " << m_current_image << endl << flush;
+		  ShowImage();
+		  m_lastshow = m_index;
+		}
+	    }
 	}
     }
-  
-  m_current_image = tmpFile;
-
 }
 
 void mgPCMPlayer::ShowImage( )
