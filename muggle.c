@@ -34,14 +34,14 @@ mgMuggle::Version (void)
 const char *
 mgMuggle::Description (void)
 {
-    return DESCRIPTION;
+    return tr(DESCRIPTION);
 }
 
 
 const char *
 mgMuggle::MainMenuEntry (void)
 {
-    return MAINMENUENTRY;
+    return tr(MAINMENUENTRY);
 }
 
 
