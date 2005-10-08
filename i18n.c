@@ -1296,7 +1296,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "Muggle-levyautomaatti jästeille",
+        "Muggle-levyautomaatti",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1347,7 +1347,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "",
+        "päällä",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1364,7 +1364,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "",
+        "pois",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1534,7 +1534,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "live",   
+        "kuvat",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1568,7 +1568,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "",
+        "Kuvien näyttöaika (sekuntia)",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1585,7 +1585,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "",
+        "Välimuistihakemisto kuville",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1602,7 +1602,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "",
+        "Käytä DVB-pysäytyskuvaa",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1636,7 +1636,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "",
+        "kyllä",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
@@ -1653,7 +1653,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
-        "",
+        "ei",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
