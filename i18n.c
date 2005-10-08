@@ -1560,7 +1560,7 @@ const tI18nPhrase Phrases[] =
         "",                                       // TODO
     },
     {   
-        "Image show duration",
+        "Image show duration (secs)",
         "Anzeigedauer für Bilder",
         "",                                       // TODO
         "",                                       // TODO
