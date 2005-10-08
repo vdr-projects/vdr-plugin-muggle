@@ -23,6 +23,8 @@
 
 #include <menuitems.h>
 
+#define MAX_PATH 256
+
 
 /*!
  * \brief allow user to modify setup on OSD

@@ -68,7 +68,7 @@ mgMenuSetup::mgMenuSetup ()
 			   &the_setup.ImageShowDuration, 1, 100));
     Add (new
 	 cMenuEditStrItem (tr ("Image cache directory"),
-			   the_setup.ImageCacheDir, 256, chars_allowed ) );
+			   the_setup.ImageCacheDir, MAX_PATH, chars_allowed ) );
     Add (new
 	 cMenuEditBoolItem (tr ("Use DVB still picture"), &the_setup.UseDeviceStillPicture,
 			    tr("yes"), tr("no") ) );
