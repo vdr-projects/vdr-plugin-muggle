@@ -228,7 +228,7 @@ class mgPCMPlayer : public cPlayer, cThread
         }
 
 	// background image handling stuff
-	int m_image_delaycounter;
+	int m_lastshow;
 	string m_current_image;
 	void CheckImage( string fileName );
 	void ShowImage( );
@@ -452,11 +452,12 @@ mgPCMPlayer::Action (void)
             switch (m_state)
             {
                 case msStart:
-                {
-		  m_img_provider->updateItem( m_current );
-                  m_image_delaycounter = 0;
+		  {
+		    m_img_provider->updateItem( m_current );
 
-		  m_index = 0;
+		    m_index = 0;
+		    m_lastshow = -1; // never showed a picture during this replay
+
                     m_playing = true;
 		    
                     if (m_current)
@@ -488,9 +489,7 @@ mgPCMPlayer::Action (void)
                 break;
                 case msDecode:
                 {		  
-		  int secs = SecondsToFrames( m_index) ;
-	
-		  if( secs % the_setup.ImageShowDuration == 0 )
+		  if( ( m_index % the_setup.ImageShowDuration == 0 && m_index > m_lastshow) || m_lastshow < 0 )
 		    { // all n decoding steps
 		      m_current_image = m_img_provider->getImagePath( );
 		  
@@ -508,12 +507,12 @@ mgPCMPlayer::Action (void)
 			  else
 			    {
 			      //	cDevice::PrimaryDevice()->SetPlayMode(pmAudioOnlyBlack);
-			      cout << "Showing image " << m_current_image << endl << flush;
+			      cout << m_index << ": Showing image " << m_current_image << endl << flush;
 			      ShowImage();
+			      m_lastshow = m_index;
 			    }
 			}
 		    }
-		  m_image_delaycounter += 1;
 		  
                     ds = m_decoder->decode ();
                     switch (ds->status)
