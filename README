@@ -30,7 +30,7 @@ or useless in any other sense.
 The muggle plugin provides a database link for VDR so that selection of media becomes more flexible.
 Prerequisites are described in Section 2, Notes on Compilation are in Section 3. Before using the plugin, 
 you need to import your media into the database (cf. Section 4). The configuration of VDR and startup
-parameters are descibed in Section 5.
+parameters are described in Section 5.
 
 
 The plugin currently runs on versions 1.3.17- of VDR (including 1.2.6). It also compiles on versions
@@ -158,7 +158,7 @@ other client machine as long as it can access the data base and the files it
 should import.
 
 mugglei takes some parameters defining how the data base can be accessed.
-These parameters vary slighlty depending of the data base software you have
+These parameters vary slightly depending of the data base software you have
 chosen. Start mugglei without arguments to see a list and explanation for
 all available parameters.
 
@@ -312,7 +312,7 @@ not mean that its content is not saved to the data base.
 Starting from release 0.1.1 Muggle can be also used without default playlists. There are 
 new menu entries "Add X to collection" and "Remove X from collection" which show a list
 of all collections to choose from. The concept of a default collection still exists and
-both approaches can be used in common. However, you can spceify which commands to use for
+both approaches can be used in common. However, you can specify which commands to use for
 the special keys Red/Green/Blueas you like.
 
 \subsection general General remarks
@@ -375,7 +375,7 @@ In the music browser submenu (enter with blue while in the music browser) enter 
 Existing search orders will be shown. Move the cursor to any of those and press the Red button to edit
 it. Each key of the current search order will be shown on a line. Move the cursor to a line and
 change the search key using Left/Right buttons. Note, that the number of key depends on what is
-currently selected. So keys may appear/vanish as you cycle through the choices. This is intented
+currently selected. So keys may appear/vanish as you cycle through the choices. This is intended
 and not a bug. Play around with this a while to see, why this is necessary. Press Ok to make your
 choices persistent, use back to leave the search order editor without making any changes.
 
