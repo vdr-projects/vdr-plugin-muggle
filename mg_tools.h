@@ -97,10 +97,12 @@ string itos (int i);
 //! \brief convert long to string
 string ltos (long l);
 
+//! \brief return extension of a file
 char *extension (const char *filename);
 
 bool notempty(const char *s);
 
+//! \brief check whether two directory names point to the identical directory
 bool samedir(const char *s1, const char *s2);
 
 #endif                                            /*  _MUGGLE_TOOLS_H */
