@@ -47,7 +47,7 @@ mgMenuSetup::mgMenuSetup ()
 
     Add (new
 	 cMenuEditBoolItem (tr ("Use 48kHz mode only"), &the_setup.Only48kHz,
-			    tr("on"), tr("off") ) );
+			    tr("yes"), tr("no") ) );
 			    
     Add (new
 	 cMenuEditIntItem (tr ("Normalizer level"),
