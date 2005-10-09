@@ -257,8 +257,15 @@ mgPCMPlayer::mgPCMPlayer (mgSelection * plist)
     m_index = 0;
     m_playing = false;
     m_current = 0;
-
-    m_img_provider = mgImageProvider::Create();
+    
+    if( the_setup.BackgrMode == 1 )
+      {
+	m_img_provider = mgImageProvider::Create();
+      }
+    else
+      {
+	m_img_provider = NULL;
+      }
 }
 
 
@@ -353,9 +360,12 @@ mgPCMPlayer::NewImagePlaylist( const char *directory )
 
     Lock ();
 
-    delete m_img_provider;
+    if( m_img_provider )
+      {
+	delete m_img_provider;
+      }
     m_img_provider = mgImageProvider::Create( directory );
-    m_hasimages = true;
+    m_hasimages = true; // assume we have some images here!
 
     Unlock ();
 }
@@ -455,10 +465,13 @@ mgPCMPlayer::Action (void)
             {
                 case msStart:
 		  {
-		    m_hasimages = m_img_provider->updateItem( m_current );
+		    if( m_img_provider && the_setup.BackgrMode == 1 )
+		      {
+			m_hasimages = m_img_provider->updateItem( m_current );
+			m_lastshow = -1; // never showed a picture during this song replay
+		      }
 
 		    m_index = 0;
-		    m_lastshow = -1; // never showed a picture during this replay
 
                     m_playing = true;
 		    
@@ -491,7 +504,10 @@ mgPCMPlayer::Action (void)
                 break;
                 case msDecode:
                 {	
-		  CheckImage();
+		  if( the_setup.BackgrMode == 1 )
+		    {
+		      CheckImage();
+		    }
 		  
 		  ds = m_decoder->decode ();
 		  switch (ds->status)
@@ -997,7 +1013,7 @@ bool mgPCMPlayer::GetIndex (int &current, int &total, bool snaptoiframe)
 
 void mgPCMPlayer::CheckImage()
 {
-  if( m_hasimages) 
+  if( m_hasimages && m_img_provider ) 
     {
       if( ( m_index % the_setup.ImageShowDuration == 0 && m_index > m_lastshow) || m_lastshow < 0 )
 	{ // all n decoding steps
@@ -1009,14 +1025,8 @@ void mgPCMPlayer::CheckImage()
 	  // check for background display of image
 	  if( the_setup.BackgrMode == 1 )
 	    {
-	      if( m_current_image.empty() )
+	      if( !m_current_image.empty() )
 		{
-		  m_current_image="";
-		  //  cDevice::PrimaryDevice()->SetPlayMode(pmAudioOnly);
-		}
-	      else
-		{
-		  //	cDevice::PrimaryDevice()->SetPlayMode(pmAudioOnlyBlack);
 		  cout << m_index << ": Showing image " << m_current_image << endl << flush;
 		  ShowImage();
 		  m_lastshow = m_index;
@@ -1045,7 +1055,6 @@ void mgPCMPlayer::ShowImage( )
 	  if( read (fd, sp.iFrame, sp.size) > 0 )
 	    {
 	      buffer = (uchar *) sp.iFrame;
-
 	      
 	      if( the_setup.UseDeviceStillPicture )
 		{
