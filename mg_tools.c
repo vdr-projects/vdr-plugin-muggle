@@ -103,22 +103,22 @@ std::string trim(std::string const& source, char const* delims ) {
 
 
 char *
-SeparateFolders(const char *filename, char * folders[],unsigned int fcount)
+SeparateFolders(const char *filename, char * folders[], unsigned int fcount)
 {
-	for (unsigned int i=0;i<fcount;i++)
-		folders[i]="";
-	char *fbuf=strdup(filename);
-	char *slash=fbuf-1;
-	for (unsigned int i=0;i<fcount;i++)
-	{
-		char *p=slash+1;
-		slash=strchr(p,'/');
-		if (!slash)
-			break;
-		folders[i]=p;
-		*slash=0;
-	}
-	return fbuf;
+  for (unsigned int i=0;i<fcount;i++)
+    folders[i]="";
+  char *fbuf=strdup(filename);
+  char *slash=fbuf-1;
+  for (unsigned int i=0;i<fcount;i++)
+    {
+      char *p=slash+1;
+      slash=strchr(p,'/');
+      if (!slash)
+	break;
+      folders[i]=p;
+      *slash=0;
+    }
+  return fbuf;
 }
 
 string&
@@ -185,7 +185,9 @@ bool samedir( const char *d1, const char *d2 )
 #else
   path_max = pathconf (path, _PC_PATH_MAX);
   if (path_max <= 0)
-    path_max = 4096;
+    {
+      path_max = 4096;
+    }
 #endif
   
   char rp1[path_max], rp2[path_max];
@@ -193,5 +195,5 @@ bool samedir( const char *d1, const char *d2 )
   realpath(d1, rp1);
   realpath(d2, rp2);
 
-  return (!strcmp( d1, d2 ) );
+  return (!strcmp( rp1, rp2 ) );
 }
