@@ -19,7 +19,8 @@ XXXXXXXXXX: Version 0.0.7-ALPHA
 - Compilerwarnings beseitigt
 - Anzeige auf dem gLCD
 - Menüanzeige bei aktiviertem Progressdisplay funktioniert
-- Verbessertes Progress Display beim Abspielen (Track/Playlist, Progress/Detail), nur für 1.3.12
+- Verbessertes Progress Display beim Abspielen (Track/Playlist,
+  Progress/Detail), nur für 1.3.12
 - Import von genre-Tags
 - Instant play funktioniert
 - Starten einer Playlist von irgendwo mittels Ok
@@ -47,7 +48,8 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - man kann direkt in der Sammlungsliste auch neue anlegen.
 - die gelbe Taste schaltet zwischen Sammlungen und Suche um. Die
   Befehle sind an beiden Stellen etwa dieselben, man muss also
-  z.B. nicht extra eine Sammlung anlegen, um eine Playlist (*.mru) zu exportieren.
+  z.B. nicht extra eine Sammlung anlegen, um eine Playlist (*.mru) zu
+  exportieren.
 - Taste OK auf einem Track spielt ihn sofort. Wenn er zu Ende ist oder
   man mit Stop abbricht, und wenn vorher etwasaus "spielen" lief,
   wird dort weitergemacht. Ein zweiter Druck auf Taste Stop beendet
@@ -246,13 +248,21 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
   did not get updated.
 
 2005-10-xx: Version 0.1.9-BETA
-- adapt SQL tables for use with mySQL 5.0. The structures are compatible with GiantDisc (same changes introduced there)
-- Code that selects images factored out into an image provider class (mg_image_provider.h,c)
-- Current image provider simply displays all images in the directory of the current song
-- Images are now converted in the background so that music replay starts immediately
-- Implement new Service interface: service ReplayDirectoryImages displays all images in directory passed via service request (char* as Data parameter to service request)
-- Added a patch for the image plugin (against 0.2.3) that uses muggle for displaying selected images while listening to music
+- adapt SQL tables for use with mySQL 5.0. The structures are compatible with
+  GiantDisc (same changes introduced there)
+- Code that selects images factored out into an image provider class
+  (mg_image_provider.h,c)
+- Current image provider simply displays all images in the directory of the
+  current song
+- Images are now converted in the background so that music replay starts
+  immediately
+- Implement new Service interface: service ReplayDirectoryImages displays all
+  images in directory passed via service request (char* as Data parameter to
+  service request)
+- Added a patch for the image plugin (against 0.2.3) that uses muggle for
+  displaying selected images while listening to music
 - Fix for incremental search entered again
-- Setup is now more verbose. NOTE: the enumeration for background mode may have changed!
+- Setup is now more verbose. NOTE: the enumeration for background mode may
+  have changed!
 - Several minor fixes
 - Improved and more thorough translations

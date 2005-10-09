@@ -20,18 +20,21 @@ You will need:
  - mySQL client libraries
    (Debian package libmysqlclient-dev or 
     http://www.mysql.org)
- - mySQL server (tested with 4.0.18) (Debian packages mysql-server, mysql-client)
-    only needed, if you want to run the database server on a remote machine
+ - mySQL server (tested with 4.0.18) (Debian packages mysql-server,
+   mysql-client) only needed, if you want to run the database server
+   on a remote machine
 
-The developer versions are needed because their headers are required for compilation.
-The server need not be on the same machine as the VDR. Also, music tracks can reside somewhere else,
-if they are available through a remote filesystem (NFS, Samba). However, in this case you should
-know what you are doing in terms of networking and security issues.
+The developer versions are needed because their headers are required
+for compilation. The server need not be on the same machine as the
+VDR. Also, music tracks can reside somewhere else, if they are
+available through a remote filesystem (NFS, Samba). However, in this
+case you should know what you are doing in terms of networking and
+security issues.
 
 \section install INSTALLING 
 
-Adapt the Makefile or Make.config to your system. Define HAVE_MYSQL and HAVE_ONLY_SERVER if
-you do not want the embedded version.
+Adapt the Makefile or Make.config to your system. Define HAVE_MYSQL
+and HAVE_ONLY_SERVER if you do not want the embedded version.
 
 HAVE_MYSQL=1
 HAVE_ONLY_SERVER=1

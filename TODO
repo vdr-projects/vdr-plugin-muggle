@@ -21,7 +21,8 @@
     \subsection urgentcontent Content handling    
 
     \subsection urgentplayer Player extensions
-        - Possible to resume play instead of restarting list from the beginning?
+        - Possible to resume play instead of restarting list from the
+	  beginning?
 	- Init scale/level/normalize?
 	  - The max. level should be recognized during play
 	  - Store max. level in the database
@@ -53,7 +54,8 @@
 	\subsection midcontent filter issues
 
         - new OSD list for filters. Only ONE filter can be active at any time
-	- filters can be defined recursively, different filters can share subfilters
+	- filters can be defined recursively, different filters can share
+	  subfilters
 	- Save/load filter set
 	  - table filters and filterrules
 	    - filters: id, name, created, author. Uses id 0 from filterrules.
@@ -76,7 +78,7 @@
 	\section vision Long term ideas and visions
 
 	- handle off-line media (CDs, DVDs, recordings)
-	- handle streams (live TV with channel list, MP3 radio,..., EPG)	
+	- handle streams (live TV with channel list, MP3 radio,..., EPG)
 	- handle images (possibly in sync with music/radio)
 	- muggle content syndication (e.g. via DAAPD)
 	  - access media on someone elses computer
@@ -92,8 +94,8 @@
   - Prepend top level dir to filename in non-GD-mode
   - Edit playlist (move tracks like channels in VDR channel list)
 		(OK in playlist view)
-  - Instant play = empty current playlist, append tracks of current node and play
-		(easy, in submenu of browser)
+  - Instant play = empty current playlist, append tracks of current node and
+    play (easy, in submenu of browser)
   - Clear playlist (submenu action)
   - Find files from database entry based on GD compatibility flag
   - Handle Next/PrevFile in mgPlaylist (vdr_player.c)
@@ -116,7 +118,8 @@
     - Extended mgGdTrack with audio properties (bitrate, samplerate, channels)
     - in mgPCMPlayer/vdr_player.c:
       - pass m_playing to mp3/ogg decoder (instead of filename)
-    - mgOggDecoder: obtain audio properties from DB (channels, sampling rate via mgContentItem)
+    - mgOggDecoder: obtain audio properties from DB (channels, sampling rate
+      via mgContentItem)
     - mgPCMPlayer::getSourceFile moved to abstract data layer (mgContentItem)
       and made concrete in subclasses (mgGdTrack)
     - mgDecoders::findDecoder: extend decoder detection
@@ -135,7 +138,8 @@
     - Simple progress indicator for 1.3.12      
       - Attach to graphlcd plugin via replay string
       - Test Instant play from browser view
-    - Displaying the menu while progress display is shown makes VDR crash (DONE)
+    - Displaying the menu while progress display is shown makes VDR crash
+      (DONE)
     - Check int/unsigned stuff in mg_playlist
     - mgPCMPlayer::GetIndex: obtain track length from database (DONE)
     - Import (mugglei) now checks for duplicate entries based on filenames
