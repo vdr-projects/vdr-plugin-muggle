@@ -310,22 +310,33 @@ string mgImageProvider::extractImagesFromTag( string f )
   if( !strcasecmp(extension(filename), "flac") )
     {
       TagLib::FLAC::File f(filename);
-      l = f.ID3v2Tag()->frameListMap()["APIC"];
-      dir = treatFrameList( l, image_cache );
+      if (f.ID3v2Tag())
+        {
+          l = f.ID3v2Tag()->frameListMap()["APIC"];
+          dir = treatFrameList( l, image_cache );
+        }
     }
   else if( !strcasecmp(extension(filename), "mp3") )
     {
       TagLib::MPEG::File f(filename);
-      l = f.ID3v2Tag()->frameListMap()["APIC"];
-      dir = treatFrameList( l, image_cache );      
+      if (f.ID3v2Tag())
+        {
+          l = f.ID3v2Tag()->frameListMap()["APIC"];
+          dir = treatFrameList( l, image_cache );
+        }
     }
   else if( !strcasecmp(extension(filename), "ogg") )
     {
       // what to do here?
 
       TagLib::Vorbis::File f(filename);
-      // l = f.ID3v2Tag()->frameListMap()["APIC"];
-      // dir = treatFrameList( l, image_cache );
+      /*
+      if (f.ID3v2Tag())
+        {
+          l = f.ID3v2Tag()->frameListMap()["APIC"];
+          dir = treatFrameList( l, image_cache );
+        }
+      */
     }
 
   // returns empty if no images were found in tags
