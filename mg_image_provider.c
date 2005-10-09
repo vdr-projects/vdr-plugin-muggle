@@ -95,6 +95,11 @@ mgImageProvider::mgImageProvider( )
 
 mgImageProvider::~mgImageProvider()
 {
+  deleteTemporaryImages();
+}
+
+void mgImageProvider::deleteTemporaryImages()
+{
   if( m_delete_imgs_from_tag )
     {
       for( vector<string>::iterator iter = m_image_list.begin(); iter != m_image_list.end(); iter ++ )
@@ -104,12 +109,14 @@ mgImageProvider::~mgImageProvider()
 	}
       m_delete_imgs_from_tag = false;
     }
-      
+  m_image_list.clear();
+
   for( vector<string>::iterator iter = m_converted_images.begin(); iter != m_converted_images.end(); iter ++ )
     {
       // remove( (*iter).c_str() );
       cout << "Removing " << *iter << endl;
     }  
+  m_converted_images.clear();
 }
 
 mgImageProvider* mgImageProvider::Create( string dir )
@@ -122,6 +129,31 @@ mgImageProvider* mgImageProvider::Create( )
   return new mgImageProvider();
 }
 
+void mgImageProvider::updateFromItemDirectory( mgItemGd *item )
+{
+  // no images in tags, find images in the directory of the file itself
+  string dir = dirname( (char *) (item->getSourceFile().c_str()) );
+  
+  // do something, when there are no images here, either:
+  // simply go up one step in the directory hierarchy, until we reach top level directory      
+  bool toplevel_reached = false;
+  while( !m_image_list.size() && !toplevel_reached )
+    {
+      if( samedir( dir.c_str(), the_setup.ToplevelDir ) )
+	{
+	  toplevel_reached = true;
+	}
+      
+      fillImageList( dir );
+      
+      if( !m_image_list.size() )
+	{
+	  // nothing found, turn up one directory level
+	  dir = dirname( (char *)dir.c_str() );
+	}
+    }
+}
+
 bool mgImageProvider::updateItem( mgItemGd *item )
 {
   // clean up stuff from previous item ?
@@ -129,69 +161,24 @@ bool mgImageProvider::updateItem( mgItemGd *item )
   string filename = item->getSourceFile();
 
   if( m_mode == IM_ITEM_DIR )
-    {
-      // do not try to acquire new images when we are playing back a separate directory
-
-      if( m_delete_imgs_from_tag )
-	{
-	  for( vector<string>::iterator iter = m_image_list.begin(); iter != m_image_list.end(); iter ++ )
-	    {
-	      // remove( (*iter).c_str() );
-	      cout << "Removing " << *iter << endl;
-	    }
-	  m_delete_imgs_from_tag = false;
-	}
-      m_image_list.clear();
-
-      for( vector<string>::iterator iter = m_converted_images.begin(); iter != m_converted_images.end(); iter ++ )
-	{
-	  // remove( (*iter).c_str() );
-	  cout << "Removing " << *iter << endl;
-	}
-      m_converted_images.clear();
-      // clear temporary image directory
+    { // do not try to acquire new images when we are playing back a separate directory      
+      deleteTemporaryImages();
       
       // check whether the item has cover images in tags?
       string dir = extractImagesFromTag( filename );
+
       if( dir == "" )
 	{
-	  // no images in tags, find images in the directory of the file itself
-	  dir = dirname( (char *) (item->getSourceFile().c_str()) );
-	  cout << "No images in tags. Looking in " << dir << endl;
-	  
-	  // do something, when there are no images here, either:
-	  // simply go up one step in the directory hierarchy, until we reach top level directory      
-	  bool toplevel_reached = false;
-	  while( !m_image_list.size() )
-	    {
-	      if( samedir( dir.c_str(), the_setup.ToplevelDir ) )
-		{
-		  cout << "Toplevel reached at " << dir << endl;
-		  toplevel_reached = true;
-		}
-
-	      fillImageList( dir );
-	      cout << "Images in " << dir << ": " << m_image_list.size() << endl;
-	      
-	      if( !m_image_list.size() )
-		{
-		  cout << "Nothing found in " << dir << endl;
-
-		  // nothing found, turn up one directory level
-		  dir = dirname( (char *)dir.c_str() );
-		  cout << "Looking further in " << dir << endl;
-		}
-	    }
-	  cout << "Finished." << endl;
+	  updateFromItemDirectory( item );
 	}
       else
 	{
 	  fillImageList( dir );
 	}
 
-      // start a thread to convert all images in 'dir into .mpg format in the background
+      // start a thread to convert all images in 'dir' into .mpg format in the background
       Start();
-
+      
       m_image_index = 0;
     }
   // else: nothing todo when changing the item currently being played
@@ -227,7 +214,7 @@ void mgImageProvider::Action()
 	  // assemble path from relative paths
 	  string tmpFile = string( the_setup.ImageCacheDir ) + string( "/" ) + bname.substr( 0, dotpos ) + string( ".mpg" );
 
-	  cout << "Converting " << filename << " to " << tmpFile << endl << flush;
+	  // cout << "Converting " << filename << " to " << tmpFile << endl << flush;
 
 	  char *tmp;
 	  asprintf( &tmp, "image_convert.sh \"%s\" \"%s\"", filename.c_str(), tmpFile.c_str() );
@@ -245,7 +232,7 @@ void mgImageProvider::Action()
 
       // Check whether we need to continue this!? Next song may be playing already...
     }
-  cout << "Image conversion thread ending." << endl << flush;
+  // cout << "Image conversion thread ending." << endl << flush;
 }
 
 void mgImageProvider::fillImageList( string dir )

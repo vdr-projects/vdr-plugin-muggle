@@ -274,6 +274,12 @@ mgPCMPlayer::~mgPCMPlayer ()
     Detach ();
     delete m_playlist;
     delete m_ringbuffer;
+
+    if( m_img_provider )
+      {
+	delete m_img_provider;
+	m_img_provider = NULL;
+      }
 }
 
 void
@@ -363,6 +369,7 @@ mgPCMPlayer::NewImagePlaylist( const char *directory )
     if( m_img_provider )
       {
 	delete m_img_provider;
+	m_img_provider = NULL;
       }
     m_img_provider = mgImageProvider::Create( directory );
     m_hasimages = true; // assume we have some images here!
@@ -468,6 +475,7 @@ mgPCMPlayer::Action (void)
 		    if( m_img_provider && the_setup.BackgrMode == 1 )
 		      {
 			m_hasimages = m_img_provider->updateItem( m_current );
+			cout << "Image provider returns " << m_hasimages << endl;
 			m_lastshow = -1; // never showed a picture during this song replay
 		      }
 
@@ -683,10 +691,6 @@ mgPCMPlayer::Action (void)
                 case msStop:
                 {
                     m_playing = false;
-		    if( m_img_provider )
-		      {
-			delete m_img_provider;
-		      }
 
                     if (m_decoder)
                     {                             // who deletes decoder?

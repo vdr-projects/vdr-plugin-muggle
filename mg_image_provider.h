@@ -54,12 +54,25 @@ class mgImageProvider : public cThread
    */
   void fillImageList( std::string dir );
 
+  /*! \brief find images for an item
+   */
+  void updateFromItemDirectory( mgItemGd *item );
+
+  /*! \brief write image from an id3v2 frame to a file
+   */
   void writeImage( TagLib::ByteVector &image, int num, std::string &image_cache );
+
+  /*! \brief convert all images found in the APIC frame list 
+   */
   std::string treatFrameList( TagLib::ID3v2::FrameList &l, std::string &image_cache );
 
   /*! \brief save images from APIC tag and save to file. returns directory where images were saved or empty string if no images were found in the APIC tag
    */
   std::string extractImagesFromTag( std::string filename );
+
+  /*! \brief delete temporary images
+   */
+  void deleteTemporaryImages();
 
   //! \brief define various modes how images can be obtained
   enum ImageMode 
