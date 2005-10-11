@@ -249,20 +249,23 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 
 2005-10-xx: Version 0.1.9-BETA
 - adapt SQL tables for use with mySQL 5.0. The structures are compatible with
-  GiantDisc (same changes introduced there)
+  GiantDisc (same changes introduced there after brief discussion with GD 
+  author Rolf)
 - Code that selects images factored out into an image provider class
-  (mg_image_provider.h,c)
-- Current image provider simply displays all images in the directory of the
-  current song
+  (mg_image_provider.h,c) to permit simpler development in the future
+- Current image provider simply displays all images in the id3 tags of the
+  current song or in the same directory in case there are no images in the
+  tags
 - Images are now converted in the background so that music replay starts
-  immediately
+  immediately, regardless of the number of images available
 - Implement new Service interface: service ReplayDirectoryImages displays all
   images in directory passed via service request (char* as Data parameter to
   service request)
 - Added a patch for the image plugin (against 0.2.3) that uses muggle for
   displaying selected images while listening to music
-- Fix for incremental search entered again
+- Fix for incremental search added again
+  (thanks to user sundin in vdrporal.de)
 - Setup is now more verbose. NOTE: the enumeration for background mode may
   have changed!
-- Several minor fixes
-- Improved and more thorough translations
+- Several minor fixes (thanks to Ville Skyttä)
+- Improved and more thorough translations (thanks to Ville Skyttä)
