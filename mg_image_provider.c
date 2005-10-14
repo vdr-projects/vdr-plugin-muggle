@@ -16,6 +16,8 @@
 #include <dirent.h>
 #include <libgen.h>
 #include <sys/types.h>
+#include <unistd.h>
+#include <fts.h>
 
 using namespace std;
 
@@ -129,6 +131,48 @@ mgImageProvider* mgImageProvider::Create( )
   return new mgImageProvider();
 }
 
+bool mgImageProvider::extractImagesFromDatabase( mgItemGd *item )
+{
+  /* GD entry looks like: img0x00004810-00.jpg
+     and may reside in $ToplevelDir/[0-9]{2}/
+
+     Then, all img0x00004810-??.jpg are possible matches, but not
+     files such as img0x00004810-00-s200.jpg which are optimized
+     for a different resoluition.     
+     
+     Thanks to viking (from vdrportal.de) for help with this
+  */
+  string file = item->getImagePath();
+  bool result = false;
+
+  FTS *fts;
+  FTSENT *ftsent;
+
+  char *dir[2];
+  dir[0] = the_setup.ToplevelDir;
+  dir[1] = NULL;
+  
+  fts = fts_open( dir, FTS_LOGICAL, 0);
+  if (fts)
+    {
+      while( (ftsent = fts_read(fts)) != NULL )
+	{
+	  if( ftsent->fts_info & FTS_F )
+	    {
+	      if( !strcmp( ftsent->fts_name, file.c_str() ) )
+		{
+		  cout << "Found image:" << ftsent->fts_path << endl;
+		  m_image_list.push_back( ftsent->fts_path );
+		  
+		  result = true;
+		}	   
+	    }
+	}
+      fts_close(fts);
+    }  
+  return result;
+}
+
 void mgImageProvider::updateFromItemDirectory( mgItemGd *item )
 {
   // no images in tags, find images in the directory of the file itself
@@ -164,17 +208,24 @@ bool mgImageProvider::updateItem( mgItemGd *item )
     { // do not try to acquire new images when we are playing back a separate directory      
       deleteTemporaryImages();
       
-      // check whether the item has cover images in tags?
-      string dir = extractImagesFromTag( filename );
+      // check whether the item has cover images defined in the database ?
+      bool has_db_images = extractImagesFromDatabase( item );
 
-      if( dir == "" )
+      if( !has_db_images )
 	{
-	  updateFromItemDirectory( item );
-	}
-      else
-	{
-	  fillImageList( dir );
-	}
+	  // no. check whether the item has cover images defined in tags ?
+	  string dir = extractImagesFromTag( filename );
+
+	  if( dir == "" )
+	    {
+	      // no. use anything from the directory
+	      updateFromItemDirectory( item );
+	    }
+	  else
+	    {
+	      fillImageList( dir );
+	    }
+	}		
 
       // start a thread to convert all images in 'dir' into .mpg format in the background
       Start();

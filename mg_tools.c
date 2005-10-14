@@ -183,7 +183,7 @@ bool samedir( const char *d1, const char *d2 )
 #ifdef PATH_MAX
   path_max = PATH_MAX;
 #else
-  path_max = pathconf (path, _PC_PATH_MAX);
+  path_max = pathconf ( "/", _PC_PATH_MAX );
   if (path_max <= 0)
     {
       path_max = 4096;

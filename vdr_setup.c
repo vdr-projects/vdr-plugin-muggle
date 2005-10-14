@@ -36,22 +36,23 @@ mgMenuSetup::mgMenuSetup ()
     // Audio stuff    
     Add (new
 	 cMenuEditBoolItem (tr ("Initial loop mode"),&the_setup.InitLoopMode,
-			    tr("on"), tr("off") ) );
+			    tr("off"), tr("on") ) );
     Add (new
 	 cMenuEditBoolItem (tr ("Initial shuffle mode"), &the_setup.InitShuffleMode,
-			    tr("on"), tr("off") ) );
+			    tr("off"), tr("on") ) );
 
     Add (new
 	 cMenuEditBoolItem (tr ("Audio mode"), &the_setup.AudioMode,
-			    tr ("Round"), tr ("Dither")));
+			    tr ("Dither"), tr ("Round")));
 
     Add (new
 	 cMenuEditBoolItem (tr ("Use 48kHz mode only"), &the_setup.Only48kHz,
-			    tr("yes"), tr("no") ) );
+			    tr("no"), tr("yes") ) );
 			    
     Add (new
 	 cMenuEditIntItem (tr ("Normalizer level"),
 			   &the_setup.TargetLevel, 0, MAX_TARGET_LEVEL));
+
     Add (new
 	 cMenuEditIntItem (tr ("Limiter level"),
 			   &the_setup.LimiterLevel, MIN_LIMITER_LEVEL, 100));
@@ -71,12 +72,12 @@ mgMenuSetup::mgMenuSetup ()
 			   the_setup.ImageCacheDir, MAX_PATH, chars_allowed ) );
     Add (new
 	 cMenuEditBoolItem (tr ("Use DVB still picture"), &the_setup.UseDeviceStillPicture,
-			    tr("yes"), tr("no") ) );
+			    tr("no"), tr("yes") ) );
 
     // Synchronization    
     Add (new
 	 cMenuEditBoolItem (tr ("Delete stale references"), &the_setup.DeleteStaleReferences,
-			    tr("yes"), tr("no") ));
+			    tr("no"), tr("yes") ));
 
     mgAction *a = actGenerate(actSync);
     const char *mn = a->MenuName();

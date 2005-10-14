@@ -54,6 +54,10 @@ class mgImageProvider : public cThread
    */
   void fillImageList( std::string dir );
 
+  /*! \brief update images according to GD scheme from database entry
+   */
+  bool extractImagesFromDatabase( mgItemGd *item );
+
   /*! \brief find images for an item
    */
   void updateFromItemDirectory( mgItemGd *item );

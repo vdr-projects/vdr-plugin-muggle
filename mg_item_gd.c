@@ -221,66 +221,7 @@ mgItemGd::getSourceFile(bool AbsolutePath,bool Silent) const
 string
 mgItemGd::getImagePath(bool AbsolutePath) const
 {
-	string result;
-	if (AbsolutePath)
-	{
-		result = getImagePath(false);
-		if (!result.empty())
-			result = string(the_setup.ToplevelDir) + result;
-		return result;
-	}
-	if (!m_coverimg.empty())
-	{
-		result = m_coverimg;
-		if (!readable(result))
-		{
-			analyze_failure(result);
-			m_coverimg="";
-		}
-		else
-			return result;
-	}
-	result = getSourceFile(false,true);
-	const char* jpg = ".jpg";
-	string::size_type dot = result.rfind('.');
-	if (dot==string::npos)
-		result += jpg;
-	else
-		result.replace(dot,999,jpg);
-	if (readable(result))
-		return result;
-#ifdef DIAS
-	while (true)
-	{
-		m_covercount++;
-		result = getSourceFile(false,true);
-		dot = result.rfind('.');
-		if (dot==string::npos)
-			result += '.' + m_covercount + jpg;
-		else
-			result.replace(dot,999,'.' + m_covercount + jpg);
-		if (readable(result))
-			return result;
-		if (m_covercount == 1)
-			break;
-		m_covercount = 0;
-	}
-#endif
-	result = getSourceFile(false,true);
-	while (true)
-	{
-		string::size_type slash = result.rfind('/');
-		if (slash == string::npos)
-		{
-			if (readable("cover.jpg"))
-				return "cover.jpg";
-			break;
-		}
-		result.replace(slash,999,"");
-		if (readable(result+"/cover.jpg"))
-			return result+"/cover.jpg";
-	}
-	return "";
+  return m_coverimg;
 }
 
 mgItemGd::mgItemGd (char **row)

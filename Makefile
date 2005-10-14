@@ -14,13 +14,13 @@ PLUGIN = muggle
 
 #if you want ogg / flac support, define HAVE_VORBISFILE and/or HAVE_FLAC
 #in $VDRDIR/Make.config like this:
-#HAVE_VORBISFILE=1
-#HAVE_FLAC=1
-#HAVE_SNDFILE=1
+HAVE_VORBISFILE=1
+HAVE_FLAC=1
+HAVE_SNDFILE=1
 
 #if you do not want to compile in code for embedded mysql,
 #define this:
-#HAVE_ONLY_SERVER=1
+HAVE_ONLY_SERVER=1
 
 #define what database you want to use. Default is mysql. HAVE_SQLITE
 #removes mysql support and adds SQLite support
@@ -35,7 +35,7 @@ VERSION = $(shell grep 'static const char \*VERSION *=' $(PLUGIN).c | awk '{ pri
 ### The C++ compiler and options:
 
 CXX      ?= g++-3.3
-CXXFLAGS ?= -fPIC -O0 -Wall -Woverloaded-virtual -Wno-deprecated -g 
+CXXFLAGS ?= -fPIC -O0 -Wall -Woverloaded-virtual -Wno-deprecated -g
 
 ### The directory environment:
 
