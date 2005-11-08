@@ -1493,7 +1493,7 @@ const tI18nPhrase Phrases[] =
     },
     {      
         "Background mode",
-        "Hintergrundmous",
+        "Hintergrundmodus",
         "",                                       // TODO
         "",                                       // TODO
         "",                                       // TODO
