@@ -238,7 +238,7 @@ class mgPCMPlayer : public cPlayer, cThread
 };
 
 mgPCMPlayer::mgPCMPlayer (mgSelection * plist)
-  : cPlayer(the_setup.BackgrMode? pmAudioOnlyBlack: pmAudioOnly )
+  : cPlayer(the_setup.BackgrMode==2? pmAudioOnly:pmAudioOnlyBlack )
 {
     m_playlist = plist;
 
@@ -1021,10 +1021,11 @@ void mgPCMPlayer::CheckImage()
     {
       if( ( m_index % the_setup.ImageShowDuration == 0 && m_index > m_lastshow) || m_lastshow < 0 )
 	{ // all n decoding steps
-	  m_current_image = m_img_provider->getImagePath( );
+	  string source;
+	  m_current_image = m_img_provider->getImagePath( source );
 	  
 	  // check for TFT display of image
-	  TransferImageTFT( m_current_image );
+	  TransferImageTFT( source );
 	  
 	  // check for background display of image
 	  if( the_setup.BackgrMode == 1 )
@@ -1429,13 +1430,13 @@ mgPlayerControl::ShowContents ()
                 int cur = list->getItemPosition ();
                 for (int i = 0; i < num_items; i++)
                 {
-                    mgItemGd *item = dynamic_cast<mgItemGd*>(list->getItem (cur - 3 + i));
+                    mgItemGd *item = dynamic_cast<mgItemGd*>(list->getItem (cur + i));
                     if (item)
                     {
                         char *buf;
                         asprintf (&buf, "%s\t%s", item->getTitle ().c_str (),
                             item->getArtist ().c_str ());
-                        m_menu->SetItem (buf, i, i == 3, i > 3);
+                        m_menu->SetItem (buf, i, i == 0, i >= 0);
                         free (buf);
                     }
                 }

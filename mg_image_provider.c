@@ -55,7 +55,7 @@ int picture_select( struct dirent const *entry )
     }
 }
 
-std::string mgImageProvider::getImagePath()
+std::string mgImageProvider::getImagePath( string &source )
 {
   string fname;
 
@@ -64,7 +64,7 @@ std::string mgImageProvider::getImagePath()
   if( m_image_index < m_converted_images.size() )
     {
       fname = m_converted_images[ m_image_index ];
-      
+      source = m_image_list[ m_image_index ];
       // wrap to beginning of list when all images are displayed
       m_image_index += 1;
       if( m_image_index >= m_converted_images.size() )

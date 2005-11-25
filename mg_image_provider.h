@@ -20,7 +20,7 @@ class mgImageProvider : public cThread
 
   /*! \brief obtain next image in list
    */
-  std::string getImagePath();
+  std::string getImagePath( std::string &source );
 
   /*! \brief tell the image provider that we are replaying a different item now. Return, whether images were found.
    */
