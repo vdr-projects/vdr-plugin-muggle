@@ -372,7 +372,7 @@ class mgTree:public mgMenu
 class mgSubmenu:public mgMenu
 {
     public:
-	mgSubmenu::mgSubmenu();
+	mgSubmenu();
 //! \brief computes the title
 	std::string Title() const;
     protected:
