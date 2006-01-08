@@ -1175,7 +1175,7 @@ mgPlayerControl::~mgPlayerControl ()
 {
 //      Stop();
 // Notify cleanup all cStatusMonitor
-    cStatus::MsgReplaying (this, NULL);
+    cStatus::MsgReplaying (this, 0, 0, false);
     if (m_szLastShowStatusMsg)
     {
         free (m_szLastShowStatusMsg);
@@ -1202,7 +1202,7 @@ bool mgPlayerControl::Playing (void)
 void
 mgPlayerControl::Stop (void)
 {
-  cStatus::MsgReplaying( this, NULL );
+  cStatus::MsgReplaying( this, 0, 0, false );
     if (player)
     {
         delete player;
@@ -1853,7 +1853,7 @@ mgPlayerControl::StatusMsgReplaying ()
                 free (m_szLastShowStatusMsg);
             }
             m_szLastShowStatusMsg = szBuf;
-            cStatus::MsgReplaying (this, m_szLastShowStatusMsg);
+            cStatus::MsgReplaying (this, m_szLastShowStatusMsg, 0, false);
         }
         else
         {
