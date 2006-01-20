@@ -297,6 +297,9 @@ mgDbGd::Connect ()
     if (time(0)<m_create_time+10)
 	return false;
     m_create_time=time(0);
+    struct stat stbuf;	// TODO das hier in die Parentklasse?
+    if (stat(the_setup.DbDatadir,&stbuf))
+	mkdir(the_setup.DbDatadir,0755);
     char *s=sqlite3_mprintf("%s/%s.sqlite",the_setup.DbDatadir,the_setup.DbName);
     mgDebug(1,"%X opening data base %s",m_db,s);
     int rc = sqlite3_open(s,&m_db);
