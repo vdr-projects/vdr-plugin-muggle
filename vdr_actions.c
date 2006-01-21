@@ -602,7 +602,7 @@ class mgEditOrder : public mgCommand
 	bool Enabled(mgActions on) { return true; }
 	eOSState Process(eKeys key);
         bool Execute () { osd ()->newmenu = new mgMenuOrder; return true; }
-        const char *ButtonName() { return tr("Edit"); }
+        const char *ButtonName() { return tr("Button$Edit"); }
 };
 
 eOSState
@@ -639,7 +639,7 @@ class mgDeleteOrder : public mgCommand
     public:
 	bool Enabled(mgActions on) { return true; }
         bool Execute ();
-        const char *ButtonName() { return tr("Delete"); }
+        const char *ButtonName() { return tr("Button$Delete"); }
 };
 
 bool 
@@ -1182,7 +1182,7 @@ class mgDeleteCollection:public mgCommand
 	bool Enabled(mgActions on);
         const char *ButtonName ()
         {
-            return tr ("Delete");
+            return tr ("Button$Delete");
         }
         const char *MenuName (const unsigned int idx,const mgListItem* item);
 };
