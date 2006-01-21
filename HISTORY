@@ -269,3 +269,7 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
   have changed!
 - Several minor fixes (thanks to Ville Skyttä)
 - Improved and more thorough translations (thanks to Ville Skyttä)
+
+2006-x-x
+- SQLite: If the database directory (default $HOME/.muggle) does not exist,
+  automatically create it.
