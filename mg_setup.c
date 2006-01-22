@@ -215,6 +215,8 @@ bool mgSetup::ProcessArguments (int argc, char *argv[])
             	CreateMode = true;
             }
 	    break;
+	    case '?':
+	    	return false;
 	}
     }
     return true;

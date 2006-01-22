@@ -80,15 +80,12 @@ path_within_tld()
   	return !strncmp(path,the_setup.ToplevelDir,tldlen);
 }
 
-int main( int argc, char *argv[] )
+
+static void
+usage()
 {
-	the_setup.SetMugglei();
-	mgSetDebugLevel(1);
-      
-  if( argc < 2 )
-    { // we need at least a filename!
       std::cout << "mugglei -- import helper for Muggle VDR plugin" << std::endl;
-      std::cout << "(C) Lars von Wedel" << std::endl;
+      std::cout << "(C) Lars von Wedel, Wolfgang Rohdewald" << std::endl;
       std::cout << "This is free software; see the source for copying conditions." << std::endl;
       std::cout << "" << std::endl;
       std::cout << "Usage: mugglei [OPTION]... [FILE]..." << std::endl;
@@ -101,9 +98,18 @@ int main( int argc, char *argv[] )
       std::cout << the_setup.HelpText();
 
       exit( 2 );
-    }
+}
 
-  the_setup.ProcessArguments(argc,argv);
+int main( int argc, char *argv[] )
+{
+	the_setup.SetMugglei();
+	mgSetDebugLevel(1);
+      
+  if( argc < 2 )
+      usage();
+
+  if (!the_setup.ProcessArguments(argc,argv))
+      usage();
 
   if (!path_within_tld())
   {
@@ -111,13 +117,10 @@ int main( int argc, char *argv[] )
 	      << " or below" << std::endl;
       exit( 2 );
   }
-  if (optind<argc)
-  {
-  	mgDb *sync = GenerateDB();
-	sync->Sync(argv+optind);
-  	delete sync;
-	delete DbServer;
-  }
-  return 0;
+  if (optind==argc)
+      usage();
+  mgDb *sync = GenerateDB();
+  sync->Sync(argv+optind);
+  delete sync;
 }
 
