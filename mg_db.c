@@ -360,6 +360,12 @@ mgDb::Sync(char * const * path_argv)
 	{
 		while ( (ftsent = fts_read(fts)) != NULL)
 		{
+			if (access(ftsent->fts_path,R_OK))
+			{
+				mgDebug(1,"Ignoring unreadable file %s",
+						ftsent->fts_path);
+				continue;
+			}
 			mode_t mode = ftsent->fts_statp->st_mode;
 			if (mode&S_IFDIR && ftsent->fts_info&FTS_D)
 				mgDebug(1,"Importing from %s",ftsent->fts_path);
