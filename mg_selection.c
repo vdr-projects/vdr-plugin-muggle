@@ -647,6 +647,13 @@ mgParts
 mgSelection::SelParts(bool distinct, bool deepsort) const
 {
 	assert(m_level<ordersize());
+	mgParts result;
+	if (inItem())
+	{
+		// only use tracks.id
+		result += Keys[ordersize()-1]->Parts(m_db,distinct);
+		return result;
+	}
 	mgKey *high = Keys[m_level];
 	mgListItem* highitem = 0;
 	if (high->Type()!=keyGdUnique)
@@ -654,7 +661,6 @@ mgSelection::SelParts(bool distinct, bool deepsort) const
 		highitem = high->get();
 		high->set(0);
 	}
-	mgParts result;
 	result.orderByCount = m_orderByCount;
 	for (unsigned int i=0;i<ordersize();i++)
 	{
@@ -960,10 +966,16 @@ bool mgSelection::enter (unsigned int position)
     {
     	setPosition(position);
     	position = gotoPosition();		// reload adjusted position
-        Key(m_level)->set (listitems[position]);
-	mgDebug(5,"enter:level=%d,set to %s",m_level,getCurrentValue().c_str());
-	IncLevel();
-	refreshValues();
+	if (inItems())
+	{
+		mgListItem *item=Key(m_level)->get();
+		IncLevel();
+		Key(m_level)->set(item);
+		mgListItem *i2=Key(m_level)->get();
+		i2->set(item->value(),item->unique_id(),1);
+	}
+	else
+		IncLevel();
         position = 0;
 	if (empty())
 	    break;
