@@ -141,8 +141,10 @@ public:
 	strlist clauses;
 	mgParts& operator+=(mgParts a);
 	void Prepare();
+	void ConnectAllTables();
 	string sql_count();
 	string sql_select(bool distinct);
+	string sql_selectitems();
 	bool empty() const { return tables.size()==0;}
 	string special_statement;
 	bool orderByCount;

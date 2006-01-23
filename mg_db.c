@@ -597,7 +597,7 @@ mgParts::Dump(string where) const
 }
 
 void
-mgParts::Prepare()
+mgParts::ConnectAllTables()
 {
 	tables.sort();
 	tables.unique();
@@ -622,8 +622,18 @@ mgParts::Prepare()
 	tables.unique();
 	push_table_to_front("tracks");
 	push_table_to_front("playlistitem");
+}
+
+void
+mgParts::Prepare()
+{
+	ConnectAllTables();
 	clauses.sort();
 	clauses.unique();
+	valuefields.sort();
+	valuefields.unique();
+	idfields.sort();
+	idfields.unique();
 }
 
 void
@@ -650,14 +660,20 @@ mgParts::sql_select(bool distinct)
 	string result;
 	if (distinct)
 	{
-		idfields.push_back("COUNT(*)");
+		idfields.push_front("1");
+		idfields.push_front("COUNT(*)");
 		result = sql_list("SELECT",idfields);
-		idfields.pop_back();
+		idfields.pop_front();
+		idfields.pop_front();
 	}
 	else
 	{
-		idfields.push_back("1");
-		result = sql_list("SELECT",valuefields+idfields);
+		strlist::iterator p = find(tables.begin(),tables.end(),"tracks");
+		if (p!=tables.end())
+			idfields.push_front("tracks.id");
+		idfields.push_front("1");
+		result = sql_list("SELECT",idfields+valuefields);
+		idfields.pop_front();
 	}
 	if (!result.empty())
 	{
@@ -668,6 +684,17 @@ mgParts::sql_select(bool distinct)
 			result += sql_list(" GROUP BY",idfields);
 		}
 	}
+	return result;
+}
+
+string
+mgParts::sql_selectitems()
+{
+	ConnectAllTables();
+	string result;
+	result = sql_list("SELECT",idfields);
+	result += sql_list(" FROM",tables);
+	result += sql_list(" WHERE",clauses," AND ");
 	return result;
 }
 
@@ -1264,7 +1291,7 @@ mgDb::LoadItemsInto(mgParts& what,vector<mgItem*>& items)
 	what.idfields.push_back("album.coverimg");
 	what.tables.push_back("tracks");
 	what.tables.push_back("album");
-	string result = what.sql_select(false); 
+	string result = what.sql_selectitems(); 
 	for (unsigned int idx=0;idx<items.size();idx++)
 		delete items[idx];
 	items.clear ();
@@ -1285,27 +1312,21 @@ mgDb::LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems,
         listitems.clear ();
 	mgQuery q(DbHandle(),result);
 	if (q.Rows())
-		assert(q.Columns()>=2);
+		assert(q.Columns()==4 || q.Columns()==3);
 	char **row;
 	while ((row = q.Next()))
 	{
 		if (!row[0]) continue;
-		string id = row[0];
+		if (!row[1]) continue;
+		if (!row[2]) continue;
+		if (q.Columns()==4 && !row[3]) continue;
 		mgListItem* n = new mgListItem;
-		long count=1;
-		if (q.Columns()>1)
-			count = atol(row[q.Columns()-1]);
-		if (q.Columns()==3)
-		{
-			if (!row[1]) 
-			{
-				delete n;
-				continue;
-			}
-			n->set(id,row[1],count);
-		}
+		long count = atol(row[0]);
+		n->set_unique_id(row[1]);
+		if (q.Columns()==4)
+			n->set(row[3],row[2],count);
 		else
-			n->set(KeyMaps.value(tp,id),id,count);
+			n->set(KeyMaps.value(tp,row[2]),row[2],count);
 		listitems.push_back(n);
 	}
 	return result;
@@ -1378,6 +1399,13 @@ mgDb::CreateCollection (const string Name)
     Execute ("INSERT INTO playlist (title,author,created) VALUES(" + name + ",'VDR',"+Now()+")");
     return true;
 }
+
+class mgKeyGdUnique : public mgKeyNormal {
+	public:
+		mgKeyGdUnique() : mgKeyNormal(keyGdTrack,"tracks","id") {};
+		mgParts Parts(mgDb *db,bool groupby) const;
+		mgSortBy SortBy() const { return mgSortByIdNum; }
+};
 
 class mgKeyGdTrack : public mgKeyNormal {
 	public:
@@ -1577,6 +1605,16 @@ ktGenerate(const mgKeyTypes kt)
 		case keyGdUnique: result = new mgKeyNormal(kt,"tracks","id");break;
 		default: result = 0; break;
 	}
+	return result;
+}
+
+mgParts
+mgKeyGdUnique::Parts(mgDb *db,bool groupby) const
+{
+	mgParts result;
+	result.tables.push_back("tracks");
+	AddIdClause(db,result,"tracks.id");
+	result.idfields.push_back("tracks.id");
 	return result;
 }
 

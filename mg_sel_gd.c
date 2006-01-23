@@ -217,8 +217,10 @@ mgSelectionGd::SelParts(bool distinct, bool deepsort) const
 		mgParts result;
 		result.orderByCount = m_orderByCount;
 		// sql command contributed by jarny
-		result.special_statement = string("SELECT playlist.title,playlist.id, "
-				"COUNT(*) * CASE WHEN playlistitem.playlist IS NULL THEN 0 ELSE 1 END FROM playlist "
+		result.special_statement = string("SELECT COUNT(*) * "
+				"CASE WHEN playlistitem.playlist IS NULL THEN 0 ELSE 1 END, "
+				"1,playlist.id,playlist.title "
+				" FROM playlist "
 				"LEFT JOIN playlistitem ON playlist.id = playlistitem.playlist "
 				"GROUP BY playlist.title,playlistitem.playlist,playlist.id");
 		return result;
