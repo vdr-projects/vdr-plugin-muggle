@@ -229,7 +229,7 @@ class mgDb {
 class mgKey {
 	public:
 		virtual ~mgKey() {};
-		virtual mgParts Parts(mgDb *db,bool groupby=false) const = 0;
+		virtual mgParts Parts(mgDb *db,bool groupby) const = 0;
 		virtual string id() const = 0;
 		virtual bool valid() const = 0;
 		virtual string value () const = 0;
@@ -248,7 +248,7 @@ class mgKeyNormal : public mgKey {
 	public:
 		mgKeyNormal(const mgKeyNormal& k);
 		mgKeyNormal(const mgKeyTypes kt, string table, string field);
-		virtual mgParts Parts(mgDb *db,bool groupby=false) const;
+		virtual mgParts Parts(mgDb *db,bool groupby) const;
 		string value() const;
 		string id() const;
 		bool valid() const;

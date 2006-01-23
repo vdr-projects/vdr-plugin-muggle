@@ -1382,14 +1382,14 @@ mgDb::CreateCollection (const string Name)
 class mgKeyGdTrack : public mgKeyNormal {
 	public:
 		mgKeyGdTrack() : mgKeyNormal(keyGdTrack,"tracks","tracknb") {};
-		mgParts Parts(mgDb *db,bool groupby=false) const;
+		mgParts Parts(mgDb *db,bool groupby) const;
 		mgSortBy SortBy() const { return mgSortByIdNum; }
 };
 
 class mgKeyGdAlbum : public mgKeyNormal {
 	public:
 		mgKeyGdAlbum() : mgKeyNormal(keyGdAlbum,"album","title") {};
-		mgParts Parts(mgDb *db,bool groupby=false) const;
+		mgParts Parts(mgDb *db,bool groupby) const;
 };
 
 mgParts
@@ -1422,7 +1422,7 @@ class mgKeyGdGenres : public mgKeyNormal {
 	public:
 		mgKeyGdGenres() : mgKeyNormal(keyGdGenres,"tracks","genre1") {};
 		mgKeyGdGenres(mgKeyTypes kt) : mgKeyNormal(kt,"tracks","genre1") {};
-		mgParts Parts(mgDb *db,bool groupby=false) const;
+		mgParts Parts(mgDb *db,bool groupby) const;
 	protected:
 		string map_sql() const;
 		virtual unsigned int genrelevel() const { return 4; }
@@ -1521,7 +1521,7 @@ mgKeyGdGenres::Parts(mgDb *db,bool groupby) const
 class mgKeyGdLanguage : public mgKeyNormal {
 	public:
 		mgKeyGdLanguage() : mgKeyNormal(keyGdLanguage,"tracks","lang") {};
-		mgParts Parts(mgDb *db,bool groupby=false) const;
+		mgParts Parts(mgDb *db,bool groupby) const;
 	protected:
 		string map_sql() const { return "SELECT id,language FROM language"; }
 };
@@ -1529,14 +1529,14 @@ class mgKeyGdLanguage : public mgKeyNormal {
 class mgKeyGdCollection: public mgKeyNormal {
 	public:
   	  mgKeyGdCollection() : mgKeyNormal(keyGdCollection,"playlist","id") {};
-	  mgParts Parts(mgDb *db,bool groupby=false) const;
+	  mgParts Parts(mgDb *db,bool groupby) const;
 	protected:
 	 string map_sql() const { return "SELECT id,title FROM playlist"; }
 };
 class mgKeyGdCollectionItem : public mgKeyNormal {
 	public:
 		mgKeyGdCollectionItem() : mgKeyNormal(keyGdCollectionItem,"playlistitem","trackid") {};
-		mgParts Parts(mgDb *db,bool groupby=false) const;
+		mgParts Parts(mgDb *db,bool groupby) const;
 		mgSortBy SortBy() const { return mgSortNone; }
 };
 
