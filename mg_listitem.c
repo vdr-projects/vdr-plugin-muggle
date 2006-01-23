@@ -15,6 +15,7 @@
 mgListItem::mgListItem()
 {
 	m_valid=false;
+	m_unique_id="0";
 	m_count=0;
 }
 
@@ -24,6 +25,7 @@ mgListItem::mgListItem(const mgListItem* from)
 	m_valid=from->m_valid;
 	m_value=from->m_value;
 	m_id=from->m_id;
+	m_unique_id=from->m_unique_id;
 	m_count=from->m_count;
 }
 
@@ -51,6 +53,13 @@ mgListItem::set(string v,string i,unsigned int c)
 	m_count=c;
 }
 
+void
+mgListItem::set_unique_id(string uid)
+{
+	assert(this);
+	m_unique_id=uid;
+}
+
 void 
 mgListItem::operator=(const mgListItem& from)
 {
@@ -58,6 +67,7 @@ mgListItem::operator=(const mgListItem& from)
 	m_valid=from.m_valid;
 	m_value=from.m_value;
 	m_id=from.m_id;
+	m_unique_id=from.m_unique_id;
 	m_count=from.m_count;
 }
 
@@ -68,6 +78,7 @@ mgListItem::operator=(const mgListItem* from)
 	m_valid=from->valid();
 	m_value=from->value();
 	m_id=from->id();
+	m_unique_id=from->unique_id();
 	m_count=from->count();
 }
 
@@ -77,7 +88,8 @@ mgListItem::operator==(const mgListItem& other) const
 	if (!this)
 		return false;
 	return m_value == other.m_value
-		&& m_id == other.m_id;
+		&& m_id == other.m_id
+		&& m_unique_id == other.m_unique_id;
 }
 
 string
@@ -96,6 +108,15 @@ mgListItem::id() const
 		return "";
 	else
 		return m_id;
+}
+
+string
+mgListItem::unique_id() const
+{
+	if (!this)
+		return "";
+	else
+		return m_unique_id;
 }
 
 unsigned int

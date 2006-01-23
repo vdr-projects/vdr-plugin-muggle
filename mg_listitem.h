@@ -24,17 +24,20 @@ class mgListItem
 		mgListItem* Clone();
 		mgListItem(const mgListItem *from);
 		void set(string v,string i,unsigned int c=0);
+		void set_unique_id(string uid);
 		void operator=(const mgListItem& from);
 		void operator=(const mgListItem* from);
 		bool operator==(const mgListItem& other) const;
 		string value() const;
 		string id() const;
+		string unique_id() const;
 		unsigned int count() const;
 		bool valid() const;
 	private:
 		bool m_valid;
 		string m_value;
 		string m_id;
+		string m_unique_id;
 		unsigned int m_count;
 };
 
