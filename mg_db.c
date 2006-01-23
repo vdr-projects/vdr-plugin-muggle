@@ -1290,7 +1290,7 @@ mgDb::LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems,
 	while ((row = q.Next()))
 	{
 		if (!row[0]) continue;
-		string r0 = row[0];
+		string id = row[0];
 		mgListItem* n = new mgListItem;
 		long count=1;
 		if (q.Columns()>1)
@@ -1302,10 +1302,10 @@ mgDb::LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems,
 				delete n;
 				continue;
 			}
-			n->set(row[0],row[1],count);
+			n->set(id,row[1],count);
 		}
 		else
-			n->set(KeyMaps.value(tp,r0),r0,count);
+			n->set(KeyMaps.value(tp,id),id,count);
 		listitems.push_back(n);
 	}
 	return result;
