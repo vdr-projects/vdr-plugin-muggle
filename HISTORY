@@ -273,3 +273,5 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 2006-x-x
 - SQLite: If the database directory (default $HOME/.muggle) does not exist,
   automatically create it.
+- Orders with Track as last key field: Now work correctly even if the track
+  numbers are not known
