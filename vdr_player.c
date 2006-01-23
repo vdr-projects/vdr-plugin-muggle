@@ -1175,7 +1175,11 @@ mgPlayerControl::~mgPlayerControl ()
 {
 //      Stop();
 // Notify cleanup all cStatusMonitor
+#if VDRVERSNUM >= 10338
     cStatus::MsgReplaying (this, 0, 0, false);
+#else
+    cStatus::MsgReplaying (this, 0);
+#endif
     if (m_szLastShowStatusMsg)
     {
         free (m_szLastShowStatusMsg);
@@ -1202,7 +1206,11 @@ bool mgPlayerControl::Playing (void)
 void
 mgPlayerControl::Stop (void)
 {
+#if VDRVERSNUM >= 10338
   cStatus::MsgReplaying( this, 0, 0, false );
+#else
+  cStatus::MsgReplaying( this, 0);
+#endif
     if (player)
     {
         delete player;
@@ -1853,7 +1861,11 @@ mgPlayerControl::StatusMsgReplaying ()
                 free (m_szLastShowStatusMsg);
             }
             m_szLastShowStatusMsg = szBuf;
+#if VDRVERSNUM >= 10338
             cStatus::MsgReplaying (this, m_szLastShowStatusMsg, 0, false);
+#else
+            cStatus::MsgReplaying (this, m_szLastShowStatusMsg);
+#endif
         }
         else
         {

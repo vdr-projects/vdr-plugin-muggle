@@ -275,3 +275,4 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
   automatically create it.
 - Orders with Track as last key field: Now work correctly even if the track
   numbers are not known
+- adapt for vdr 1.3.38
