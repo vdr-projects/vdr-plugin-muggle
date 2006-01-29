@@ -15,7 +15,9 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <libgen.h>
+#include <fileref.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <fts.h>
 
@@ -145,27 +147,43 @@ bool mgImageProvider::extractImagesFromDatabase( mgItemGd *item )
   string file = item->getImagePath();
   bool result = false;
 
-  FTS *fts;
-  FTSENT *ftsent;
-
   char *dir[2];
   dir[0] = the_setup.ToplevelDir;
   dir[1] = NULL;
   
-  fts = fts_open( dir, FTS_LOGICAL, 0);
-  if (fts)
+  FTS *fts = fts_open( dir, FTS_LOGICAL, 0);
+  if( fts )
     {
+      FTSENT *ftsent;
+
       while( (ftsent = fts_read(fts)) != NULL )
 	{
+	  mode_t mode = ftsent->fts_statp->st_mode;
+	  if( mode & S_IFDIR && ftsent->fts_info & FTS_D )
+	    {
+	      mgDebug(1,"Importing from %s",ftsent->fts_path);
+	    }
+	  if( !( mode & S_IFREG ) )
+	    {
+	      continue;
+	    }
 	  if( ftsent->fts_info & FTS_F )
 	    {
 	      if( !strcmp( ftsent->fts_name, file.c_str() ) )
 		{
 		  cout << "Found image:" << ftsent->fts_path << endl;
+
+		  if( access(ftsent->fts_path, R_OK) )
+		    {
+		      mgDebug( 1, "Ignoring unreadable file %s",
+			       ftsent->fts_path);
+		      continue;
+		    }
+		  
 		  m_image_list.push_back( ftsent->fts_path );
 		  
 		  result = true;
-		}	   
+		}
 	    }
 	}
       fts_close(fts);
