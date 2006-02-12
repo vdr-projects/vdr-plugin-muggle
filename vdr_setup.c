@@ -43,7 +43,7 @@ mgMenuSetup::mgMenuSetup ()
 
     Add (new
 	 cMenuEditBoolItem (tr ("Audio mode"), &the_setup.AudioMode,
-			    tr ("Dither"), tr ("Round")));
+			    tr ("Round"), tr ("Dither")));
 
     Add (new
 	 cMenuEditBoolItem (tr ("Use 48kHz mode only"), &the_setup.Only48kHz,
