@@ -197,7 +197,7 @@ class mgPCMPlayer : public cPlayer, cThread
 
         bool Playing ()
         {
-            return m_playing;
+	  return m_playing || m_active;
         }
 
         void Pause ();
@@ -391,7 +391,7 @@ mgPCMPlayer::SetPlayMode (emgPlayMode mode)
 
 
 void
-mgPCMPlayer::WaitPlayMode (emgPlayMode mode, bool inv)
+mgPCMPlayer::WaitPlayMode(emgPlayMode mode, bool inv)
 {
 // must be called with m_playmode_mutex LOCKED !!!
 
@@ -452,19 +452,22 @@ mgPCMPlayer::Action (void)
     while (m_active)
     {
 #ifdef DEBUG
+      /*
         if (time (0) >= beat + 30)
         {
             std::
                 cout << "mgPCMPlayer::Action: heartbeat buffer=" << m_ringbuffer->
                 Available () << std::endl << std::flush;
            scale.Stats ();
-            if (haslevel)
-                norm.Stats ();
-            beat = time (0);
+	   if (haslevel)
+	     norm.Stats ();
+	   beat = time (0);
         }
+      */
 #endif
 
         Lock ();
+
 
         if (!m_rframe && m_playmode == pmPlay)
         {
@@ -475,40 +478,39 @@ mgPCMPlayer::Action (void)
 		    if( m_img_provider && the_setup.BackgrMode == 1 )
 		      {
 			m_hasimages = m_img_provider->updateItem( m_current );
-			cout << "Image provider returns " << m_hasimages << endl;
 			m_lastshow = -1; // never showed a picture during this song replay
 		      }
 
 		    m_index = 0;
-
+		    
                     m_playing = true;
 		    
-                    if (m_current)
-                    {
+                    if( m_current )
+		      {
 		        string filename = m_current->getSourceFile ();
                         if ((m_decoder = mgDecoders::findDecoder (m_current))
                             && m_decoder->start ())
-                        {
-			  levelgood = true;
-			  haslevel = false;
-			  
-			  level.Init ();
-			  
-			  m_state = msDecode;
-			  break;
-                        }
+			  {
+			    levelgood = true;
+			    haslevel = false;
+			    
+			    level.Init ();
+			    
+			    m_state = msDecode;
+			    break;
+			  }
 		        else
-		        {
-			      mgWarning("found no decoder for %s",filename.c_str());
-			      m_state=msStop;	// if loop mode is on and no decoder
+			  {
+			    mgWarning("found no decoder for %s",filename.c_str());
+			    m_state=msStop;	// if loop mode is on and no decoder
 			      			// for any track is found, we would
 						// otherwise get into an endless loop
 						// not stoppable with the remote.
-			      break;
-			}
-                    }
+			    break;
+			  }
+		      }
                     m_state = msEof;
-                }
+		  }
                 break;
                 case msDecode:
                 {	
@@ -643,16 +645,13 @@ mgPCMPlayer::Action (void)
                 {
                     if (nsamples[0] > 0)
                     {
-                        unsigned int outlen = scale.ScaleBlock (lpcmFrame.Data,
-                            sizeof (lpcmFrame.
-                            Data),
-                            nsamples[0],
-                            data[0],
-                            data[1],
-                            the_setup.
-                            AudioMode ?
-                            amDither :
-                        amRound);
+                        unsigned int outlen = 
+			  scale.ScaleBlock ( lpcmFrame.Data,
+					     sizeof (lpcmFrame.Data),
+					     nsamples[0], 
+					     data[0], data[1], 
+					     the_setup.AudioMode ? 
+					     amDither : amRound );
                         if (outlen)
                         {
 			  outlen += sizeof (lpcmFrame.LPCM) + LEN_CORR;
@@ -767,7 +766,7 @@ mgPCMPlayer::Action (void)
                 break;
             }
         }
-        eState curr_m_state=m_state;	// avoid helgrind warning
+        eState curr_m_state = m_state;	// avoid helgrind warning
 
         Unlock ();
 
@@ -917,17 +916,17 @@ mgPCMPlayer::Play (void)
 {
     MGLOG ("mgPCMPlayer::Play");
 
-
     if (m_playmode != pmPlay && m_current)
     {
-    	Lock ();
-        if (m_playmode == pmStopped)
+      Lock ();
+
+      if (m_playmode == pmStopped)
         {
-            m_state = msStart;
+	  m_state = msStart;
         }
-//    DevicePlay(); // TODO? Commented out in original code, too
-        SetPlayMode (pmPlay);
-    	Unlock ();
+      //    DevicePlay(); // TODO? Commented out in original code, too
+      SetPlayMode (pmPlay);
+      Unlock ();
     }
 }
 
@@ -1594,21 +1593,24 @@ mgPlayerControl::InternalHide ()
 
 eOSState mgPlayerControl::ProcessKey (eKeys key)
 {
-    if (key!=kNone)
-	    mgDebug (1,"mgPlayerControl::ProcessKey(%u)",key);
-    if (!Active ())
+  if( key != kNone )
     {
-        return osEnd;
+      mgDebug (1,"mgPlayerControl::ProcessKey(%u)",key);
+    }
+  
+  if (!Active ())
+    {
+      return osEnd;
     }
 
-    StatusMsgReplaying ();
+  StatusMsgReplaying ();
 
-    Display ();
+  Display ();
 
-    eOSState
-        state = cControl::ProcessKey (key);
-
-    if (state == osUnknown)
+  eOSState
+    state = cControl::ProcessKey (key);
+  
+  if (state == osUnknown)
     {
         switch (key)
         {
