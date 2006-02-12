@@ -835,17 +835,18 @@ eOSState mgMainMenu::ProcessKey (eKeys key)
     mgPlayerControl * c = PlayerControl ();
     if (c)
     {
-        if (!c->Playing ())
+      if (!c->Playing ())
 	{
-            	c->Shutdown ();
-		if (instant_playing && queue_playing) {
-			PlayQueue();
-		} 
-		else
-		{
-			instant_playing = false;
-			queue_playing = false;
-		}
+	  c->Shutdown();
+	  if (instant_playing && queue_playing) 
+	    {
+	      PlayQueue();
+	    } 
+	  else
+	    {
+	      instant_playing = false;
+	      queue_playing = false;
+	    }
 	}
 	else
         {
