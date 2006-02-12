@@ -20,6 +20,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fts.h>
+#include <regex.h>
 
 using namespace std;
 
@@ -145,6 +146,12 @@ bool mgImageProvider::extractImagesFromDatabase( mgItemGd *item )
      Thanks to viking (from vdrportal.de) for help with this
   */
   string file = item->getImagePath();
+
+  if( file == "" )
+    {
+      return false;
+    }
+
   bool result = false;
 
   char *dir[2];
@@ -155,13 +162,25 @@ bool mgImageProvider::extractImagesFromDatabase( mgItemGd *item )
   if( fts )
     {
       FTSENT *ftsent;
-
+      regex_t path_rex;
+      
+      if( regcomp( &path_rex, "[0-9][0-9]", REG_NOSUB ) )
+	{
+	  mgDebug( 1, "mgImageProvider::extractImagesFromDatabase: Error compiling dir regex. Not using GD images." );
+	  return false;
+	}
+      
       while( (ftsent = fts_read(fts)) != NULL )
 	{
 	  mode_t mode = ftsent->fts_statp->st_mode;
 	  if( mode & S_IFDIR && ftsent->fts_info & FTS_D )
 	    {
-	      mgDebug(1,"Importing from %s",ftsent->fts_path);
+	      // a directory -- check whether name is [0-9][0-9] (GD Dir), skip otherwise
+	      if( !regexec( &path_rex, ftsent->fts_name, 0, NULL, 0 ) )
+		{
+		  fts_set( fts, ftsent, FTS_SKIP );
+		  mgDebug(1,"Skipping directory %s",ftsent->fts_path);
+		}
 	    }
 	  if( !( mode & S_IFREG ) )
 	    {
@@ -169,10 +188,9 @@ bool mgImageProvider::extractImagesFromDatabase( mgItemGd *item )
 	    }
 	  if( ftsent->fts_info & FTS_F )
 	    {
+	      // check against GD filename also
 	      if( !strcmp( ftsent->fts_name, file.c_str() ) )
 		{
-		  cout << "Found image:" << ftsent->fts_path << endl;
-
 		  if( access(ftsent->fts_path, R_OK) )
 		    {
 		      mgDebug( 1, "Ignoring unreadable file %s",
@@ -180,13 +198,15 @@ bool mgImageProvider::extractImagesFromDatabase( mgItemGd *item )
 		      continue;
 		    }
 		  
-		  m_image_list.push_back( ftsent->fts_path );
+		  m_image_list.push_back( string( ftsent->fts_path ) );
+		  mgDebug( 1, "Found image %s", ftsent->fts_path );
 		  
 		  result = true;
 		}
 	    }
 	}
       fts_close(fts);
+      regfree( &path_rex );
     }  
   return result;
 }
@@ -317,7 +337,7 @@ void mgImageProvider::fillImageList( string dir )
 	{
 	  string fname = dir + "/" + string( files[i]->d_name );
 	  m_image_list.push_back( fname );
-	  cout << "Added " << fname << endl;
+	  // cout << "Added " << fname << endl;
 	  free( files[i] );
 	}
       free( files );
