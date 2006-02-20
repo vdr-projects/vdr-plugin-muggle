@@ -30,6 +30,7 @@ using namespace std;
 #include <stdio.h>
 #include <unistd.h>
 #include <fts.h>
+#include <errno.h>
 #include <mpegfile.h>
 #include <flacfile.h>
 
@@ -359,23 +360,55 @@ mgDb::Sync(char * const * path_argv)
 	if (fts)
 	{
 		while ( (ftsent = fts_read(fts)) != NULL)
-		{
-			if (access(ftsent->fts_path,R_OK))
-			{
-				mgDebug(1,"Ignoring unreadable file %s",
+			switch (ftsent->fts_info) {
+				case FTS_DC:
+					mgDebug(1,"Ignoring directory %s, would cycle already seen %s",
+						ftsent->fts_path,ftsent->fts_cycle->fts_path);
+					break;
+				case FTS_DNR:
+					mgDebug(1,"Ignoring unreadable directory %s: error %d",
+						ftsent->fts_path,ftsent->fts_errno);
+					break;
+				case FTS_DOT:
+					mgDebug(1,"Ignoring dot file %s:",
 						ftsent->fts_path);
-				continue;
+					break;
+				case FTS_SLNONE:
+					mgDebug(1,"Ignoring broken symbolic link %s",
+						ftsent->fts_path);
+					break;
+				case FTS_NSOK:	// should never happen because we do not do FTS_NOSTAT
+				case FTS_SL:	// should never happen because we do FTS_LOGICAL
+				case FTS_ERR:
+					mgDebug(1,"Ignoring %s: error %d",
+						ftsent->fts_path,ftsent->fts_errno);
+					break;
+				case FTS_D:
+					mgDebug(1,"Importing from %s",ftsent->fts_path);
+				case FTS_DP:
+					break;
+				case FTS_F:
+					if (!ftsent->fts_path)
+						mgDebug(1,"internal error: fts_path is 0");
+					else if (access(ftsent->fts_path,R_OK))
+						mgDebug(1,"Ignoring unreadable file %s: %s",
+							ftsent->fts_path,strerror(errno));
+					else
+					{
+						if (SyncFile(ftsent->fts_path))
+							importcount++;
+						if (importcount%1000==0)
+							showimportcount(importcount);
+					}
+					break;
+				case FTS_NS:
+					mgDebug(1,"Ignoring unstatable file %s: error %d",
+						ftsent->fts_path,ftsent->fts_errno);
+					break;
+				default:
+					mgDebug(1,"Ignoring %s: unknown fts_info value %d",
+						ftsent->fts_path,ftsent->fts_info);
 			}
-			mode_t mode = ftsent->fts_statp->st_mode;
-			if (mode&S_IFDIR && ftsent->fts_info&FTS_D)
-				mgDebug(1,"Importing from %s",ftsent->fts_path);
-			if (!(mode&S_IFREG))
-				continue;
-			if (SyncFile(ftsent->fts_path))
-				importcount++;
-			if (importcount%1000==0)
-				showimportcount(importcount);
-		}
 		fts_close(fts);
 	}
 	Commit();
