@@ -282,3 +282,4 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - Corrected labeling of setup options
 - Restored link to send cover images to graphtft 
 - Resolved a problem that prevented starting muggle when a channel with dolby digital is active
+- Improve compatibility with GD regarding cover image handling
