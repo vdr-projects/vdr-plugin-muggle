@@ -818,11 +818,15 @@ mgTree::BuildOsd ()
     AddSelectionItems (selection());
 }
 
-void
-mgMainMenu::Message1(const char *msg, const char *arg1)
+const char*
+mgMainMenu::Message1(const char *msg, ...)
 {
-    if (strlen(msg)==0) return;
-    asprintf (&m_message, tr (msg), arg1);
+    if (strlen(msg)==0) return 0;
+    va_list ap;
+    va_start(ap, msg);
+    vasprintf(&m_message, tr(msg), ap);
+    va_end(ap);
+    return m_message;
 }
 
 

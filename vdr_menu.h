@@ -175,8 +175,11 @@ class mgMainMenu:public cOsdMenu
 	// only be shown at the end of the next mgMainMenu::ProcessKey
 	// because that might do forcerefresh which overwrites the message
 	void Message (const char *msg) { m_message = strdup(msg); }
-        void Message1 (const char *msg, const char *arg1);
-        void Message1 (const char *msg, std::string arg1) { Message1(msg,arg1.c_str()); }
+        const char* Message1 (const char *msg, ...)
+		__attribute__ ((format (printf, 2, 3)));
+        const char* Message1 (const char *msg, std::string arg1)
+		__attribute_format_arg__ (2) 
+ 		{ return Message1(msg,arg1.c_str()); }
 
 	//! \brief Actions can request a new position. -1 means none wanted
 	int newposition;
