@@ -422,7 +422,7 @@ mgPCMPlayer::Action (void)
     int pc = 0, only48khz = the_setup.Only48kHz;
     cPoller poll;
 #ifdef DEBUG
-    int beat = 0;
+//     int beat = 0;
 #endif
 
 #ifdef DEBUGPES
