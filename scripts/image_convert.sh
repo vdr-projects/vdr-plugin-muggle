@@ -65,13 +65,13 @@ if [ "$FORMAT" = "ntsc" ]; then
   pnmscale $S $TMP | \
     pnmpad -black -width 704 -height 480 | \
     ppmntsc | \
-    ppmtoy4m -v 0 -n 1 -r -F 30000:1001 | \
+    ppmtoy4m -v 0 -n 1 -r -S 420mpeg2 -F 30000:1001 | \
     mpeg2enc -f 7 -T 90 -F 4 -nn -a 2 -v 0 -o "$MPG"
 else
   pnmscale $S $TMP | \
     pnmpad -black -width 704 -height 576 | \
     ppmntsc --pal | \
-    ppmtoy4m -v 0 -n 1 -r -F 25:1 | \
+    ppmtoy4m -v 0 -n 1 -r -S 420mpeg2 -F 25:1 | \
     mpeg2enc -f 7 -T 90 -F 3 -np -a 2 -v 0 -o "$MPG"
 fi
 #
