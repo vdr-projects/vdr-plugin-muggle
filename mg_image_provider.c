@@ -58,22 +58,24 @@ int picture_select( struct dirent const *entry )
     }
 }
 
-std::string mgImageProvider::getImagePath( string &source )
+string mgImageProvider::getImagePath( string &source )
 {
-  string fname;
+  string fname="";
+  source = "";
 
   // check, how many images are converted at all
   Lock();
   if( m_image_index < m_converted_images.size() )
     {
       fname = m_converted_images[ m_image_index ];
-      source = m_image_list[ m_image_index ];
-      // wrap to beginning of list when all images are displayed
-      m_image_index += 1;
-      if( m_image_index >= m_converted_images.size() )
-	{
-	  m_image_index = 0;
-	}
+    }
+  source = m_image_list[ m_image_index ];
+  
+  // wrap to beginning of list when all images are displayed
+  m_image_index += 1;
+  if( m_image_index >= m_converted_images.size() )
+    {
+      m_image_index = 0;
     }
   Unlock();
 
@@ -110,7 +112,7 @@ void mgImageProvider::deleteTemporaryImages()
       for( vector<string>::iterator iter = m_image_list.begin(); iter != m_image_list.end(); iter ++ )
 	{
 	  // remove( (*iter).c_str() );
-	  cout << "Removing " << *iter << endl;
+	  // cout << "Removing " << *iter << endl;
 	}
       m_delete_imgs_from_tag = false;
     }
@@ -119,7 +121,7 @@ void mgImageProvider::deleteTemporaryImages()
   for( vector<string>::iterator iter = m_converted_images.begin(); iter != m_converted_images.end(); iter ++ )
     {
       // remove( (*iter).c_str() );
-      cout << "Removing " << *iter << endl;
+      // cout << "Removing " << *iter << endl;
     }  
   m_converted_images.clear();
 }
@@ -146,7 +148,6 @@ bool mgImageProvider::extractImagesFromDatabase( mgItemGd *item )
      Thanks to viking (from vdrportal.de) for help with this
   */
   string file = item->getImagePath();
-
   if( file == "" )
     {
       return false;
@@ -172,37 +173,72 @@ bool mgImageProvider::extractImagesFromDatabase( mgItemGd *item )
       
       while( (ftsent = fts_read(fts)) != NULL )
 	{
-	  mode_t mode = ftsent->fts_statp->st_mode;
-	  if( mode & S_IFDIR && ftsent->fts_info & FTS_D )
+	  switch( ftsent->fts_info )
 	    {
-	      // a directory -- check whether name is [0-9][0-9] (GD Dir), skip otherwise
-	      if( !regexec( &path_rex, ftsent->fts_name, 0, NULL, 0 ) )
-		{
-		  fts_set( fts, ftsent, FTS_SKIP );
-		  mgDebug(1,"Skipping directory %s",ftsent->fts_path);
-		}
-	    }
-	  if( !( mode & S_IFREG ) )
-	    {
-	      continue;
-	    }
-	  if( ftsent->fts_info & FTS_F )
-	    {
-	      // check against GD filename also
-	      if( !strcmp( ftsent->fts_name, file.c_str() ) )
-		{
-		  if( access(ftsent->fts_path, R_OK) )
-		    {
-		      mgDebug( 1, "Ignoring unreadable file %s",
-			       ftsent->fts_path);
-		      continue;
-		    }
-		  
-		  m_image_list.push_back( string( ftsent->fts_path ) );
-		  mgDebug( 1, "Found image %s", ftsent->fts_path );
-		  
-		  result = true;
-		}
+	    case FTS_DC:
+	      {
+		mgDebug( 1, "Image import: Ignoring directory %s, would cycle already seen %s",
+			 ftsent->fts_path,ftsent->fts_cycle->fts_path );
+	      } break;
+	    case FTS_DNR:
+	      {
+		mgDebug( 1, "Ignoring unreadable directory %s: error %d",
+			ftsent->fts_path,ftsent->fts_errno);
+	      } break;
+	    case FTS_DOT:
+	      {
+		mgDebug( 1, "Ignoring dot file %s:",
+			 ftsent->fts_path );
+	      } break;
+	    case FTS_SLNONE:
+	      {
+		mgDebug(1,"Ignoring broken symbolic link %s",
+			ftsent->fts_path);
+	      } break;
+	    case FTS_NSOK:	// should never happen because we do not do FTS_NOSTAT
+	    case FTS_SL:	// should never happen because we do FTS_LOGICAL
+	    case FTS_ERR:
+	      {
+		mgDebug( 1, "Ignoring %s: error %d",
+			 ftsent->fts_path,ftsent->fts_errno );
+	      } break;
+	    case FTS_D:
+	      {
+		if( !regexec( &path_rex, ftsent->fts_name, 0, NULL, 0 ) )
+		  {
+		    fts_set( fts, ftsent, FTS_SKIP );
+		    mgDebug( 1, "Skipping directory %s", ftsent->fts_path );
+		  }
+	      } break;
+	    case FTS_DP:
+	      break;
+	    case FTS_F:
+	      {
+		if( !ftsent->fts_path )
+		  {
+		    mgDebug( 1, "internal error: fts_path is 0" );
+		  }
+		else if( access( ftsent->fts_path, R_OK ) )
+		  {
+		    mgDebug( 1, "Ignoring unreadable file %s: %s",
+			     ftsent->fts_path, strerror( errno ) );
+		  }
+		else
+		  {
+		    m_image_list.push_back( string( ftsent->fts_path ) );
+		    mgDebug( 1, "Found image %s", ftsent->fts_path );
+		  }
+	      } break;
+	    case FTS_NS:
+	      {
+	 	mgDebug( 1, "Ignoring unstatable file %s: error %d",
+			 ftsent->fts_path,ftsent->fts_errno );
+	      } break;
+	    default:
+	      {
+		mgDebug( 1, "Ignoring %s: unknown fts_info value %d",
+			 ftsent->fts_path,ftsent->fts_info );
+	      }
 	    }
 	}
       fts_close(fts);
@@ -303,10 +339,9 @@ void mgImageProvider::Action()
 	  // assemble path from relative paths
 	  string tmpFile = string( the_setup.ImageCacheDir ) + string( "/" ) + bname.substr( 0, dotpos ) + string( ".mpg" );
 
-	  // cout << "Converting " << filename << " to " << tmpFile << endl << flush;
 
 	  char *tmp;
-	  asprintf( &tmp, "image_convert.sh \"%s\" \"%s\"", filename.c_str(), tmpFile.c_str() );
+	  asprintf( &tmp, "/usr/local/bin/image_convert.sh \"%s\" \"%s\"", filename.c_str(), tmpFile.c_str() );
 	  system( (const char*) tmp );
 	  free(tmp);
 	 
@@ -337,7 +372,6 @@ void mgImageProvider::fillImageList( string dir )
 	{
 	  string fname = dir + "/" + string( files[i]->d_name );
 	  m_image_list.push_back( fname );
-	  // cout << "Added " << fname << endl;
 	  free( files[i] );
 	}
       free( files );
@@ -345,7 +379,7 @@ void mgImageProvider::fillImageList( string dir )
 }
 
 void mgImageProvider::writeImage( TagLib::ByteVector &image, int num, string &image_cache )
-{
+{ 
   char* image_data = image.data();
   int len = image.size();
   

@@ -1024,17 +1024,19 @@ void mgPCMPlayer::CheckImage()
 	  m_current_image = m_img_provider->getImagePath( source );
 	  
 	  // check for TFT display of image
-	  TransferImageTFT( source );
+	  if( !source.empty() )
+	    {
+	      TransferImageTFT( source );
+	    }
 	  
 	  // check for background display of image
-	  if( the_setup.BackgrMode == 1 )
+	  if( !m_current_image.empty() )
 	    {
-	      if( !m_current_image.empty() )
+	      if( the_setup.BackgrMode == 1 )
 		{
-		  cout << m_index << ": Showing image " << m_current_image << endl << flush;
 		  ShowImage();
-		  m_lastshow = m_index;
 		}
+	      m_lastshow = m_index;
 	    }
 	}
     }
@@ -1320,7 +1322,7 @@ mgPlayerControl::NewImagePlaylist( const char *directory )
 {
     if (player)
     {
-      cout << "Signaling new image playlist to player: " << directory << endl << flush;
+      // cout << "Signaling new image playlist to player: " << directory << endl << flush;
       player->NewImagePlaylist (directory);
     }
 }

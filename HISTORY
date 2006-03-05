@@ -283,3 +283,5 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - Restored link to send cover images to graphtft 
 - Resolved a problem that prevented starting muggle when a channel with dolby digital is active
 - Improve compatibility with GD regarding cover image handling
+- Adapt image_convert.sh to newer versions of mjpegtools
+- Rework broken integration with graphTFT plugin for image display
