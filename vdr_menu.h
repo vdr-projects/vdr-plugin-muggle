@@ -178,7 +178,6 @@ class mgMainMenu:public cOsdMenu
         const char* Message1 (const char *msg, ...)
 		__attribute__ ((format (printf, 2, 3)));
         const char* Message1 (const char *msg, std::string arg1)
-		__attribute_format_arg__ (2) 
  		{ return Message1(msg,arg1.c_str()); }
 
 	//! \brief Actions can request a new position. -1 means none wanted
