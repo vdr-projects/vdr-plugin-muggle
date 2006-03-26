@@ -21,9 +21,9 @@
 #include <getopt.h>
 #include <config.h>
 
-static const char *VERSION = "0.1.10";
-static const char *DESCRIPTION = "Media juggle plugin for VDR";
-static const char *MAINMENUENTRY = "Muggle";
+static const char VERSION[] = "0.1.10";
+static const char DESCRIPTION[] = "Media juggle plugin for VDR";
+static const char MAINMENUENTRY[] = "Muggle";
 
 const char *
 mgMuggle::Version (void)
