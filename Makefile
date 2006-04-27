@@ -61,7 +61,7 @@ endif
 
 ### The version number of VDR (taken from VDR's "config.h"):
 
-VDRVERSION = $(shell grep 'define VDRVERSION ' $(VDRDIR)/config.h | awk '{ print $$3 }' | sed -e 's/"//g')
+APIVERSION = $(shell grep 'define APIVERSION ' $(VDRDIR)/config.h | awk '{ print $$3 }' | sed -e 's/"//g')
 
 ### The name of the distribution archive:
 
@@ -154,7 +154,7 @@ mg_tables.h:	scripts/genres.txt scripts/iso_639.xml scripts/musictypes.txt scrip
 
 libvdr-$(PLUGIN).so: $(OBJS)
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(PLAYLIBS) $(SQLLIBS) -o $@
-	@cp $@ $(LIBDIR)/$@.$(VDRVERSION)
+	@cp $@ $(LIBDIR)/$@.$(APIVERSION)
 
 mugglei: mg_tools.o mugglei.o mg_db.o $(DB_OBJ) mg_listitem.o mg_item.o mg_item_gd.o mg_valmap.o mg_setup.o 
 	$(CXX) $(CXXFLAGS) $^ $(MILIBS) $(SQLLIBS) -o $@
