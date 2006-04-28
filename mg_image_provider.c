@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <fts.h>
 #include <regex.h>
+#include <errno.h>
 
 using namespace std;
 
