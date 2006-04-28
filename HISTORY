@@ -275,11 +275,11 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
   automatically create it.
 - Orders with Track as last key field: Now work correctly even if the track
   numbers are not known
-- adapt for vdr 1.3.38
+- adapt to vdr 1.3.48
 - Import: If a file is known to exist but cannot be read, do not import but
   issue warning
 - mugglei: better handling of wrong arguments
-- Corrected labeling of setup options
+- Fixed labeling of setup options
 - Restored link to send cover images to graphtft 
 - Resolved a problem that prevented starting muggle when a channel with dolby digital is active
 - Improve compatibility with GD regarding cover image handling
