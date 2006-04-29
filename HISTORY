@@ -270,7 +270,7 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - Several minor fixes (thanks to Ville Skyttä)
 - Improved and more thorough translations (thanks to Ville Skyttä)
 
-2006-x-x: Version 0.1.10-BETA
+2006-04-28: Version 0.1.10-BETA
 - SQLite: If the database directory (default $HOME/.muggle) does not exist,
   automatically create it.
 - Orders with Track as last key field: Now work correctly even if the track
