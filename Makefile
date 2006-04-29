@@ -61,7 +61,7 @@ endif
 
 ### The version number of VDR (taken from VDR's "config.h"):
 
-APIVERSION = $(shell grep 'define APIVERSION ' $(VDRDIR)/config.h | awk '{ print $$3 }' | sed -e 's/"//g')
+APIVERSION = $(shell (grep 'define APIVERSION ' $(VDRDIR)/config.h || grep 'define VDRVERSION ' $(VDRDIR)/config.h) | awk '{ print $$3 }' | sed -e 's/"//g')
 
 ### The name of the distribution archive:
 
