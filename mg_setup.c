@@ -88,15 +88,14 @@ mgSetup::NoHost() const
 bool mgSetup::ProcessArguments (int argc, char *argv[])
 {
     mgSetDebugLevel (1);
-    char b[1000];
-    sprintf(b,"mgSetup::ProcessArgs ");
+    char ArgsMessage[1000];
+    sprintf(ArgsMessage,"mgSetup::ProcessArgs ");
     for (int i=1;i<argc;i++)
     {
-	if (strlen(b)+strlen(argv[i]+2)>1000) break;;
-    	strcat(b,"  ");
-    	strcat(b,argv[i]);
+	if (strlen(ArgsMessage)+strlen(argv[i]+2)>1000) break;;
+    	strcat(ArgsMessage,"  ");
+    	strcat(ArgsMessage,argv[i]);
     }
-    mgDebug(1,b);
 
     struct option long_options[50];
     char short_options[100];
@@ -219,6 +218,7 @@ bool mgSetup::ProcessArguments (int argc, char *argv[])
 	    	return false;
 	}
     }
+    mgDebug(1,ArgsMessage);
     return true;
 }
 
