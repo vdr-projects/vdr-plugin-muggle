@@ -177,7 +177,7 @@ class mgMainMenu:public cOsdMenu
 	void Message (const char *msg) { m_message = strdup(msg); }
         const char* Message1 (const char *msg, ...)
 		__attribute__ ((format (printf, 2, 3)));
-        const char* Message1 (const char *msg, std::string arg1)
+        const char* Message1 (const char *msg, const std::string& arg1)
  		{ return Message1(msg,arg1.c_str()); }
 
 	//! \brief Actions can request a new position. -1 means none wanted
