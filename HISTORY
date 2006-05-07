@@ -288,3 +288,5 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 
 2006-xx-xx: Version 0.1.11-BETA
 - Fix Makefile for < VDR 1.3.48.
+- do not print any messages with -v0
+- Patch from Hulk: Fix endless recursion in Message1()
