@@ -153,7 +153,7 @@ mgAddCollEntry::Execute()
         if (!PlayerControl())
                collselection()->ClearCollection(target);
 
-    osd()->Message1 ("Added %s entries",itos (osd()->moveselection->AddToCollection (target)));
+    osd()->Message1 ("Added %s entries",itos (osd()->moveselection->AddToCollection (target)).c_str());
     osd()->CollectionChanged(target,true);
     return true;
 }
@@ -164,7 +164,7 @@ mgRemoveCollEntry::Execute()
 {
     string target = selection()->getCurrentValue();
     int removed = osd()->moveselection->RemoveFromCollection (target);
-    osd()->Message1 ("Removed %s entries",ltos(removed));
+    osd()->Message1 ("Removed %s entries",ltos(removed).c_str());
     osd()->CollectionChanged(target,false);
     return true;
 }
@@ -763,7 +763,7 @@ mgSetDefaultCollection::Execute ()
 {
     osd ()->default_collection = selection ()->getCurrentValue();
     osd()->Message1 ("Default collection now is '%s'",
-            osd ()->default_collection);
+            osd ()->default_collection.c_str());
     return true;
 }
 
@@ -874,7 +874,7 @@ mgAddAllToDefaultCollection::ExecuteSelection (mgSelection *s)
         if (!PlayerControl())
 	   collselection()->ClearCollection(target);
 
-    osd()->Message1 ("Added %s entries",itos (s->AddToCollection (target)));
+    osd()->Message1 ("Added %s entries",itos (s->AddToCollection (target)).c_str());
 
     if (target == osd()->play_collection)
     {
@@ -1162,7 +1162,7 @@ mgCreateCollection::Execute ()
 	}
 	else
 	{
-            osd()->Message1 ("Collection '%s' NOT created", name);
+            osd()->Message1 ("Collection '%s' NOT created", name.c_str());
 	    return false;
 	}
 }
@@ -1213,7 +1213,7 @@ mgDeleteCollection::Execute ()
 	string name = selection ()->getCurrentValue();
         if (selection ()->DeleteCollection (name))
 	{
-            osd()->Message1 ("Collection '%s' deleted", name);
+            osd()->Message1 ("Collection '%s' deleted", name.c_str());
   	    mgDebug(1,"Deleted collection %s",name.c_str());
 	    selection ()->clearCache();
 	    osd()->forcerefresh = true;
@@ -1221,7 +1221,7 @@ mgDeleteCollection::Execute ()
 	}
 	else
 	{
-            osd()->Message1 ("Collection '%s' NOT deleted", name);
+            osd()->Message1 ("Collection '%s' NOT deleted", name.c_str());
 	    return false;
 	}
 }
@@ -1246,7 +1246,7 @@ bool
 mgExportItemlist::Execute ()
 {
     string m3u_file = selection ()->exportM3U ();
-    osd()->Message1 ("written to %s", m3u_file);
+    osd()->Message1 ("written to %s", m3u_file.c_str());
     return true;
 }
 

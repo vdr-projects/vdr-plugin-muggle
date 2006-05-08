@@ -107,7 +107,7 @@ mgMainMenu::SwitchSelection()
 	}
 	else
 	{
-		Message1(tr("Order is undefined"),"");
+		Message1(tr("Order is undefined"));
 		return false;
 	}
 }
