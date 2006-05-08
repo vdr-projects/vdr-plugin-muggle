@@ -571,10 +571,9 @@ mgPCMPlayer::Action (void)
                     {
                         static unsigned int oldrate = 0;
                         if (oldrate != pcm->samplerate)
-                        {
-			  std::cout << "mgPCMPlayer::Action: new input sample rate "
-				    << pcm->samplerate << std::endl << std::flush;
-			  oldrate = pcm->samplerate;
+                        {   
+                            mgDebug ("mgPCMPlayer::Action: new input sample rate %d",pcm->samplerate);
+                  		    oldrate = pcm->samplerate;
                         }
                     }
 #endif

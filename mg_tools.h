@@ -39,12 +39,6 @@ void mgError (const char *fmt, ...);
 #define MGLOG(x) {}
 #endif
 
-#ifdef DEBUG
-#define MGLOGSTREAM __thelog.getStream()
-#else
-#define MGLOGSTREAM __thelog.getStream()
-#endif
-
 /*! \brief simplified logging class
  *  \ingroup muggle
  *
@@ -55,24 +49,14 @@ void mgError (const char *fmt, ...);
 class mgLog
 {
     public:
-        enum
-        {
-            LOG, WARNING, ERROR, FATAL
-        } mgLogLevel;
-
-        ostream & getStream ()
-        {
-            return std::cout;
-        }
-
         mgLog (string methodname):m_methodname (methodname)
         {
-            getStream () << m_methodname << " entered" << std::endl;
+            mgDebug("%s entered",m_methodname.c_str());
         };
 
         ~mgLog ()
         {
-            getStream () << m_methodname << " terminated" << std::endl;
+            mgDebug("%s terminated",m_methodname.c_str());
         }
 
     private:

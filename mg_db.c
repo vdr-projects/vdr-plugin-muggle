@@ -248,11 +248,9 @@ mgQueryImp::HandleErrors()
 		switch (m_noise) {
 			case mgQueryNormal:
     				mgError("SQL Error in %s: %d/%s",m_optsql,m_rc,m_errormessage);
-    				std::cout<<"ERROR in " << m_optsql << ":" << m_rc << "/" << m_errormessage<<std::endl;
 				break;
 			case mgQueryWarnOnly:
     				mgWarning("SQL Error in %s: %d/%s",m_optsql,m_rc,m_errormessage);
-    				std::cout<<"WARNING in " << m_optsql << ":" << m_rc << "/" << m_errormessage<<std::endl;
 				break;
 			case mgQuerySilent:
 				break;

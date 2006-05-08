@@ -12,6 +12,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <syslog.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <getopt.h>
@@ -39,6 +40,14 @@ void showmessage(int duration,const char *msg,...)
 	vfprintf(stderr,msg,ap);
 	fprintf(stderr,"\n");
 	va_end(ap);
+}
+
+void syslog_with_tid(int priority, const char *format, ...)
+{
+  va_list ap;
+  va_start(ap, format);
+  vsyslog(priority, format, ap);
+  va_end(ap);
 }
 
 void showimportcount(unsigned int importcount,bool final=false)

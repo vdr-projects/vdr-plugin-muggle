@@ -15,6 +15,8 @@
 
 #include "mg_tools.h"
 
+#include <vdr/tools.h>
+
 //! \brief buffer for messages
 #define  MAX_BUFLEN  2048
 
@@ -34,16 +36,14 @@ void
 mgDebug (int level, const char *fmt, ...)
 {
 
-    va_list ap;
     if (level <= DEBUG_LEVEL)
     {
+        va_list ap;
         va_start (ap, fmt);
-
-        vsnprintf (buffer, MAX_BUFLEN - 1, fmt, ap);
-	syslog(LOG_DEBUG,"%s\n",buffer);
-	fprintf(stderr,"%s\n",buffer);
+        vsnprintf (buffer, sizeof(buffer), fmt, ap);
+        dsyslog("%s",buffer);
+        va_end (ap);
     }
-    va_end (ap);
 }
 
 
@@ -64,9 +64,8 @@ mgWarning (const char *fmt, ...)
 
     va_list ap;
     va_start (ap, fmt);
-    vsnprintf (buffer, MAX_BUFLEN - 1, fmt, ap);
-    syslog(LOG_INFO,"Warning: %s\n",buffer);
-    fprintf(stderr,"%s\n",buffer);
+    vsnprintf (buffer, sizeof(buffer), fmt, ap);
+    isyslog("%s",buffer);
     showmessage(0,buffer);
     va_end (ap);
 }
@@ -75,15 +74,11 @@ mgWarning (const char *fmt, ...)
 void
 mgError (const char *fmt, ...)
 {
-
     va_list ap;
     va_start (ap, fmt);
-    vsnprintf (buffer, MAX_BUFLEN - 1, fmt, ap);
-
-    syslog (LOG_ERR,"Error in Muggle: %s\n", buffer);
-    fprintf(stderr,"%s\n",buffer);
+    vsnprintf (buffer, sizeof(buffer), fmt, ap);
+    esyslog("%s",buffer);
     showmessage(0,buffer);
-
     va_end (ap);
 }
 

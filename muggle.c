@@ -152,9 +152,13 @@ bool mgMuggle::Service( const char *Id, void *Data )
 	  mgPlayerControl *c = PlayerControl();
 	  if( c )
 	    {
-	      cout << "Found running muggle player to display image playlist in " << (char *) Data << endl << flush;
+          std::ostringstream os;
+	      os << "Found running muggle player to display image playlist in " << (char *) Data;
+          isyslog("%s",os.str().c_str());
+
 	      c->NewImagePlaylist( (char*) Data );
-	      cout << "New image playlist signaled." << endl << flush;
+          isyslog("New image playlist signaled.");
+
 	      result = true;
 	    }
 	  // return false otherwise (never start an extra player for this)
