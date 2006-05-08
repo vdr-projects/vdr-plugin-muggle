@@ -829,6 +829,13 @@ mgMainMenu::Message1(const char *msg, ...)
     return m_message;
 }
 
+const char*
+mgMainMenu::Message1(const char *msg, const string &arg)
+{
+    if (strlen(msg)==0) return 0;
+    asprintf(&m_message, tr(msg), arg.c_str());
+    return m_message;
+}
 
 eOSState mgMainMenu::ProcessKey (eKeys key)
 {
