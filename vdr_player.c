@@ -1474,7 +1474,7 @@ mgPlayerControl::ShowProgress ()
             {
                 total_frames = SecondsToFrames (list->getLength ());
                 current_frame += SecondsToFrames (list->getCompletedLength ());
-                asprintf (&buf, "(%d/%d) %s:%s",
+                asprintf (&buf, "(%d/%zd) %s:%s",
                     list->getItemPosition () + 1, list->items().size(),
                     player->getCurrent ()->getArtist ().c_str (),
                     player->getCurrent ()->getTitle ().c_str ());
@@ -1830,7 +1830,7 @@ mgPlayerControl::StatusMsgReplaying ()
 
         if (item->getArtist ().length () > 0)
         {
-            asprintf (&szBuf, "[%c%c] (%d/%d) %s - %s",
+            asprintf (&szBuf, "[%c%c] (%d/%zd) %s - %s",
                 cLoopMode,
                 cShuffle,
                 sel->getItemPosition () + 1,
@@ -1840,7 +1840,7 @@ mgPlayerControl::StatusMsgReplaying ()
         }
         else
         {
-            asprintf (&szBuf, "[%c%c] (%d/%d) %s",
+            asprintf (&szBuf, "[%c%c] (%d/%zd) %s",
                 cLoopMode,
                 cShuffle,
                 sel->getItemPosition () + 1,
