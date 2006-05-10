@@ -1838,7 +1838,7 @@ mgPlayerControl::StatusMsgReplaying ()
                 item->getArtist ().c_str (),
                 item->getTitle ().c_str ());
         }
-R        else
+        else
         {
             asprintf (&szBuf, "[%c%c] (%d/%d) %s",
                 cLoopMode,
