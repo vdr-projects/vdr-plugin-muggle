@@ -7,9 +7,9 @@
 #ifndef ___NETWORK_H
 #define ___NETWORK_H
 
-#include <thread.h>
-#include <ringbuffer.h>
-#include <config.h>
+#include <vdr/thread.h>
+#include <vdr/ringbuffer.h>
+#include <vdr/config.h>
 
 class cRingBufferLinear;
 

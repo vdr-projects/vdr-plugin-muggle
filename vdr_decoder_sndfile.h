@@ -34,7 +34,7 @@
 #include <mad.h>
 #include <sndfile.h>
 
-#include <thread.h>
+#include <vdr/thread.h>
 
 #include "vdr_decoder.h"
 

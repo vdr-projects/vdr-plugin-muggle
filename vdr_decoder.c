@@ -23,8 +23,8 @@
 
 #include "mg_selection.h"
 
-#include <videodir.h>
-#include <interface.h>
+#include <vdr/videodir.h>
+#include <vdr/interface.h>
 
 
 #include "vdr_decoder.h"

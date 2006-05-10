@@ -29,14 +29,14 @@
 #include <mad.h>
 
 #include <linux/dvb/video.h>
-#include <player.h>
-#include <device.h>
-#include <thread.h>
-#include <ringbuffer.h>
-#include <tools.h>
-#include <recording.h>
-#include <status.h>
-#include <plugin.h>
+#include <vdr/player.h>
+#include <vdr/device.h>
+#include <vdr/thread.h>
+#include <vdr/ringbuffer.h>
+#include <vdr/tools.h>
+#include <vdr/recording.h>
+#include <vdr/status.h>
+#include <vdr/plugin.h>
 
 #include "vdr_player.h"
 #include "vdr_decoder.h"

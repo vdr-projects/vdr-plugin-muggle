@@ -16,14 +16,14 @@
 #include <string>
 #include <vector>
 
-#include <menuitems.h>
-#include <tools.h>
-#include <config.h>
-#include <plugin.h>
+#include <vdr/menuitems.h>
+#include <vdr/tools.h>
+#include <vdr/config.h>
+#include <vdr/plugin.h>
 
 #if VDRVERSNUM >= 10307
-#include <interface.h>
-#include <skins.h>
+#include <vdr/interface.h>
+#include <vdr/skins.h>
 #endif
 
 #include "mg_setup.h"

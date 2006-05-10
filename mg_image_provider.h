@@ -5,7 +5,7 @@
 
 class mgItemGd;
 
-#include <thread.h>
+#include <vdr/thread.h>
 
 #include <string>
 #include <vector>

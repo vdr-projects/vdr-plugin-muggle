@@ -17,9 +17,9 @@
 // #include <list>
 #include <vector>
 
-#include <osd.h>
-#include <plugin.h>
-#include <status.h>
+#include <vdr/osd.h>
+#include <vdr/plugin.h>
+#include <vdr/status.h>
 #include "vdr_actions.h"
 
 #include "vdr_player.h"

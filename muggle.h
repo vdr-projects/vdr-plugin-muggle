@@ -35,7 +35,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <pthread.h>
-#include <plugin.h>
+#include <vdr/plugin.h>
 
 class mgMainMenu;
 

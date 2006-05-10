@@ -22,7 +22,7 @@
 #include <sys/statfs.h>
 #include <iostream>
 
-#include <interface.h>
+#include <vdr/interface.h>
 
 // #include "setup-mp3.h"
 #include "vdr_stream.h"

@@ -17,7 +17,7 @@
 #ifndef ___VDR_PLAYER_H
 #define ___VDR_PLAYER_H
 
-#include <player.h>
+#include <vdr/player.h>
 #include "mg_selection.h"
 #if VDRVERSNUM >= 10307
 class cOsd;

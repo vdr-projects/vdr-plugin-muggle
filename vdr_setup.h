@@ -21,7 +21,7 @@
 
 #include "mg_setup.h"
 
-#include <menuitems.h>
+#include <vdr/menuitems.h>
 
 #define MAX_PATH 256
 

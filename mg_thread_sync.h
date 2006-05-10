@@ -12,7 +12,7 @@
 #ifndef _MG_THREADSYNC_H
 #define _MG_THREADSYNC_H
 
-#include <thread.h>
+#include <vdr/thread.h>
 
 class mgThreadSync : public cThread
 {

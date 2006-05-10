@@ -35,7 +35,7 @@
 #include "vdr_decoder_sndfile.h"
 #include "i18n.h"
 
-#include <tools.h>
+#include <vdr/tools.h>
 
 #ifndef SNDFILE_1
 #error You must use libsndfile version 1.x.x

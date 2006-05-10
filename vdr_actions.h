@@ -15,8 +15,8 @@
 
 #include <string>
 
-#include <osd.h>
-#include <plugin.h>
+#include <vdr/osd.h>
+#include <vdr/plugin.h>
 
 #include "mg_selection.h"
 

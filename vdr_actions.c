@@ -18,15 +18,15 @@
 #include <vector>
 #include <assert.h>
 
-#include <menuitems.h>
-#include <tools.h>
-#include <plugin.h>
+#include <vdr/menuitems.h>
+#include <vdr/tools.h>
+#include <vdr/plugin.h>
 
 #include "mg_setup.h"
 #include "vdr_actions.h"
 #include "vdr_menu.h"
 #include "i18n.h"
-#include <interface.h>
+#include <vdr/interface.h>
 
 #define DEBUG
 #include "mg_tools.h"

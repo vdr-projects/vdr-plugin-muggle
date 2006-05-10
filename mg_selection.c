@@ -21,8 +21,8 @@
 #include "mg_thread_sync.h"
 
 #if VDRVERSNUM >= 10307
-#include <interface.h>
-#include <skins.h>
+#include <vdr/interface.h>
+#include <vdr/skins.h>
 #endif
 
 

@@ -17,9 +17,9 @@
 #include "mg_tools.h"
 
 #include "i18n.h"
-#include <tools.h>
-#include <getopt.h>
-#include <config.h>
+#include <vdr/tools.h>
+#include <vdr/getopt.h>
+#include <vdr/config.h>
 
 static const char VERSION[] = "0.1.11";
 static const char DESCRIPTION[] = "Media juggle plugin for VDR";
