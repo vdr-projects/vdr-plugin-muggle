@@ -1838,7 +1838,7 @@ mgPlayerControl::StatusMsgReplaying ()
                 item->getArtist ().c_str (),
                 item->getTitle ().c_str ());
         }
-        else
+R        else
         {
             asprintf (&szBuf, "[%c%c] (%d/%d) %s",
                 cLoopMode,
@@ -1865,7 +1865,7 @@ mgPlayerControl::StatusMsgReplaying ()
             }
             m_szLastShowStatusMsg = szBuf;
 #if VDRVERSNUM >= 10338
-            cStatus::MsgReplaying (this, m_szLastShowStatusMsg, 0, false);
+            cStatus::MsgReplaying (this, m_szLastShowStatusMsg, 0, true);
 #else
             cStatus::MsgReplaying (this, m_szLastShowStatusMsg);
 #endif
