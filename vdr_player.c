@@ -1146,7 +1146,6 @@ void mgPCMPlayer::TransferImageTFT( string cover )
   if( graphtft ) 
     {
       graphtft->SetupParse( "CoverImage", cover.c_str() );
-      cout << "Image sent: " << cover.c_str() << endl;
     } 
 }
 
