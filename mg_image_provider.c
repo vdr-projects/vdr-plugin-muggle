@@ -61,6 +61,8 @@ int picture_select( struct dirent const *entry )
 
 string mgImageProvider::getImagePath( string &source )
 {
+  // returns converted image name, writes source image name into source argument reference
+
   string fname="";
   source = "";
 
@@ -70,6 +72,8 @@ string mgImageProvider::getImagePath( string &source )
     {
       fname = m_converted_images[ m_image_index ];
     }
+
+  // here we could mangle the original name to add an extension such as -s200
   source = m_image_list[ m_image_index ];
   
   // wrap to beginning of list when all images are displayed
@@ -154,6 +158,12 @@ bool mgImageProvider::extractImagesFromDatabase( mgItemGd *item )
       return false;
     }
 
+  // cut -00.jpg part from file
+  int pos = file.find('-');
+  string file_rex_s = file.substr( 0, pos+1 );
+  file_rex_s += "[0-9]*.jpg";
+  // now file_rex contains a regular expression we can test for to obtain valid images
+  
   bool result = false;
 
   char *dir[2];
@@ -164,11 +174,17 @@ bool mgImageProvider::extractImagesFromDatabase( mgItemGd *item )
   if( fts )
     {
       FTSENT *ftsent;
-      regex_t path_rex;
+      regex_t path_rex, file_rex;
       
       if( regcomp( &path_rex, "[0-9][0-9]", REG_NOSUB ) )
 	{
 	  mgDebug( 1, "mgImageProvider::extractImagesFromDatabase: Error compiling dir regex. Not using GD images." );
+	  return false;
+	}
+
+      if( regcomp( &file_rex, file_rex_s.c_str(), REG_NOSUB ) )
+	{
+	  mgDebug( 1, "mgImageProvider::extractImagesFromDatabase: Error compiling file regex. Not using GD images." );
 	  return false;
 	}
       
@@ -226,8 +242,12 @@ bool mgImageProvider::extractImagesFromDatabase( mgItemGd *item )
 		  }
 		else
 		  {
-		    m_image_list.push_back( string( ftsent->fts_path ) );
-		    mgDebug( 1, "Found image %s", ftsent->fts_path );
+		    if( regexec( &file_rex, ftsent->fts_name, 0, NULL, 0 ) )
+		      { // an image matching the GD database entry
+			string img = string( ftsent->fts_path );		    
+			m_image_list.push_back( img );
+			mgDebug( 1, "Found image %s", ftsent->fts_path );
+		      }
 		  }
 	      } break;
 	    case FTS_NS:
