@@ -154,13 +154,13 @@ mg_tables.h:	scripts/genres.txt scripts/iso_639.xml scripts/musictypes.txt scrip
 
 libvdr-$(PLUGIN).so: $(OBJS)
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(PLAYLIBS) $(SQLLIBS) -o $@
-	@cp $@ $(LIBDIR)/$@.$(APIVERSION)
+	@cp --remove-destination $@ $(LIBDIR)/$@.$(APIVERSION)
 
 mugglei: mg_tools.o mugglei.o mg_db.o $(DB_OBJ) mg_listitem.o mg_item.o mg_item_gd.o mg_valmap.o mg_setup.o 
 	$(CXX) $(CXXFLAGS) $^ $(MILIBS) $(SQLLIBS) -o $@
 
 install:
-	@cp ../../lib/libvdr-muggle*.so.* /usr/lib/vdr/
+	@cp --remove-destination ../../lib/libvdr-muggle*.so.* /usr/lib/vdr/
 	@cp mugglei /usr/local/bin/
 #	@install -m 755 mugglei /usr/local/bin/
 
