@@ -1063,7 +1063,7 @@ void mgPCMPlayer::ShowImage( )
 	      
 	      if( the_setup.UseDeviceStillPicture )
 		{
-		  usleep(80000);
+                  cCondWait::SleepMs(80);
 		  DeviceStillPicture( buffer, sp.size );
 		}
 	      else
@@ -1078,14 +1078,14 @@ void mgPCMPlayer::ShowImage( )
 	}
       else
 	{
-	  esyslog ("mp3[%d]: cannot allocate memory (%d bytes) for still image",
+	  esyslog ("muggle[%d]: cannot allocate memory (%d bytes) for still image",
 		   getpid(), (int) st.st_size);
 	}
       close (fd);
     }
   else
     {
-      esyslog ("mp3[%d]: cannot open image file '%s'",
+      esyslog ("muggle[%d]: cannot open image file '%s'",
 	       getpid(), m_current_image.c_str() );
     }
 }
