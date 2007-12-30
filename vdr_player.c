@@ -1063,7 +1063,7 @@ void mgPCMPlayer::ShowImage( )
 	      
 	      if( the_setup.UseDeviceStillPicture )
 		{
-                  cCondWait::SleepMs(80);
+		  cCondWait::SleepMs(80);
 		  DeviceStillPicture( buffer, sp.size );
 		}
 	      else
