@@ -18,6 +18,11 @@
 
 #include "vdr_decoder_flac.h"
 
+#if !defined FLACPP_API_VERSION_CURRENT || FLACPP_API_VERSION_CURRENT < 6
+#define LEGACY_FLAC
+#else
+#undef LEGACY_FLAC
+#endif
 
 #include <mad.h>
 
@@ -66,7 +71,6 @@ bool mgFlacDecoder::initialize()
   
   //  set_metadata_ignore_all();
   set_metadata_respond( FLAC__METADATA_TYPE_STREAMINFO );
-  set_filename( m_filename.c_str() );
 
   m_first = true;
   m_reservoir_count = 0;
@@ -81,7 +85,13 @@ bool mgFlacDecoder::initialize()
   m_reservoir[0] = new FLAC__int32[MAX_RES_SIZE];
   m_reservoir[1] = new FLAC__int32[MAX_RES_SIZE];
 
-  /*FLAC::Decoder::File::State d =*/ init(); // TODO: check this
+  // TODO: check init() return value
+#ifdef LEGACY_FLAC
+  set_filename( m_filename.c_str() );
+  /*FLAC::Decoder::File::State d =*/ init();
+#else
+  /*FLAC__StreamDecoderInitStatus d =*/ init( m_filename.c_str() );
+#endif
 
   process_until_end_of_metadata(); // basically just skip metadata
 
@@ -189,7 +199,11 @@ struct mgDecode *mgFlacDecoder::decode()
 	 
 	 // decode a single sample into reservoir_buffer (done by the write callback)
 	 process_single();
+#ifdef LEGACY_FLAC
 	 if (get_stream_decoder_state()==FLAC__STREAM_DECODER_END_OF_STREAM)
+#else
+	 if (get_state()==FLAC__STREAM_DECODER_END_OF_STREAM)
+#endif
 	 {
       		m_decode_status = dsEof;
 		finished = true;
