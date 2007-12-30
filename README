@@ -68,7 +68,7 @@ security issues.
 Support for using a libsndfile decoder requires libsndfile1-dev as a
 debian package or a corresponding library installation.
 
-Since relase 0.1.8 Muggle is able to display cover pictures. The
+Since release 0.1.8 Muggle is able to display cover pictures. The
 required packages are
  - mjpegtools (Debian package mjpegtools)
  - netpbm (Debian package netpbm)
@@ -272,7 +272,7 @@ screen. This is a known "behavior".
 Currently, the database entry (album.coverimg) is not taken into account.
 
 During installation, make sure that the script called image_convert.sh
-(from the scripts directory) is somewhere on your path. Also, make
+(from the scripts directory) is somewhere in your PATH. Also, make
 sure to use the -c flag if you use a runvdr (or similar) script.
 
 An interesting feature can be achieved with recent VDR versions (>=
@@ -312,7 +312,7 @@ and are displayed in the *music browser*. The current selection in the
 *music browser* contains all tracks defined by the line the cursor is
 on. So if you place the cursor on the line "Pop", all tracks with
 Genre Pop are selected. If you then enter Pop and go to the line
-"Beatles", you narrow your selection to pop songs from the beatles.
+"Beatles", you narrow your selection to pop songs from The Beatles.
 
 A collection is a special selection. Collections can be defined by the
 user, and he can add or remove any selection to / from a collection. A
