@@ -166,7 +166,7 @@ libvdr-$(PLUGIN).so: $(OBJS)
 mugglei: mg_tools.o mugglei.o mg_db.o $(DB_OBJ) mg_listitem.o mg_item.o mg_item_gd.o mg_valmap.o mg_setup.o 
 	$(CXX) $(CXXFLAGS) $^ $(MILIBS) $(SQLLIBS) -o $@
 
-install:
+install: all
 	@cp --remove-destination $(LIBDIR)/libvdr-muggle*.so.* \
 		$(DESTDIR)/usr/lib/vdr/
 	@cp mugglei $(DESTDIR)$(BINDIR)/
