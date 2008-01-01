@@ -181,7 +181,7 @@ dist: distclean mg_tables.h
 	@echo Distribution package created as $(PACKAGE).tgz
 
 clean:
-	@-rm -f $(OBJS) $(BINOBJS) $(DEPFILE) *.so *.tgz core* *~ mugglei.o mugglei
+	@-rm -f $(OBJS) $(BINOBJS) $(DEPFILE) *.so *.tgz core* *~ mugglei.o mugglei mg_db_gd_*.o
 
 distclean: clean
 	@-rm -f mg_tables.h
