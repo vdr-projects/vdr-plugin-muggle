@@ -89,18 +89,18 @@ PLAYLIBS = -lmad $(shell taglib-config --libs)
 MILIBS =  $(shell taglib-config --libs)
 
 ifdef HAVE_SQLITE
-INCLUDES += $(shell pkg-config --cflags sqlite3)
-SQLLIBS += $(shell pkg-config --libs sqlite3)
 DB_OBJ = mg_db_gd_sqlite.o
+DB_CFLAGS = $(shell pkg-config --cflags sqlite3)
+SQLLIBS = $(shell pkg-config --libs sqlite3)
 DEFINES += -DHAVE_SQLITE
 endif
 
 ifdef HAVE_MYSQL
-INCLUDES += $(shell mysql_config --cflags) 
 DB_OBJ = mg_db_gd_mysql.o
+DB_CFLAGS = $(shell mysql_config --cflags)
 DEFINES += -DHAVE_MYSQL
 ifdef HAVE_ONLY_SERVER
-SQLLIBS =  $(shell mysql_config --libs)
+SQLLIBS = $(shell mysql_config --libs)
 DEFINES += -DHAVE_ONLY_SERVER
 else
 SQLLIBS = $(shell mysql_config --libmysqld-libs) 
@@ -108,9 +108,9 @@ endif
 endif
 
 ifdef HAVE_PG
-INCLUDES += -I$(shell pg_config --includedir) 
-SQLLIBS =  -L$(shell pg_config --libdir) -lpq
 DB_OBJ = mg_db_gd_pg.o
+DB_CFLAGS = -I$(shell pg_config --includedir) 
+SQLLIBS = -L$(shell pg_config --libdir) -lpq
 DEFINES += -DHAVE_PG
 endif
 
@@ -152,6 +152,8 @@ $(DEPFILE): Makefile
 
 %.o: %.c
 	$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDES) -c $<
+
+$(DB_OBJ): CXXFLAGS += $(DB_CFLAGS)
 
 mg_tables.h:	scripts/genres.txt scripts/iso_639.xml scripts/musictypes.txt scripts/sources.txt
 	scripts/gentables > $@
