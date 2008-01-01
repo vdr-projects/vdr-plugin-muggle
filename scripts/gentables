@@ -1,3 +1,4 @@
+#!/bin/sh
 
 (
 	echo "
@@ -5,7 +6,7 @@
 
 genres_t genres[] = {"
 
-cat scripts/genres.txt | while read gdid id3 name
+cat `dirname $0`/genres.txt | while read gdid id3 name
 do
 	test "$id3" = N && id3=-1
 	test "$gdid" = NULL && break
@@ -16,7 +17,7 @@ echo '};
 
 echo "lang_t languages[] = {"
 
-scripts/iso639tab.py scripts/iso_639.xml |
+`dirname $0`/iso639tab.py `dirname $0`/iso_639.xml |
 	grep -v '^#' |
 	grep -v '^$' |
 	while read iso1 iso2 iso3 name
@@ -28,7 +29,7 @@ echo '};
 
 echo "musictypes_t musictypes[] = {"
 
-cat scripts/musictypes.txt | while read mtype
+cat `dirname $0`/musictypes.txt | while read mtype
 do
 	echo '	{ "'$mtype'"},'
 done
@@ -37,11 +38,9 @@ echo '};
 
 echo "sources_t sources[] = {"
 
-cat scripts/sources.txt | while read stype
+cat `dirname $0`/sources.txt | while read stype
 do
 	echo '	{ "'$stype'"},'
 done
 echo '};'
-) >mg_tables.h
-
-
+)

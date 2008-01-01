@@ -150,7 +150,7 @@ $(DEPFILE): Makefile
 	$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDES) -c $<
 
 mg_tables.h:	scripts/genres.txt scripts/iso_639.xml scripts/musictypes.txt scripts/sources.txt
-	scripts/gentables
+	scripts/gentables > $@
 
 libvdr-$(PLUGIN).so: $(OBJS)
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(PLAYLIBS) $(SQLLIBS) -o $@
