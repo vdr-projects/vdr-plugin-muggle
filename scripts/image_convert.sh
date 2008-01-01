@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# requires: ...topnm, pnmscale, pnmcomp, ppmntsc, ppmtoy4m, mpeg2enc
+# requires: ...topnm, pnmscale, pnmcomp, ppmntsc, ppmtoy4m, mpeg2enc, mktemp
 #
 
 # video format. pal or ntsc
@@ -15,7 +15,7 @@ else
   TH=512
 fi
 
-TMP=/tmp/image_convert.$$.pnm
+TMP=$(mktemp ${TMPDIR:-/tmp}/image_convert.pnm.XXXXXX) || exit 2
 IMG=$1
 MPG=$2
 
@@ -23,6 +23,13 @@ DIR=`dirname "$MPG"`
 if [ ! -d "$DIR" ]; then
   mkdir -p "$DIR"
 fi
+
+trap cleanup EXIT
+cleanup()
+{
+  [ -z "$TMP" ] || rm -f "$TMP"
+}
+
 #
 # get the file type and set the according converter to PNM
 #
@@ -74,7 +81,3 @@ else
     ppmtoy4m -v 0 -n 1 -r -S 420mpeg2 -F 25:1 | \
     mpeg2enc -f 7 -T 90 -F 3 -np -a 2 -v 0 -o "$MPG"
 fi
-#
-# cleanup
-#
-rm $TMP
