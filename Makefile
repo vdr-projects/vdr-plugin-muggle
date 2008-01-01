@@ -172,7 +172,7 @@ install: all
 	@cp mugglei $(DESTDIR)$(BINDIR)/
 	@cp scripts/muggle-image-convert $(DESTDIR)$(BINDIR)/
 
-dist: clean mg_tables.h
+dist: distclean mg_tables.h
 	@-rm -rf $(TMPDIR)/$(ARCHIVE)
 	@mkdir $(TMPDIR)/$(ARCHIVE)
 	@cp -a * $(TMPDIR)/$(ARCHIVE)
@@ -182,3 +182,6 @@ dist: clean mg_tables.h
 
 clean:
 	@-rm -f $(OBJS) $(BINOBJS) $(DEPFILE) *.so *.tgz core* *~ mugglei.o mugglei
+
+distclean: clean
+	@-rm -f mg_tables.h
