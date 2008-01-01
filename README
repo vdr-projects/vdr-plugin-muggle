@@ -271,7 +271,7 @@ screen. This is a known "behavior".
 
 Currently, the database entry (album.coverimg) is not taken into account.
 
-During installation, make sure that the script called image_convert.sh
+During installation, make sure that the script called muggle-image-convert
 (from the scripts directory) is somewhere in your PATH. Also, make
 sure to use the -c flag if you use a runvdr (or similar) script.
 

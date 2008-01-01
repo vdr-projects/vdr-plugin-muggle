@@ -295,3 +295,4 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 200x-xx-xx: Version x.x.x
 - Fix compilation and some compiler warnings.
 - Fix build with FLAC++ >= 1.1.3.
+- Rename image_convert.sh to muggle-image-convert, make it a bit more robust.

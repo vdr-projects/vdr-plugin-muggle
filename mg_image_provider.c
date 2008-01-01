@@ -362,7 +362,7 @@ void mgImageProvider::Action()
 
 
 	  char *tmp;
-	  asprintf( &tmp, "image_convert.sh \"%s\" \"%s\"", filename.c_str(), tmpFile.c_str() );
+	  asprintf( &tmp, "muggle-image-convert \"%s\" \"%s\"", filename.c_str(), tmpFile.c_str() );
 	  system( (const char*) tmp );
 	  free(tmp);
 	 
