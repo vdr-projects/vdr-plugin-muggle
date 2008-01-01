@@ -20,9 +20,9 @@ TMP=$(mktemp ${TMPDIR:-/tmp}/image_convert.pnm.XXXXXX) || exit 2
 IMG=$1
 MPG=$2
 
-DIR=`dirname "$MPG"`
+DIR=$(dirname "$MPG")
 if [ ! -d "$DIR" ]; then
-  mkdir -p "$DIR"
+  mkdir -p "$DIR" || exit 2
 fi
 
 trap cleanup EXIT
@@ -34,7 +34,7 @@ cleanup()
 #
 # get the file type and set the according converter to PNM
 #
-FILE_TYPE=`file -i -L -b "$IMG" 2>/dev/null | cut -f2 -d/`
+FILE_TYPE=$(file -i -L -b "$IMG" 2>/dev/null | cut -f2 -d/)
 case "$FILE_TYPE" in
   jpg | jpeg)
   TO_PNM=jpegtopnm
@@ -59,24 +59,26 @@ case "$FILE_TYPE" in
   exit 1
   ;;
 esac
+
 #
 # extract the image size & compute scale value
 #
 LANG=C # get the decimal point right
-$TO_PNM "$IMG" >$TMP 2>/dev/null
-S=`pnmfile $TMP | awk '{ printf "%d %d ",$4,$6 }'`
-S=`echo $S $TW $TH | awk '{ sw=$3/$1; sh=$4/$2; s=(sw<sh)?sw:sh; printf "%.4f\n",(s>1)?1.0:s; }'`
+$TO_PNM "$IMG" >"$TMP" 2>/dev/null
+S=$(pnmfile "$TMP" | awk '{ printf "%d %d ",$4,$6 }')
+S=$(echo $S $TW $TH | awk '{ sw=$3/$1; sh=$4/$2; s=(sw<sh)?sw:sh; printf "%.4f\n",(s>1)?1.0:s; }')
+
 #
 # now run the conversion
 #
 if [ "$FORMAT" = "ntsc" ]; then
-  pnmscale $S $TMP | \
+  pnmscale $S "$TMP" | \
     pnmpad -black -width 704 -height 480 | \
     ppmntsc | \
     ppmtoy4m -v 0 -n 1 -r -S 420mpeg2 -F 30000:1001 | \
     mpeg2enc -f 7 -T 90 -F 4 -nn -a 2 -v 0 -o "$MPG"
 else
-  pnmscale $S $TMP | \
+  pnmscale $S "$TMP" | \
     pnmpad -black -width 704 -height 576 | \
     ppmntsc --pal | \
     ppmtoy4m -v 0 -n 1 -r -S 420mpeg2 -F 25:1 | \
