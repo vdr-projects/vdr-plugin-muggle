@@ -1,16 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!-- iso-639.tab							-->
 <!--									-->
-<!-- Copyright (C) 2004 Alastair McKinstry   <mckinstry@computer.org>   -->
+<!-- Copyright (C) 2005 Alastair McKinstry   <mckinstry@computer.org>   -->
 <!-- Released under the GNU License; see file COPYING for details	-->
 <!--									-->
-<!-- Last update: 2004-10-27						-->
+<!-- Last update: 2007-08-08    					-->
 <!--									-->
 <!-- This file gives a list of all languages in the ISO-639		-->
 <!-- standard, and is used to provide translations (via gettext)	-->
 <!--									-->
-<!-- Status: ISO 639-2:1998 + additions and changes until 2004-03-05	-->
-<!-- Source: http://lcweb.loc.gov/standards/iso639-2/englangn.html	-->
+<!-- Status: ISO 639-2:1998 + additions and changes until 2007-08-08	-->
+<!-- Source: http://www.loc.gov/standards/iso639-2/langcodes.html	-->
+<!-- change: http://www.loc.gov/standards/iso639-2/php/code_changes.php -->
+
+<!DOCTYPE iso_639_entries [
+	<!ELEMENT iso_639_entries (iso_639_entry+)>
+	<!ELEMENT iso_639_entry EMPTY>
+	<!ATTLIST iso_639_entry
+		iso_639_2B_code		CDATA	#REQUIRED
+		iso_639_2T_code		CDATA	#REQUIRED
+		iso_639_1_code		CDATA	#IMPLIED
+		name			CDATA	#REQUIRED
+	>
+]>
 
 <iso_639_entries>
 	<iso_639_entry
@@ -53,6 +65,10 @@
 		iso_639_1_code="af"
 		name="Afrikaans" />
 	<iso_639_entry
+		iso_639_2B_code="ain"
+		iso_639_2T_code="ain"
+		name="Ainu" />
+	<iso_639_entry
 		iso_639_2B_code="aka"
 		iso_639_2T_code="aka"
 		iso_639_1_code="ak"
@@ -66,10 +82,18 @@
 		iso_639_2T_code="sqi"
 		iso_639_1_code="sq"
 		name="Albanian" />
-	<iso_639_entr
+	<iso_639_entry
+		iso_639_2B_code="ale"
+		iso_639_2T_code="ale"
+		name="Aleut" />
+	<iso_639_entry
 		iso_639_2B_code="alg"
 		iso_639_2T_code="alg"
 		name="Algonquian languages" />
+	<iso_639_entry
+		iso_639_2B_code="alt"
+		iso_639_2T_code="alt"
+		name="Southern Altai" />
 	<iso_639_entry
 		iso_639_2B_code="amh"
 		iso_639_2T_code="amh"
@@ -78,7 +102,11 @@
 	<iso_639_entry
 		iso_639_2B_code="ang"
 		iso_639_2T_code="ang"
-		name="English, Old (ca.450-1100)" />
+		name="English, Old (ca. 450-1100)" />
+	<iso_639_entry
+		iso_639_2B_code="anp"
+		iso_639_2T_code="anp"
+		name="Angika" />
 	<iso_639_entry
 		iso_639_2B_code="apa"
 		iso_639_2T_code="apa"
@@ -91,7 +119,7 @@
 	<iso_639_entry
 		iso_639_2B_code="arc"
 		iso_639_2T_code="arc"
-		name="Aramaic" />
+		name="Official Aramaic (700-300 BCE); Imperial Aramaic (700-300 BCE)" />
 	<iso_639_entry
 		iso_639_2B_code="arg"
 		iso_639_2T_code="arg"
@@ -105,7 +133,7 @@
 	<iso_639_entry
 		iso_639_2B_code="arn"
 		iso_639_2T_code="arn"
-		name="Araucanian" />
+		name="Mapudungun; Mapuche" />
 	<iso_639_entry
 		iso_639_2B_code="arp"
 		iso_639_2T_code="arp"
@@ -126,11 +154,11 @@
 	<iso_639_entry
 		iso_639_2B_code="ast"
 		iso_639_2T_code="ast"
-		name="Asturian; Bable" />
+		name="Asturian; Bable; Leonese; Asturleonese" />
 	<iso_639_entry
 		iso_639_2B_code="ath"
 		iso_639_2T_code="ath"
-		name="Athapascan language" />
+		name="Athapascan languages" />
 	<iso_639_entry
 		iso_639_2B_code="aus"
 		iso_639_2T_code="aus"
@@ -162,7 +190,7 @@
 	<iso_639_entry
 		iso_639_2B_code="bad"
 		iso_639_2T_code="bad"
-		name="Banda" />
+		name="Banda languages" />
 	<iso_639_entry
 		iso_639_2B_code="bai"
 		iso_639_2T_code="bai"
@@ -201,7 +229,7 @@
 	<iso_639_entry
 		iso_639_2B_code="bej"
 		iso_639_2T_code="bej"
-		name="Beja" />
+		name="Beja; Bedawiyet" />
 	<iso_639_entry
 		iso_639_2B_code="bel"
 		iso_639_2T_code="bel"
@@ -236,7 +264,7 @@
 	<iso_639_entry
 		iso_639_2B_code="bin"
 		iso_639_2T_code="bin"
-		name="Bini" />
+		name="Bini; Edo" />
 	<iso_639_entry
 		iso_639_2B_code="bis"
 		iso_639_2T_code="bis"
@@ -267,7 +295,7 @@
 	<iso_639_entry
 		iso_639_2B_code="btk"
 		iso_639_2T_code="btk"
-		name="Batak (Indonesia)" />
+		name="Batak languages" />
 	<iso_639_entry
 		iso_639_2B_code="bua"
 		iso_639_2T_code="bua"
@@ -301,12 +329,12 @@
 	<iso_639_entry
 		iso_639_2B_code="car"
 		iso_639_2T_code="car"
-		name="Carib" />
+		name="Galibi Carib" />
 	<iso_639_entry
 		iso_639_2B_code="cat"
 		iso_639_2T_code="cat"
 		iso_639_1_code="ca"
-		name="Catalan" />
+		name="Catalan; Valencian" />
 	<iso_639_entry
 		iso_639_2B_code="cau"
 		iso_639_2T_code="cau"
@@ -345,7 +373,7 @@
 	<iso_639_entry
 		iso_639_2B_code="chk"
 		iso_639_2T_code="chk"
-		name="Chukese" />
+		name="Chuukese" />
 	<iso_639_entry
 		iso_639_2B_code="chm"
 		iso_639_2T_code="chm"
@@ -361,7 +389,7 @@
 	<iso_639_entry
 		iso_639_2B_code="chp"
 		iso_639_2T_code="chp"
-		name="Chipewyan" />
+		name="Chipewyan; Dene Suline" />
 	<iso_639_entry
 		iso_639_2B_code="chr"
 		iso_639_2T_code="chr"
@@ -369,7 +397,8 @@
 	<iso_639_entry
 		iso_639_2B_code="chu"
 		iso_639_2T_code="chu"
-		name="Church Slavic" />
+		iso_639_1_code="cu"
+		name="Church Slavic; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church Slavonic" />
 	<iso_639_entry
 		iso_639_2B_code="chv"
 		iso_639_2T_code="chv"
@@ -400,15 +429,15 @@
 	<iso_639_entry
 		iso_639_2B_code="cpe"
 		iso_639_2T_code="cpe"
-		name="English-based (Other)" />
+		name="Creoles and pidgins, English based (Other)" />
 	<iso_639_entry
 		iso_639_2B_code="cpf"
 		iso_639_2T_code="cpf"
-		name="French-based (Other)" />
+		name="Creoles and pidgins, French-based (Other)" />
 	<iso_639_entry
 		iso_639_2B_code="cpp"
 		iso_639_2T_code="cpp"
-		name="Portuguese-based (Other)" />
+		name="Creoles and pidgins, Portuguese-based (Other)" />
 	<iso_639_entry
 		iso_639_2B_code="cre"
 		iso_639_2T_code="cre"
@@ -417,7 +446,7 @@
 	<iso_639_entry
 		iso_639_2B_code="crh"
 		iso_639_2T_code="crh"
-		name="Crimean Turkish; Crimean Tatar" />
+		name="Crimean Tatar; Crimean Turkish" />
 	<iso_639_entry
 		iso_639_2B_code="crp"
 		iso_639_2T_code="crp"
@@ -449,6 +478,10 @@
 		iso_639_2T_code="dar"
 		name="Dargwa" />
 	<iso_639_entry
+		iso_639_2B_code="day"
+		iso_639_2T_code="day"
+		name="Land Dayak languages" />
+	<iso_639_entry
 		iso_639_2B_code="del"
 		iso_639_2T_code="del"
 		name="Delaware" />
@@ -468,7 +501,7 @@
 		iso_639_2B_code="div"
 		iso_639_2T_code="div"
 		iso_639_1_code="dv"
-		name="Divehi" />
+		name="Divehi; Dhivehi; Maldivian" />
 	<iso_639_entry
 		iso_639_2B_code="doi"
 		iso_639_2T_code="doi"
@@ -493,7 +526,7 @@
 		iso_639_2B_code="dut"
 		iso_639_2T_code="nld"
 		iso_639_1_code="nl"
-		name="Dutch" />
+		name="Dutch; Flemish" />
 	<iso_639_entry
 		iso_639_2B_code="dyu"
 		iso_639_2T_code="dyu"
@@ -590,16 +623,24 @@
 	<iso_639_entry
 		iso_639_2B_code="frm"
 		iso_639_2T_code="frm"
-		name="French, Middle (ca.1400-1600)" />
+		name="French, Middle (ca. 1400-1600)" />
 	<iso_639_entry
 		iso_639_2B_code="fro"
 		iso_639_2T_code="fro"
-		name="French, Old (842-ca.1400)" />
+		name="French, Old (842-ca. 1400)" />
+	<iso_639_entry
+		iso_639_2B_code="frr"
+		iso_639_2T_code="frr"
+		name="Northern Frisian" />
+	<iso_639_entry
+		iso_639_2B_code="frs"
+		iso_639_2T_code="frs"
+		name="Eastern Frisian" />
 	<iso_639_entry
 		iso_639_2B_code="fry"
 		iso_639_2T_code="fry"
 		iso_639_1_code="fy"
-		name="Frisian" />
+		name="Western Frisian" />
 	<iso_639_entry
 		iso_639_2B_code="ful"
 		iso_639_2T_code="ful"
@@ -647,7 +688,7 @@
 		iso_639_2B_code="gla"
 		iso_639_2T_code="gla"
 		iso_639_1_code="gd"
-		name="Gaelic; Scottish" />
+		name="Gaelic; Scottish Gaelic" />
 	<iso_639_entry
 		iso_639_2B_code="gle"
 		iso_639_2T_code="gle"
@@ -657,7 +698,7 @@
 		iso_639_2B_code="glg"
 		iso_639_2T_code="glg"
 		iso_639_1_code="gl"
-		name="Gallegan" />
+		name="Galician" />
 	<iso_639_entry
 		iso_639_2B_code="glv"
 		iso_639_2T_code="glv"
@@ -666,11 +707,11 @@
 	<iso_639_entry
 		iso_639_2B_code="gmh"
 		iso_639_2T_code="gmh"
-		name="German, Middle High (ca.1050-1500)" />
+		name="German, Middle High (ca. 1050-1500)" />
 	<iso_639_entry
 		iso_639_2B_code="goh"
 		iso_639_2T_code="goh"
-		name="German, Old High (ca.750-1050)" />
+		name="German, Old High (ca. 750-1050)" />
 	<iso_639_entry
 		iso_639_2B_code="gon"
 		iso_639_2T_code="gon"
@@ -702,6 +743,10 @@
 		iso_639_1_code="gn"
 		name="Guarani" />
 	<iso_639_entry
+		iso_639_2B_code="gsw"
+		iso_639_2T_code="gsw"
+		name="Swiss German; Alemannic" />
+	<iso_639_entry
 		iso_639_2B_code="guj"
 		iso_639_2T_code="guj"
 		iso_639_1_code="gu"
@@ -709,7 +754,7 @@
 	<iso_639_entry
 		iso_639_2B_code="gwi"
 		iso_639_2T_code="gwi"
-		name="Gwichin" />
+		name="Gwich´in" />
 	<iso_639_entry
 		iso_639_2B_code="hai"
 		iso_639_2T_code="hai"
@@ -763,7 +808,7 @@
 		iso_639_2B_code="hmo"
 		iso_639_2T_code="hmo"
 		iso_639_1_code="ho"
-		name="Hiri" />
+		name="Hiri Motu" />
 	<iso_639_entry
 		iso_639_2B_code="hsb"
 		iso_639_2T_code="hsb"
@@ -800,11 +845,11 @@
 		iso_639_2B_code="iii"
 		iso_639_2T_code="iii"
 		iso_639_1_code="ii"
-		name="Sichuan Yi" />
+		name="Sichuan Yi; Nuosu" />
 	<iso_639_entry
 		iso_639_2B_code="ijo"
 		iso_639_2T_code="ijo"
-		name="Ijo" />
+		name="Ijo languages" />
 	<iso_639_entry
 		iso_639_2B_code="iku"
 		iso_639_2T_code="iku"
@@ -814,7 +859,7 @@
 		iso_639_2B_code="ile"
 		iso_639_2T_code="ile"
 		iso_639_1_code="ie"
-		name="Interlingue" />
+		name="Interlingue; Occidental" />
 	<iso_639_entry
 		iso_639_2B_code="ilo"
 		iso_639_2T_code="ilo"
@@ -823,7 +868,7 @@
 		iso_639_2B_code="ina"
 		iso_639_2T_code="ina"
 		iso_639_1_code="ia"
-		name="Interlingua" />
+		name="Interlingua (International Auxiliary Language Association)" />
 	<iso_639_entry
 		iso_639_2B_code="inc"
 		iso_639_2T_code="inc"
@@ -892,12 +937,12 @@
 	<iso_639_entry
 		iso_639_2B_code="kac"
 		iso_639_2T_code="kac"
-		name="Kachin" />
+		name="Kachin; Jingpho" />
 	<iso_639_entry
 		iso_639_2B_code="kal"
 		iso_639_2T_code="kal"
 		iso_639_1_code="kl"
-		name="Greenlandic (Kalaallisut)" />
+		name="Kalaallisut; Greenlandic" />
 	<iso_639_entry
 		iso_639_2B_code="kam"
 		iso_639_2T_code="kam"
@@ -910,7 +955,7 @@
 	<iso_639_entry
 		iso_639_2B_code="kar"
 		iso_639_2T_code="kar"
-		name="Karen" />
+		name="Karen languages" />
 	<iso_639_entry
 		iso_639_2B_code="kas"
 		iso_639_2T_code="kas"
@@ -937,7 +982,7 @@
 	<iso_639_entry
 		iso_639_2B_code="kha"
 		iso_639_2T_code="kha"
-		name="Khazi" />
+		name="Khasi" />
 	<iso_639_entry
 		iso_639_2B_code="khi"
 		iso_639_2T_code="khi"
@@ -946,7 +991,7 @@
 		iso_639_2B_code="khm"
 		iso_639_2T_code="khm"
 		iso_639_1_code="km"
-		name="Khmer" />
+		name="Central Khmer" />
 	<iso_639_entry
 		iso_639_2B_code="kho"
 		iso_639_2T_code="kho"
@@ -955,7 +1000,7 @@
 		iso_639_2B_code="kik"
 		iso_639_2T_code="kik"
 		iso_639_1_code="ki"
-		name="Kikuyu" />
+		name="Kikuyu; Gikuyu" />
 	<iso_639_entry
 		iso_639_2B_code="kin"
 		iso_639_2T_code="kin"
@@ -965,7 +1010,7 @@
 		iso_639_2B_code="kir"
 		iso_639_2T_code="kir"
 		iso_639_1_code="ky"
-		name="Kirghiz" />
+		name="Kirghiz; Kyrgyz" />
 	<iso_639_entry
 		iso_639_2B_code="kmb"
 		iso_639_2T_code="kmb"
@@ -1002,9 +1047,13 @@
 		iso_639_2T_code="krc"
 		name="Karachay-Balkar" />
 	<iso_639_entry
+		iso_639_2B_code="krl"
+		iso_639_2T_code="krl"
+		name="Karelian" />
+	<iso_639_entry
 		iso_639_2B_code="kro"
 		iso_639_2T_code="kro"
-		name="Kru" />
+		name="Kru languages" />
 	<iso_639_entry
 		iso_639_2B_code="kru"
 		iso_639_2T_code="kru"
@@ -1013,7 +1062,7 @@
 		iso_639_2B_code="kua"
 		iso_639_2T_code="kua"
 		iso_639_1_code="kj"
-		name="Kuanyama" />
+		name="Kuanyama; Kwanyama" />
 	<iso_639_entry
 		iso_639_2B_code="kum"
 		iso_639_2T_code="kum"
@@ -1062,7 +1111,7 @@
 		iso_639_2B_code="lim"
 		iso_639_2T_code="lim"
 		iso_639_1_code="li"
-		name="Limburgian" />
+		name="Limburgan; Limburger; Limburgish" />
 	<iso_639_entry
 		iso_639_2B_code="lin"
 		iso_639_2T_code="lin"
@@ -1085,7 +1134,7 @@
 		iso_639_2B_code="ltz"
 		iso_639_2T_code="ltz"
 		iso_639_1_code="lb"
-		name="Luxembourgish" />
+		name="Luxembourgish; Letzeburgesch" />
 	<iso_639_entry
 		iso_639_2B_code="lua"
 		iso_639_2T_code="lua"
@@ -1201,7 +1250,7 @@
 	<iso_639_entry
 		iso_639_2B_code="mis"
 		iso_639_2T_code="mis"
-		name="Miscellaneous languages" />
+		name="Uncoded languages" />
 	<iso_639_entry
 		iso_639_2B_code="mkh"
 		iso_639_2T_code="mkh"
@@ -1220,6 +1269,10 @@
 		iso_639_2B_code="mnc"
 		iso_639_2T_code="mnc"
 		name="Manchu" />
+	<iso_639_entry
+		iso_639_2B_code="mni"
+		iso_639_2T_code="mni"
+		name="Manipuri" />
 	<iso_639_entry
 		iso_639_2B_code="mno"
 		iso_639_2T_code="mno"
@@ -1273,11 +1326,11 @@
 	<iso_639_entry
 		iso_639_2B_code="nah"
 		iso_639_2T_code="nah"
-		name="Nahuatl" />
+		name="Nahuatl languages" />
 	<iso_639_entry
 		iso_639_2B_code="nai"
 		iso_639_2T_code="nai"
-		name="North American Indian (Other)" />
+		name="North American Indian" />
 	<iso_639_entry
 		iso_639_2B_code="nap"
 		iso_639_2T_code="nap"
@@ -1291,17 +1344,17 @@
 		iso_639_2B_code="nav"
 		iso_639_2T_code="nav"
 		iso_639_1_code="nv"
-		name="Navaho" />
+		name="Navajo; Navaho" />
 	<iso_639_entry
 		iso_639_2B_code="nbl"
 		iso_639_2T_code="nbl"
 		iso_639_1_code="nr"
-		name="Ndebele, South" />
+		name="Ndebele, South; South Ndebele" />
 	<iso_639_entry
 		iso_639_2B_code="nde"
 		iso_639_2T_code="nde"
 		iso_639_1_code="nd"
-		name="Ndebele, North" />
+		name="Ndebele, North; North Ndebele" />
 	<iso_639_entry
 		iso_639_2B_code="ndo"
 		iso_639_2T_code="ndo"
@@ -1310,7 +1363,7 @@
 	<iso_639_entry
 		iso_639_2B_code="nds"
 		iso_639_2T_code="nds"
-		name="German, Low" />
+		name="Low German; Low Saxon; German, Low; Saxon, Low" />
 	<iso_639_entry
 		iso_639_2B_code="nep"
 		iso_639_2T_code="nep"
@@ -1319,7 +1372,7 @@
 	<iso_639_entry
 		iso_639_2B_code="new"
 		iso_639_2T_code="new"
-		name="Newari" />
+		name="Newari; Nepal Bhasa" />
 	<iso_639_entry
 		iso_639_2B_code="nia"
 		iso_639_2T_code="nia"
@@ -1336,12 +1389,12 @@
 		iso_639_2B_code="nno"
 		iso_639_2T_code="nno"
 		iso_639_1_code="nn"
-		name="Norwegian Nynorsk" />
+		name="Norwegian Nynorsk; Nynorsk, Norwegian" />
 	<iso_639_entry
 		iso_639_2B_code="nob"
 		iso_639_2T_code="nob"
 		iso_639_1_code="nb"
-		name="Bokmål, Norwegian" />
+		name="Norwegian Bokmål; Bokmål, Norwegian" />
 	<iso_639_entry
 		iso_639_2B_code="nog"
 		iso_639_2T_code="nog"
@@ -1356,26 +1409,30 @@
 		iso_639_1_code="no"
 		name="Norwegian" />
 	<iso_639_entry
+		iso_639_2B_code="nqo"
+		iso_639_2T_code="nqo"
+		name="N'ko" />
+	<iso_639_entry
 		iso_639_2B_code="nso"
 		iso_639_2T_code="nso"
-		name="Northern Sotho; Pedi; Sepedi" />
+		name="Northern Sotho, Pedi; Sepedi" />
 	<iso_639_entry
 		iso_639_2B_code="nub"
 		iso_639_2T_code="nub"
 		name="Nubian languages" />
 	<iso_639_entry
-		iso_639_2B_code="nym"
-		iso_639_2T_code="nym"
-		name="Nyamwezi" />
-	<iso_639_entry
 		iso_639_2B_code="nwc"
 		iso_639_2T_code="nwc"
-		name="Classical Newari; Old Newari" />
+		name="Classical Newari; Old Newari; Classical Nepal Bhasa" />
 	<iso_639_entry
 		iso_639_2B_code="nya"
 		iso_639_2T_code="nya"
 		iso_639_1_code="ny"
-		name="Chewa; Chichewa; Nyanja" />
+		name="Chichewa; Chewa; Nyanja" />
+	<iso_639_entry
+		iso_639_2B_code="nym"
+		iso_639_2T_code="nym"
+		name="Nyamwezi" />
 	<iso_639_entry
 		iso_639_2B_code="nyn"
 		iso_639_2T_code="nyn"
@@ -1392,7 +1449,7 @@
 		iso_639_2B_code="oci"
 		iso_639_2T_code="oci"
 		iso_639_1_code="oc"
-		name="Occitan (post 1500)" />
+		name="Occitan (post 1500); Provençal" />
 	<iso_639_entry
 		iso_639_2B_code="oji"
 		iso_639_2T_code="oji"
@@ -1416,7 +1473,7 @@
 		iso_639_2B_code="oss"
 		iso_639_2T_code="oss"
 		iso_639_1_code="os"
-		name="Ossetian" />
+		name="Ossetian; Ossetic" />
 	<iso_639_entry
 		iso_639_2B_code="ota"
 		iso_639_2T_code="ota"
@@ -1440,12 +1497,12 @@
 	<iso_639_entry
 		iso_639_2B_code="pam"
 		iso_639_2T_code="pam"
-		name="Pampanga" />
+		name="Pampanga; Kapampangan" />
 	<iso_639_entry
 		iso_639_2B_code="pan"
 		iso_639_2T_code="pan"
 		iso_639_1_code="pa"
-		name="Punjabi" />
+		name="Panjabi; Punjabi" />
 	<iso_639_entry
 		iso_639_2B_code="pap"
 		iso_639_2T_code="pap"
@@ -1457,7 +1514,7 @@
 	<iso_639_entry
 		iso_639_2B_code="peo"
 		iso_639_2T_code="peo"
-		name="Persian, Old (ca.600-400 B.C.)" />
+		name="Persian, Old (ca. 600-400 B.C.)" />
 	<iso_639_entry
 		iso_639_2B_code="per"
 		iso_639_2T_code="fas"
@@ -1482,14 +1539,14 @@
 		iso_639_1_code="pl"
 		name="Polish" />
 	<iso_639_entry
+		iso_639_2B_code="pon"
+		iso_639_2T_code="pon"
+		name="Pohnpeian" />
+	<iso_639_entry
 		iso_639_2B_code="por"
 		iso_639_2T_code="por"
 		iso_639_1_code="pt"
 		name="Portuguese" />
-	<iso_639_entry
-		iso_639_2B_code="pon"
-		iso_639_2T_code="pon"
-		name="Pohnpeian" />
 	<iso_639_entry
 		iso_639_2B_code="pra"
 		iso_639_2T_code="pra"
@@ -1503,6 +1560,10 @@
 		iso_639_2T_code="pus"
 		iso_639_1_code="ps"
 		name="Pushto" />
+	<iso_639_entry
+		iso_639_2B_code="qaa-qtz"
+		iso_639_2T_code="qaa-qtz"
+		name="Reserved for local use" />
 	<iso_639_entry
 		iso_639_2B_code="que"
 		iso_639_2T_code="que"
@@ -1519,7 +1580,7 @@
 	<iso_639_entry
 		iso_639_2B_code="rar"
 		iso_639_2T_code="rar"
-		name="Rarotongan" />
+		name="Rarotongan; Cook Island Maori" />
 	<iso_639_entry
 		iso_639_2B_code="roa"
 		iso_639_2T_code="roa"
@@ -1528,7 +1589,7 @@
 		iso_639_2B_code="roh"
 		iso_639_2T_code="roh"
 		iso_639_1_code="rm"
-		name="Raeto-Romance" />
+		name="Romansh" />
 	<iso_639_entry
 		iso_639_2B_code="rom"
 		iso_639_2T_code="rom"
@@ -1543,6 +1604,10 @@
 		iso_639_2T_code="run"
 		iso_639_1_code="rn"
 		name="Rundi" />
+	<iso_639_entry
+		iso_639_2B_code="rup"
+		iso_639_2T_code="rup"
+		name="Aromanian; Arumanian; Macedo-Romanian" />
 	<iso_639_entry
 		iso_639_2B_code="rus"
 		iso_639_2T_code="rus"
@@ -1619,7 +1684,7 @@
 	<iso_639_entry
 		iso_639_2B_code="sgn"
 		iso_639_2T_code="sgn"
-		name="Sign languages" />
+		name="Sign Languages" />
 	<iso_639_entry
 		iso_639_2B_code="shn"
 		iso_639_2T_code="shn"
@@ -1711,7 +1776,7 @@
 	<iso_639_entry
 		iso_639_2B_code="son"
 		iso_639_2T_code="son"
-		name="Songhai" />
+		name="Songhai languages" />
 	<iso_639_entry
 		iso_639_2B_code="sot"
 		iso_639_2T_code="sot"
@@ -1721,12 +1786,16 @@
 		iso_639_2B_code="spa"
 		iso_639_2T_code="spa"
 		iso_639_1_code="es"
-		name="Spanish" />
+		name="Spanish; Castilian" />
 	<iso_639_entry
 		iso_639_2B_code="srd"
 		iso_639_2T_code="srd"
 		iso_639_1_code="sc"
 		name="Sardinian" />
+	<iso_639_entry
+		iso_639_2B_code="srn"
+		iso_639_2T_code="srn"
+		name="Sranan Tongo" />
 	<iso_639_entry
 		iso_639_2B_code="srr"
 		iso_639_2T_code="srr"
@@ -1768,6 +1837,10 @@
 		iso_639_1_code="sv"
 		name="Swedish" />
 	<iso_639_entry
+		iso_639_2B_code="syc"
+		iso_639_2T_code="syc"
+		name="Classical Syriac" />
+	<iso_639_entry
 		iso_639_2B_code="syr"
 		iso_639_2T_code="syr"
 		name="Syriac" />
@@ -1785,11 +1858,6 @@
 		iso_639_2T_code="tam"
 		iso_639_1_code="ta"
 		name="Tamil" />
-	<iso_639_entry
-		iso_639_2B_code="tso"
-		iso_639_2T_code="tso"
-		iso_639_1_code="ts"
-		name="Tsonga" />
 	<iso_639_entry
 		iso_639_2B_code="tat"
 		iso_639_2T_code="tat"
@@ -1846,17 +1914,17 @@
 		iso_639_2T_code="tiv"
 		name="Tiv" />
 	<iso_639_entry
-		iso_639_2B_code="tlh"
-		iso_639_2T_code="tlh"
-		name="Klingon; tlhIngan-Hol" />
-	<iso_639_entry
 		iso_639_2B_code="tkl"
 		iso_639_2T_code="tkl"
 		name="Tokelau" />
 	<iso_639_entry
+		iso_639_2B_code="tlh"
+		iso_639_2T_code="tlh"
+		name="Klingon; tlhIngan-Hol" />
+	<iso_639_entry
 		iso_639_2B_code="tli"
 		iso_639_2T_code="tli"
-		name="Tlinglit" />
+		name="Tlingit" />
 	<iso_639_entry
 		iso_639_2B_code="tmh"
 		iso_639_2T_code="tmh"
@@ -1883,6 +1951,11 @@
 		iso_639_2T_code="tsn"
 		iso_639_1_code="tn"
 		name="Tswana" />
+	<iso_639_entry
+		iso_639_2B_code="tso"
+		iso_639_2T_code="tso"
+		iso_639_1_code="ts"
+		name="Tsonga" />
 	<iso_639_entry
 		iso_639_2B_code="tuk"
 		iso_639_2T_code="tuk"
@@ -1930,7 +2003,7 @@
 		iso_639_2B_code="uig"
 		iso_639_2T_code="uig"
 		iso_639_1_code="ug"
-		name="Uighur" />
+		name="Uighur; Uyghur" />
 	<iso_639_entry
 		iso_639_2B_code="ukr"
 		iso_639_2T_code="ukr"
@@ -1947,7 +2020,7 @@
 	<iso_639_entry
 		iso_639_2B_code="urd"
 		iso_639_2T_code="urd"
-		ido_639_1_code="ur"
+		iso_639_1_code="ur"
 		name="Urdu" />
 	<iso_639_entry
 		iso_639_2B_code="uzb"
@@ -1972,7 +2045,7 @@
 		iso_639_2B_code="vol"
 		iso_639_2T_code="vol"
 		iso_639_1_code="vo"
-		name="Volapuk" />
+		name="Volapük" />
 	<iso_639_entry
 		iso_639_2B_code="vot"
 		iso_639_2T_code="vot"
@@ -2015,7 +2088,7 @@
 	<iso_639_entry
 		iso_639_2B_code="xal"
 		iso_639_2T_code="xal"
-		name="Kalmyk" />
+		name="Kalmyk; Oirat" />
 	<iso_639_entry
 		iso_639_2B_code="xho"
 		iso_639_2T_code="xho"
@@ -2048,6 +2121,10 @@
 		iso_639_2T_code="zap"
 		name="Zapotec" />
 	<iso_639_entry
+		iso_639_2B_code="zbl"
+		iso_639_2T_code="zbl"
+		name="Blissymbols; Blissymbolics; Bliss" />
+	<iso_639_entry
 		iso_639_2B_code="zen"
 		iso_639_2T_code="zen"
 		name="Zenaga" />
@@ -2055,11 +2132,11 @@
 		iso_639_2B_code="zha"
 		iso_639_2T_code="zha"
 		iso_639_1_code="za"
-		name="Chuang; Zhuang" />
+		name="Zhuang; Chuang" />
 	<iso_639_entry
 		iso_639_2B_code="znd"
 		iso_639_2T_code="znd"
-		name="Zande" />
+		name="Zande languages" />
 	<iso_639_entry
 		iso_639_2B_code="zul"
 		iso_639_2T_code="zul"
@@ -2069,4 +2146,12 @@
 		iso_639_2B_code="zun"
 		iso_639_2T_code="zun"
 		name="Zuni" />
+	<iso_639_entry
+		iso_639_2B_code="zxx"
+		iso_639_2T_code="zxx"
+		name="No linguistic content" />
+	<iso_639_entry
+		iso_639_2B_code="zza"
+		iso_639_2T_code="zza"
+		name="Zaza; Dimili; Dimli; Kirdki; Kirmanjki; Zazaki" />
 </iso_639_entries>

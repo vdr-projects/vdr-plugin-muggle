@@ -1,17 +1,16 @@
-the content of languages.txt is generated from the file
+The content of languages.txt is generated from the file
 iso_639.xml which contains this copyright:
 
-<?xml version="1.0" encoding="UTF-8" ?>
 <!-- iso-639.tab                                                        -->
 <!--                                                                    -->
-<!-- Copyright (C) 2004 Alastair McKinstry   <mckinstry@computer.org>   -->
+<!-- Copyright (C) 2005 Alastair McKinstry   <mckinstry@computer.org>   -->
 <!-- Released under the GNU License; see file COPYING for details       -->
 <!--                                                                    -->
-<!-- Last update: 2004-10-27                                            -->
+<!-- Last update: 2007-08-08                                            -->
 <!--                                                                    -->
 <!-- This file gives a list of all languages in the ISO-639             -->
 <!-- standard, and is used to provide translations (via gettext)        -->
 <!--                                                                    -->
-<!-- Status: ISO 639-2:1998 + additions and changes until 2004-03-05    -->
-<!-- Source: http://lcweb.loc.gov/standards/iso639-2/englangn.html      -->
-
+<!-- Status: ISO 639-2:1998 + additions and changes until 2007-08-08    -->
+<!-- Source: http://www.loc.gov/standards/iso639-2/langcodes.html       -->
+<!-- change: http://www.loc.gov/standards/iso639-2/php/code_changes.php -->
