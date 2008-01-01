@@ -89,7 +89,8 @@ PLAYLIBS = -lmad $(shell taglib-config --libs)
 MILIBS =  $(shell taglib-config --libs)
 
 ifdef HAVE_SQLITE
-SQLLIBS += -lsqlite3
+INCLUDES += $(shell pkg-config --cflags sqlite3)
+SQLLIBS += $(shell pkg-config --libs sqlite3)
 DB_OBJ = mg_db_gd_sqlite.o
 DEFINES += -DHAVE_SQLITE
 endif
