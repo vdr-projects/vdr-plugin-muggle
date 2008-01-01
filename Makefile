@@ -22,10 +22,10 @@ PLUGIN = muggle
 #define this:
 #HAVE_ONLY_SERVER=1
 
-#define what database you want to use. Default is mysql. HAVE_SQLITE
-#removes mysql support and adds SQLite support
-# HAVE_SQLITE = 1
-
+# Define what database you want to use, one of MySQL (HAVE_MYSQL=1),
+# PostgreSQL (HAVE_PG=1) or SQLite (HAVE_SQLITE=1).  Default is MySQL.
+#HAVE_SQLITE = 1
+#HAVE_PG = 1
 HAVE_MYSQL = 1
 
 ### The version number of this plugin (taken from the main source file):
@@ -51,11 +51,14 @@ TMPDIR ?= /tmp
 ifdef HAVE_SQLITE
 HAVE_MYSQL =
 HAVE_ONLY_SERVER =
+HAVE_PG =
 else
 ifdef HAVE_PG
 HAVE_MYSQL =
-HAVE_SQLITE = 
 HAVE_ONLY_SERVER =
+HAVE_SQLITE = 
+else
+HAVE_MYSQL = 1
 endif
 endif
 
