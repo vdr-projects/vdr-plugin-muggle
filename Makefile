@@ -45,6 +45,8 @@ LIBDIR ?= ../../lib
 TMPDIR ?= /tmp
 BINDIR ?= /usr/local/bin
 
+MUSICDIR ?= /mnt/music
+
 ### Allow user defined options to overwrite defaults:
 
 -include $(VDRDIR)/Make.config
@@ -78,6 +80,7 @@ INCLUDES += -I$(VDRDIR) -I$(VDRDIR)/include -I$(DVBDIR)/include \
 	$(shell taglib-config --cflags)
 
 DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
+DEFINES += -DMUSICDIR='"$(MUSICDIR)"'
 
 ### The object files (add further files here):
 

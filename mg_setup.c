@@ -45,7 +45,7 @@ mgSetup::mgSetup ()
     DbUser = 0;
     DbPass = 0;
     asprintf(&DbDatadir,"%s/.muggle",getenv("HOME"));
-    ToplevelDir = strdup("/mnt/music/");
+    ToplevelDir = strdup(MUSICDIR "/");
     CreateMode = false;
     DeleteStaleReferences = false;
 
@@ -228,8 +228,8 @@ mgSetup::HelpText()
     static char buf[2000];
     strcpy(buf,
     "  -n NNNN,  --name=NNNN     specify database name (default is GiantDisc)\n"
-    "  -t TTTT,  --toplevel=TTTT specify toplevel directory for music (default is /mnt/music)\n"
-    "  -d DIRN,  --datadir=DIRN  specify directory for embedded sql data (default is $HOME/.muggle)\n"
+    "  -t TTTT,  --toplevel=TTTT specify toplevel directory for music (default is " MUSICDIR ")\n"
+    "  -d DIRN,  --datadir=DIRN  specify directory for embedded sql data (default is \"$HOME/.muggle\")\n"
     "  -v,       --verbose       specify debug level. The higher the more. Default is 1\n");
     if (IsMugglei())
 	    strcat(buf,

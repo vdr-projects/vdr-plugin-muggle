@@ -114,9 +114,10 @@ about a missing -lwrap.
 First let's define what the top level directory (short TLD) is. Muggle
 expects all music files to be in the same directory (and its
 subdirectories). Symbolic links will be followed. You specify the TLD
-with the argument -t. The default is /mnt/music.  It is recommended to
-store only music files in the TLD. You can organize files in orders
-per genre, album or whatever.
+with the argument -t. The default is /mnt/music; you can change the
+default at build time using the MUSICDIR Makefile variable.  It is
+recommended to store only music files in the TLD. You can organize
+files in orders per genre, album or whatever.
 
 It is essential that you always use the same TLD when using the muggle
 plugin or the external program mugglei, otherwise muggle will not find
