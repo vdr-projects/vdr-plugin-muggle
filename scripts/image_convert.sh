@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# requires: ...topnm, pnmscale, pnmcomp, ppmntsc, ppmtoy4m, mpeg2enc, mktemp
+# requires: *topnm, pnmpad, pnmscale, ppmntsc, ppmtoy4m, mpeg2enc, mktemp
 #
 
 # video format. pal or ntsc
