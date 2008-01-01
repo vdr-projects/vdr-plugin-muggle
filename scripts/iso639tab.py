@@ -1,18 +1,19 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # Read iso-codes iso_639.xml data file and output a .tab file
 # 
 # Copyright (C) 2005 Alastair McKinstry <mckinstry@debian.org>
 # Released under the GPL.
-# $Id: iso639tab.py,v 1.1 2005/03/02 07:24:51 mckinstry Exp $
+# $Id: iso639tab.py 929 2007-07-23 10:28:20Z toddy-guest $
 
-from xml.sax import saxutils, make_parser, saxlib, saxexts, ContentHandler
-from xml.sax.handler import feature_namespaces
+from xml.sax import make_parser, SAXException, SAXParseException
+from xml.sax.handler import feature_namespaces, ContentHandler
 import sys, os, getopt, urllib2
 
-class printLines(saxutils.DefaultHandler):
-	def __init__(self, ofile):
-		self.ofile = ofile
+lines = []
+class printLines(ContentHandler):
+	def __init__(self):
+		pass
 
 	def startElement(self, name, attrs):
 		if name != 'iso_639_entry':
@@ -34,8 +35,7 @@ class printLines(saxutils.DefaultHandler):
 		short_code=short_code.encode('UTF-8')
 		if type(name) == unicode:
 			name = name.encode('UTF-8')
-		self.ofile.write (t_code + '\t' + b_code + '\t' + short_code + '\t' + name + '\n')
-
+		lines.append(t_code + '\t' + b_code + '\t' + short_code + '\t' + name + '\n')
 
 ## 
 ## MAIN
@@ -68,14 +68,20 @@ ofile.write("""
 ##
 """)
 p = make_parser()
-p.setErrorHandler(saxutils.ErrorPrinter())
 try:
-	dh = printLines(ofile)
+	dh = printLines()
 	p.setContentHandler(dh)
 	p.parse(sys.argv[1])
-except IOError,e:
-	print in_sysID+": "+str(e)
-except saxlib.SAXException,e:
-	print str(e)
-
+except SAXParseException, e:
+	sys.stderr.write('%s:%s:%s: %s\n' % (e.getSystemId(),
+					     e.getLineNumber(),
+					     e.getColumnNumber(),
+					     e.getMessage()))
+	sys.exit(1)
+except Exception, e:
+	sys.stderr.write('<unknown>: %s\n' % str(e))
+	sys.exit(1)
+lines.sort()
+for l in lines:
+	ofile.write(l)
 ofile.close()
