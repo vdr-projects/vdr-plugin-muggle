@@ -167,7 +167,7 @@ mugglei: mg_tools.o mugglei.o mg_db.o $(DB_OBJ) mg_listitem.o mg_item.o mg_item_
 	$(CXX) $(CXXFLAGS) $^ $(MILIBS) $(SQLLIBS) -o $@
 
 install:
-	@cp --remove-destination ../../lib/libvdr-muggle*.so.* \
+	@cp --remove-destination $(LIBDIR)/libvdr-muggle*.so.* \
 		$(DESTDIR)/usr/lib/vdr/
 	@cp mugglei $(DESTDIR)$(BINDIR)/
 	@cp scripts/muggle-image-convert $(DESTDIR)$(BINDIR)/
