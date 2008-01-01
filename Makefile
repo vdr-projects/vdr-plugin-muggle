@@ -43,6 +43,7 @@ DVBDIR ?= ../../../../DVB
 VDRDIR ?= ../../../
 LIBDIR ?= ../../lib
 TMPDIR ?= /tmp
+BINDIR ?= /usr/local/bin
 
 ### Allow user defined options to overwrite defaults:
 
@@ -167,7 +168,7 @@ mugglei: mg_tools.o mugglei.o mg_db.o $(DB_OBJ) mg_listitem.o mg_item.o mg_item_
 
 install:
 	@cp --remove-destination ../../lib/libvdr-muggle*.so.* /usr/lib/vdr/
-	@cp mugglei /usr/local/bin/
+	@cp mugglei $(BINDIR)/
 #	@install -m 755 mugglei /usr/local/bin/
 
 dist: clean mg_tables.h
