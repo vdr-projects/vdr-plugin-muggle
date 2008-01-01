@@ -18,7 +18,6 @@
 
 #include "i18n.h"
 #include <vdr/tools.h>
-#include <getopt.h>
 #include <vdr/config.h>
 
 static const char VERSION[] = "0.1.11";
