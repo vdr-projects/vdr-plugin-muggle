@@ -20,7 +20,7 @@
 #include <vdr/tools.h>
 #include <vdr/config.h>
 
-static const char VERSION[] = "0.1.11";
+static const char VERSION[] = "0.1.12";
 static const char DESCRIPTION[] = "Media juggle plugin for VDR";
 static const char MAINMENUENTRY[] = "Muggle";
 
