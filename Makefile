@@ -159,7 +159,7 @@ $(DEPFILE): Makefile
 
 $(DB_OBJ): CXXFLAGS += $(DB_CFLAGS)
 
-mg_tables.h:	scripts/genres.txt scripts/iso_639.xml scripts/musictypes.txt scripts/sources.txt
+mg_tables.h:	scripts/gentables scripts/genres.txt scripts/iso_639.xml scripts/musictypes.txt scripts/sources.txt
 	scripts/gentables > $@
 
 libvdr-$(PLUGIN).so: $(OBJS)
