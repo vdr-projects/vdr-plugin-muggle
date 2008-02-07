@@ -263,12 +263,14 @@ eDecodeStatus mgMP3Decoder::decodeError (bool hdr)
             hdr ? "hdr " : "", m_framenum, mad_stream_errorstr (&m_madstream));
         return dsError;
     }
-    else
+    else if (m_madstream.error!=MAD_ERROR_LOSTSYNC || m_framenum>0)
+		// sync is always lost for frame 0, ignore this.
+		// Do we use mad incorrectly?
     {
         m_errcount += hdr ? 1 : 100;
         printf
-            ("mgMP3Decoder::decodeError: mad decode %s error, frame=%d count=%d: %s. Returning dsOK\n",
-            hdr ? "hdr " : "", m_framenum, m_errcount,
+            ("mgMP3Decoder::decodeError: mad decode%s error, frame=%d count=%d: %s. Returning dsOK\n",
+            hdr ? " hdr" : "", m_framenum, m_errcount,
             mad_stream_errorstr (&m_madstream));
     }
     return dsOK;
