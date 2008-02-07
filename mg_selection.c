@@ -129,7 +129,7 @@ mgSelection::mgListItems::sort(bool bycount,mgSortBy SortBy)
 void
 mgSelection::mgListItems::clear()
 {
-	for (unsigned int i=0;i<m_items.size();i++)
+	for (unsigned int i=0;i<size();i++)
 		delete m_items[i];
 	m_items.clear();
 }
@@ -137,11 +137,19 @@ mgSelection::mgListItems::clear()
 bool
 mgSelection::mgListItems::operator==(const mgListItems&x) const
 {
-	bool result = m_items.size()==x.m_items.size();
+	bool result = size()==x.size();
 	if (result)
 		for (unsigned int i=0;i<size();i++)
 			result &= *(m_items[i])==*(x.m_items[i]);
 	return result;
+}
+
+void
+mgSelection::mgListItems::refresh() 
+{
+	if (!m_sel)
+		mgError("mgListItems: m_sel is 0");
+	m_sel->refreshValues();
 }
 
 size_t
@@ -149,7 +157,6 @@ mgSelection::mgListItems::size() const
 {
 	if (!m_sel)
 		mgError("mgListItems: m_sel is 0");
-	m_sel->refreshValues();
 	return m_items.size();
 }
 
@@ -159,7 +166,7 @@ mgSelection::mgListItems::operator[](unsigned int idx)
 	if (!m_sel)
 		mgError("mgListItems: m_sel is 0");
 	m_sel->refreshValues();
-	assert(idx<m_items.size());
+	assert(idx<size());
 	return m_items[idx];
 }
 
@@ -174,7 +181,7 @@ mgSelection::mgListItems::search (const string v) const
 {
     if (!m_sel)
 	mgError("mgListItems::index(%s): m_sel is 0",v.c_str());
-    unsigned int itemsize = m_items.size();
+    unsigned int itemsize = size();
     const char *cstr = v.c_str();
     unsigned int clen = strlen(cstr);
     int result = -1;
@@ -272,6 +279,7 @@ mgSelection::getCurrentValue()
 string
 mgSelection::getValue(unsigned int idx) const
 {
+	listitems.refresh();
 	if (idx>=listitems.size())
 		return "";
 	else
@@ -457,6 +465,7 @@ string mgSelection::exportM3U ()
 bool
 mgSelection::empty()
 {
+    listitems.refresh();
     return ( listitems.size () == 0);
 }
 
@@ -500,6 +509,7 @@ unsigned int
 mgSelection::gotoPosition ()
 {
     assert(m_level<ordersize());
+    listitems.refresh();
     unsigned int itemsize = listitems.size();
     if (itemsize==0)
 	m_position = 0;
@@ -960,6 +970,7 @@ bool mgSelection::enter (unsigned int position)
 	return true;
     }
     mgListItems prev;
+    listitems.refresh();
     if (m_level<ordersize()-2 && m_fall_through && listitems.size()<100)
 	prev=listitems;
     while (1)
@@ -983,6 +994,7 @@ bool mgSelection::enter (unsigned int position)
             break;
         if (m_level>=ordersize()-2)
 	    break;
+	listitems.refresh();
 	if (listitems.size () > 1 && !(prev==listitems))
             break;
     }
@@ -998,6 +1010,7 @@ mgSelection::leave ()
     unsigned int position=m_position;
     assert(!Keys.empty());
     mgListItems prev;
+    listitems.refresh();
     if (m_level>1 && m_fall_through && listitems.size()<100)
 	prev=listitems;
     while (1)
@@ -1014,6 +1027,7 @@ mgSelection::leave ()
             break;
         if (m_level==0)
 	    break;
+	listitems.refresh();
 	if (listitems.size () > 1 && !(prev==listitems))
             break;
     }

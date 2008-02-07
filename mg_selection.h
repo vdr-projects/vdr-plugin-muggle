@@ -64,6 +64,7 @@ class mgSelection
 			string& id(unsigned int);
 			unsigned int count(unsigned int);
 			bool operator==(const mgListItems&x) const;
+			void refresh();
 			size_t size() const;
        			int search (const string v) const;
        			unsigned int valindex (const string v) const;

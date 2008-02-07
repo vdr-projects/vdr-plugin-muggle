@@ -55,8 +55,7 @@ void Play(mgSelection *sel, bool enter)
 		s->InitDefaultOrder(1);
 	if (enter)
 		s->enter();
-	s->skipItems(0);	// make sure we start with a valid item
-	if (s->empty()) 	// no valid item exists
+	if (!s->skipItems(0)) 	// no valid item exists
 	{
 		delete s;
 		return;
@@ -517,6 +516,7 @@ void
 mgMenu::AddSelectionItems (mgSelection *sel,mgActions act)
 {
     sel->Activate();
+    sel->listitems.refresh();
     for (unsigned int i = 0; i < sel->listitems.size (); i++)
     {
     	mgAction *a = GenerateAction(act, actEntry);
