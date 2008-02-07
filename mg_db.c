@@ -71,9 +71,10 @@ mgSQLString::Init(const char* s)
 
 	m_original = strdup(s);
 	char *p=strrchr(m_original,' ');
-	if (p+1 == strchr(m_original,0))
-		while (p>=m_original && *p==' ')
-			*p-- = 0;
+	if (p)
+		if (p+1 == strchr(m_original,0))
+			while (p>=m_original && *p==' ')
+				*p-- = 0;
 
 #ifdef HAVE_SQLITE
 	m_str = new mgSQLStringSQLite(m_original);
