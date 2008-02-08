@@ -84,7 +84,7 @@ DEFINES += -DMUSICDIR='"$(MUSICDIR)"'
 
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o i18n.o mg_valmap.o mg_db.o mg_thread_sync.o \
+OBJS = $(PLUGIN).o i18n.o mg_valmap.o mg_thread_sync.o \
 	mg_item.o mg_item_gd.o mg_listitem.o mg_selection.o mg_sel_gd.o vdr_actions.o vdr_menu.o mg_tools.o \
 	vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o \
 	vdr_setup.o mg_setup.o mg_incremental_search.o mg_image_provider.o
@@ -117,6 +117,8 @@ DB_CFLAGS = -I$(shell pg_config --includedir)
 SQLLIBS = -L$(shell pg_config --libdir) -lpq
 DEFINES += -DHAVE_PG
 endif
+
+DB_OBJ += mg_db.o
 
 ifdef HAVE_VORBISFILE
 DEFINES += -DHAVE_VORBISFILE
@@ -166,7 +168,7 @@ libvdr-$(PLUGIN).so: $(OBJS)
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(PLAYLIBS) $(SQLLIBS) -o $@
 	@cp --remove-destination $@ $(LIBDIR)/$@.$(APIVERSION)
 
-mugglei: mg_tools.o mugglei.o mg_db.o $(DB_OBJ) mg_listitem.o mg_item.o mg_item_gd.o mg_valmap.o mg_setup.o 
+mugglei: mg_tools.o mugglei.o $(DB_OBJ) mg_listitem.o mg_item.o mg_item_gd.o mg_valmap.o mg_setup.o 
 	$(CXX) $(CXXFLAGS) $^ $(MILIBS) $(SQLLIBS) -o $@
 
 install: all
