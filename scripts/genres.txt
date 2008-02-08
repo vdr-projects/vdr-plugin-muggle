@@ -1,226 +1,226 @@
 b	20	Alternative
 ba	40	Alt. Rock
-bb	\N	Art Rock
+bb	N	Art Rock
 bc	90	Avantgarde
-be	\N	Experimental
+be	N	Experimental
 bh	6	Grunge
 bi	131	Indie
 bm	12	Other
 bn	139	Crossover
-c	\N	Books & Spoken
-ca	\N	Short Stories
+c	N	Books & Spoken
+ca	N	Short Stories
 cb	57	Comedy
 cc	77	Musical
-cd	\N	Poetry
+cd	N	Poetry
 ce	65	Cabaret
-cf	\N	Religion
+cf	N	Religion
 cg	101	Speech
-ch	\N	Stories/Fairytales
-ci	\N	Radio Play
-cia	\N	Literary Radio Play
-cib	\N	Thriller
+ch	N	Stories/Fairytales
+ci	N	Radio Play
+cia	N	Literary Radio Play
+cib	N	Thriller
 e	32	Classical
 ea	104	Chamber Music
 eaa	105	Sonata
-eb	\N	Classical General
-ec	\N	Contemporary
-eca	\N	Contemp. Crossover
-ecb	\N	Electronic Classical
-ecc	\N	Experimental Classical
-ecd	\N	Minimal Music
+eb	N	Classical General
+ec	N	Contemporary
+eca	N	Contemp. Crossover
+ecb	N	Electronic Classical
+ecc	N	Experimental Classical
+ecd	N	Minimal Music
 ed	24	Soundtrack
 ee	33	Instrumental
-ef	\N	Period Music
-efa	\N	Baroque
-efb	\N	Medieval
-efc	\N	Renaissance
-efd	\N	Romantic
-efda	\N	19th Century
-eg	\N	Solo Instruments
-ega	\N	Guitar
-egb	\N	Percussion
-egc	\N	Piano
+ef	N	Period Music
+efa	N	Baroque
+efb	N	Medieval
+efc	N	Renaissance
+efd	N	Romantic
+efda	N	19th Century
+eg	N	Solo Instruments
+ega	N	Guitar
+egb	N	Percussion
+egc	N	Piano
 eh	106	Symphony
 ei	28	Vocal
 eia	97	Chorus
-eib	\N	Ensembles
+eib	N	Ensembles
 eic	103	Opera
 f	2	Country
-fa	\N	Alternative Country
+fa	N	Alternative Country
 fb	89	Bluegrass
-fd	\N	Country Blues
-fe	\N	Country General
-fg	\N	Country and Western
+fd	N	Country Blues
+fe	N	Country General
+fg	N	Country and Western
 fh	80	Folk
-fha	\N	Irish Folk
-fi	\N	Rockabilly
+fha	N	Irish Folk
+fi	N	Rockabilly
 g	98	Easy Listening
-gb	\N	Lounge
-gc	\N	Love Songs
+gb	N	Lounge
+gc	N	Love Songs
 gca	116	Ballad
-gd	\N	Mood Music
+gd	N	Mood Music
 ge	10	New Age
-gf	\N	Soft Rock
-gfa	\N	Acoustic Rock
-gg	\N	Schlager
-gh	\N	Soft Pop
+gf	N	Soft Rock
+gfa	N	Acoustic Rock
+gg	N	Schlager
+gh	N	Soft Pop
 gi	45	Meditative
-gj	\N	Pair Dance
-gja	\N	Walz
-gjb	\N	Tango
+gj	N	Pair Dance
+gja	N	Walz
+gjb	N	Tango
 h	102	Chanson
-ha	\N	Singer-Songwriter
+ha	N	Singer-Songwriter
 hb	65	Children's Music
 i	52	Electronic
 ia	34	Acid
 ib	26	Ambient
-ic	\N	Breakbeat/Breaks
-ica	\N	Breakbeat
-icb	\N	Darkside
+ic	N	Breakbeat/Breaks
+ica	N	Breakbeat
+icb	N	Darkside
 icc	63	Jungle
-icd	\N	Ragga
+icd	N	Ragga
 ice	27	Trip-Hop
 id	3	Dance
 ie	127	Drum & Bass
-if	\N	Electronica
-ig	\N	Envir. Soundscapes
-ih	\N	Experimental Elect.
-iha	\N	Minimal Experimental
+if	N	Electronica
+ig	N	Envir. Soundscapes
+ih	N	Experimental Elect.
+iha	N	Minimal Experimental
 ihb	39	Noise
 ii	37	Sound Clip
 ij	35	House
-ija	\N	Acid House
-ijb	\N	Funk House
-ijc	\N	Hard House
-ijd	\N	Progressive House
+ija	N	Acid House
+ijb	N	Funk House
+ijc	N	Hard House
+ijd	N	Progressive House
 ije	124	Euro-House
 ijf	128	Club-House
 ik	19	Industrial
 il	18	Techno
-ilb	\N	Dub
+ilb	N	Dub
 ild	126	Goa
-ile	\N	Hardcore Techno
-ilf	\N	Illbient
-ilg	\N	Minimal
+ile	N	Hardcore Techno
+ilf	N	Illbient
+ilg	N	Minimal
 ilh	25	Euro-Techno
 ili	68	Rave
 ilj	31	Trance
 im	44	Space Music
-j	\N	Hip Hop/Rap
+j	N	Hip Hop/Rap
 ja	7	Hip-Hop
 jb	15	Rap
 jbb	61	Christian Rap
-jbd	\N	Hardcore Rap
+jbd	N	Hardcore Rap
 jbf	59	Gangsta
-k	\N	Blues/R&B
+k	N	Blues/R&B
 ka	0	Blues
-kaa	\N	Acoustic Blues
-kab	\N	Blues Rock
-kac	\N	Blues Vocalist
-kae	\N	Electric Blues
-kag	\N	Jazz Blues
+kaa	N	Acoustic Blues
+kab	N	Blues Rock
+kac	N	Blues Vocalist
+kae	N	Electric Blues
+kag	N	Jazz Blues
 kb	38	Gospel
-kc	\N	Improvised
+kc	N	Improvised
 kd	14	R&B
 ke	42	Soul
-kea	\N	Sweet Soul
+kea	N	Sweet Soul
 l	8	Jazz
 la	73	Acid Punk
 lb	85	Bebob
-lc	\N	Dancefloor Jazz
+lc	N	Dancefloor Jazz
 lf	30	Jazz Fusion
-lh	\N	Jazz Vocals
-lj	\N	Ragtime
-lk	\N	Smooth Jazz
+lh	N	Jazz Vocals
+lj	N	Ragtime
+lk	N	Smooth Jazz
 ll	83	Swing
 lla	96	Big Band
 llb	76	Retro-Swing
-lm	\N	Cool Jazz
-ln	\N	Ethno Jazz
-lna	\N	African Ethno Jazz
-lnb	\N	Arab Ethno Jazz
-lnc	\N	Cuban Jazz
-lnd	\N	Latin Jazz
-lne	\N	Far East Jazz
-lo	\N	Modern Jazz
-lp	\N	New Orleans Brass
-m	\N	Pop & Rock
-ma	\N	Country Rock
+lm	N	Cool Jazz
+ln	N	Ethno Jazz
+lna	N	African Ethno Jazz
+lnb	N	Arab Ethno Jazz
+lnc	N	Cuban Jazz
+lnd	N	Latin Jazz
+lne	N	Far East Jazz
+lo	N	Modern Jazz
+lp	N	New Orleans Brass
+m	N	Pop & Rock
+ma	N	Country Rock
 mb	5	Funk
-mba	\N	Acid Funk
+mba	N	Acid Funk
 mc	9	Metal
 mcc	22	Death Metal
-mcd	\N	Doom Metal
-mcf	\N	Hard Core Metal
-mcg	\N	Heavy Metal
-mck	\N	Thrash Metal
+mcd	N	Doom Metal
+mcf	N	Hard Core Metal
+mcg	N	Heavy Metal
+mck	N	Thrash Metal
 md	13	Pop
 mda	99	Acoustic
-mdb	\N	Synthesizer Pop
-mdd	\N	Latin Pop
+mdb	N	Synthesizer Pop
+mdd	N	Latin Pop
 mdg	123	A Capella
-mdh	\N	Neue Deutsche Welle
+mdh	N	Neue Deutsche Welle
 mdi	4	Disco
-mdj	\N	Dance Pop
-mdja	\N	Twist
-mdk	\N	Doo-Wop
+mdj	N	Dance Pop
+mdja	N	Twist
+mdk	N	Doo-Wop
 me	43	Punk
 mea	121	Hardcore/Punk Rock
 meb	71	Lo-Fi/Garage
-mec	\N	Old School Punk
+mec	N	Old School Punk
 med	21	Ska
 mf	17	Rock
-mfb	\N	Acid Rock
+mfb	N	Acid Rock
 mfe	81	Folk/Rock
-mfg	\N	Groove Rock
-mfh	\N	Guitar Rock
+mfg	N	Groove Rock
+mfh	N	Guitar Rock
 mfha	1	Classic Rock
-mfhb	\N	Improv Rock
+mfhb	N	Improv Rock
 mfhc	47	Instrum. Rock
-mfhf	\N	Surf Rock
+mfhf	N	Surf Rock
 mfj	66	New Wave
 mfk	67	Psychadelic
 mfl	78	Rock & Roll
 mfm	94	Symphonic Rock
-mg	\N	Rock En Espanol
-n	\N	World
+mg	N	Rock En Espanol
+n	N	World
 na	16	Reggae
-nb	\N	Steel Drums
-nc	\N	World Popular
-nca	\N	African Pop
-ncb	\N	Oriental Pop
-ncc	\N	Scandinavian Ethnopop
-ncd	\N	Asian Pop
-nce	\N	Arabian Pop
-ncf	\N	European Ethnopop
-ncg	\N	Latin Pop
-nch	\N	Caribbean Pop
+nb	N	Steel Drums
+nc	N	World Popular
+nca	N	African Pop
+ncb	N	Oriental Pop
+ncc	N	Scandinavian Ethnopop
+ncd	N	Asian Pop
+nce	N	Arabian Pop
+ncf	N	European Ethnopop
+ncg	N	Latin Pop
+nch	N	Caribbean Pop
 nd	82	National Folk
-nda	\N	African
-ndaa	\N	Mali Blues
-ndb	\N	Arabic
-ndc	\N	Asian
-ndd	\N	Bossa Nova
-nde	\N	Caribbean
+nda	N	African
+ndaa	N	Mali Blues
+ndb	N	Arabic
+ndc	N	Asian
+ndd	N	Bossa Nova
+nde	N	Caribbean
 ndf	88	Celtic
 ndg	53	Pop-Folk
-ndga	\N	Jodel
-ndh	\N	France
-ndi	\N	Germany
-ndj	\N	India
-ndk	\N	Ireland
+ndga	N	Jodel
+ndh	N	France
+ndi	N	Germany
+ndj	N	India
+ndk	N	Ireland
 ndl	86	Latin
-ndlb	\N	Flamenco
-ndlc	\N	Mambo
-ndld	\N	Mariachi
+ndlb	N	Flamenco
+ndlc	N	Mambo
+ndld	N	Mariachi
 ndle	142	Merengue
 ndlg	143	Salsa
 ndlh	114	Samba
 ndm	64	Native American
-ndn	\N	Quebecois
-ndo	\N	Russian
-ndp	\N	South/Cent. American
-ndq	\N	Spain
+ndn	N	Quebecois
+ndo	N	Russian
+ndp	N	South/Cent. American
+ndq	N	Spain
 ndr	113	Tango
 y	11	Oldies
 y2	49	Gothic
