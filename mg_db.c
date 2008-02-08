@@ -359,6 +359,13 @@ mgDb::Sync(char * const * path_argv)
 	if (fts)
 	{
 		while ( (ftsent = fts_read(fts)) != NULL)
+		{
+			if (ftsent->fts_path[0]=='/' && ftsent->fts_info!=FTS_DP)
+			{
+				mgWarning("Ignoring absolute path %s",ftsent->fts_path);
+				fts_set(fts,ftsent,FTS_SKIP);
+				continue;
+			}
 			switch (ftsent->fts_info) {
 				case FTS_DC:
 					mgDebug(1,"Ignoring directory %s, would cycle already seen %s",
@@ -408,6 +415,7 @@ mgDb::Sync(char * const * path_argv)
 					mgDebug(1,"Ignoring %s: unknown fts_info value %d",
 						ftsent->fts_path,ftsent->fts_info);
 			}
+		}
 		fts_close(fts);
 	}
 	Commit();
