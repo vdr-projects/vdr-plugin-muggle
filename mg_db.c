@@ -41,7 +41,6 @@ mgDbServer* DbServer;
 
 mgDbServer::mgDbServer()
 {
-	printf("mgDbServer\n");
 #ifdef HAVE_SQLITE
 	m_server = new mgDbServerSQLite;
 #elif HAVE_PG
@@ -53,7 +52,6 @@ mgDbServer::mgDbServer()
 
 mgDbServer::~mgDbServer()
 {
-	printf("~mgDbServer\n");
 	delete m_server;
 	m_server = 0;
 }
