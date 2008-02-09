@@ -103,9 +103,12 @@ mgDbGd::HelpText() const
         return
 	"  -h HHHH,  --host=HHHH     specify database host (default is localhost)\n"
         "  -s SSSS   --socket=PATH   specify database socket\n"
-        "  -p PPPP,  --port=PPPP     specify port of database server (default is )\n"
-        "  -u UUUU,  --user=UUUU     specify database user (default is )\n"
-        "  -w WWWW,  --password=WWWW specify database password (default is empty)\n";
+        "  -p PPPP,  --port=PPPP     specify port of database server\n"
+        "  -u UUUU,  --user=UUUU     specify database user (default is current login name)\n"
+        "  -w WWWW,  --password=WWWW specify database password (default is empty)\n"
+	"\n"
+	" if the database runs on the same computer you should only need -u and -w if\n"
+	" at all, see README.postgresql\n";
 }
 
 mgDb* GenerateDB(bool SeparateThread)
