@@ -289,6 +289,7 @@ mgDbGd::Connect ()
     char conninfo[500];
     char port[20];
     char host[200];
+    char *user;
     if (the_setup.DbPort>0)
 	    sprintf(port," port = %d ",the_setup.DbPort);
     else
@@ -299,8 +300,12 @@ mgDbGd::Connect ()
 	snprintf(host,199," host = %s ",the_setup.DbSocket);
     else
 	host[0]=0;
+    if (the_setup.DbUser==0)
+	    user=getenv("LOGNAME");
+    else
+	    user=the_setup.DbUser;
     snprintf(conninfo,499,"%s %s dbname = %s user = %s ",
-		    host,port,the_setup.DbName,the_setup.DbUser);
+		    host,port,the_setup.DbName,user);
     m_db = PQconnectdb(conninfo);
     if (PQstatus(m_db) != CONNECTION_OK)
     {
