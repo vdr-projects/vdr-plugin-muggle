@@ -243,8 +243,8 @@ mgDbGd::Create()
 		return false;
 	}
     }
-  m_database_found=true;
   FillTables();
+  mgWarning("new database successfully created");
   return true;
 }
 
@@ -290,28 +290,20 @@ mgSubstring(sqlite3_context *context, int argc, sqlite3_value **argv)
 }
 
 bool
-mgDbGd::Connect ()
+mgDbGd::ConnectDatabase ()
 {
-    if (m_database_found)
-	return true;
-    if (time(0)<m_create_time+10)
-	return false;
-    m_create_time=time(0);
-    struct stat stbuf;	// TODO das hier in die Parentklasse?
+    struct stat stbuf;
     if (stat(the_setup.DbDatadir,&stbuf))
 	mkdir(the_setup.DbDatadir,0755);
     char *s=sqlite3_mprintf("%s/%s.sqlite",the_setup.DbDatadir,the_setup.DbName);
     mgDebug(1,"%X opening data base %s",m_db,s);
     int rc = sqlite3_open(s,&m_db);
-    m_database_found = rc==SQLITE_OK;
-    if (!m_database_found)
-    {
+    if (rc!=SQLITE_OK)
 	mgWarning("Cannot open/create SQLite database %s:%d/%s",
 		s,rc,sqlite3_errmsg(m_db));
-    	sqlite3_free(s);
+    sqlite3_free(s);
+    if (rc!=SQLITE_OK)
 	return false;
-     }
-     sqlite3_free(s);
      rc = sqlite3_create_function(m_db,"mgDirectory",1,SQLITE_UTF8,
 	    0,&mgDirectory,0,0);
      if (rc!=SQLITE_OK)
@@ -334,19 +326,8 @@ mgDbGd::Connect ()
 	return false;
      }
      if (!FieldExists("tracks","id"))
-	m_database_found=false;
-     if (m_database_found)
-	return true;
-     extern bool create_question();
-     if (!create_question())
-     {
-	mgWarning("Database not created");
-     	return false;
-     }
-     m_database_found = Create();
-     if (!m_database_found)
-	     mgWarning("Cannot create database:%s",sqlite3_errmsg);
-     return m_database_found;
+	return false;
+     return true;
 }
 
 bool 

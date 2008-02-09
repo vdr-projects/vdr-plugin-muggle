@@ -46,7 +46,7 @@ class mgDbGd : public mgDb {
    public:
 	mgDbGd (bool SeparateThread=false);
 	~mgDbGd();
-	bool Connect();
+	bool ConnectDatabase();
   	bool Create();
 	
 	bool NeedGenre2();

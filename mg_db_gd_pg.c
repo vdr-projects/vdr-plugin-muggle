@@ -22,6 +22,7 @@
 #include "mg_setup.h"
 #include "mg_item_gd.h"
 #include "mg_db_gd_pg.h"
+#include <libpq-fe.h>
 
 #include <pg_config.h>
 
@@ -253,14 +254,6 @@ mgDbGd::Commit()
 bool
 mgDbGd::Create()
 {
-  if (!Connect())
-	  return false;
-  return myCreate();
-}
-
-bool
-mgDbGd::myCreate()
-{
   // create database and tables
   int len = sizeof( db_cmds ) / sizeof( char* );
   for( int i=0; i < len; i ++ )
@@ -269,8 +262,8 @@ mgDbGd::myCreate()
   	if (!q.ErrorMessage().empty())
 		return false;
     }
-  m_database_found=true;
   FillTables();
+  mgWarning("new database successfully created");
   return true;
 }
 
@@ -282,10 +275,8 @@ mgDbGd::ServerConnect ()
 
 
 bool
-mgDbGd::Connect ()
+mgDbGd::ConnectDatabase ()
 {
-    if (m_database_found)
-	return true;
     char conninfo[500];
     char port[20];
     char host[200];
@@ -312,23 +303,8 @@ mgDbGd::Connect ()
 	    mgWarning("Failed to connect to postgres server using %s:%s",conninfo,PQerrorMessage(m_db));
 	    return false;
     }
-    m_database_found = true;	// otherwise we get into a recursion
-    m_database_found = exec_count("SELECT COUNT(*) FROM information_schema.tables WHERE table_name='album'");
-    if (m_database_found)
-	return true;
-    if (time(0)<m_create_time+10)
-	return false;
-    m_create_time=time(0);
-    extern bool create_question();
-    if (!create_question())
-    {
-	    mgWarning("Database not created");
-	    return false;
-    }
-    m_database_found = myCreate();
-    if (!m_database_found)
-	    mgWarning("Cannot create database:%s",PQerrorMessage(m_db));
-    return m_database_found;
+    return atol (get_col0 ("SELECT COUNT(*) FROM information_schema.tables WHERE table_name='album'").c_str ())==1;
+	// do not use exec_count because it calls Connect()
 }
 
 bool 

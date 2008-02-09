@@ -25,7 +25,7 @@ class mgDbGd : public mgDb {
 	mgDbGd (bool SeparateThread=false);
 	~mgDbGd();
 	bool ServerConnect();
-	bool Connect();
+	bool ConnectDatabase();
   	bool Create();
 	int AddToCollection( const string Name,const vector<mgItem*>&items,mgParts* what);
 	int  RemoveFromCollection( const string Name,const vector<mgItem*>&items,mgParts* what);

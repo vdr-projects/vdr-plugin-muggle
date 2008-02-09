@@ -421,7 +421,7 @@ mgDbGd::Create()
   if (!ServerConnect())
 	  return false;
   // create database and tables
-  mgDebug(1,"Dropping and recreating database %s",the_setup.DbName);
+  mgWarning("Dropping and recreating database %s",the_setup.DbName);
   char buffer[500];
   sprintf(buffer,"DROP DATABASE IF EXISTS %s",the_setup.DbName);
   if (strlen(buffer)>400)
@@ -454,8 +454,8 @@ mgDbGd::Create()
 		return false;
 	}
     }
-  m_database_found=true;
   FillTables();
+  mgWarning("new database successfully created");
   return true;
 }
 
@@ -517,28 +517,9 @@ UsingEmbeddedMySQL()
 }
 
 bool
-mgDbGd::Connect ()
+mgDbGd::ConnectDatabase ()
 {
-    if (m_database_found)
-	return true;
-    if (!ServerConnect())
-    	return false;
-    if (time(0)<m_create_time+10)
-	return false;
-    m_create_time=time(0);
-    m_database_found = mysql_select_db(m_db,the_setup.DbName)==0;
-    if (m_database_found)
-	return true;
-    extern bool create_question();
-    if (!create_question())
-    {
-    	mgWarning("Database not created");
-    	return false;
-    }
-    m_database_found = Create();
-    if (!m_database_found)
-    	mgWarning("Cannot create database:%s",mysql_error(m_db));
-    return m_database_found;
+    return mysql_select_db(m_db,the_setup.DbName)==0;
 }
 
 bool 

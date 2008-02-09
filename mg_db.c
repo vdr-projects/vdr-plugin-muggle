@@ -299,6 +299,36 @@ optimize (string & spar)
 }
 
 bool
+mgDb::Connect ()
+{
+    if (m_database_found)
+        return true;
+    if (!ServerConnect())
+        return false;
+    if (time(0)<m_create_time+10)
+        return false;
+    m_create_time=time(0);
+    m_database_found=ConnectDatabase();
+    if (!m_database_found)
+       	mgWarning("database not found");
+    if (the_setup.IsMugglei())
+    {
+	if (the_setup.CreateMode)
+		m_database_found = Create();
+    }
+    else
+    {
+	if (!m_database_found)
+	{
+                extern bool create_question();
+                if (create_question())
+                        m_database_found = Create();
+        }
+    }
+    return m_database_found;
+}
+
+bool
 mgDb::SyncStart()
 {
   	if (!Connect())

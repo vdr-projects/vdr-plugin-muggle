@@ -171,9 +171,9 @@ class mgDb {
  	 */
 	unsigned long exec_count(const string sql); 
   	virtual bool ServerConnect() { return true; }
-  	virtual bool Connect() = 0;
+	bool Connect();
+  	virtual bool ConnectDatabase() = 0;
   	bool HasFolderFields() const { return m_hasfolderfields;}
-  	virtual bool Create() = 0;
 	virtual int AddToCollection( const string Name,const vector<mgItem*>&items,mgParts* what=0);
 	virtual int RemoveFromCollection( const string Name,const vector<mgItem*>&items,mgParts* what=0);
 	virtual bool DeleteCollection( const string Name);
@@ -200,12 +200,12 @@ class mgDb {
 	int m_cols;
 	virtual void SyncEnd() {}
 	bool SyncFile(const char *filename);
-  	bool m_database_found;
   	bool m_hasfolderfields;
 	bool m_separate_thread;
 	time_t m_connect_time;
 	time_t m_create_time;
 	string get_col0(const string sql);
+  	virtual bool Create() = 0;
 	void FillTables();
 	virtual void StartTransaction() {};
 	virtual void Commit() {};
@@ -225,6 +225,7 @@ class mgDb {
 			const mgSQLString& c_artist);
 	map<string,string> m_Genres;
 	map<string,string> m_GenreIds;
+  	bool m_database_found;
 
 };
 
