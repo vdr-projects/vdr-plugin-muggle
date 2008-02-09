@@ -142,6 +142,7 @@ mgDbGd::Threadsafe()
 
 static char *db_cmds[] = 
 {
+  "DROP TABLE IF EXISTS album",
   "CREATE TABLE album ( "
 	  "artist varchar(255) default NULL, "
 	  "title varchar(255) default NULL, "
@@ -153,21 +154,25 @@ static char *db_cmds[] =
 	  "PRIMARY KEY  (cddbid))",
   "CREATE INDEX alb_artist ON album (artist)",
   "CREATE INDEX alb_title ON album (title)",
+  "DROP TABLE IF EXISTS genre",
   "CREATE TABLE genre ("
 	  "id varchar(10) NOT NULL default '', "
 	  "id3genre smallint default NULL, "
 	  "genre varchar(255) default NULL, "
 	  "freq int default NULL, "
 	  "PRIMARY KEY (id))",
+  "DROP TABLE IF EXISTS language",
   "CREATE TABLE language ("
 	  "id varchar(4) NOT NULL default '', "
 	  "language varchar(40) default NULL, "
 	  "freq int default NULL, "
 	  "PRIMARY KEY  (id))",
+  "DROP TABLE IF EXISTS musictype",
   "CREATE TABLE musictype ("
 	  "musictype varchar(40) default NULL, "
 	  "id serial, "
 	  "PRIMARY KEY  (id)) ",
+  "DROP TABLE IF EXISTS playlist",
   "CREATE TABLE playlist ( "
 	  "title varchar(255) default NULL, "
 	  "author varchar(255) default NULL, "
@@ -175,13 +180,16 @@ static char *db_cmds[] =
 	  "created timestamp default NULL, "
 	  "id serial, "
 	  "PRIMARY KEY  (id))",
+  "DROP TABLE IF EXISTS playlistitem",
   "CREATE TABLE playlistitem ( "
 	  "playlist int NOT NULL,"
 	  "trackid int NOT NULL) WITH OIDS",
+  "DROP TABLE IF EXISTS source",
    "CREATE TABLE source ( "
 	  "source varchar(40) default NULL, "
 	  "id serial, "
 	  "PRIMARY KEY  (id)) ",
+  "DROP TABLE IF EXISTS tracks",
   "CREATE TABLE tracks ( "
 	  "artist varchar(255) default NULL, "
 	  "title varchar(255) default NULL, "
