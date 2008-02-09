@@ -441,7 +441,7 @@ mgDbGd::Create()
   	// with it anyway.
 
   if (mysql_select_db(m_db,the_setup.DbName))
-	  mgError("mysql_select_db(%s) failed with %s",mysql_error(m_db));
+	  mgError("mysql_select_db(%s) failed with %s",the_setup.DbName,mysql_error(m_db));
 
   int len = sizeof( db_cmds ) / sizeof( char* );
   for( int i=0; i < len; i ++ )
