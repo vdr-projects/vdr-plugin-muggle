@@ -26,9 +26,10 @@ Please execute these steps before starting muggle the first time:
 
 1. log in as root
 2. su - postgres
-3. createuser vdr
+3. createuser XXX
 4. createdb GiantDisc
 
+where XXX is the user name vdr is running under, normally vdr
 
 Everything else will be done by muggle.
 
@@ -45,13 +46,21 @@ Muggle and mugglei use a small set of parameters in order to control
 the interaction with the Postgresql server. Let's look at an example:
 
 \verbatim
-  -P'muggle -h /tmp -u vdr -t/home/music'
+  -P'muggle -s /tmp -t/home/music'
 \endverbatim
 
-The -h parameter says to look for a socket in /tmp (this is what I
+The -s parameter says to look for a socket in /tmp (this is what I
 had to to on Debian unstable). 
 
-Start mugglei without arguments to see a list and explanation of
+On the other hand on my kubuntu 7.10 notebook I don't need any
+additional arguments at all:
+
+\verbatim
+  -P'muggle -t/home/music'
+\endverbatim
+
+
+Starting mugglei without arguments to see a list and explanation of
 all available options. They can vary slightly depending on the
 chosen data base software.
 
