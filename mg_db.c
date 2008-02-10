@@ -193,7 +193,9 @@ char*
 mgSQLStringImp::quoted() const
 {
 	if (!m_quoted)
-		msprintf(&m_quoted,"'%s'",unquoted());
+	{
+		asprintf(&m_quoted,"'%s'",unquoted());
+	}
 	return m_quoted;
 }
 
@@ -370,7 +372,7 @@ mgDb::Sync(char * const * path_argv)
 			if (!item->Valid(true))
 			{
 				char *b;
-				msprintf(&b,"DELETE FROM tracks WHERE id=%ld",item->getItemid());
+				asprintf(&b,"DELETE FROM tracks WHERE id=%ld",item->getItemid());
 				count += Execute(b);
 				free(b);
 			}
@@ -1016,7 +1018,7 @@ mgSQLString
 mgDb::Build_cddbid(const mgSQLString& artist) const
 {
 	char *s;
-	msprintf(&s,"%ld-%.9s",random(),artist.original());
+	asprintf(&s,"%ld-%.9s",random(),artist.original());
 	mgSQLString result = mgSQLString(s);
 	free(s);
 	return result;
@@ -1027,7 +1029,7 @@ mgDb::getAlbum(const char *filename,const mgSQLString& c_album,
 		const mgSQLString& c_artist)
 {
 	char *b;
-	msprintf(&b,"SELECT cddbid FROM album"
+	asprintf(&b,"SELECT cddbid FROM album"
 			" WHERE title=%s AND artist=%s",c_album.quoted(),c_artist.quoted());
 	mgSQLString result(get_col0(b));
 	free(b);
@@ -1042,13 +1044,13 @@ mgDb::getAlbum(const char *filename,const mgSQLString& c_album,
 		mgSQLString c_directory(directory);
 		free(directory);
 		char *where;
-		msprintf(&where,"WHERE tracks.sourceid=album.cddbid "
+		asprintf(&where,"WHERE tracks.sourceid=album.cddbid "
 			"AND %s=%s "
 			"AND album.title=%s",
 			Directory().c_str(),c_directory.quoted(),
 			c_album.quoted());
 		// how many artists will the album have after adding this one?
-		msprintf(&b,"SELECT distinct album.artist FROM album, tracks %s ",where);
+		asprintf(&b,"SELECT distinct album.artist FROM album, tracks %s ",where);
 		mgQuery q(DbHandle(),b);
 		free(b);
 		long new_album_artists = q.Rows();
@@ -1064,10 +1066,10 @@ mgDb::getAlbum(const char *filename,const mgSQLString& c_album,
 		if (new_album_artists>1 && strcmp(buf.original(),"Various Artists"))
 			// is the album multi artist and not yet marked as such?
 		{
-			msprintf(&b,"SELECT album.cddbid FROM album, tracks %s",where);
+			asprintf(&b,"SELECT album.cddbid FROM album, tracks %s",where);
 			result=mgSQLString(get_col0(b));
 			free(b);
-			msprintf(&b,"UPDATE album SET artist='Various Artists' WHERE cddbid=%s",result.quoted());
+			asprintf(&b,"UPDATE album SET artist='Various Artists' WHERE cddbid=%s",result.quoted());
 			Execute(b);
 			free(b);
 			// here we could change all tracks.sourceid to result and delete
@@ -1079,7 +1081,7 @@ mgDb::getAlbum(const char *filename,const mgSQLString& c_album,
 		{				// no usable album found
 			result=Build_cddbid(c_artist);
 			char *b;
-			msprintf(&b,"INSERT INTO album (title,artist,cddbid) "
+			asprintf(&b,"INSERT INTO album (title,artist,cddbid) "
 					"VALUES(%s,%s,%s)",
 				c_album.quoted(),c_artist.quoted(),result.quoted());
 			int rows = Execute(b);
@@ -1140,7 +1142,7 @@ mgDb::DefineGenre(const string genre)
 		if (c!='a')
 			sprintf(strchr(g,0)," %c",c);
 		char *b;
-		msprintf(&b,"INSERT INTO genre (id,genre) VALUES('z%c','%s')",c,g);
+		asprintf(&b,"INSERT INTO genre (id,genre) VALUES('z%c','%s')",c,g);
 		Execute(b);
 		free(b);
 	}
@@ -1167,7 +1169,7 @@ mgDb::DefineGenre(const string genre)
     }
     char *b;
     mgSQLString c_genre(genre);
-    msprintf(&b,"INSERT INTO genre (id,genre) VALUES('%s',%s)",newid,c_genre.quoted());
+    asprintf(&b,"INSERT INTO genre (id,genre) VALUES('%s',%s)",newid,c_genre.quoted());
     Execute(b);
     free(b);
     m_Genres[genre]=newid;

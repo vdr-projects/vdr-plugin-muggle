@@ -31,7 +31,6 @@ void mgDebug (int level, const char *fmt, ...);
 void mgDebug (const char *fmt, ...);
 void mgWarning (const char *fmt, ...);
 void mgError (const char *fmt, ...); 
-int msprintf(char **strp, const char *fmt, ...);
 //@}
 
 #ifdef DEBUG

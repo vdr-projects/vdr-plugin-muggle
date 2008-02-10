@@ -266,7 +266,7 @@ mgDecade(sqlite3_context *context, int argc, sqlite3_value **argv)
 	assert(argc==1);
 	unsigned int year=sqlite3_value_int(argv[0]);
 	char *buf;
-	msprintf(&buf,"%02d",(year-year%10)%100);
+	asprintf(&buf,"%02d",(year-year%10)%100);
 	sqlite3_result_text(context,buf,2,free);
 }
 
@@ -341,7 +341,7 @@ bool
 mgDbGd::FieldExists(string table, string field)
 {
     	char *b;
-    	msprintf(&b,"SELECT %s FROM %s LIMIT 1",field.c_str(),table.c_str());
+    	asprintf(&b,"SELECT %s FROM %s LIMIT 1",field.c_str(),table.c_str());
 	mgQuery q(m_db,b,mgQuerySilent);
     	free(b);
 	return q.ErrorMessage().empty();

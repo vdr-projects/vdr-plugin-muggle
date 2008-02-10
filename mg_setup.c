@@ -44,7 +44,7 @@ mgSetup::mgSetup ()
     DbName = strdup ("GiantDisc");
     DbUser = 0;
     DbPass = 0;
-    msprintf(&DbDatadir,"%s/.muggle",getenv("HOME"));
+    asprintf(&DbDatadir,"%s/.muggle",getenv("HOME"));
     ToplevelDir = strdup(MUSICDIR "/");
     CreateMode = false;
     DeleteStaleReferences = false;

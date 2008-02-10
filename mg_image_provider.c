@@ -362,7 +362,7 @@ void mgImageProvider::Action()
 
 
 	  char *tmp;
-	  msprintf( &tmp, "muggle-image-convert \"%s\" \"%s\"", filename.c_str(), tmpFile.c_str() );
+	  asprintf( &tmp, "muggle-image-convert \"%s\" \"%s\"", filename.c_str(), tmpFile.c_str() );
 	  system( (const char*) tmp );
 	  free(tmp);
 	 
@@ -406,7 +406,7 @@ void mgImageProvider::writeImage( TagLib::ByteVector &image, int num, string &im
   
   // save image_data to temporary file  
   char *buf;
-  msprintf( &buf, "%s/image-%d.jpg", image_cache.c_str(), num );
+  asprintf( &buf, "%s/image-%d.jpg", image_cache.c_str(), num );
 
   FILE *f = fopen( buf, "w+" );
   fwrite( image_data, sizeof(char), len, f );
