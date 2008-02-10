@@ -1349,35 +1349,35 @@ mgPlayerControl::ShowContents ()
             char *buf;
             if (num_items > 0)
             {
-                asprintf (&buf, "Title:\t%s",
+                msprintf (&buf, "Title:\t%s",
                     player->getCurrent ()->getTitle ().c_str ());
                 m_menu->SetItem (buf, 0, false, false);
                 free (buf);
             }
             if (num_items > 1)
             {
-                asprintf (&buf, "Artist:\t%s",
+                msprintf (&buf, "Artist:\t%s",
                     player->getCurrent ()->getArtist ().c_str ());
                 m_menu->SetItem (buf, 1, false, false);
                 free (buf);
             }
             if (num_items > 2)
             {
-                asprintf (&buf, "Album:\t%s",
+                msprintf (&buf, "Album:\t%s",
                     player->getCurrent ()->getAlbum ().c_str ());
                 m_menu->SetItem (buf, 2, false, false);
                 free (buf);
             }
             if (num_items > 3)
             {
-                asprintf (&buf, "Genre:\t%s",
+                msprintf (&buf, "Genre:\t%s",
                     player->getCurrent ()->getGenre ().c_str ());
                 m_menu->SetItem (buf, 3, false, false);
                 free (buf);
             }
 	    if( num_items > 4 )
 	      {
-                asprintf (&buf, "Year:\t%d",
+                msprintf (&buf, "Year:\t%d",
 			  player->getCurrent ()->getYear () );
                 m_menu->SetItem (buf, 4, false, false);
                 free (buf);
@@ -1385,7 +1385,7 @@ mgPlayerControl::ShowContents ()
             if (num_items > 5)
             {
                 int len = player->getCurrent ()->getDuration ();
-                asprintf (&buf, "Length:\t%s",
+                msprintf (&buf, "Length:\t%s",
 #if VDRVERSNUM >= 10318
                     *IndexToHMSF (SecondsToFrames (len)));
 #else
@@ -1396,7 +1396,7 @@ mgPlayerControl::ShowContents ()
             }
             if (num_items > 6)
             {
-                asprintf (&buf, "Bit rate:\t%s",
+                msprintf (&buf, "Bit rate:\t%s",
                     player->getCurrent ()->getBitrate ().c_str ());
                 m_menu->SetItem (buf, 6, false, false);
                 free (buf);
@@ -1405,14 +1405,14 @@ mgPlayerControl::ShowContents ()
             {
                 int sr = player->getCurrent ()->getSampleRate ();
 
-                asprintf (&buf, "Sampling rate:\t%d", sr);
+                msprintf (&buf, "Sampling rate:\t%d", sr);
                 m_menu->SetItem (buf, 7, false, false);
                 free (buf);
             }
             if (num_items > 8)
             {
 		int t = player->getCurrent ()->getTrack();
-                asprintf (&buf, "File name:\t%d", t);
+                msprintf (&buf, "File name:\t%d", t);
                 m_menu->SetItem (buf, 8, false, false);
                 free (buf);
 	    }
@@ -1420,7 +1420,7 @@ mgPlayerControl::ShowContents ()
             {
                 string sf = player->getCurrent ()->getSourceFile ();
 		char *p = strrchr(sf.c_str(),'/');
-                asprintf (&buf, "File name:\t%s", p+1);
+                msprintf (&buf, "File name:\t%s", p+1);
                 m_menu->SetItem (buf, 9, false, false);
                 free (buf);
 	    }
@@ -1442,7 +1442,7 @@ mgPlayerControl::ShowContents ()
                     if (item)
                     {
                         char *buf;
-                        asprintf (&buf, "%s\t%s", item->getTitle ().c_str (),
+                        msprintf (&buf, "%s\t%s", item->getTitle ().c_str (),
                             item->getArtist ().c_str ());
                         m_menu->SetItem (buf, i, i == 0, i >= 0);
                         free (buf);
@@ -1474,7 +1474,7 @@ mgPlayerControl::ShowProgress ()
             {
                 total_frames = SecondsToFrames (list->getLength ());
                 current_frame += SecondsToFrames (list->getCompletedLength ());
-                asprintf (&buf, "(%d/%zd) %s:%s",
+                msprintf (&buf, "(%d/%zd) %s:%s",
                     list->getItemPosition () + 1, list->items().size(),
                     player->getCurrent ()->getArtist ().c_str (),
                     player->getCurrent ()->getTitle ().c_str ());
@@ -1482,7 +1482,7 @@ mgPlayerControl::ShowProgress ()
         }
         else
         {                                         // track view
-            asprintf (&buf, "%s: %s",
+            msprintf (&buf, "%s: %s",
                 player->getCurrent ()->getArtist ().c_str (),
                 player->getCurrent ()->getTitle ().c_str ());
         }
@@ -1830,7 +1830,7 @@ mgPlayerControl::StatusMsgReplaying ()
 
         if (item->getArtist ().length () > 0)
         {
-            asprintf (&szBuf, "[%c%c] (%d/%zd) %s - %s",
+            msprintf (&szBuf, "[%c%c] (%d/%zd) %s - %s",
                 cLoopMode,
                 cShuffle,
                 sel->getItemPosition () + 1,
@@ -1840,7 +1840,7 @@ mgPlayerControl::StatusMsgReplaying ()
         }
         else
         {
-            asprintf (&szBuf, "[%c%c] (%d/%zd) %s",
+            msprintf (&szBuf, "[%c%c] (%d/%zd) %s",
                 cLoopMode,
                 cShuffle,
                 sel->getItemPosition () + 1,
@@ -1850,7 +1850,7 @@ mgPlayerControl::StatusMsgReplaying ()
     }
     else
     {
-        asprintf (&szBuf, "[muggle]");
+        msprintf (&szBuf, "[muggle]");
     }
 
 //fprintf(stderr,"StatusMsgReplaying(%s)\n",szBuf);

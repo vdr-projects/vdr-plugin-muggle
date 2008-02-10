@@ -198,7 +198,7 @@ mgDbServerMySQL::mgDbServerMySQL()
 					the_setup.DbDatadir,errno);
 			abort();
 		}
-		asprintf(&mysql_embedded_args[1],"--datadir=%s",the_setup.DbDatadir);
+		msprintf(&mysql_embedded_args[1],"--datadir=%s",the_setup.DbDatadir);
 		mgDebug(1,"calling mysql_server_init for embedded in %s",the_setup.DbDatadir);
 	}
 	else
@@ -633,7 +633,7 @@ bool
 mgDbGd::FieldExists(string table, string field)
 {
     	char *b;
-    	asprintf(&b,"DESCRIBE %s %s",table.c_str(),field.c_str());
+    	msprintf(&b,"DESCRIBE %s %s",table.c_str(),field.c_str());
     	mgQuery q(m_db,b);
     	free(b);
     	if (q.Next())

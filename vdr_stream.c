@@ -298,7 +298,7 @@ bool mgStream::fileinfo (bool log)
                 {
                     char *
                         tmpbuf;
-                    asprintf (&tmpbuf, "%llx:%llx", sfs.f_blocks, sfs.f_files);
+                    msprintf (&tmpbuf, "%llx:%llx", sfs.f_blocks, sfs.f_files);
                     m_fsID = tmpbuf;
                     free (tmpbuf);
                 }

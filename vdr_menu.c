@@ -260,9 +260,9 @@ mgMainMenu::SaveState()
     mgValmap nmain("MainMenu");
     mgValmap nsel("tree");
     mgValmap ncol("collection");
-    asprintf(&oldfile,"%s/muggle.state.old",cPlugin::ConfigDirectory ("muggle"));
-    asprintf(&newfile,"%s/muggle.state.new",cPlugin::ConfigDirectory ("muggle"));
-    asprintf(&statefile,"%s/muggle.state",cPlugin::ConfigDirectory ("muggle"));
+    msprintf(&oldfile,"%s/muggle.state.old",cPlugin::ConfigDirectory ("muggle"));
+    msprintf(&newfile,"%s/muggle.state.new",cPlugin::ConfigDirectory ("muggle"));
+    msprintf(&statefile,"%s/muggle.state",cPlugin::ConfigDirectory ("muggle"));
     FILE *f = fopen(newfile,"w");
     if (!f) 
     {
@@ -324,7 +324,7 @@ mgMainMenu::mgMainMenu ():cOsdMenu ("",25)
 
     // load values from state file
     char *b;
-    asprintf(&b,"%s/muggle.state",cPlugin::ConfigDirectory ("muggle"));
+    msprintf(&b,"%s/muggle.state",cPlugin::ConfigDirectory ("muggle"));
     FILE *f = fopen(b,"r");
     free(b);
     if (f) {
@@ -833,7 +833,7 @@ const char*
 mgMainMenu::Message1(const char *msg, const string &arg)
 {
     if (strlen(msg)==0) return 0;
-    asprintf(&m_message, tr(msg), arg.c_str());
+    msprintf(&m_message, tr(msg), arg.c_str());
     return m_message;
 }
 
@@ -1212,7 +1212,7 @@ bool
 create_question()
 {
     char *b;
-    asprintf(&b,tr("Create database %s?"),the_setup.DbName);
+    msprintf(&b,tr("Create database %s?"),the_setup.DbName);
     bool result = Interface->Confirm(b);
     free(b);
     return result;
