@@ -325,9 +325,7 @@ mgDbGd::ConnectDatabase ()
      	mgWarning("Cannot define decade:%d/%s",rc,sqlite3_errmsg);
 	return false;
      }
-     if (!FieldExists("tracks","id"))
-	return false;
-     return true;
+     return FieldExists("tracks","id");
 }
 
 bool 
@@ -342,8 +340,6 @@ mgDbGd::NeedGenre2()
 bool
 mgDbGd::FieldExists(string table, string field)
 {
-    	if (!Connect()) 
-		return false;
     	char *b;
     	asprintf(&b,"SELECT %s FROM %s LIMIT 1",field.c_str(),table.c_str());
 	mgQuery q(m_db,b,mgQuerySilent);

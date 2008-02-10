@@ -632,8 +632,6 @@ mgDbGd::RemoveFromCollection (const string Name, const vector<mgItem*>&items, mg
 bool
 mgDbGd::FieldExists(string table, string field)
 {
-    	if (!Connect()) 
-		return false;
     	char *b;
     	asprintf(&b,"DESCRIBE %s %s",table.c_str(),field.c_str());
     	mgQuery q(m_db,b);

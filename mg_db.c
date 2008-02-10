@@ -1510,7 +1510,10 @@ bool
 mgKeyGdFolder::Enabled(mgDb *db)
 {
     if (m_enabled<0)
+    {
+	if (!db->Connect()) return false;
 	m_enabled = db->FieldExists("tracks", m_field);
+    }
     return (m_enabled==1);
 }
 

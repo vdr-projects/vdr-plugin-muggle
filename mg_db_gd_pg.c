@@ -322,8 +322,6 @@ mgDbGd::NeedGenre2()
 bool
 mgDbGd::FieldExists(string table, string field)
 {
-    	if (!Connect()) 
-		return false;
     	char *b;
         asprintf(&b,"SELECT COUNT(*) FROM information_schema.columns WHERE table_name='album' AND column_name='%s'",field.c_str());
     	bool result = exec_count(b)==1;
