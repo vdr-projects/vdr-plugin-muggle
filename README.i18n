@@ -1,0 +1,41 @@
+UTF-8
+=====
+
+Muggle can handle the data using either the local 8bit character set
+UTF-8. It does this depending of the value of the environment variable
+LANG. If it ends in ".UTF-8", muggle goes into UTF-8 mode.
+
+
+File names
+==========
+
+In UTF-8 mode, muggle expects all file names to be encoded
+as UTF-8. You can easily convert all file names in /mnt/music fromk
+iso-8859-1 to UTF-8:
+
+convmv -f iso-8859-1 -t utf-8 -r /mnt/music
+
+
+Tags from mp3, flac etc.
+========================
+
+We are using the TagLib library which handles this transparently, we only
+need to tell it to return UTF-8. So if the data you import is not correct,
+either the tags in the audio file are wrong or TagLib has an error. See
+http://ktown.kde.org/~wheeler/taglib.html
+
+Please be aware that many linux programs for id3 tags do not yet handle
+UTF-8 correctly like mp3info 0.8.4 or id3v2 0.1.1: They both return
+the artist name as ISO8859-1 even if the locale is UTF-8. TagLib seems
+to handle this correctly.
+
+
+The data base
+=============
+
+We do not plan to provide on-the-fly-conversions while storing or retrieving
+data. The data will be stored in the same encoding as needed by muggle.
+This means the database should be deleted and rebuilt. The option mugglei -c
+now actually does what it should: it also deletes and recreates existing
+data bases.
+

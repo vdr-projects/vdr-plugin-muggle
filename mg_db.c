@@ -100,7 +100,7 @@ mgSQLString::mgSQLString(string s)
 
 mgSQLString::mgSQLString(TagLib::String s)
 {
-	Init(s.toCString());
+	Init(s.toCString(the_setup.utf8));
 }
 
 const char* 
@@ -1179,10 +1179,10 @@ mgDb::DefineGenre(const string genre)
 mgSQLString 
 mgDb::getGenre1(TagLib::FileRef& f)
 {
-	string genre1 = f.tag()->genre().toCString();
+	string genre1 = f.tag()->genre().toCString(the_setup.utf8);
 	if (genre1.empty())
 	{
-		genre1 = m_TCON.toCString();
+		genre1 = m_TCON.toCString(the_setup.utf8);
 		const char *tcon=genre1.c_str();
 		char *rparen=strchr(tcon,')');
 		if (tcon[0]=='(' && rparen)

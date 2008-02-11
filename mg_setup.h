@@ -62,6 +62,7 @@ class mgSetup
 	bool CreateMode;
 	bool IsMugglei() const;
 	void SetMugglei();
+	bool utf8;
     private:
 	bool m_mugglei;
 

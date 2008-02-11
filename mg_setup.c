@@ -47,6 +47,18 @@ mgSetup::mgSetup ()
     asprintf(&DbDatadir,"%s/.muggle",getenv("HOME"));
     ToplevelDir = strdup(MUSICDIR "/");
     CreateMode = false;
+    utf8 = false;
+    const char *lang = getenv("LANG");
+    if (lang)
+    {
+        const char *dot = strchr(lang, '.');
+        if (dot)
+		utf8 = strcmp(dot+1,"UTF-8")==0;
+    }
+utf8=false;
+    if (utf8)
+	mgWarning("muggle running in UTF-8 mode");
+
     DeleteStaleReferences = false;
 
     // stuff related to cover image display

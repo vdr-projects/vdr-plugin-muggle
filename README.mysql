@@ -85,4 +85,11 @@ Start mugglei without arguments to see a list and explanation of
 all available options. They can vary slightly depending on the
 chosen data base software.
 
+\section prereq PREREQUISITES
+
+If you get error messages containing 'Illegal mix of collations', your
+character encoding is set to UTF-8 (LANG environment variable) but
+some music file name is encoded differently. Please convert your file
+names to UTF8. For details see README.i18n.
+
 */
