@@ -446,6 +446,9 @@ mgDb::Sync(char * const * path_argv)
 		}
 		fts_close(fts);
 	}
+	mgDebug(1,"Deleted %d albums because they have no tracks",
+		Execute("DELETE FROM album WHERE NOT EXISTS(SELECT 1 FROM"
+		" tracks WHERE tracks.sourceid=album.cddbid)"));
 	Commit();
 	SyncEnd();
 	showimportcount(importcount,true);
