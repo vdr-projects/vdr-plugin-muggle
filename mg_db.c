@@ -990,9 +990,15 @@ void mgDb::FillTables()
   for( int i=0; i < len; i ++ )
   {
 	  char b[600];
+	  char id[4];
+	  char lang[41];
+	  strncpy(id,languages[i].id,3);
+	  id[4]=0;
+	  strncpy(lang,languages[i].name,40);
+	  lang[40]=0;
 	  sprintf(b,"INSERT INTO language (id,language) VALUES('%s',%s)",
-		languages[i].id,
-	  	mgSQLString(languages[i].name).quoted());
+		id,
+	  	mgSQLString(lang).quoted());
 	  Execute(b);
   }
   len = sizeof( musictypes ) / sizeof( musictypes_t );
