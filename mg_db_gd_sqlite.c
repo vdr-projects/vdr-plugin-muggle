@@ -297,6 +297,8 @@ mgDbGd::ConnectDatabase ()
 	mkdir(the_setup.DbDatadir,0755);
     char *s=sqlite3_mprintf("%s/%s.sqlite",the_setup.DbDatadir,the_setup.DbName);
     mgDebug(1,"%X opening data base %s",m_db,s);
+// rework this when sqlite3.5 is available, use sqlite3_open_v2
+// and do not try to create db here
     int rc = sqlite3_open(s,&m_db);
     if (rc!=SQLITE_OK)
 	mgWarning("Cannot open/create SQLite database %s:%d/%s",
