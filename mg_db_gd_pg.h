@@ -62,7 +62,6 @@ class mgDbGd : public mgDb {
 	string Now() const { return "CURRENT_TIMESTAMP";}
 	string Directory() const { return "substring(tracks.mp3file from '.*/(.*)')"; }
    protected:
-	void SyncFile(const char *filename);
 	void StartTransaction();
 	void Commit();
 	void *ImplDbHandle() const { return (void*)m_db;}

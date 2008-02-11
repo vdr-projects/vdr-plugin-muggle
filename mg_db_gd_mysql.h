@@ -1,4 +1,4 @@
-/*! 
+/*!
  * \file   mg_db_gd_mysql.h
  * \brief  A capsule around giantdisc database access
  *
@@ -43,7 +43,6 @@ class mgDbGd : public mgDb {
 	string Directory() const { return "substring(tracks.mp3file,1,length(tracks.mp3file)"
 		                        "-instr(reverse(tracks.mp3file),'/'))"; }
    protected:
-	void SyncFile(const char *filename);
 	void StartTransaction();
 	void Commit();
 	void *ImplDbHandle() const { return (void*)m_db; }
