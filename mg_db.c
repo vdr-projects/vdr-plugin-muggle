@@ -1212,7 +1212,7 @@ mgDb::getGenre1(TagLib::FileRef& f)
 }
 
 bool
-mgDb::SyncFile(const char *filename)
+mgDb::SyncFile(const char *filename) // returns true if a new file is imported
 {
       	char *ext = extension(filename);
 	if (strcasecmp(ext,"flac")
@@ -1305,7 +1305,7 @@ mgDb::SyncFile(const char *filename)
 		    c_folder1.quoted(),c_folder2.quoted(),
 		    c_folder3.quoted(),c_folder4.quoted());
 	  }
-	return Execute(sql) == 1;
+	return Execute(sql) == 1 && id=="NULL";
 }
 
 string
