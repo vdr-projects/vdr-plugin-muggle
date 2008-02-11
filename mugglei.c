@@ -111,6 +111,7 @@ usage()
 
 int main( int argc, char *argv[] )
 {
+	setlocale(LC_ALL,"");
 	the_setup.SetMugglei();
 	mgSetDebugLevel(1);
       
