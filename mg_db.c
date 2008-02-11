@@ -1018,7 +1018,9 @@ mgSQLString
 mgDb::Build_cddbid(const mgSQLString& artist) const
 {
 	char *s;
-	asprintf(&s,"%ld-%.9s",random(),artist.original());
+	msprintf(&s,"%ld-%.9s",random(),artist.original());
+	if (!s)
+		msprintf(&s,"%ld-X",random());
 	mgSQLString result = mgSQLString(s);
 	free(s);
 	return result;

@@ -55,7 +55,6 @@ mgSetup::mgSetup ()
         if (dot)
 		utf8 = strcmp(dot+1,"UTF-8")==0;
     }
-utf8=false;
     if (utf8)
 	mgWarning("muggle running in UTF-8 mode");
 

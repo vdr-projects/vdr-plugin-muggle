@@ -31,6 +31,21 @@ mgSetDebugLevel (int new_level)
     DEBUG_LEVEL = new_level;
 }
 
+int
+msprintf(char **strp, const char *fmt, ...)
+{
+        va_list ap;
+	int res;
+        va_start (ap, fmt);
+        res=vasprintf (strp, fmt, ap);
+	if (res<0)
+	{
+		*strp=0;
+		mgError("asprintf() returns %d. This probably means illformed UTF-8 characters."
+		" Please convert your file names to UTF-8",fmt,res);
+	}
+        va_end (ap);
+}
 
 void
 mgDebug (int level, const char *fmt, ...)
