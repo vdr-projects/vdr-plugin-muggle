@@ -206,6 +206,7 @@ class mgDb {
 	time_t m_create_time;
 	string get_col0(const string sql);
   	virtual bool Create() = 0;
+  	virtual bool SetCharset() = 0;
 	void FillTables();
 	virtual void StartTransaction() {};
 	virtual void Commit() {};

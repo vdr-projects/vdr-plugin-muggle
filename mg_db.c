@@ -325,6 +325,8 @@ mgDb::Connect ()
                         m_database_found = Create();
         }
     }
+    if (m_database_found)
+	m_database_found = SetCharset();
     return m_database_found;
 }
 

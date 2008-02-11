@@ -416,6 +416,20 @@ mgDbGd::Commit()
 }
 
 bool
+mgDbGd::SetCharset()
+{
+        const char *cmd;
+	if (the_setup.utf8) 
+		cmd="SET NAMES utf8";
+	else
+		cmd="SET NAMES latin1";
+  	mgQuery q0(m_db,cmd);
+  	if (!q0.ErrorMessage().empty())
+		return false;
+	return true;
+}
+
+bool
 mgDbGd::Create()
 {
   if (!ServerConnect())
@@ -429,18 +443,6 @@ mgDbGd::Create()
   mgQuery q(m_db,buffer);
   if (!q.ErrorMessage().empty())
 	return false;
-
-  if (the_setup.utf8)
-  {
-        const char *cmd;
-	if (the_setup.utf8) 
-		cmd="SET NAMES utf8";
-	else
-		cmd="SET NAMES latin1";
-  	mgQuery q0(m_db,cmd);
-  	if (!q0.ErrorMessage().empty())
-		return false;
-  }
 
   sprintf(buffer,"CREATE DATABASE %s",the_setup.DbName);
   mgQuery q1(m_db,buffer);

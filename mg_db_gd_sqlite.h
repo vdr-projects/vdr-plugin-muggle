@@ -48,6 +48,7 @@ class mgDbGd : public mgDb {
 	~mgDbGd();
 	bool ConnectDatabase();
   	bool Create();
+  	bool SetCharset();
 	
 	bool NeedGenre2();
 	long thread_id() { return -1; }

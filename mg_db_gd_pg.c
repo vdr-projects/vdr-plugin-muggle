@@ -252,21 +252,22 @@ mgDbGd::Commit()
 
 
 bool
-mgDbGd::Create()
+mgDbGd::SetCharset()
 {
-
-  if (the_setup.utf8)
-  {
         const char *cmd;
 	if (the_setup.utf8) 
-		cmd="SET NAMES UTF8";
+		cmd="SET NAMES 'UTF8'";
 	else
-		cmd="SET NAMES LATIN1";
+		cmd="SET NAMES 'LATIN1'";
   	mgQuery q0(m_db,cmd);
   	if (!q0.ErrorMessage().empty())
 		return false;
-  }
+	return true;
+}
 
+bool
+mgDbGd::Create()
+{
   // create database and tables
   int len = sizeof( db_cmds ) / sizeof( char* );
   for( int i=0; i < len; i ++ )

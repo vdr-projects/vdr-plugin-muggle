@@ -290,6 +290,12 @@ mgSubstring(sqlite3_context *context, int argc, sqlite3_value **argv)
 }
 
 bool
+mgDbGd::SetCharset()
+{
+	return true;
+}
+
+bool
 mgDbGd::ConnectDatabase ()
 {
     struct stat stbuf;

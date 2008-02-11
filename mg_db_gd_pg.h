@@ -50,6 +50,7 @@ class mgDbGd : public mgDb {
 	bool ServerConnect();
 	bool ConnectDatabase();
   	bool Create();
+	bool SetCharset();
 	
 	bool NeedGenre2();
 	long thread_id() { return -1; }

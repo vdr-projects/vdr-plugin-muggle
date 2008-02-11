@@ -27,6 +27,7 @@ class mgDbGd : public mgDb {
 	bool ServerConnect();
 	bool ConnectDatabase();
   	bool Create();
+	bool SetCharset();
 	int AddToCollection( const string Name,const vector<mgItem*>&items,mgParts* what);
 	int  RemoveFromCollection( const string Name,const vector<mgItem*>&items,mgParts* what);
 	
