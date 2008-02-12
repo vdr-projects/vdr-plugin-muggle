@@ -1667,7 +1667,7 @@ eOSState mgPlayerControl::ProcessKey (eKeys key)
                         break;
                         default:
                         {
-                            s = tr ("Unknown loop mode");
+                            s = "Unknown loop mode";
                         }
                     }
 #if VDRVERSNUM >= 10307
@@ -1713,7 +1713,7 @@ eOSState mgPlayerControl::ProcessKey (eKeys key)
                         break;
                         default:
                         {
-                            s = tr ("Unknown shuffle mode");
+                            s = "Unknown shuffle mode";
                         }
                     }
 #if VDRVERSNUM >= 10307
