@@ -1223,6 +1223,11 @@ import()
 {
     if (!Interface->Confirm(tr("Import items?")))
 	    return false;
+    mgDb *db = GenerateDB(false); // make sure in main thread that DB exists
+    bool db_exists=db->Connect();
+    delete db;
+    if (!db_exists)
+	return false;
     mgThreadSync *s = mgThreadSync::get_instance();
     if (!s)
 	    return false;
