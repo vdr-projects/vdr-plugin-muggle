@@ -80,7 +80,6 @@ bool mgMuggle::Initialize (void)
 bool mgMuggle::Start (void)
 {
 // Start any background activities the plugin shall perform.
-    RegisterI18n (Phrases);
     return true;
 }
 

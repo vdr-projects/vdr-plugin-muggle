@@ -1,0 +1,237 @@
+# translation of de.po to deutsch
+# German translations for PACKAGE package
+# German messages for PACKAGE.
+# Copyright (C) 2008 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#
+# FIRST AUTHOR <wolfgang@rohdewald.de>, 2008.
+# Wolfgang Rohdewald <wolfgang@rohdewald.de>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: de\n"
+"Report-Msgid-Bugs-To: <vdr-bugs@cadsoft.de>\n"
+"POT-Creation-Date: 2008-02-12 10:32+0100\n"
+"PO-Revision-Date: 2008-02-12 03:22+0100\n"
+"Last-Translator: Wolfgang Rohdewald <wolfgang@rohdewald.de>\n"
+"Language-Team: deutsch <vdr-muggle-i18n@sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: KBabel 1.11.4\n"
+
+msgid "Order"
+msgstr "Sortierung"
+
+msgid "Select an order"
+msgstr "Sortierung wählen"
+
+msgid "Button$Edit"
+msgstr "Ändern"
+
+msgid "Create"
+msgstr "Neu"
+
+msgid "Button$Delete"
+msgstr "Löschen"
+
+msgid "List"
+msgstr "Liste"
+
+msgid "Commands"
+msgstr "Befehle"
+
+msgid "Browse"
+msgstr "Navigieren"
+
+msgid "Collections"
+msgstr "Sammlungen"
+
+msgid "Synchronize database"
+msgstr "Datenbank synchronisieren"
+
+msgid "Default"
+msgstr "Ziel"
+
+#, c-format
+msgid "Set default to collection '%s'"
+msgstr "Setze Ziel auf Sammlung '%s'"
+
+msgid "Set"
+msgstr "Setzen"
+
+msgid "Instant play"
+msgstr "Sofort spielen"
+
+msgid "Add"
+msgstr "Hinzu"
+
+msgid "Add all to a collection"
+msgstr "Zu einer Sammlung hinzufügen"
+
+#, c-format
+msgid "'%s' to collection"
+msgstr "'%s' zu Sammlung"
+
+#, c-format
+msgid "Add all to '%s'"
+msgstr "Alles zu '%s' hinzufügen"
+
+msgid "Add to a collection"
+msgstr "Zu einer Sammlung hinzufügen"
+
+#, c-format
+msgid "Add to '%s'"
+msgstr "Zu '%s' hinzufügen"
+
+#, c-format
+msgid "Remove '%s' from collection"
+msgstr "'%s' aus Sammlung entfernen"
+
+msgid "Remove all from a collection"
+msgstr "Alles aus einer Sammlung entfernen"
+
+msgid "Clear"
+msgstr "Leeren"
+
+msgid "Clear the collection"
+msgstr "Sammlung leeren"
+
+msgid "Clear the collection?"
+msgstr "Sammlung leeren?"
+
+msgid "Remove"
+msgstr "Weg"
+
+msgid "Remove from a collection"
+msgstr "Aus einer Sammlung entfernen"
+
+msgid "Create collection"
+msgstr "Sammlung anlegen"
+
+msgid "Delete the collection"
+msgstr "Sammlung löschen"
+
+msgid "Delete the collection?"
+msgstr "Sammlung löschen?"
+
+msgid "Export"
+msgstr "Exportieren"
+
+msgid "Export track list"
+msgstr "Stückliste exportieren"
+
+msgid "Order is undefined"
+msgstr "Sortierung nicht definiert"
+
+msgid "play"
+msgstr "spielen"
+
+#, c-format
+msgid "Commands:%s"
+msgstr "Befehle:%s"
+
+#, c-format
+msgid "Key %d"
+msgstr "Schlüsselfeld %d"
+
+msgid "Sort by count"
+msgstr "Nach Häufigkeit sortieren"
+
+#, c-format
+msgid "Create database %s?"
+msgstr "Datenbank %s anlegen?"
+
+msgid "Import items?"
+msgstr "Titel importieren?"
+
+#, c-format
+msgid "Cannot access directory %s:%d"
+msgstr "Kein Zugriff auf Verzeichnis %s:%d"
+
+msgid "Loop mode off"
+msgstr "Endlosmodus aus"
+
+msgid "Loop mode single"
+msgstr "Endlosmodus Einzeltitel"
+
+msgid "Loop mode full"
+msgstr "Endlosmodus alle"
+
+msgid "Shuffle mode off"
+msgstr "Zufallsmodus aus"
+
+msgid "Shuffle mode normal"
+msgstr "Zufallsmodus normal"
+
+msgid "Shuffle mode party"
+msgstr "Zufallsmodus Party"
+
+msgid "Muggle"
+msgstr "Muggle"
+
+msgid "Initial loop mode"
+msgstr "Endlosmodus beim Start"
+
+msgid "off"
+msgstr "aus"
+
+msgid "on"
+msgstr "an"
+
+msgid "Initial shuffle mode"
+msgstr "Zufallsmodus beim Start"
+
+msgid "Audio mode"
+msgstr "Audio Modus"
+
+msgid "Round"
+msgstr "Runden"
+
+msgid "Dither"
+msgstr "Dither"
+
+msgid "Use 48kHz mode only"
+msgstr "Nur 48kHz Modus nutzen"
+
+msgid "no"
+msgstr "Nein"
+
+msgid "yes"
+msgstr "Ja"
+
+msgid "Normalizer level"
+msgstr "Normalizer"
+
+msgid "Limiter level"
+msgstr "Begrenzer"
+
+msgid "Black"
+msgstr "Aus (schwarz)"
+
+msgid "Image"
+msgstr "Bild"
+
+msgid "Live"
+msgstr "TV-Bild"
+
+msgid "Background mode"
+msgstr "Hintergrundmodus"
+
+msgid "Image show duration (secs)"
+msgstr "Anzeigedauer für Bilder"
+
+msgid "Image cache directory"
+msgstr "Verzeichnis für konvertierte Bilder"
+
+msgid "Use DVB still picture"
+msgstr "DVB still picture benutzen"
+
+msgid "Delete stale references"
+msgstr "Einträge löschen, wenn Datei fehlt"
+
+#~ msgid "Unknown loop mode"
+#~ msgstr "Unbekannter Endlosmodus"
+
+#~ msgid "Unknown shuffle mode"
+#~ msgstr "Unbekannter  Zufallsmodus"

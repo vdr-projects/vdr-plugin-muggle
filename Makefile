@@ -84,7 +84,7 @@ DEFINES += -DMUSICDIR='"$(MUSICDIR)"'
 
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o i18n.o mg_valmap.o mg_thread_sync.o \
+OBJS = $(PLUGIN).o mg_valmap.o mg_thread_sync.o \
 	mg_item.o mg_item_gd.o mg_listitem.o mg_selection.o mg_sel_gd.o vdr_actions.o vdr_menu.o mg_tools.o \
 	vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o \
 	vdr_setup.o mg_setup.o mg_incremental_search.o mg_image_provider.o
@@ -143,7 +143,7 @@ OBJS += $(DB_OBJ)
 
 ### Targets:
 
-all: libvdr-$(PLUGIN).so mugglei
+all: libvdr-$(PLUGIN).so mugglei i18n
 
 # Dependencies:
 
@@ -161,8 +161,37 @@ $(DEPFILE): Makefile
 
 $(DB_OBJ): CXXFLAGS += $(DB_CFLAGS)
 
+### Dependencies:
 mg_tables.h:	scripts/gentables scripts/genres.txt scripts/iso_639.xml scripts/musictypes.txt scripts/sources.txt
 	scripts/gentables > $@
+
+### Internationalization (I18N):
+
+PODIR     = po
+LOCALEDIR = $(VDRDIR)/locale
+I18Npo    = $(wildcard $(PODIR)/*.po)
+I18Nmsgs  = $(addprefix $(LOCALEDIR)/, $(addsuffix /LC_MESSAGES/vdr-$(PLUGIN).mo, $(notdir $(foreach file, $(I18Npo), $(basename $(file))))))
+I18Npot   = $(PODIR)/$(PLUGIN).pot
+
+%.mo: %.po
+	msgfmt -c -o $@ $<
+
+$(I18Npot): $(wildcard *.c)
+	xgettext -C -cTRANSLATORS --no-wrap --no-location -k -ktr -ktrNOOP --msgid-bugs-address='<vdr-bugs@cadsoft.de>' -o $@ $^
+
+%.po: $(I18Npot)
+	msgmerge -U --no-wrap --no-location --backup=none -q $@ $<
+	@touch $@
+
+$(I18Nmsgs): $(LOCALEDIR)/%/LC_MESSAGES/vdr-$(PLUGIN).mo: $(PODIR)/%.mo
+	@mkdir -p $(dir $@)
+	cp $< $@
+
+.PHONY: i18n
+i18n: $(I18Nmsgs) $(I18Npot)
+
+
+### Targets:
 
 libvdr-$(PLUGIN).so: $(OBJS)
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(PLAYLIBS) $(SQLLIBS) -o $@

@@ -1,0 +1,230 @@
+# translation of fr.po to deutsch
+# French translations for vdr package
+# Traductions françaises du paquet vdr.
+# Copyright (C) 2008 THE vdr'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the vdr package.
+#
+# Wolfgang Rohdewald <wolfgang@rohdewald.de>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: fr\n"
+"Report-Msgid-Bugs-To: <vdr-bugs@cadsoft.de>\n"
+"POT-Creation-Date: 2008-02-12 10:32+0100\n"
+"PO-Revision-Date: 2008-02-12 04:22+0100\n"
+"Last-Translator: Wolfgang Rohdewald <wolfgang@rohdewald.de>\n"
+"Language-Team: deutsch <vdr-muggle-i18n@sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: KBabel 1.11.4\n"
+
+msgid "Order"
+msgstr "Ordre"
+
+msgid "Select an order"
+msgstr "Choisir un ordre"
+
+msgid "Button$Edit"
+msgstr "Changer"
+
+msgid "Create"
+msgstr "Nouveau"
+
+msgid "Button$Delete"
+msgstr "Effacer"
+
+msgid "List"
+msgstr "Liste"
+
+msgid "Commands"
+msgstr "Commandes"
+
+msgid "Browse"
+msgstr "Naviguer"
+
+msgid "Collections"
+msgstr "Collections"
+
+msgid "Synchronize database"
+msgstr "Synchroniser les données"
+
+msgid "Default"
+msgstr "Destinataire"
+
+#, c-format
+msgid "Set default to collection '%s'"
+msgstr "Changer destination à la collection '%s'"
+
+msgid "Set"
+msgstr "Définir"
+
+msgid "Instant play"
+msgstr "Jouer en direct"
+
+msgid "Add"
+msgstr "Ajouter"
+
+msgid "Add all to a collection"
+msgstr "Ajouter tout à une collection"
+
+#, c-format
+msgid "'%s' to collection"
+msgstr "Ajoute '%s'  à une collection"
+
+#, c-format
+msgid "Add all to '%s'"
+msgstr "Ajoute tout à '%s'"
+
+msgid "Add to a collection"
+msgstr "Ajouter à une collection"
+
+#, c-format
+msgid "Add to '%s'"
+msgstr "Ajouter à '%s'"
+
+#, c-format
+msgid "Remove '%s' from collection"
+msgstr "Effacer '%s' de la collection"
+
+msgid "Remove all from a collection"
+msgstr "Vider la collection"
+
+msgid "Clear"
+msgstr "Vider"
+
+msgid "Clear the collection"
+msgstr "Vider la collection"
+
+msgid "Clear the collection?"
+msgstr "Vider la collection?"
+
+msgid "Remove"
+msgstr "Effacer"
+
+msgid "Remove from a collection"
+msgstr "Effacer d'une collection"
+
+msgid "Create collection"
+msgstr "Créer une collection"
+
+msgid "Delete the collection"
+msgstr "Effacer la collection"
+
+msgid "Delete the collection?"
+msgstr "Effacer la collection?"
+
+msgid "Export"
+msgstr "Exporter"
+
+msgid "Export track list"
+msgstr "Exporter la liste"
+
+msgid "Order is undefined"
+msgstr "Ordre pas défini"
+
+msgid "play"
+msgstr "jouer"
+
+#, c-format
+msgid "Commands:%s"
+msgstr "Commandes:%s"
+
+#, fuzzy, c-format
+msgid "Key %d"
+msgstr "Key %d"
+
+msgid "Sort by count"
+msgstr ""
+
+#, c-format
+msgid "Create database %s?"
+msgstr "Générer la base des données %s?"
+
+msgid "Import items?"
+msgstr "Importer les titres?"
+
+#, c-format
+msgid "Cannot access directory %s:%d"
+msgstr "Ne peux pas lire %s:%d"
+
+msgid "Loop mode off"
+msgstr "Déclancher le mode répétition"
+
+msgid "Loop mode single"
+msgstr "Mode répétition titre seul"
+
+msgid "Loop mode full"
+msgstr "jjMode répétition tout"
+
+msgid "Shuffle mode off"
+msgstr "mode alléatoire déclenché"
+
+msgid "Shuffle mode normal"
+msgstr "Mode alléatoire normal"
+
+msgid "Shuffle mode party"
+msgstr "Mode alléatoire fêtes"
+
+msgid "Muggle"
+msgstr "Muggle"
+
+msgid "Initial loop mode"
+msgstr "mode répétition initial"
+
+msgid "off"
+msgstr ""
+
+msgid "on"
+msgstr ""
+
+msgid "Initial shuffle mode"
+msgstr "mode alléatoire initial"
+
+msgid "Audio mode"
+msgstr "Mode audio"
+
+msgid "Round"
+msgstr ""
+
+msgid "Dither"
+msgstr ""
+
+msgid "Use 48kHz mode only"
+msgstr "Seulement 48kHz mode"
+
+msgid "no"
+msgstr "non"
+
+msgid "yes"
+msgstr "oui"
+
+msgid "Normalizer level"
+msgstr ""
+
+msgid "Limiter level"
+msgstr ""
+
+msgid "Black"
+msgstr "Noir"
+
+msgid "Image"
+msgstr "Image"
+
+msgid "Live"
+msgstr ""
+
+msgid "Background mode"
+msgstr ""
+
+msgid "Image show duration (secs)"
+msgstr ""
+
+msgid "Image cache directory"
+msgstr ""
+
+msgid "Use DVB still picture"
+msgstr ""
+
+msgid "Delete stale references"
+msgstr ""
