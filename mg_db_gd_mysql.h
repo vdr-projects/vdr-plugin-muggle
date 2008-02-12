@@ -27,7 +27,7 @@ class mgDbGd : public mgDb {
 	bool ServerConnect();
 	bool ConnectDatabase();
   	bool Create();
-	bool SetCharset();
+  	bool Clear();
 	int AddToCollection( const string Name,const vector<mgItem*>&items,mgParts* what);
 	int  RemoveFromCollection( const string Name,const vector<mgItem*>&items,mgParts* what);
 	
@@ -51,7 +51,7 @@ class mgDbGd : public mgDb {
 	void CreateFolderFields();
 	MYSQL_RES* Query( const string sql);
   	bool sql_query(string sql);
-
+	bool SetCharset();
 };
 
 class mgDbServerMySQL : public mgDbServerImp {

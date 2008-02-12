@@ -432,22 +432,24 @@ mgDbGd::SetCharset()
 bool
 mgDbGd::Create()
 {
-  if (!ServerConnect())
-	  return false;
   // create database and tables
-  mgWarning("Dropping and recreating database %s",the_setup.DbName);
   char buffer[500];
   sprintf(buffer,"DROP DATABASE IF EXISTS %s",the_setup.DbName);
   if (strlen(buffer)>400)
 	  mgError("name of database too long: %s",the_setup.DbName);
   mgQuery q(m_db,buffer);
   if (!q.ErrorMessage().empty())
+  {
+ 	mgWarning(q.ErrorMessage().c_str());
 	return false;
-
+  }
   sprintf(buffer,"CREATE DATABASE %s",the_setup.DbName);
   mgQuery q1(m_db,buffer);
   if (!q1.ErrorMessage().empty())
+  {
+ 	mgWarning(q.ErrorMessage().c_str());
 	return false;
+  }
 
   if (!UsingEmbeddedMySQL())
 	sprintf(buffer,"grant all privileges on %s.* to vdr@localhost",
@@ -455,10 +457,13 @@ mgDbGd::Create()
   	Execute(buffer);
   	// ignore error. If we can create the data base, we can do everything
   	// with it anyway.
+  return true;
+}
 
-  if (mysql_select_db(m_db,the_setup.DbName))
-	  mgError("mysql_select_db(%s) failed with %s",the_setup.DbName,mysql_error(m_db));
-
+bool
+mgDbGd::Clear()
+{
+  char buffer[500];
   int len = sizeof( db_cmds ) / sizeof( char* );
   for( int i=0; i < len; i ++ )
     {
@@ -470,8 +475,6 @@ mgDbGd::Create()
 		return false;
 	}
     }
-  FillTables();
-  mgWarning("new database successfully created");
   return true;
 }
 
@@ -535,7 +538,12 @@ UsingEmbeddedMySQL()
 bool
 mgDbGd::ConnectDatabase ()
 {
-    return mysql_select_db(m_db,the_setup.DbName)==0;
+    bool res=mysql_select_db(m_db,the_setup.DbName)==0;
+    if (res)
+          res=SetCharset();
+    else
+	  mgError("mysql_select_db(%s) failed with %s",the_setup.DbName,mysql_error(m_db));
+    return res;
 }
 
 bool 

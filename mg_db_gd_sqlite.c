@@ -229,7 +229,19 @@ mgDbGd::Commit()
 }
 
 bool
+mgDbGd::Creatable()
+{
+  return true;
+}
+
+bool
 mgDbGd::Create()
+{
+  return true;
+}
+
+bool
+mgDbGd::Clear()
 {
   // create database and tables
   int len = sizeof( db_cmds ) / sizeof( char* );
@@ -243,8 +255,6 @@ mgDbGd::Create()
 		return false;
 	}
     }
-  FillTables();
-  mgWarning("new database successfully created");
   return true;
 }
 
@@ -290,12 +300,6 @@ mgSubstring(sqlite3_context *context, int argc, sqlite3_value **argv)
 }
 
 bool
-mgDbGd::SetCharset()
-{
-	return true;
-}
-
-bool
 mgDbGd::ConnectDatabase ()
 {
     struct stat stbuf;
@@ -333,7 +337,7 @@ mgDbGd::ConnectDatabase ()
      	mgWarning("Cannot define decade:%d/%s",rc,sqlite3_errmsg);
 	return false;
      }
-     return FieldExists("tracks","id");
+     return true;
 }
 
 bool 

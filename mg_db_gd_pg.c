@@ -266,19 +266,29 @@ mgDbGd::SetCharset()
 }
 
 bool
+mgDbGd::Creatable()
+{
+  return false;
+}
+
+bool
 mgDbGd::Create()
 {
-  // create database and tables
-  int len = sizeof( db_cmds ) / sizeof( char* );
-  for( int i=0; i < len; i ++ )
+    return false;
+}
+
+bool
+mgDbGd::Clear()
+{
+    // create database and tables
+    int len = sizeof( db_cmds ) / sizeof( char* );
+    for( int i=0; i < len; i ++ )
     {
 	mgQuery q(m_db,db_cmds[i],mgQueryWarnOnly);
   	if (!q.ErrorMessage().empty())
 		return false;
     }
-  FillTables();
-  mgWarning("new database successfully created");
-  return true;
+    return true;
 }
 
 bool
@@ -317,8 +327,7 @@ mgDbGd::ConnectDatabase ()
 	    mgWarning("Failed to connect to postgres server using %s:%s",conninfo,PQerrorMessage(m_db));
 	    return false;
     }
-    return atol (get_col0 ("SELECT COUNT(*) FROM information_schema.tables WHERE table_name='album'").c_str ())==1;
-	// do not use exec_count because it calls Connect()
+    return SetCharset();
 }
 
 bool 
@@ -337,7 +346,8 @@ bool
 mgDbGd::FieldExists(string table, string field)
 {
     	char *b;
-        asprintf(&b,"SELECT COUNT(*) FROM information_schema.columns WHERE table_name='album' AND column_name='%s'",field.c_str());
+        asprintf(&b,"SELECT COUNT(*) FROM information_schema.columns WHERE table_name='%s' AND column_name='%s'",
+		table.c_str(),field.c_str());
     	bool result = exec_count(b)==1;
 	free(b);
 	return result;

@@ -21,6 +21,10 @@
 #include <id3v2tag.h>
 #include <fileref.h>
 
+#ifndef trdb
+#define trdb(a) (a)
+#endif
+
 using namespace std;
 
 class mgItem;
@@ -194,7 +198,6 @@ class mgDb {
 	virtual const char* DecadeExpr()=0;
 	virtual string Now() const =0;
 	virtual string Directory() const =0;
-	bool DatabaseEmpty();
    protected:
 	int m_rows;
 	int m_cols;
@@ -205,9 +208,9 @@ class mgDb {
 	time_t m_connect_time;
 	time_t m_create_time;
 	string get_col0(const string sql);
+  	virtual bool Creatable() { return true; }
   	virtual bool Create() = 0;
-  	virtual bool SetCharset() = 0;
-	void FillTables();
+  	virtual bool Clear() = 0;
 	virtual void StartTransaction() {};
 	virtual void Commit() {};
 	virtual bool SyncStart();
@@ -227,7 +230,7 @@ class mgDb {
 	map<string,string> m_Genres;
 	map<string,string> m_GenreIds;
   	bool m_database_found;
-
+	void FillTables();
 };
 
 class mgKey {

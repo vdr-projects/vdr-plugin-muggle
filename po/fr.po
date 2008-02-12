@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fr\n"
 "Report-Msgid-Bugs-To: <vdr-bugs@cadsoft.de>\n"
-"POT-Creation-Date: 2008-02-12 10:32+0100\n"
-"PO-Revision-Date: 2008-02-12 04:22+0100\n"
+"POT-Creation-Date: 2008-02-12 14:40+0100\n"
+"PO-Revision-Date: 2008-02-12 14:43+0100\n"
 "Last-Translator: Wolfgang Rohdewald <wolfgang@rohdewald.de>\n"
 "Language-Team: deutsch <vdr-muggle-i18n@sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -18,6 +18,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: KBabel 1.11.4\n"
+
+msgid "empty database created"
+msgstr "créé base des données vide"
 
 msgid "Order"
 msgstr "Ordre"
@@ -135,7 +138,7 @@ msgid "Key %d"
 msgstr "Key %d"
 
 msgid "Sort by count"
-msgstr ""
+msgstr "Ordre par quantité"
 
 #, c-format
 msgid "Create database %s?"
@@ -228,3 +231,4 @@ msgstr ""
 
 msgid "Delete stale references"
 msgstr ""
+

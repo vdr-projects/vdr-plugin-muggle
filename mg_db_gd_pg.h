@@ -49,8 +49,9 @@ class mgDbGd : public mgDb {
 	~mgDbGd();
 	bool ServerConnect();
 	bool ConnectDatabase();
+  	bool Creatable();
   	bool Create();
-	bool SetCharset();
+  	bool Clear();
 	
 	bool NeedGenre2();
 	long thread_id() { return -1; }
@@ -68,6 +69,7 @@ class mgDbGd : public mgDb {
    private:
 	bool myCreate();
 	PGconn *m_db;
+	bool SetCharset();
 
 };
 #endif

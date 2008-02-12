@@ -309,24 +309,44 @@ mgDb::Connect ()
         return false;
     m_create_time=time(0);
     m_database_found=ConnectDatabase();
-    if (!m_database_found)
+    if (!m_database_found && !Creatable())
+    {
        	mgWarning("database not found");
-    if (the_setup.IsMugglei())
-    {
-	if (the_setup.CreateMode)
-		m_database_found = Create();
+        return false;
     }
+    bool clearwanted=false;
+    if (the_setup.IsMugglei())
+	clearwanted=the_setup.CreateMode;
     else
-    {
-	if (!m_database_found)
+        if (!m_database_found)
 	{
                 extern bool create_question();
-                if (create_question())
-                        m_database_found = Create();
+                clearwanted=create_question();
         }
+    if (clearwanted)
+    {
+	if (!m_database_found && Creatable())
+        {
+		m_database_found = true; // avoid recursion
+  		mgWarning("Dropping and recreating database %s",the_setup.DbName);
+		m_database_found = Create();
+    		if (m_database_found)
+                {
+			m_database_found = true; // avoid recursion
+			m_database_found = ConnectDatabase();
+                }
+	}
     }
     if (m_database_found)
-	m_database_found = SetCharset();
+    {
+    	if (clearwanted || !FieldExists("tracks","id"))
+    	{
+		if (Clear())
+  			mgWarning(trdb("empty database created"));
+    	}
+    	if (m_database_found && exec_count("SELECT COUNT(1) FROM genre")==0)
+  		FillTables();
+    }
     return m_database_found;
 }
 
@@ -342,12 +362,6 @@ mgDb::SyncStart()
 	srandom( tv.tv_usec );
 	CreateFolderFields();
 	return true;
-}
-
-bool
-mgDb::DatabaseEmpty() 
-{
-	return (exec_count("SELECT COUNT FROM TRACKS")>0);
 }
 
 void
