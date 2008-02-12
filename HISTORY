@@ -298,3 +298,17 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - Fix build with FLAC++ >= 1.1.3.
 - Rename image_convert.sh to muggle-image-convert, install it in
   "make install", make it a bit more robust.
+
+2008--x-xx: Version 0.1.13-BETA
+- MP3Decoder: Suppress out of sync error message for first frame
+- Player: If called for just one file which does not exist,
+  it no more starts.
+- Import with mugglei: Absolute paths have always been forbidden, now
+  mugglei actually ignores them
+- remove some debugging output which came even if no debugging wanted
+- mugglei: fix postgresql help text
+- postgresql: Default for user now is the login name
+- mugglei -c now also deletes and rebuilds existing data bases
+- support UTF-8, see README.i18n
+- mugglei: after importing, always delete albums without corresponding tracks
+- mugglei: New german and french translations using the new mechanisms
