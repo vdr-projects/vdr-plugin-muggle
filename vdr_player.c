@@ -28,6 +28,7 @@
 
 #include <mad.h>
 
+#include <linux/types.h> // this should really be included by linux/dvb/video.h
 #include <linux/dvb/video.h>
 #include <vdr/player.h>
 #include <vdr/device.h>
