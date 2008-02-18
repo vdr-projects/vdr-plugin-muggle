@@ -15,6 +15,7 @@
 
 #include "mg_tools.h"
 
+#define __STL_CONFIG_H
 #include <vdr/tools.h>
 
 //! \brief buffer for messages

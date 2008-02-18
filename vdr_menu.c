@@ -17,6 +17,7 @@
 #include <vector>
 
 #include <vdr/menuitems.h>
+#define __STL_CONFIG_H
 #include <vdr/tools.h>
 #include <vdr/config.h>
 #include <vdr/plugin.h>

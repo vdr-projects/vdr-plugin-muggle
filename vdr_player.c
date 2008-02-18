@@ -34,6 +34,7 @@
 #include <vdr/device.h>
 #include <vdr/thread.h>
 #include <vdr/ringbuffer.h>
+#define __STL_CONFIG_H
 #include <vdr/tools.h>
 #include <vdr/recording.h>
 #include <vdr/status.h>

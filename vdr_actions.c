@@ -19,6 +19,7 @@
 #include <assert.h>
 
 #include <vdr/menuitems.h>
+#define __STL_CONFIG_H
 #include <vdr/tools.h>
 #include <vdr/plugin.h>
 

@@ -35,6 +35,7 @@
 #include "vdr_decoder_sndfile.h"
 #include "i18n.h"
 
+#define __STL_CONFIG_H
 #include <vdr/tools.h>
 
 #ifndef SNDFILE_1

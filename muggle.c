@@ -17,6 +17,7 @@
 #include "mg_tools.h"
 
 #include "i18n.h"
+#define __STL_CONFIG_H
 #include <vdr/tools.h>
 #include <vdr/config.h>
 

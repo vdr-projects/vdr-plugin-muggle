@@ -21,7 +21,6 @@
 #include <stdio.h>
 #include <string>
 #include <getopt.h>
-// #include <vdr/tools.h>
 
 mgSetup the_setup;
 
