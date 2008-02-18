@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
-"POT-Creation-Date: 2008-02-19 00:14+0100\n"
+"POT-Creation-Date: 2008-02-19 00:28+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -146,6 +146,52 @@ msgstr ""
 
 #, c-format
 msgid "Cannot access directory %s:%d"
+msgstr ""
+
+msgid "Track info view"
+msgstr ""
+
+#, c-format
+msgid "Title:\t%s"
+msgstr ""
+
+#, c-format
+msgid "Artist:\t%s"
+msgstr ""
+
+#, c-format
+msgid "Album:\t%s"
+msgstr ""
+
+#, c-format
+msgid "Genre:\t%s"
+msgstr ""
+
+#, c-format
+msgid "Year:\t%d"
+msgstr ""
+
+#, c-format
+msgid "Length:\t%s"
+msgstr ""
+
+#, c-format
+msgid "Bit rate:\t%s"
+msgstr ""
+
+#, c-format
+msgid "Sampling rate:\t%d"
+msgstr ""
+
+#, c-format
+msgid "File name:\t%d"
+msgstr ""
+
+#, c-format
+msgid "File name:\t%s"
+msgstr ""
+
+msgid "Now playing"
 msgstr ""
 
 msgid "Loop mode off"

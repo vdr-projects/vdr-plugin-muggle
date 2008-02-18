@@ -346,7 +346,7 @@ bool
 mgDbGd::FieldExists(string table, string field)
 {
     	char *b;
-        asprintf(&b,"SELECT COUNT(*) FROM information_schema.columns WHERE table_name='%s' AND column_name='%s'",
+        msprintf(&b,"SELECT COUNT(*) FROM information_schema.columns WHERE table_name='%s' AND column_name='%s'",
 		table.c_str(),field.c_str());
     	bool result = exec_count(b)==1;
 	free(b);

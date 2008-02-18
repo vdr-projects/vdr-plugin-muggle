@@ -182,7 +182,7 @@ mgItemGd::getSourceFile(bool AbsolutePath,bool Silent) const
 			{
 				struct stat stbuf;
 				char *dir;
-				asprintf(&dir,"%s%02d",tld.c_str(),i);
+				msprintf(&dir,"%s%02d",tld.c_str(),i);
 				gd_music_dir_exists[i]=!stat(dir,&stbuf);
 				free(dir);
 			}
@@ -193,7 +193,7 @@ mgItemGd::getSourceFile(bool AbsolutePath,bool Silent) const
 			if (!gd_music_dir_exists[i])
 				continue;
 			char *file;
-			asprintf(&file,"%02d/%s",i,m_mp3file.c_str());
+			msprintf(&file,"%02d/%s",i,m_mp3file.c_str());
 			if (readable(file))
 			{
 				m_mp3file = file;

@@ -38,14 +38,23 @@ msprintf(char **strp, const char *fmt, ...)
         va_list ap;
 	int res;
         va_start (ap, fmt);
+	res=vmsprintf(strp,fmt,ap);
+        va_end (ap);
+	return res;
+}
+
+int
+vmsprintf(char **strp, const char *fmt, va_list &ap)
+{
+	int res;
         res=vasprintf (strp, fmt, ap);
 	if (res<0)
 	{
-		*strp=0;
-		mgError("asprintf() returns %d. This probably means illformed UTF-8 characters."
+		*strp=strdup("???,see logfile");
+		mgError("vasprintf() returns %d. This probably means illformed UTF-8 characters."
 		" Please convert your file names to UTF-8",fmt,res);
 	}
-        va_end (ap);
+	return res;
 }
 
 void

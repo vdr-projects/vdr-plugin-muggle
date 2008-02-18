@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fr\n"
 "Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
-"POT-Creation-Date: 2008-02-12 14:40+0100\n"
-"PO-Revision-Date: 2008-02-12 14:43+0100\n"
+"POT-Creation-Date: 2008-02-19 00:28+0100\n"
+"PO-Revision-Date: 2008-02-19 00:36+0100\n"
 "Last-Translator: Wolfgang Rohdewald <wolfgang@rohdewald.de>\n"
 "Language-Team: deutsch <vdr-muggle-i18n@sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -150,6 +150,52 @@ msgstr "Importer les titres?"
 #, c-format
 msgid "Cannot access directory %s:%d"
 msgstr "Ne peux pas lire %s:%d"
+
+msgid "Track info view"
+msgstr "Les détails"
+
+#, c-format
+msgid "Title:\t%s"
+msgstr "Titre:\t%s"
+
+#, c-format
+msgid "Artist:\t%s"
+msgstr "Artiste:\t%s"
+
+#, c-format
+msgid "Album:\t%s"
+msgstr "Album:\t%s"
+
+#, c-format
+msgid "Genre:\t%s"
+msgstr "Genre:\t%s"
+
+#, c-format
+msgid "Year:\t%d"
+msgstr "Année:\t%d"
+
+#, c-format
+msgid "Length:\t%s"
+msgstr "Longeur:\t%s"
+
+#, c-format
+msgid "Bit rate:\t%s"
+msgstr ""
+
+#, c-format
+msgid "Sampling rate:\t%d"
+msgstr ""
+
+#, c-format
+msgid "File name:\t%d"
+msgstr "Nom du fichier:\t%d"
+
+#, c-format
+msgid "File name:\t%s"
+msgstr "Nom du fichier:\t%s"
+
+msgid "Now playing"
+msgstr "En jouant"
 
 msgid "Loop mode off"
 msgstr "Déclancher le mode répétition"

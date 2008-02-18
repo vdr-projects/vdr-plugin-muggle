@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: de\n"
 "Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
-"POT-Creation-Date: 2008-02-12 14:40+0100\n"
-"PO-Revision-Date: 2008-02-12 14:41+0100\n"
+"POT-Creation-Date: 2008-02-19 00:28+0100\n"
+"PO-Revision-Date: 2008-02-19 00:31+0100\n"
 "Last-Translator: Wolfgang Rohdewald <wolfgang@rohdewald.de>\n"
 "Language-Team: deutsch <vdr-muggle-i18n@sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -151,6 +151,52 @@ msgstr "Titel importieren?"
 #, c-format
 msgid "Cannot access directory %s:%d"
 msgstr "Kein Zugriff auf Verzeichnis %s:%d"
+
+msgid "Track info view"
+msgstr "Details"
+
+#, c-format
+msgid "Title:\t%s"
+msgstr "Titel:\t%s"
+
+#, c-format
+msgid "Artist:\t%s"
+msgstr "Künstler:\t%s"
+
+#, c-format
+msgid "Album:\t%s"
+msgstr "Album:\t%s"
+
+#, c-format
+msgid "Genre:\t%s"
+msgstr "Stil:\t%s"
+
+#, c-format
+msgid "Year:\t%d"
+msgstr "Jahr:\t%d"
+
+#, c-format
+msgid "Length:\t%s"
+msgstr "Länge:\t%s"
+
+#, c-format
+msgid "Bit rate:\t%s"
+msgstr "Bitrate:\t%s"
+
+#, c-format
+msgid "Sampling rate:\t%d"
+msgstr "Sampling Rate:\t%d"
+
+#, c-format
+msgid "File name:\t%d"
+msgstr "Dateiname:\t%d"
+
+#, c-format
+msgid "File name:\t%s"
+msgstr "Dateiname:\t%s"
+
+msgid "Now playing"
+msgstr "Jetzt läuft"
 
 msgid "Loop mode off"
 msgstr "Endlosmodus aus"

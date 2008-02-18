@@ -328,16 +328,16 @@ mgEntry::MenuName(const unsigned int idx,const mgListItem* item)
 	if (selection()->isCollectionlist())
 	{
 		if (item->value() == osd()->default_collection)
-			asprintf(&result,"-> %s%s",ct,item->value().c_str());
+			msprintf(&result,"-> %s%s",ct,item->value().c_str());
         	else
-			asprintf(&result,"     %s%s",ct,item->value().c_str());
+			msprintf(&result,"     %s%s",ct,item->value().c_str());
 	}
 	else if (selection()->inCollection())
-		asprintf(&result,"%4d %s",idx,item->value().c_str());
+		msprintf(&result,"%4d %s",idx,item->value().c_str());
 	else if (selection()->isLanguagelist())
-		asprintf(&result,"%s%s",ct,dgettext("iso_639",item->value().c_str()));
+		msprintf(&result,"%s%s",ct,dgettext("iso_639",item->value().c_str()));
 	else
-		asprintf(&result,"%s%s",ct,item->value().c_str());
+		msprintf(&result,"%s%s",ct,item->value().c_str());
 	return result;
 }
 
@@ -520,7 +520,7 @@ mgExternal::Execute()
         if (command->Confirm ())
         {
             char *buffer;
-            asprintf (&buffer, "%s?", command->Title ());
+            msprintf (&buffer, "%s?", command->Title ());
             confirmed = Interface->Confirm (buffer);
             free (buffer);
         }
@@ -743,7 +743,7 @@ class mgSetDefaultCollection:public mgCommand
 const char * mgSetDefaultCollection::MenuName(const unsigned int idx,const mgListItem* item)
 {
     char *b;
-    asprintf (&b, tr("Set default to collection '%s'"),
+    msprintf (&b, tr("Set default to collection '%s'"),
 	    selection ()->getCurrentValue().c_str());
     return b;
 }
@@ -829,7 +829,7 @@ mgAddAllToCollection::ExecuteMove()
     if (osd() ->Menus.size()>1) 
 	osd ()->CloseMenu();	// TODO Gebastel...
     char *b;
-    asprintf(&b,tr("'%s' to collection"),selection()->getCurrentValue().c_str());
+    msprintf(&b,tr("'%s' to collection"),selection()->getCurrentValue().c_str());
     osd ()->newmenu = new mgTreeAddToCollSelector(string(b));
     osd ()->collselection()->leave_all();
     osd ()->newposition = osd()->collselection()->getPosition(); 
@@ -852,7 +852,7 @@ const char *
 mgAddAllToDefaultCollection::MenuName (const unsigned int idx,const mgListItem* item)
 {
     char *b;
-    asprintf (&b, tr ("Add all to '%s'"),
+    msprintf (&b, tr ("Add all to '%s'"),
         osd ()->default_collection.c_str ());
     return b;
 }
@@ -958,7 +958,7 @@ const char *
 mgAddThisToDefaultCollection::MenuName (const unsigned int idx,const mgListItem* item)
 {
     char *b;
-    asprintf (&b, tr ("Add to '%s'"), osd ()->default_collection.c_str ());
+    msprintf (&b, tr ("Add to '%s'"), osd ()->default_collection.c_str ());
     return b;
 }
 
@@ -993,7 +993,7 @@ mgRemoveAllFromCollection::ExecuteRemove ()
     if (osd() ->Menus.size()>1) 
 	    osd ()->CloseMenu();	// TODO Gebastel...
     char *b;
-    asprintf(&b,tr("Remove '%s' from collection"),osd()->moveselection->getListname().c_str());
+    msprintf(&b,tr("Remove '%s' from collection"),osd()->moveselection->getListname().c_str());
     osd ()->newmenu = new mgTreeRemoveFromCollSelector(string(b));
     osd ()->collselection()->leave_all();
     osd ()->newposition = osd()->collselection()->getPosition(); 
