@@ -57,10 +57,10 @@
 #define OUT_BITS 16                               // output 16 bit samples to DVB driver
 #define OUT_FACT (OUT_BITS/8*2)                   // output factor is 16 bit & 2 channels -> 4 bytes
 
-// cResample
+// mgResample
 #define MAX_NSAMPLES (1152*7)                     // max. buffer for resampled frame
 
-// cNormalize
+// mgNormalize
 #define MAX_GAIN   3.0                            // max. allowed gain
 #define LIM_ACC    12                             // bit, accuracy for lookup table
                                                   // max. value covered by lookup table
@@ -68,7 +68,7 @@
 #define LIM_SHIFT  (MAD_F_FRACBITS-LIM_ACC)       // shift value for table lookup
 #define F_LIM_JMP  (mad_fixed_t)(1<<LIM_SHIFT)    // lookup table jump between values
 
-// cLevel
+// mgLevel
 #define POW_WIN 100                               // window width for smoothing power values
 #define EPSILON 0.00000000001                     // anything less than EPSILON is considered zero
 
@@ -412,12 +412,12 @@ mgPCMPlayer::Action (void)
 
     struct mgDecode *ds = 0;
     struct mad_pcm *pcm = 0;
-    cResample resample[2];
+    mgResample resample[2];
     unsigned int nsamples[2];
     const mad_fixed_t *data[2];
-    cScale scale;
-    cLevel level;
-    cNormalize norm;
+    mgScale scale;
+    mgLevel level;
+    mgNormalize norm;
     bool haslevel = false;
     struct LPCMFrame lpcmFrame;
     const unsigned char *p = 0;

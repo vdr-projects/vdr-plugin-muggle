@@ -14,12 +14,12 @@
  * (C) 2001,2002 Stefan Huelswitt <huels@iname.com>
  */
 
-// --- cResample ------------------------------------------------------------
+// --- mgResample ------------------------------------------------------------
 
 // The resample code has been adapted from the madplay project
 // (resample.c) found in the libmad distribution
 
-class cResample
+class mgResample
 {
     private:
         mad_fixed_t ratio;
@@ -35,7 +35,7 @@ class cResample
         }
 };
 
-bool cResample::SetInputRate (unsigned int oldrate, unsigned int newrate)
+bool mgResample::SetInputRate (unsigned int oldrate, unsigned int newrate)
 {
     if (oldrate < 8000 || oldrate > newrate * 6)
     {                                             // out of range
@@ -61,7 +61,7 @@ bool cResample::SetInputRate (unsigned int oldrate, unsigned int newrate)
 
 
 unsigned int
-cResample::ResampleBlock (unsigned int nsamples, const mad_fixed_t * old)
+mgResample::ResampleBlock (unsigned int nsamples, const mad_fixed_t * old)
 {
 // This resampling algorithm is based on a linear interpolation, which is
 // not at all the best sounding but is relatively fast and efficient.
@@ -109,7 +109,7 @@ cResample::ResampleBlock (unsigned int nsamples, const mad_fixed_t * old)
 }
 
 
-// --- cLevel ----------------------------------------------------------------
+// --- mgLevel ----------------------------------------------------------------
 
 // The normalize algorithm and parts of the code has been adapted from the
 // Normalize 0.7 project. (C) 1999-2002, Chris Vaill <cvaill@cs.columbia.edu>
@@ -140,7 +140,7 @@ cResample::ResampleBlock (unsigned int nsamples, const mad_fixed_t * old)
 // We can then take the square root of the power to get maxi­
 // mum sustained RMS amplitude.
 
-class cLevel
+class mgLevel
 {
     private:
         double maxpow;
@@ -164,7 +164,7 @@ class cLevel
 };
 
 void
-cLevel::Init (void)
+mgLevel::Init (void)
 {
     for (int l = 0; l < 2; l++)
     {
@@ -180,7 +180,7 @@ cLevel::Init (void)
 
 
 void
-cLevel::GetPower (struct mad_pcm *pcm)
+mgLevel::GetPower (struct mad_pcm *pcm)
 {
     for (int i = 0; i < pcm->channels; i++)
     {
@@ -206,7 +206,7 @@ cLevel::GetPower (struct mad_pcm *pcm)
 
 
 void
-cLevel::AddPower (struct Power *p, double pow)
+mgLevel::AddPower (struct Power *p, double pow)
 {
     p->powsum += pow;
     if (p->npow >= POW_WIN)
@@ -223,7 +223,7 @@ cLevel::AddPower (struct Power *p, double pow)
 
 
 double
-cLevel::GetLevel (void)
+mgLevel::GetLevel (void)
 {
     if (maxpow < EPSILON)
     {
@@ -245,15 +245,15 @@ cLevel::GetLevel (void)
 
 
 double
-cLevel::GetPeak (void)
+mgLevel::GetPeak (void)
 {
     return mad_f_todouble (peak);
 }
 
 
-// --- cNormalize ------------------------------------------------------------
+// --- mgNormalize ------------------------------------------------------------
 
-class cNormalize
+class mgNormalize
 {
     private:
         mad_fixed_t gain;
@@ -273,14 +273,14 @@ class cNormalize
 #endif
         inline mad_fixed_t Limiter (mad_fixed_t x);
     public:
-        cNormalize (void);
-        ~cNormalize ();
+        mgNormalize (void);
+        ~mgNormalize ();
         void Init (double Level, double Peak);
         void Stats (void);
         void AddGain (struct mad_pcm *pcm);
 };
 
-cNormalize::cNormalize (void)
+mgNormalize::mgNormalize (void)
 {
     d_limlvl = (double) the_setup.LimiterLevel / 100.0;
     one_limlvl = 1 - d_limlvl;
@@ -340,7 +340,7 @@ cNormalize::cNormalize (void)
 }
 
 
-cNormalize::~cNormalize ()
+mgNormalize::~mgNormalize ()
 {
 #ifdef USE_FAST_LIMITER
     delete[] table;
@@ -349,7 +349,7 @@ cNormalize::~cNormalize ()
 
 
 void
-cNormalize::Init (double Level, double Peak)
+mgNormalize::Init (double Level, double Peak)
 {
     double Target = (double) the_setup.TargetLevel / 100.0;
     double dgain = Target / Level;
@@ -375,7 +375,7 @@ cNormalize::Init (double Level, double Peak)
 
 
 void
-cNormalize::Stats (void)
+mgNormalize::Stats (void)
 {
 #ifdef DEBUG
     if (total)
@@ -386,7 +386,7 @@ cNormalize::Stats (void)
 }
 
 
-mad_fixed_t cNormalize::Limiter (mad_fixed_t x)
+mad_fixed_t mgNormalize::Limiter (mad_fixed_t x)
 {
 // Limiter function:
 //
@@ -415,7 +415,7 @@ mad_fixed_t cNormalize::Limiter (mad_fixed_t x)
 
 
 #ifdef USE_FAST_LIMITER
-mad_fixed_t cNormalize::FastLimiter (mad_fixed_t x)
+mad_fixed_t mgNormalize::FastLimiter (mad_fixed_t x)
 {
 // The fast algorithm is based on a linear interpolation between the
 // the values in the lookup table. Relays heavly on libmads fixed point format.
@@ -460,7 +460,7 @@ mad_fixed_t cNormalize::FastLimiter (mad_fixed_t x)
 #endif
 
 void
-cNormalize::AddGain (struct mad_pcm *pcm)
+mgNormalize::AddGain (struct mad_pcm *pcm)
 {
     if (dogain)
     {
@@ -519,7 +519,7 @@ cNormalize::AddGain (struct mad_pcm *pcm)
 }
 
 
-// --- cScale ----------------------------------------------------------------
+// --- mgScale ----------------------------------------------------------------
 
 // The dither code has been adapted from the madplay project
 // (audio.c) found in the libmad distribution
@@ -527,7 +527,7 @@ cNormalize::AddGain (struct mad_pcm *pcm)
 enum eAudioMode
 { amRound, amDither };
 
-class cScale
+class mgScale
 {
     private:
         enum
@@ -550,14 +550,14 @@ class cScale
         inline unsigned long Prng (unsigned long state);
         inline signed long LinearDither (mad_fixed_t sample, struct dither *dither);
     public:
-	cScale();
+	mgScale();
         void Stats (void);
         unsigned int ScaleBlock (unsigned char *data, unsigned int size,
             unsigned int &nsamples, const mad_fixed_t * &left,
             const mad_fixed_t * &right, eAudioMode mode);
 };
 
-cScale::cScale()
+mgScale::mgScale()
 {
 #ifdef DEBUG
     clipped_samples = 0;
@@ -569,7 +569,7 @@ cScale::cScale()
 
 
 void
-cScale::Stats (void)
+mgScale::Stats (void)
 {
 #ifdef DEBUG
     printf ("mp3: scale stats clipped=%ld peak_clip=%f peak=%f\n",
@@ -580,7 +580,7 @@ cScale::Stats (void)
 
 
 // gather signal statistics while clipping
-mad_fixed_t cScale::Clip (mad_fixed_t sample, bool stats)
+mad_fixed_t mgScale::Clip (mad_fixed_t sample, bool stats)
 {
 #ifndef DEBUG
     if (sample > MAX)
@@ -627,7 +627,7 @@ mad_fixed_t cScale::Clip (mad_fixed_t sample, bool stats)
 
 // generic linear sample quantize routine
 signed long
-cScale::LinearRound (mad_fixed_t sample)
+mgScale::LinearRound (mad_fixed_t sample)
 {
 // round
     sample += (1L << (MAD_F_FRACBITS - OUT_BITS));
@@ -640,7 +640,7 @@ cScale::LinearRound (mad_fixed_t sample)
 
 // 32-bit pseudo-random number generator
 unsigned long
-cScale::Prng (unsigned long state)
+mgScale::Prng (unsigned long state)
 {
     return (state * 0x0019660dL + 0x3c6ef35fL) & 0xffffffffL;
 }
@@ -648,7 +648,7 @@ cScale::Prng (unsigned long state)
 
 // generic linear sample quantize and dither routine
 signed long
-cScale::LinearDither (mad_fixed_t sample, struct dither *dither)
+mgScale::LinearDither (mad_fixed_t sample, struct dither *dither)
 {
     unsigned int scalebits;
     mad_fixed_t output, mask, random;
@@ -679,7 +679,7 @@ cScale::LinearDither (mad_fixed_t sample, struct dither *dither)
 
 // write a block of signed 16-bit big-endian PCM samples
 unsigned int
-cScale::ScaleBlock (unsigned char *data, unsigned int size,
+mgScale::ScaleBlock (unsigned char *data, unsigned int size,
 unsigned int &nsamples, const mad_fixed_t * &left,
 const mad_fixed_t * &right, eAudioMode mode)
 {
