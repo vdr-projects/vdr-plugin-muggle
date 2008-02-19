@@ -22,8 +22,8 @@
 // After changing this file you should do a "make plugins-clean ; make plugins"
 // to recompile vdr.
 
-#ifndef ___CONFIG_H
-#define ___CONFIG_H
+#ifndef ___VDR_CONFIG_H
+#define ___VDR_CONFIG_H
 
 // The buffer size in bytes for the decoded audio data which is about to
 // be send to the dvb driver. Should not be made to big, as this delays the
@@ -115,4 +115,4 @@
 // "/tmp/limiter". The generated file will be about 3MB in size. This option shouldn't
 // be enabled for day-by-day operation.
 //#define ACC_DUMP
-#endif                                            //___CONFIG_H
+#endif                                            //___VDR_CONFIG_H
