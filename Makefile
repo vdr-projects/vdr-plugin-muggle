@@ -89,6 +89,19 @@ OBJS = $(PLUGIN).o mg_valmap.o mg_thread_sync.o \
 	vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o \
 	vdr_setup.o mg_setup.o mg_incremental_search.o mg_image_provider.o
 
+#ifdef HAVE_MP3NG_OSD
+MOBJS = i18n.o data.o menu.o \
+	vars.o bitmap.o imagecache.o quantize.o \
+	commands.o options.o lyrics.o cover.o skin.o visual.o \
+       	search.o mp3id3.o mp3id3tag.o rating.o menubrowse.o mp3control.o \
+       	data-mp3.o setup-mp3.o player-mp3.o stream.o network.o \
+       	decoder.o decoder-mp3.o decoder-mp3-stream.o decoder-snd.o \
+       	decoder-ogg.o
+
+$(MOBJS):
+	make -f Makefile.music all
+#endif
+
 PLAYLIBS = -lmad $(shell taglib-config --libs)
 MILIBS =  $(shell taglib-config --libs)
 
@@ -193,8 +206,8 @@ i18n: $(I18Nmsgs) $(I18Npot)
 
 ### Targets:
 
-libvdr-$(PLUGIN).so: $(OBJS)
-	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(PLAYLIBS) $(SQLLIBS) -o $@
+libvdr-$(PLUGIN).so: $(OBJS) $(MOBJS)
+	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(MOBJS) $(PLAYLIBS) $(SQLLIBS) -o $@
 	@cp --remove-destination $@ $(LIBDIR)/$@.$(APIVERSION)
 
 mugglei: mg_tools.o mugglei.o $(DB_OBJ) mg_listitem.o mg_item.o mg_item_gd.o mg_valmap.o mg_setup.o 
@@ -215,7 +228,7 @@ dist: distclean mg_tables.h
 	@echo Distribution package created as $(PACKAGE).tgz
 
 clean:
-	@-rm -f $(OBJS) $(BINOBJS) $(DEPFILE) *.so *.tgz core* *~ mugglei.o mugglei mg_db_gd_*.o
+	@-rm -f $(OBJS) $(MOBJS) $(BINOBJS) $(DEPFILE) *.so *.tgz core* *~ mugglei.o mugglei mg_db_gd_*.o
 
 distclean: clean
 	@-rm -f mg_tables.h
