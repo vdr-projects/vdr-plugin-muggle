@@ -312,3 +312,7 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - support UTF-8, see README.i18n
 - mugglei: after importing, always delete albums without corresponding tracks
 - mugglei: New german and french translations using the new mechanisms
+- while playing, some text was not yet translatable
+- switch to new internalisation system. Currently, no finnish translation.
+  Maybe somebody will do that?
+- more complete german and french translations. 
