@@ -11,6 +11,7 @@
 #include <mpegfile.h>
 #include <attachedpictureframe.h>
 
+#include <cstring>
 #include <iostream>
 #include <stdio.h>
 #include <dirent.h>

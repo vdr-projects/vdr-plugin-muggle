@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <cmath>
+#include <cstring>
 #include <iostream>
 
 #include "vdr_config.h"

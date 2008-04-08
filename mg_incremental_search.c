@@ -10,6 +10,8 @@
  */
 
 #include "mg_incremental_search.h"
+
+#include <cstring>
 #include <iostream>
 
 using namespace std;

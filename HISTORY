@@ -316,3 +316,4 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - switch to new internalisation system. Currently, no finnish translation.
   Maybe somebody will do that?
 - more complete german and french translations. 
+- gcc 4.3 build fixes

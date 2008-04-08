@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <cstring>
 
 #include "mg_item.h"
 #include "mg_tools.h"

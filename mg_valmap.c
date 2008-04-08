@@ -1,7 +1,9 @@
-#include <stdarg.h>
-
 #include "mg_valmap.h"
 #include "mg_tools.h"
+
+#include <stdarg.h>
+#include <cstdlib>
+#include <cstring>
 
 mgValmap::mgValmap(const char *key) {
 	m_key = key;

@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <assert.h>
+#include <cstring>
 
 #include "mg_selection.h"
 #include "mg_setup.h"

@@ -7,6 +7,7 @@
  * \author  Responsible author: $Author: wolfgang61 $
  */
 
+#include <cstring>
 #include <string>
 #include <assert.h>
 

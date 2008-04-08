@@ -18,7 +18,9 @@
 #include "mg_setup.h"
 #include "mg_tools.h"
 #include "mg_db.h"
+
 #include <stdio.h>
+#include <cstring>
 #include <string>
 #include <getopt.h>
 

@@ -8,6 +8,7 @@
  * \author  Responsible author: $Author: wolfgang61 $
  */
 
+#include <cstring>
 #include <string>
 #include <sys/types.h>
 #include <sys/stat.h>
