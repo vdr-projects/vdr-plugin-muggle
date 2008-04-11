@@ -1,0 +1,35 @@
+rm -f "$3"
+txtfound=0
+artist=`echo $1 | sed 's/ /%20/'g`
+title=`echo $2 | sed 's/ /%20/'g`
+echo ich bin $0 mit $1 $2 $3 artist=$artist title=$title>> /tmp/log.wr
+echo fetchLyrics $artist $title | `dirname $0`/googlyrics 2>/dev/null |
+	sed 's/\x0d//g' |
+	sed 's/\xc2\xb4/\x27/g' |
+	sed 's/\xc3\x82\x27/\x27/g' |
+	sed 's/\xc3\x82/\x27/g' |
+	sed 's/\xc3\xb9/\x27/g' |
+	sed 's/\xe2\x80\x99/\x27/g' |
+	grep -ive 'NEW.*ringtones' |
+	recode HTML..utf8 |
+	sed 's/\xc2\x91/\x27/g' |	# in unicode, those two are reserved for
+	sed 's/\xc2\x92/\x27/g' |   # private use, but still some sites use them...
+while read line
+do
+# strip starting empty lines
+	notempty=0
+	test x"$line" = x || notempty=1;
+	test $notempty -eq 1 && txtfound=1;
+	test $txtfound -eq 1 -o $notempty -eq 1 && echo $line
+done > "$3".loading
+
+# use .loading because the file is already there when googlyrics starts
+# but muggle thinks we are done as soon as $3 exists
+
+if test -s "$3".loading
+then
+	mv "$3".loading "$3"
+else
+	rm -f "$3".loading
+fi
+test -s "$3"	# we want the exit code

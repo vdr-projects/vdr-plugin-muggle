@@ -12,15 +12,13 @@
 #include "mg_listitem.h"
 #include <assert.h>
 
-mgListItem::mgListItem()
-{
+mgListItem::mgListItem() {
 	m_valid=false;
 	m_unique_id="0";
 	m_count=0;
 }
 
-mgListItem::mgListItem(const mgListItem* from)
-{
+mgListItem::mgListItem(const mgListItem* from) {
 	assert(from);
 	m_valid=from->m_valid;
 	m_value=from->m_value;
@@ -29,14 +27,12 @@ mgListItem::mgListItem(const mgListItem* from)
 	m_count=from->m_count;
 }
 
-mgListItem::mgListItem(string v,string i,unsigned int c)
-{
+mgListItem::mgListItem(string v,string i,unsigned int c) {
 	set(v,i,c);
 }
 
 mgListItem*
-mgListItem::Clone()
-{
+mgListItem::Clone() {
 	if (!this)
 		return 0;
 	else
@@ -44,8 +40,7 @@ mgListItem::Clone()
 }
 
 void
-mgListItem::set(string v,string i,unsigned int c)
-{
+mgListItem::set(string v,string i,unsigned int c) {
 	assert(this);
 	m_valid=true;
 	m_value=v;
@@ -54,15 +49,13 @@ mgListItem::set(string v,string i,unsigned int c)
 }
 
 void
-mgListItem::set_unique_id(string uid)
-{
+mgListItem::set_unique_id(string uid) {
 	assert(this);
 	m_unique_id=uid;
 }
 
-void 
-mgListItem::operator=(const mgListItem& from)
-{
+void
+mgListItem::operator=(const mgListItem& from) {
 	assert(this);
 	m_valid=from.m_valid;
 	m_value=from.m_value;
@@ -72,8 +65,7 @@ mgListItem::operator=(const mgListItem& from)
 }
 
 void
-mgListItem::operator=(const mgListItem* from)
-{
+mgListItem::operator=(const mgListItem* from) {
 	assert(this);
 	m_valid=from->valid();
 	m_value=from->value();

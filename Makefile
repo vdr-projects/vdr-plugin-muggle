@@ -9,6 +9,9 @@
 #
 PLUGIN = muggle
 
+all: libvdr-$(PLUGIN).so mugglei i18n
+
+
 #no HAVE_* flags should ever be changed in this Makefile. Instead
 #edit $VDRDIR/Make.config
 
@@ -17,6 +20,8 @@ PLUGIN = muggle
 #HAVE_VORBISFILE=1
 #HAVE_FLAC=1
 #HAVE_SNDFILE=1
+
+HAVE_FFARD=1
 
 #if you do not want to compile in code for embedded mysql,
 #define this:
@@ -85,25 +90,20 @@ DEFINES += -DMUSICDIR='"$(MUSICDIR)"'
 ### The object files (add further files here):
 
 OBJS = $(PLUGIN).o mg_valmap.o mg_thread_sync.o \
-	mg_item.o mg_item_gd.o mg_listitem.o mg_selection.o mg_sel_gd.o vdr_actions.o vdr_menu.o mg_tools.o \
+	mg_item.o mg_item_gd.o mg_listitem.o mg_selection.o mg_sel_gd.o vdr_actions.o mg_menu.o vdr_menu.o mg_tools.o \
 	vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o \
-	vdr_setup.o mg_setup.o mg_incremental_search.o mg_image_provider.o
+	vdr_setup.o mg_setup.o mg_incremental_search.o mg_image_provider.o \
+	mg_skin.o quantize.o mg_playcommands.o pcmplayer.o \
+	lyrics.o
 
-#ifdef HAVE_MP3NG_OSD
-MOBJS = i18n.o data.o menu.o \
-	vars.o bitmap.o imagecache.o quantize.o \
-	commands.o options.o lyrics.o cover.o skin.o visual.o \
-       	search.o mp3id3.o mp3id3tag.o rating.o menubrowse.o mp3control.o \
-       	data-mp3.o setup-mp3.o player-mp3.o stream.o network.o \
-       	decoder.o decoder-mp3.o decoder-mp3-stream.o decoder-snd.o \
-       	decoder-ogg.o
-
-$(MOBJS):
-	make -f Makefile.music all
-#endif
-
-PLAYLIBS = -lmad $(shell taglib-config --libs)
+PLAYLIBS = -lmad $(shell taglib-config --libs) 
 MILIBS =  $(shell taglib-config --libs)
+
+ifdef USE_BITMAP
+DEFINES += -DUSE_BITMAP
+OBJS += bitmap.o imagecache.o
+PLAYLIBS += -lImlib2
+endif
 
 ifdef HAVE_SQLITE
 DB_OBJ = mg_db_gd_sqlite.o
@@ -156,8 +156,6 @@ OBJS += $(DB_OBJ)
 
 ### Targets:
 
-all: libvdr-$(PLUGIN).so mugglei i18n
-
 # Dependencies:
 
 MAKEDEP = $(CXX) -MM -MG
@@ -207,7 +205,7 @@ i18n: $(I18Nmsgs) $(I18Npot)
 ### Targets:
 
 libvdr-$(PLUGIN).so: $(OBJS) $(MOBJS)
-	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(MOBJS) $(PLAYLIBS) $(SQLLIBS) -o $@
+	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(MOBJS) $(PLAYLIBS) $(MLIBS) $(SQLLIBS) -o $@
 	@cp --remove-destination $@ $(LIBDIR)/$@.$(APIVERSION)
 
 mugglei: mg_tools.o mugglei.o $(DB_OBJ) mg_listitem.o mg_item.o mg_item_gd.o mg_valmap.o mg_setup.o 

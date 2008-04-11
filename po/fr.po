@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fr\n"
 "Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
-"POT-Creation-Date: 2008-02-19 00:28+0100\n"
-"PO-Revision-Date: 2008-02-19 00:36+0100\n"
+"POT-Creation-Date: 2008-04-11 19:35+0200\n"
+"PO-Revision-Date: 2008-04-11 20:27+0200\n"
 "Last-Translator: Wolfgang Rohdewald <wolfgang@rohdewald.de>\n"
 "Language-Team: deutsch <vdr-muggle-i18n@sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -19,8 +19,118 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: KBabel 1.11.4\n"
 
+msgid "Loading lyrics from internet..."
+msgstr "Cherchant le texte dans le web"
+
 msgid "empty database created"
 msgstr "créé base des données vide"
+
+#, c-format
+msgid "Cannot get exclusive lock on SQLite database %s:%d/%s"
+msgstr "Pas d'accès exclusif à la base des données SQLite %s:%d/%s"
+
+#, c-format
+msgid "File %s not found"
+msgstr "Fichier %s pas trouvé"
+
+msgid "Commands"
+msgstr "Commandes"
+
+msgid "Genre"
+msgstr "Genre"
+
+msgid "Genre1"
+msgstr "Genre1"
+
+msgid "Genre2"
+msgstr "Genre2"
+
+msgid "Genre3"
+msgstr "Genre3"
+
+msgid "Folder1"
+msgstr "Dossier1"
+
+msgid "Folder2"
+msgstr "Dossier2"
+
+msgid "Folder3"
+msgstr "Dossier3"
+
+msgid "Folder4"
+msgstr "Dossier4"
+
+msgid "Artist"
+msgstr "Artiste"
+
+msgid "ArtistABC"
+msgstr "Artiste ABC"
+
+msgid "Title"
+msgstr "Titre"
+
+msgid "TitleABC"
+msgstr "Titre ABC"
+
+msgid "Track"
+msgstr "pièce"
+
+msgid "Decade"
+msgstr "Décade"
+
+msgid "Album"
+msgstr "Album"
+
+msgid "Created"
+msgstr "Nouveau"
+
+msgid "Modified"
+msgstr "Modifié"
+
+msgid "Collection"
+msgstr "Collection"
+
+msgid "Collection item"
+msgstr "Pièce de collection"
+
+msgid "Language"
+msgstr "Langue"
+
+msgid "Rating"
+msgstr "Estimation"
+
+msgid "Year"
+msgstr "Année"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "not implemented"
+msgstr "pas programmé"
+
+msgid "Parent"
+msgstr "retour"
+
+msgid "Track-"
+msgstr "Pièce-"
+
+msgid "Track+"
+msgstr "Pièce+"
+
+msgid "Change shuffle mode"
+msgstr "changer mode alléatoire"
+
+msgid "Lyrics"
+msgstr "Texte"
+
+msgid "Load Lyrics"
+msgstr "Chercher Texte"
+
+msgid "Save Lyrics"
+msgstr "Sauvegarde Texte"
+
+msgid "Change loop mode"
+msgstr "changer mode répétition"
 
 msgid "Order"
 msgstr "Ordre"
@@ -39,9 +149,6 @@ msgstr "Effacer"
 
 msgid "List"
 msgstr "Liste"
-
-msgid "Commands"
-msgstr "Commandes"
 
 msgid "Browse"
 msgstr "Naviguer"
@@ -133,9 +240,9 @@ msgstr "jouer"
 msgid "Commands:%s"
 msgstr "Commandes:%s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Key %d"
-msgstr "Key %d"
+msgstr "clef %d"
 
 msgid "Sort by count"
 msgstr "Ordre par quantité"
@@ -151,69 +258,45 @@ msgstr "Importer les titres?"
 msgid "Cannot access directory %s:%d"
 msgstr "Ne peux pas lire %s:%d"
 
-msgid "Track info view"
-msgstr "Les détails"
-
 #, c-format
-msgid "Title:\t%s"
-msgstr "Titre:\t%s"
+msgid "%d tracks : %s"
+msgstr "%d pièces : %s"
 
-#, c-format
-msgid "Artist:\t%s"
-msgstr "Artiste:\t%s"
+msgid "Lyrics: Yes"
+msgstr "Texte: Oui"
 
-#, c-format
-msgid "Album:\t%s"
-msgstr "Album:\t%s"
+msgid "Lyrics: No"
+msgstr "Texte: Non"
 
-#, c-format
-msgid "Genre:\t%s"
-msgstr "Genre:\t%s"
-
-#, c-format
-msgid "Year:\t%d"
-msgstr "Année:\t%d"
-
-#, c-format
-msgid "Length:\t%s"
-msgstr "Longeur:\t%s"
-
-#, c-format
-msgid "Bit rate:\t%s"
-msgstr ""
-
-#, c-format
-msgid "Sampling rate:\t%d"
-msgstr ""
-
-#, c-format
-msgid "File name:\t%d"
-msgstr "Nom du fichier:\t%d"
-
-#, c-format
-msgid "File name:\t%s"
-msgstr "Nom du fichier:\t%s"
-
-msgid "Now playing"
+msgid "Now playing :"
 msgstr "En jouant"
 
-msgid "Loop mode off"
-msgstr "Déclancher le mode répétition"
+msgid "Volume"
+msgstr "Volume"
 
-msgid "Loop mode single"
-msgstr "Mode répétition titre seul"
+msgid "of"
+msgstr "de"
 
-msgid "Loop mode full"
-msgstr "jjMode répétition tout"
+msgid "More.."
+msgstr "plus..."
 
-msgid "Shuffle mode off"
-msgstr "mode alléatoire déclenché"
+msgid "Jump"
+msgstr "Saut"
 
-msgid "Shuffle mode normal"
-msgstr "Mode alléatoire normal"
+msgid "Delete"
+msgstr "Effacer"
 
-msgid "Shuffle mode party"
-msgstr "Mode alléatoire fêtes"
+msgid "Copy"
+msgstr "Copier"
+
+msgid "Min/Sec"
+msgstr "Min/Sec"
+
+msgid "Time"
+msgstr "Heure"
+
+msgid "Jump: "
+msgstr "Saut:"
 
 msgid "Muggle"
 msgstr "Muggle"
@@ -222,10 +305,10 @@ msgid "Initial loop mode"
 msgstr "mode répétition initial"
 
 msgid "off"
-msgstr ""
+msgstr "non"
 
 msgid "on"
-msgstr ""
+msgstr "actif"
 
 msgid "Initial shuffle mode"
 msgstr "mode alléatoire initial"
@@ -234,10 +317,10 @@ msgid "Audio mode"
 msgstr "Mode audio"
 
 msgid "Round"
-msgstr ""
+msgstr "Round"
 
 msgid "Dither"
-msgstr ""
+msgstr "Dither"
 
 msgid "Use 48kHz mode only"
 msgstr "Seulement 48kHz mode"
@@ -249,32 +332,44 @@ msgid "yes"
 msgstr "oui"
 
 msgid "Normalizer level"
-msgstr ""
+msgstr "Normalizer level"
 
 msgid "Limiter level"
-msgstr ""
+msgstr "Limiter level"
 
 msgid "Black"
 msgstr "Noir"
 
-msgid "Image"
-msgstr "Image"
+msgid "Cover small"
+msgstr "Image petit"
+
+msgid "Cover big"
+msgstr "Image grand"
 
 msgid "Live"
-msgstr ""
+msgstr "Live"
 
 msgid "Background mode"
-msgstr ""
+msgstr "Background mode"
 
 msgid "Image show duration (secs)"
-msgstr ""
+msgstr "Duration par image (sec)"
 
-msgid "Image cache directory"
-msgstr ""
+msgid "Cache directory"
+msgstr "Répertoire temporaire"
 
 msgid "Use DVB still picture"
-msgstr ""
+msgstr "Utiliser DVB still picture"
+
+msgid "Show artist first"
+msgstr "montrer l'artiste en avant"
+
+msgid "Fastforward jump (secs)"
+msgstr "Avance rapide (secs)"
+
+msgid "Setup.muggle$Transparency for cover"
+msgstr "Setup.muggle$Transparancy de l'image"
 
 msgid "Delete stale references"
-msgstr ""
+msgstr "Effacer références éventées"
 

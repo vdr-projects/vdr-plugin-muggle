@@ -20,47 +20,53 @@ using namespace std;
 
 #include "mg_db.h"
 
-class mgDbGd : public mgDb {
-   public:
-	mgDbGd (bool SeparateThread=false);
-	~mgDbGd();
-	bool ServerConnect();
-	bool ConnectDatabase();
-  	bool Create();
-  	bool Clear();
-	int AddToCollection( const string Name,const vector<mgItem*>&items,mgParts* what);
-	int  RemoveFromCollection( const string Name,const vector<mgItem*>&items,mgParts* what);
-	
-	bool NeedGenre2();
-	long thread_id() { return mysql_thread_id(m_db); }
-	bool FieldExists(string table, string field);
-	void ServerEnd();
-	bool Threadsafe();
-	const char* HelpText() const;
-	const char *Options() const;
-	const char *DecadeExpr();
-	string Now() const { return "CURRENT_TIMESTAMP"; }
-	string Directory() const { return "substring(tracks.mp3file,1,length(tracks.mp3file)"
-		                        "-instr(reverse(tracks.mp3file),'/'))"; }
-   protected:
-	void StartTransaction();
-	void Commit();
-	void *ImplDbHandle() const { return (void*)m_db; }
-   private:
-	MYSQL *m_db;
-	void CreateFolderFields();
-	MYSQL_RES* Query( const string sql);
-  	bool sql_query(string sql);
-	bool SetCharset();
+class mgDbGd : public mgDb
+{
+	public:
+		mgDbGd (bool SeparateThread=false);
+		~mgDbGd();
+		bool ServerConnect();
+		bool ConnectDatabase();
+		bool Create();
+		bool Clear();
+		int AddToCollection( const string Name,const vector<mgItem*>&items,mgParts* what);
+		int  RemoveFromCollection( const string Name,const vector<mgItem*>&items,mgParts* what);
+
+		bool NeedGenre2();
+		long thread_id() { return mysql_thread_id(m_db); }
+		bool FieldExists(string table, string field);
+		void ServerEnd();
+		bool Threadsafe();
+		const char* HelpText() const;
+		const char *Options() const;
+		const char *DecadeExpr();
+		string Now() const { return "CURRENT_TIMESTAMP"; }
+		string Directory() const
+		{
+			return "substr(tracks.mp3file,1,length(tracks.mp3file)"
+				"-instr(reverse(tracks.mp3file),'/'))";
+		}
+	protected:
+		void StartTransaction();
+		void Commit();
+		void *ImplDbHandle() const { return (void*)m_db; }
+	private:
+		MYSQL *m_db;
+		void CreateFolderFields();
+		MYSQL_RES* Query( const string sql);
+		bool sql_query(string sql);
+		bool SetCharset();
 };
 
-class mgDbServerMySQL : public mgDbServerImp {
+class mgDbServerMySQL : public mgDbServerImp
+{
 	public:
 		mgDbServerMySQL();
 		~mgDbServerMySQL();
 };
 
-class mgSQLStringMySQL : public mgSQLStringImp {
+class mgSQLStringMySQL : public mgSQLStringImp
+{
 	public:
 		mgSQLStringMySQL(const char* s);
 		~mgSQLStringMySQL();
@@ -69,7 +75,8 @@ class mgSQLStringMySQL : public mgSQLStringImp {
 		mutable char* m_unquoted;
 };
 
-class mgQueryMySQL : public mgQueryImp {
+class mgQueryMySQL : public mgQueryImp
+{
 	public:
 		mgQueryMySQL(void* db,string sql,mgQueryNoise noise);
 		~mgQueryMySQL();

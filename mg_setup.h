@@ -17,6 +17,10 @@
 #ifndef ___SETUP_MG_H
 #define ___SETUP_MG_H
 
+#include <string>
+
+using namespace std;
+
 #define MAX_STRING_LEN 128
 
 #define DEFAULT_TARGET_LEVEL  25
@@ -29,45 +33,51 @@
  */
 class mgSetup
 {
-    public:
-        mgSetup ();
-	~mgSetup (void);
-	const char *HelpText();
-	bool ProcessArguments(int argc, char *argv[]);
-	bool NoHost() const;
-        int InitLoopMode;
-        int InitShuffleMode;
-        int AudioMode;
-        int DisplayMode;
-        int BackgrMode;
-        int TargetLevel;
-        int LimiterLevel;
-        int Only48kHz;
+	public:
+		mgSetup ();
+		~mgSetup (void);
+		string ConfigDirectory;
+		const char *HelpText();
+		bool ProcessArguments(int argc, char *argv[]);
+		bool NoHost() const;
+		int InitLoopMode;
+		int InitShuffleMode;
+		int AudioMode;
+		int DisplayMode;
+		int BackgrMode;
+		int TargetLevel;
+		int LimiterLevel;
+		int Only48kHz;
 
-        char *DbHost;
-        char *DbSocket;
-        char *DbName;
-        char *DbUser;
-        char *DbPass;
-	char *DbDatadir;
+		char *DbHost;
+		char *DbSocket;
+		char *DbName;
+		char *DbUser;
+		char *DbPass;
+		char *DbDatadir;
 
-        int DbPort;
-        char *ToplevelDir;
+		int DbPort;
+		char *ToplevelDir;
 
-	int  ImageShowDuration;
-	char *ImageCacheDir;
-	int UseDeviceStillPicture;
+		int  ImageShowDuration;
+		char *CacheDir;
+		int UseDeviceStillPicture;
 
-	int DeleteStaleReferences;
-	bool CreateMode;
-	bool IsMugglei() const;
-	void SetMugglei();
-	bool utf8;
-    private:
-	bool m_mugglei;
+		// Player:
+		int ArtistFirst;
+#ifdef USE_BITMAP
+		int ImgAlpha;
+#endif
+		int Jumptime;
 
+		int DeleteStaleReferences;
+		bool CreateMode;
+		bool IsMugglei() const;
+		void SetMugglei();
+		bool utf8;
+	private:
+		bool m_mugglei;
 };
 
 extern mgSetup the_setup;
-
 #endif

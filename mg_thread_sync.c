@@ -5,59 +5,46 @@
 
 static mgThreadSync* the_instance = NULL;
 
-mgThreadSync::mgThreadSync()
-{
+mgThreadSync::mgThreadSync() {
 	m_path = 0;
 	m_has_args = false;
 }
 
-mgThreadSync* mgThreadSync::get_instance()
-{
-  if( !the_instance )
-    {
-      the_instance = new mgThreadSync();
-    }
+mgThreadSync* mgThreadSync::get_instance() {
+	if( !the_instance ) {
+		the_instance = new mgThreadSync();
+	}
 
-  
-  if( the_instance->Active() )
-    {
-      return NULL;
-    }
-  else
-    {
-      return the_instance;
-    }
+	if( the_instance->Active() ) {
+		return NULL;
+	}
+	else {
+		return the_instance;
+	}
 }
 
-void mgThreadSync::SetArguments( char * const * path_argv)
-{
-  m_path = path_argv;
-  m_has_args = true;
+void mgThreadSync::SetArguments(const char * const * path_argv) {
+	m_path = path_argv;
+	m_has_args = true;
 }
 
-bool mgThreadSync::Sync(char * const * path_argv)
-{
-  mgThreadSync *s = mgThreadSync::get_instance();
-  if( s )
-    {
-      s->SetArguments( path_argv);
-      s->Start();
-      return true;
-    }
-  else
-    {
-      return false;
-    }  
+bool mgThreadSync::Sync(const char * const * path_argv) {
+	mgThreadSync *s = mgThreadSync::get_instance();
+	if( s ) {
+		s->SetArguments( path_argv);
+		s->Start();
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 
 void
-mgThreadSync::Action()
-{
-  if( m_has_args )
-    {
-      mgDb *s = GenerateDB(true);
-      s->Sync( m_path );
-      delete s;
-    }
+mgThreadSync::Action() {
+	if( m_has_args ) {
+		mgDb *s = GenerateDB(true);
+		s->Sync( m_path );
+		delete s;
+	}
 }
-

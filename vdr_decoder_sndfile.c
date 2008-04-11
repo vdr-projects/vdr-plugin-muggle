@@ -30,10 +30,9 @@
 #include <unistd.h>
 #include <math.h>
 
-
 #include "mg_setup.h"
 #include "vdr_decoder_sndfile.h"
-#include "i18n.h"
+#include <vdr/i18n.h>
 
 #define __STL_CONFIG_H
 #include <vdr/tools.h>
@@ -48,13 +47,13 @@
 #define CDFS_MARK_TR   "%*[^[][ %d - %d"
 #define CDFS_TRACK     "track-"
 
-#define CDDB_PROTO 5                   // used protocol level
-#define CDDB_TOUT  30*1000             // connection timeout (ms)
+#define CDDB_PROTO 5			 // used protocol level
+#define CDDB_TOUT  30*1000		 // connection timeout (ms)
 
 #ifdef DEBUG_CDFS
 #define dc(x) { (x); }
 #else
-#define dc(x) ; 
+#define dc(x) ;
 #endif
 
 // --- mgSndfileDecoder -------------------------------------------------------------
@@ -62,353 +61,302 @@
 #define SF_SAMPLES (sizeof(m_pcm->samples[0])/sizeof(mad_fixed_t))
 
 mgSndfileDecoder::mgSndfileDecoder( mgItemGd *item )
-  : mgDecoder( item ), m_file( item )
-{
-  
-  m_pcm = 0; 
-  m_framebuff = 0; 
-  m_playing = false;
-  m_ready = false;
+: mgDecoder( item ), m_file( item ) {
+
+	m_pcm = 0;
+	m_framebuff = 0;
+	m_playing = false;
+	m_ready = false;
 }
 
-mgSndfileDecoder::~mgSndfileDecoder()
-{
-  clean();
+mgSndfileDecoder::~mgSndfileDecoder() {
+	clean();
 }
 
-bool mgSndfileDecoder::valid(void)
-{
-  bool res = false;
+bool mgSndfileDecoder::valid(void) {
+	bool res = false;
 
-  if( tryLock() ) 
-    {
-      if( m_file.Open(false) ) 
-	{
-	  res=true;
+	if( tryLock() ) {
+		if( m_file.Open(false) ) {
+			res=true;
+		}
+		mgDecoder::unlock();
 	}
-      mgDecoder::unlock();
-    }
 
-  return res;
+	return res;
 }
 
 mgPlayInfo *
-mgSndfileDecoder::playInfo ()
-{
-  mgPlayInfo *pi = NULL;
+mgSndfileDecoder::playInfo () {
+	mgPlayInfo *pi = NULL;
 
-  return pi;
+	return pi;
 }
 
-void mgSndfileDecoder::init(void)
-{
-  clean();
+void mgSndfileDecoder::init(void) {
+	clean();
 
-  m_pcm = new struct mad_pcm;
-  m_framebuff = MALLOC( int, 2*SF_SAMPLES + 8 );
+	m_pcm = new struct mad_pcm;
+	m_framebuff = MALLOC( int, 2*SF_SAMPLES + 8 );
 
 #ifdef GUARD_DEBUG
-  for(int i=0; i<8; i++) m_framebuff[i+(SF_SAMPLES*2)-4]=0xdeadbeaf;
+	for(int i=0; i<8; i++) m_framebuff[i+(SF_SAMPLES*2)-4]=0xdeadbeaf;
 #endif
 
-  m_index = 0;
+	m_index = 0;
 }
 
-bool mgSndfileDecoder::clean(void)
-{
-  m_playing = false;
+bool mgSndfileDecoder::clean(void) {
+	m_playing = false;
 
-  m_buffMutex.Lock();
-  m_run = false; 
-  m_bgCond.Broadcast();
-  m_buffMutex.Unlock();
+	m_buffMutex.Lock();
+	m_run = false;
+	m_bgCond.Broadcast();
+	m_buffMutex.Unlock();
 
-  cThread::Cancel(3);
+	cThread::Cancel(3);
 
-  m_buffMutex.Lock();
-  if( !m_ready ) 
-    { 
-      m_deferedN = -1; 
-      m_ready=true; 
-    }
-  m_fgCond.Broadcast();
-  m_buffMutex.Unlock();
+	m_buffMutex.Lock();
+	if( !m_ready ) {
+		m_deferedN = -1;
+		m_ready=true;
+	}
+	m_fgCond.Broadcast();
+	m_buffMutex.Unlock();
 
-  delete m_pcm; 
-  m_pcm=0;
+	delete m_pcm;
+	m_pcm=0;
 
 #ifdef GUARD_DEBUG
-  if(m_framebuff) 
-    {
-      printf("snd: bufferguard");
-      for(int i=0; i<8; i++) printf(" %08x",m_framebuff[i+(SF_SAMPLES*2)-4]);
-      printf("\n");
-    }
+	if(m_framebuff) {
+		printf("snd: bufferguard");
+		for(int i=0; i<8; i++) printf(" %08x",m_framebuff[i+(SF_SAMPLES*2)-4]);
+		printf("\n");
+	}
 #endif
 
-  free(m_framebuff); 
-  m_framebuff=0;
-  m_file.Close();
+	free(m_framebuff);
+	m_framebuff=0;
+	m_file.Close();
 
-  return false;
+	return false;
 }
 
-bool mgSndfileDecoder::start(void)
-{
-  mgDecoder::lock(true);
-  init(); 
-  m_playing=true;
-  
-  if( m_file.Open() ) 
-    {
-      //      d(printf("snd: open rate=%d frames=%lld channels=%d format=0x%x seek=%d\n",
-      //	       m_file.SoundfileInfo()->samplerate,m_file.SoundfileInfo()->frames,m_file.SoundfileInfo()->channels,m_file.SoundfileInfo()->format,m_file.SoundfileInfo()->seekable))
-      
-      if( m_file.SoundfileInfo()->channels <= 2 ) 
-	{
-	  m_ready = false; 
-	  m_run = true; 
-	  m_softCount=0;
-	  
-	  cThread::Start();
-	  mgDecoder::unlock();
-	  return true;
-	}
-      else 
-	{
-	  // esyslog("ERROR: cannot play sound file %s: more than 2 channels", m_filename.c_str() );
-	}
-    }
-  mgDecoder::unlock();
-  return clean();
-}
+bool mgSndfileDecoder::start(void) {
+	mgDecoder::lock(true);
+	init();
+	m_playing=true;
 
-bool mgSndfileDecoder::stop(void)
-{
-  mgDecoder::lock();
-  if( m_playing ) 
-    {
-      clean();
-    }
-  mgDecoder::unlock();
-  return true;
-}
+	if( m_file.Open() ) {
+		//      d(printf("snd: open rate=%d frames=%lld channels=%d format=0x%x seek=%d\n",
+		//	       m_file.SoundfileInfo()->samplerate,m_file.SoundfileInfo()->frames,m_file.SoundfileInfo()->channels,m_file.SoundfileInfo()->format,m_file.SoundfileInfo()->seekable))
 
-void mgSndfileDecoder::Action(void)
-{
-  m_buffMutex.Lock();
-  while( m_run ) 
-    {
-    
-      if( m_ready ) 
-	{
-	  m_bgCond.Wait(m_buffMutex);
-	}
+		if( m_file.SoundfileInfo()->channels <= 2 ) {
+			m_ready = false;
+			m_run = true;
+			m_softCount=0;
 
-      if(!m_ready) 
-	{
-	  m_buffMutex.Unlock();
-	  m_deferedN = m_file.Stream( m_framebuff,SF_SAMPLES );
-	  m_buffMutex.Lock();
-	  m_ready = true; 
-	  m_fgCond.Broadcast();
-	}
-    }
-  m_buffMutex.Unlock();
-}
-
-struct mgDecode *mgSndfileDecoder::done(eDecodeStatus status)
-{
-  m_ds.status = status;
-  m_ds.index  = m_index*1000 / m_file.SoundfileInfo()->samplerate;
-  m_ds.pcm    = m_pcm;
-
-  mgDecoder::unlock(); // release the lock from Decode()
-  
-  return &m_ds;
-}
-
-struct mgDecode *mgSndfileDecoder::decode()
-{
-  mgDecoder::lock(); // this is released in Done()
-  if(m_playing) 
-    {
-      cMutexLock lock(&m_buffMutex);
-      while(!m_ready)
-	{
-	  if( !m_softCount || !m_fgCond.TimedWait( m_buffMutex, m_softCount*5 ) )
-	    {
-	      if( m_softCount < 20 ) 
-		{
-		  m_softCount++;
+			cThread::Start();
+			mgDecoder::unlock();
+			return true;
 		}
-	      return done(dsSoftError);
-	    }
+		else {
+			// esyslog("ERROR: cannot play sound file %s: more than 2 channels", m_filename.c_str() );
+		}
 	}
-    m_softCount = 0;
-    m_ready = false; 
-    m_bgCond.Broadcast();
-
-    int n = m_deferedN;
-    if( n < 0 ) 
-      {
-	return done(dsError);
-      }
-
-    if( n == 0 ) 
-      {
-	return done(dsEof);
-      }
-
-    m_pcm->samplerate = m_file.SoundfileInfo()->samplerate;
-    m_pcm->channels = m_file.SoundfileInfo()->channels;
-    m_pcm->length = n;
-    m_index += n;
-
-    int *data = m_framebuff;
-    mad_fixed_t *sam0 = m_pcm->samples[0], *sam1=m_pcm->samples[1]; 
-
-    const int s = (sizeof(int)*8)-1-MAD_F_FRACBITS; // shift value for mad_fixed conversion
-
-    if(m_pcm->channels>1) 
-      {
-	for(; n>0 ; n--) 
-	  {
-	    *sam0++=(*data++) >> s;
-	    *sam1++=(*data++) >> s;
-	  }
-      }
-    else 
-      {
-	for(; n>0 ; n--)
-	  {
-	    *sam0++=(*data++) >> s;
-	  }
-      }
-    return done(dsPlay);
-    }
-  return done(dsError);
+	mgDecoder::unlock();
+	return clean();
 }
 
-bool mgSndfileDecoder::skip( int seconds, int avail, int rate )
-{
-  mgDecoder::lock();
-  bool res=false;
-  float bsecs = (float) avail / (float) ( rate * (16 / 8 * 2) );
-
-  if( m_playing && m_file.SoundfileInfo()->seekable ) 
-    {
-      float fsecs = (float)seconds - bsecs;
-      sf_count_t frames = (sf_count_t)( fsecs*(float)m_file.SoundfileInfo()->samplerate );
-      sf_count_t newpos = m_file.Seek( 0, true ) + frames;
-
-      if( newpos > m_file.SoundfileInfo()->frames )
-	{
-	  newpos = m_file.SoundfileInfo()->frames-1;
+bool mgSndfileDecoder::stop(void) {
+	mgDecoder::lock();
+	if( m_playing ) {
+		clean();
 	}
-      
-      if( newpos < 0 ) 
-	{
-	  newpos=0;
+	mgDecoder::unlock();
+	return true;
+}
+
+void mgSndfileDecoder::Action(void) {
+	m_buffMutex.Lock();
+	while( m_run ) {
+
+		if( m_ready ) {
+			m_bgCond.Wait(m_buffMutex);
+		}
+
+		if(!m_ready) {
+			m_buffMutex.Unlock();
+			m_deferedN = m_file.Stream( m_framebuff,SF_SAMPLES );
+			m_buffMutex.Lock();
+			m_ready = true;
+			m_fgCond.Broadcast();
+		}
 	}
-      
-      //    d(printf("snd: skip: secs=%d fsecs=%f frames=%lld current=%lld new=%lld\n",Seconds,fsecs,frames,m_file.Seek(0,true),newpos))
-      
-      m_buffMutex.Lock();
-      frames = m_file.Seek( newpos, false );
-      m_ready = false; 
-      m_bgCond.Broadcast();
-      m_buffMutex.Unlock();
-      
-      if( frames >= 0 ) 
-	{
-	  m_index = frames;
+	m_buffMutex.Unlock();
+}
+
+struct mgDecode *mgSndfileDecoder::done(eDecodeStatus status) {
+	m_ds.status = status;
+	m_ds.index  = m_index*1000 / m_file.SoundfileInfo()->samplerate;
+	m_ds.pcm    = m_pcm;
+
+	mgDecoder::unlock();		 // release the lock from Decode()
+
+	return &m_ds;
+}
+
+struct mgDecode *mgSndfileDecoder::decode() {
+	mgDecoder::lock();			 // this is released in Done()
+	if(m_playing) {
+		cMutexLock lock(&m_buffMutex);
+		while(!m_ready) {
+			if( !m_softCount || !m_fgCond.TimedWait( m_buffMutex, m_softCount*5 ) ) {
+				if( m_softCount < 20 ) {
+					m_softCount++;
+				}
+				return done(dsSoftError);
+			}
+		}
+		m_softCount = 0;
+		m_ready = false;
+		m_bgCond.Broadcast();
+
+		int n = m_deferedN;
+		if( n < 0 ) {
+			return done(dsError);
+		}
+
+		if( n == 0 ) {
+			return done(dsEof);
+		}
+
+		m_pcm->samplerate = m_file.SoundfileInfo()->samplerate;
+		m_pcm->channels = m_file.SoundfileInfo()->channels;
+		m_pcm->length = n;
+		m_index += n;
+
+		int *data = m_framebuff;
+		mad_fixed_t *sam0 = m_pcm->samples[0], *sam1=m_pcm->samples[1];
+
+								 // shift value for mad_fixed conversion
+		const int s = (sizeof(int)*8)-1-MAD_F_FRACBITS;
+
+		if(m_pcm->channels>1) {
+			for(; n>0 ; n--) {
+				*sam0++=(*data++) >> s;
+				*sam1++=(*data++) >> s;
+			}
+		}
+		else {
+			for(; n>0 ; n--) {
+				*sam0++=(*data++) >> s;
+			}
+		}
+		return done(dsPlay);
+	}
+	return done(dsError);
+}
+
+bool mgSndfileDecoder::skip( int seconds, int avail, int rate ) {
+	mgDecoder::lock();
+	bool res=false;
+	float bsecs = (float) avail / (float) ( rate * (16 / 8 * 2) );
+
+	if( m_playing && m_file.SoundfileInfo()->seekable ) {
+		float fsecs = (float)seconds - bsecs;
+		sf_count_t frames = (sf_count_t)( fsecs*(float)m_file.SoundfileInfo()->samplerate );
+		sf_count_t newpos = m_file.Seek( 0, true ) + frames;
+
+		if( newpos > m_file.SoundfileInfo()->frames ) {
+			newpos = m_file.SoundfileInfo()->frames-1;
+		}
+
+		if( newpos < 0 ) {
+			newpos=0;
+		}
+
+		//    d(printf("snd: skip: secs=%d fsecs=%f frames=%lld current=%lld new=%lld\n",Seconds,fsecs,frames,m_file.Seek(0,true),newpos))
+
+		m_buffMutex.Lock();
+		frames = m_file.Seek( newpos, false );
+		m_ready = false;
+		m_bgCond.Broadcast();
+		m_buffMutex.Unlock();
+
+		if( frames >= 0 ) {
+			m_index = frames;
 #ifdef DEBUG
-	  int i = frames/m_file.SoundfileInfo()->samplerate;
-	  printf("snd: skipping to %02d:%02d (frame %lld)\n",i/60,i%60,frames);
+			int i = frames/m_file.SoundfileInfo()->samplerate;
+			printf("snd: skipping to %02d:%02d (frame %lld)\n",i/60,i%60,frames);
 #endif
-	  res=true;
+			res=true;
+		}
 	}
-    }
-  mgDecoder::unlock();
-  return res;
+	mgDecoder::unlock();
+	return res;
 }
 
 // --- cSndfile ----------------------------------------------------------------
 
-mgSndfile::mgSndfile( mgItemGd *item )
-{
-  m_filename = item->getSourceFile();
-  m_sf = 0;
+mgSndfile::mgSndfile( mgItemGd *item ) {
+	m_filename = item->getSourceFile();
+	m_sf = 0;
 }
 
-mgSndfile::~mgSndfile()
-{
-  Close();
+mgSndfile::~mgSndfile() {
+	Close();
 }
 
-SF_INFO* mgSndfile::SoundfileInfo()
-{
-  return &m_sfi;
+SF_INFO* mgSndfile::SoundfileInfo() {
+	return &m_sfi;
 }
 
-bool mgSndfile::Open(bool log)
-{
-  if( m_sf ) 
-    {
-      return( Seek() >= 0 );
-    }
-  
-  m_sf = sf_open( m_filename.c_str(), SFM_READ, &m_sfi );
-  if( !m_sf && log ) 
-    {
-      Error( "open" );
-    }
-  
-  return ( m_sf != 0 );
+bool mgSndfile::Open(bool log) {
+	if( m_sf ) {
+		return( Seek() >= 0 );
+	}
+
+	m_sf = sf_open( m_filename.c_str(), SFM_READ, &m_sfi );
+	if( !m_sf && log ) {
+		Error( "open" );
+	}
+
+	return ( m_sf != 0 );
 }
 
-void mgSndfile::Close(void)
-{
-  if( m_sf ) 
-    { 
-      sf_close( m_sf ); 
-      m_sf = 0;
-    } 
+void mgSndfile::Close(void) {
+	if( m_sf ) {
+		sf_close( m_sf );
+		m_sf = 0;
+	}
 }
 
-void mgSndfile::Error(const char *action)
-{
-  char buff[128];
-  sf_error_str( m_sf, buff, sizeof(buff) );
-  // esyslog( "ERROR: sndfile %s failed on %s: %s", action, Filename, buff );
+void mgSndfile::Error(const char *action) {
+	char buff[128];
+	sf_error_str( m_sf, buff, sizeof(buff) );
+	// esyslog( "ERROR: sndfile %s failed on %s: %s", action, Filename, buff );
 }
 
-sf_count_t mgSndfile::Seek( sf_count_t frames, bool relative )
-{
-  int dir = SEEK_CUR;
-  if( !relative ) 
-    {
-      dir = SEEK_SET;
-    }
+sf_count_t mgSndfile::Seek( sf_count_t frames, bool relative ) {
+	int dir = SEEK_CUR;
+	if( !relative ) {
+		dir = SEEK_SET;
+	}
 
-  int n = sf_seek( m_sf, frames, dir );
-  if( n < 0 )
-    {
-      Error("seek");
-    }
+	int n = sf_seek( m_sf, frames, dir );
+	if( n < 0 ) {
+		Error("seek");
+	}
 
-  return n;
+	return n;
 }
 
-sf_count_t mgSndfile::Stream( int *buffer, sf_count_t frames )
-{
-  sf_count_t n = sf_readf_int( m_sf, buffer, frames );
-  if( n < 0 ) 
-    {
-      Error("read");
-    }
-  return n;
+sf_count_t mgSndfile::Stream( int *buffer, sf_count_t frames ) {
+	sf_count_t n = sf_readf_int( m_sf, buffer, frames );
+	if( n < 0 ) {
+		Error("read");
+	}
+	return n;
 }
-
-#endif //HAVE_SNDFILE
+#endif							 //HAVE_SNDFILE

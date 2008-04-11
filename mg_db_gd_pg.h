@@ -1,4 +1,4 @@
-/*! 
+/*!
  * \file   mg_db_gd_mysql.h
  * \brief  A capsule around giantdisc database access
  *
@@ -20,10 +20,12 @@ using namespace std;
 
 #include "mg_db.h"
 
-class mgDbServerPG : public mgDbServerImp {
+class mgDbServerPG : public mgDbServerImp
+{
 };
 
-class mgSQLStringPG : public mgSQLStringImp {
+class mgSQLStringPG : public mgSQLStringImp
+{
 	public:
 		mgSQLStringPG(const char* s);
 		~mgSQLStringPG();
@@ -32,7 +34,8 @@ class mgSQLStringPG : public mgSQLStringImp {
 		mutable char* m_unquoted;
 };
 
-class mgQueryPG : public mgQueryImp {
+class mgQueryPG : public mgQueryImp
+{
 	public:
 		mgQueryPG(void* db,string sql,mgQueryNoise noise);
 		~mgQueryPG();
@@ -43,33 +46,34 @@ class mgQueryPG : public mgQueryImp {
 		char *m_rowpointers[100];
 };
 
-class mgDbGd : public mgDb {
-   public:
-	mgDbGd (bool SeparateThread=false);
-	~mgDbGd();
-	bool ServerConnect();
-	bool ConnectDatabase();
-  	bool Creatable();
-  	bool Create();
-  	bool Clear();
-	
-	bool NeedGenre2();
-	long thread_id() { return -1; }
-	bool FieldExists(string table, string field);
-	bool Threadsafe();
-	const char* Options() const;
-	const char* HelpText() const;
-	const char *DecadeExpr();
-	string Now() const { return "CURRENT_TIMESTAMP";}
-	string Directory() const { return "substring(tracks.mp3file from '.*/(.*)')"; }
-   protected:
-	void StartTransaction();
-	void Commit();
-	void *ImplDbHandle() const { return (void*)m_db;}
-   private:
-	bool myCreate();
-	PGconn *m_db;
-	bool SetCharset();
+class mgDbGd : public mgDb
+{
+	public:
+		mgDbGd (bool SeparateThread=false);
+		~mgDbGd();
+		bool ServerConnect();
+		bool ConnectDatabase();
+		bool Creatable();
+		bool Create();
+		bool Clear();
+
+		bool NeedGenre2();
+		long thread_id() { return -1; }
+		bool FieldExists(string table, string field);
+		bool Threadsafe();
+		const char* Options() const;
+		const char* HelpText() const;
+		const char *DecadeExpr();
+		string Now() const { return "CURRENT_TIMESTAMP";}
+		string Directory() const { return "substring(tracks.mp3file from '.*/(.*)')"; }
+	protected:
+		void StartTransaction();
+		void Commit();
+		void *ImplDbHandle() const { return (void*)m_db;}
+	private:
+		bool myCreate();
+		PGconn *m_db;
+		bool SetCharset();
 
 };
 #endif

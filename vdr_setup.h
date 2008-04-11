@@ -25,15 +25,14 @@
 
 #define MAX_PATH 256
 
-
 /*!
  * \brief allow user to modify setup on OSD
  */
 class mgMenuSetup : public cMenuSetupPage
 {
-    protected:
-        virtual void Store ();
-    public:
-        mgMenuSetup ();
+	protected:
+		virtual void Store ();
+	public:
+		mgMenuSetup ();
 };
 #endif

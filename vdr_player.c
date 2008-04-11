@@ -12,6 +12,7 @@
  * Adapted from
  * MP3/MPlayer plugin to VDR (C++)
  * (C) 2001,2002 Stefan Huelswitt <huels@iname.com>
+ * and from the Music plugin (c) Morone
  */
 
 #include <ctype.h>
@@ -25,13 +26,15 @@
 
 #include <string>
 #include <iostream>
+#include <fstream>
 
 #include <mad.h>
 
-#include <linux/types.h> // this should really be included by linux/dvb/video.h
+#include <linux/types.h>		 // this should really be included by linux/dvb/video.h
 #include <linux/dvb/video.h>
 #include <vdr/player.h>
 #include <vdr/device.h>
+#include <vdr/remote.h>
 #include <vdr/thread.h>
 #include <vdr/ringbuffer.h>
 #define __STL_CONFIG_H
@@ -41,1840 +44,1365 @@
 #include <vdr/plugin.h>
 
 #include "vdr_player.h"
-#include "vdr_decoder.h"
 #include "vdr_config.h"
 #include "mg_setup.h"
+#include "mg_skin.h"
+#include "common.h"
+#include "bitmap.h"
+#include "pcmplayer.h"
 #include "mg_image_provider.h"
-#include "i18n.h"
 
 #include "mg_tools.h"
+
+char coverpicture[256];
+#define SPAN_PROVIDER_CHECK_ID  "Span-ProviderCheck-v1.0"
+#define SPAN_CLIENT_CHECK_ID    "Span-ClientCheck-v1.0"
+#define SPAN_SET_PCM_DATA_ID    "Span-SetPcmData-v1.1"
+#define SPAN_SET_PLAYINDEX_ID   "Span-SetPlayindex-v1.0"
+#define SPAN_GET_BAR_HEIGHTS_ID "Span-GetBarHeights-v1.0"
+
+#include "symbols/shuffle.xpm"
+#include "symbols/loop.xpm"
+#include "symbols/loopall.xpm"
+#include "symbols/stop.xpm"
+#include "symbols/play.xpm"
+#include "symbols/pause.xpm"
+#include "symbols/rew.xpm"
+#include "symbols/fwd.xpm"
+#include "symbols/copy.xpm"
+
+#if 0
+#include "symbols/delstar.xpm"
+#include "symbols/rate00.xpm"
+#include "symbols/rate05.xpm"
+#include "symbols/rate10.xpm"
+#include "symbols/rate15.xpm"
+#include "symbols/rate20.xpm"
+#include "symbols/rate25.xpm"
+#include "symbols/rate30.xpm"
+#include "symbols/rate35.xpm"
+#include "symbols/rate40.xpm"
+#include "symbols/rate45.xpm"
+#include "symbols/rate50.xpm"
+#endif
+
+cBitmap mgPlayerControl::bmShuffle(shuffle_xpm);
+cBitmap mgPlayerControl::bmLoop(loop_xpm);
+cBitmap mgPlayerControl::bmLoopAll(loopall_xpm);
+cBitmap mgPlayerControl::bmStop(stop_xpm);
+cBitmap mgPlayerControl::bmPlay(play_xpm);
+cBitmap mgPlayerControl::bmPause(pause_xpm);
+cBitmap mgPlayerControl::bmRew(rew_xpm);
+cBitmap mgPlayerControl::bmFwd(fwd_xpm);
+cBitmap mgPlayerControl::bmCopy(copy_xpm);
 
 // ----------------------------------------------------------------
 
 // #define DEBUGPES
 
-// TODO: check for use of constants
-#define OUT_BITS 16                               // output 16 bit samples to DVB driver
-#define OUT_FACT (OUT_BITS/8*2)                   // output factor is 16 bit & 2 channels -> 4 bytes
-
-// mgResample
-#define MAX_NSAMPLES (1152*7)                     // max. buffer for resampled frame
-
-// mgNormalize
-#define MAX_GAIN   3.0                            // max. allowed gain
-#define LIM_ACC    12                             // bit, accuracy for lookup table
-                                                  // max. value covered by lookup table
-#define F_LIM_MAX  (mad_fixed_t)((1<<(MAD_F_FRACBITS+2))-1)
-#define LIM_SHIFT  (MAD_F_FRACBITS-LIM_ACC)       // shift value for table lookup
-#define F_LIM_JMP  (mad_fixed_t)(1<<LIM_SHIFT)    // lookup table jump between values
-
-// mgLevel
-#define POW_WIN 100                               // window width for smoothing power values
-#define EPSILON 0.00000000001                     // anything less than EPSILON is considered zero
-
-// cMP3Player
-#define MAX_FRAMESIZE   2048                      // max. frame size allowed for DVB driver
-#define HDR_SIZE        9
-#define LPCM_SIZE       7
-#define LEN_CORR        3
-                                                  // play time to fill buffers before speed check starts (ms)
-#define SPEEDCHECKSTART ((MP3BUFSIZE*1000/32000/2/2)+1000)
-#define SPEEDCHECKTIME  3000                      // play time for speed check (ms)
-
-/*
-struct LPCMHeader { int id:8;              // id
-                    int frame_count:8;     // number of frames
-                    int access_ptr:16;     // first acces unit pointer, i.e. start of audio frame
-                    bool emphasis:1;       // audio emphasis on-off
-                    bool mute:1;           // audio mute on-off
-                    bool reserved:1;       // reserved
-                    int frame_number:5;    // audio frame number
-                    int quant_wlen:2;      // quantization word length
-                    int sample_freq:2;     // audio sampling frequency (48khz=0, 96khz=1, 44,1khz=2, 32khz=3)
-                    bool reserved2:1;      // reserved
-int chan_count:3;      // number of audio channels - 1 (e.g. stereo = 1)
-int dyn_range_ctrl:8;  // dynamic range control (0x80 if off)
+class cProgressBar : public cBitmap
+{
+	public:
+		cProgressBar(int Width, int Height, int Current, int Total, int FgColor, int BgColor );
 };
-*/
-
-struct LPCMFrame
-{
-    unsigned char PES[HDR_SIZE];
-    unsigned char LPCM[LPCM_SIZE];
-    unsigned char Data[MAX_FRAMESIZE - HDR_SIZE - LPCM_SIZE];
-};
-
-#include "vdr_sound.c"
-
-// --- mgPCMPlayer ----------------------------------------------------------
-
-/*!
- * \brief a generic PCM player class
- *
- * this class implements a state machine that obtains decoded data from a generic data
- * and moves it to the DVB device. It inherits from cPlayer in order to be hooked into
- * VDR as a player and inherits from cThread in order to implement a separate thread
- * for the decoding process.
- */
-class mgPCMPlayer : public cPlayer, cThread
-{
-    private:
-
-//! \brief indicates whether the player is currently active
-        bool m_active;
-
-//! \brief indicates whether the player has been started
-        bool m_started;
-
-//! \brief indicates whether the player is currently playing
-        bool m_playing;
-
-//! \brief a buffer for decoded sound
-        cRingBufferFrame *m_ringbuffer;
-
-//! \brief a mutex for the playmode
-        cMutex m_playmode_mutex;
-
-//! \brief a condition to signal playmode changes
-        cCondVar m_playmode_cond;
-
-//! \brief the current playlist
-        mgSelection *m_playlist;
-
-//! \brief the currently played or to be played item
-        mgItemGd *m_current;
-
-//! \brief the decoder responsible for the currently playing item
-        mgDecoder *m_decoder;
-
-//! \brief the image provider
-	mgImageProvider *m_img_provider;
-
-        cFrame *m_rframe, *m_pframe;
-
-        enum emgPlayMode
-        {
-            pmPlay,
-            pmStopped,
-            pmPaused,
-            pmStartup
-        };
-        emgPlayMode m_playmode;
-
-        enum eState
-        {
-            msStart, msStop,
-            msDecode, msNormalize,
-            msResample, msOutput,
-            msError, msEof, msWait
-        };
-        eState m_state;
-
-        bool levelgood;
-        unsigned int dvbSampleRate;
-
-//
-        int m_index;
-
-        void Empty ();
-        bool SkipFile (bool skipforward=true);
-	void PlayTrack();
-        void StopPlay ();
-
-        void SetPlayMode (emgPlayMode mode);
-        void WaitPlayMode (emgPlayMode mode, bool inv);
-
-    protected:
-        virtual void Activate (bool On);
-        virtual void Action (void);
-
-    public:
-        mgPCMPlayer (mgSelection * plist);
-        virtual ~ mgPCMPlayer ();
-
-        bool Active ()
-        {
-            return m_active;
-        }
-
-        bool Playing ()
-        {
-	  return m_playing || m_active;
-        }
-
-        void Pause ();
-        void Play ();
-        void Forward ();
-        void Backward ();
-
-        void Goto (int Index, bool Still = false);
-        void SkipSeconds (int secs);
-        void ToggleShuffle (void);
-        void ToggleLoop (void);
-
-        virtual bool GetIndex (int &Current, int &Total, bool SnapToIFrame = false);
-	//  bool GetPlayInfo(cMP3PlayInfo *rm); // LVW
-
-        void ReloadPlaylist ();
-        void NewPlaylist (mgSelection * plist);
-        void NewImagePlaylist (const char *directory);
-
-        mgItemGd *getCurrent ()
-        {
-            return m_current;
-        }
-
-        mgSelection *getPlaylist ()
-        {
-            return m_playlist;
-        }
-
-	// background image handling stuff
-	int m_lastshow;
-	bool m_hasimages;
-	string m_current_image;
-	void CheckImage( );
-	void ShowImage( );
-	void TransferImageTFT( string cover );
-	void send_pes_packet(unsigned char *data, int len, int timestamp);	
-};
-
-mgPCMPlayer::mgPCMPlayer (mgSelection * plist)
-  : cPlayer(the_setup.BackgrMode==2? pmAudioOnly:pmAudioOnlyBlack )
-{
-    m_playlist = plist;
-
-    m_active = true;
-    m_started = false;
-
-    m_ringbuffer = new cRingBufferFrame (MP3BUFSIZE);
-
-    m_rframe = 0;
-    m_pframe = 0;
-    m_decoder = 0;
-
-    m_playmode = pmStartup;
-    m_state = msStop;
-
-    m_index = 0;
-    m_playing = false;
-    m_current = 0;
-    
-    if( the_setup.BackgrMode == 1 )
-      {
-	m_img_provider = mgImageProvider::Create();
-      }
-    else
-      {
-	m_img_provider = NULL;
-      }
-}
-
-
-mgPCMPlayer::~mgPCMPlayer ()
-{
-    Detach ();
-    delete m_playlist;
-    delete m_ringbuffer;
-
-    if( m_img_provider )
-      {
-	delete m_img_provider;
-	m_img_provider = NULL;
-      }
-}
-
-void
-mgPCMPlayer::PlayTrack()
-{
-    mgItemGd * newcurr = dynamic_cast<mgItemGd*>(m_playlist->getCurrentItem ());
-    if (newcurr)
-    {
-	delete m_current;
-        m_current = new mgItemGd(newcurr);
-    }
-    Play ();
-}
-
-void
-mgPCMPlayer::Activate (bool on)
-{
-    MGLOG ("mgPCMPlayer::Activate");
-    if (on)
-    {
-        if (m_playlist && !m_started)
-        {
-            m_playmode = pmStartup;
-            Start ();
-
-            m_started = true;
-            m_current = 0;
-
-            m_playmode_mutex.Lock ();
-            WaitPlayMode (pmStartup, true);       // wait for the decoder to become ready
-            m_playmode_mutex.Unlock ();
-
-            Lock ();
-	    PlayTrack();
-            Unlock ();
-        }
-    }
-    else if (m_started && m_active)
-    {
-        Lock ();
-        StopPlay ();
-        Unlock ();
-
-        m_active = false;
-        SetPlayMode (pmStartup);
-
-        Cancel (2);
-    }
-}
-
-void
-mgPCMPlayer::ReloadPlaylist()
-{
-    Lock ();
-    m_playlist->clearCache();
-    if (!m_playing)
-    {
-	SkipFile();
-    	Play ();
-    }
-    Unlock ();
-}
-
-void
-mgPCMPlayer::NewPlaylist (mgSelection * plist)
-{
-    MGLOG ("mgPCMPlayer::NewPlaylist");
-
-    Lock ();
-    StopPlay ();
-
-    delete m_current;
-    m_current = 0;
-    delete m_playlist;
-    m_playlist = plist;
-    PlayTrack();
-    Unlock ();
-}
-
-void
-mgPCMPlayer::NewImagePlaylist( const char *directory )
-{
-    MGLOG ("mgPCMPlayer::NewImagePlaylist");
-
-    Lock ();
-
-    if( m_img_provider )
-      {
-	delete m_img_provider;
-	m_img_provider = NULL;
-      }
-    m_img_provider = mgImageProvider::Create( directory );
-    m_hasimages = true; // assume we have some images here!
-
-    Unlock ();
-}
-
-void
-mgPCMPlayer::SetPlayMode (emgPlayMode mode)
-{
-    m_playmode_mutex.Lock ();
-    if (mode != m_playmode)
-    {
-        m_playmode = mode;
-        m_playmode_cond.Broadcast ();
-    }
-    m_playmode_mutex.Unlock ();
-}
-
-
-void
-mgPCMPlayer::WaitPlayMode(emgPlayMode mode, bool inv)
-{
-// must be called with m_playmode_mutex LOCKED !!!
-
-    while (m_active
-        && ((!inv && mode != m_playmode) || (inv && mode == m_playmode)))
-    {
-        m_playmode_cond.Wait (m_playmode_mutex);
-    }
-}
-
-
-void
-mgPCMPlayer::Action (void)
-{
-    MGLOG ("mgPCMPlayer::Action");
-
-    struct mgDecode *ds = 0;
-    struct mad_pcm *pcm = 0;
-    mgResample resample[2];
-    unsigned int nsamples[2];
-    const mad_fixed_t *data[2];
-    mgScale scale;
-    mgLevel level;
-    mgNormalize norm;
-    bool haslevel = false;
-    struct LPCMFrame lpcmFrame;
-    const unsigned char *p = 0;
-    int pc = 0, only48khz = the_setup.Only48kHz;
-    cPoller poll;
-#ifdef DEBUG
-//     int beat = 0;
-#endif
-
-#ifdef DEBUGPES
-    FILE *peslog = fopen( "pes.dump", "w" );
-#endif
-
-    dsyslog ("muggle: player thread started (pid=%d)", getpid ());
-
-    memset (&lpcmFrame, 0, sizeof (lpcmFrame));
-    lpcmFrame.PES[2] = 0x01;
-    lpcmFrame.PES[3] = 0xbd;
-    lpcmFrame.PES[6] = 0x87;
-    lpcmFrame.LPCM[0] = 0xa0;                     // substream ID
-    lpcmFrame.LPCM[1] = 0xff;
-    lpcmFrame.LPCM[2] = 0;
-    lpcmFrame.LPCM[3] = 4;    
-    lpcmFrame.LPCM[5] = 0x01;
-    lpcmFrame.LPCM[6] = 0x80;
-
-    dvbSampleRate = 48000;
-    m_state = msStop;
-    SetPlayMode (pmStopped);
-
-#if VDRVERSNUM >= 10318
-    cDevice::PrimaryDevice()->SetCurrentAudioTrack(ttAudio);
-#endif
-    while (m_active)
-    {
-#ifdef DEBUG
-      /*
-        if (time (0) >= beat + 30)
-        {
-            std::
-                cout << "mgPCMPlayer::Action: heartbeat buffer=" << m_ringbuffer->
-                Available () << std::endl << std::flush;
-           scale.Stats ();
-	   if (haslevel)
-	     norm.Stats ();
-	   beat = time (0);
-        }
-      */
-#endif
-
-        Lock ();
-
-
-        if (!m_rframe && m_playmode == pmPlay)
-        {
-            switch (m_state)
-            {
-                case msStart:
-		  {
-		    if( m_img_provider && the_setup.BackgrMode == 1 )
-		      {
-			m_hasimages = m_img_provider->updateItem( m_current );
-			m_lastshow = -1; // never showed a picture during this song replay
-		      }
-
-		    m_index = 0;
-		    
-                    m_playing = true;
-		    
-                    if( m_current )
-		      {
-		        string filename = m_current->getSourceFile ();
-                        if ((m_decoder = mgDecoders::findDecoder (m_current))
-                            && m_decoder->start ())
-			  {
-			    levelgood = true;
-			    haslevel = false;
-			    
-			    level.Init ();
-			    
-			    m_state = msDecode;
-			    break;
-			  }
-		        else
-			  {
-			    mgWarning("found no decoder for %s",filename.c_str());
-			    m_state=msStop;	// if loop mode is on and no decoder
-			      			// for any track is found, we would
-						// otherwise get into an endless loop
-						// not stoppable with the remote.
-			    break;
-			  }
-		      }
-                    m_state = msEof;
-		  }
-                break;
-                case msDecode:
-                {	
-		  if( the_setup.BackgrMode == 1 )
-		    {
-		      CheckImage();
-		    }
-		  
-		  ds = m_decoder->decode ();
-		  switch (ds->status)
-			{
-                        case dsPlay:
-			  {
-                            pcm = ds->pcm;
-                            m_index = ds->index / 1000;
-                            m_state = msNormalize;
-			  }
-                        break;
-                        case dsSkip:
-                        case dsSoftError:
-                        {
-			  // skipping, state unchanged, next decode
-                        }
-                        break;
-                        case dsEof:
-                        {
-                            m_state = msEof;
-                        }
-                        break;
-                        case dsOK:
-                        case dsError:
-                        {
-                            m_state = msError;
-                        }
-                        break;
-                    }
-                }
-                break;
-                case msNormalize:
-                {
-                    if (!haslevel)
-                    {
-                        if (levelgood)
-                        {
-                            level.GetPower (pcm);
-                        }
-                    }
-                    else
-                    {
-                        norm.AddGain (pcm);
-                    }
-                    m_state = msResample;
-                }
-                break;
-                case msResample:
-                {
-#ifdef DEBUG
-                    {
-                        static unsigned int oldrate = 0;
-                        if (oldrate != pcm->samplerate)
-                        {   
-                            mgDebug ("mgPCMPlayer::Action: new input sample rate %d",pcm->samplerate);
-                  		    oldrate = pcm->samplerate;
-                        }
-                    }
-#endif
-                    nsamples[0] = nsamples[1] = pcm->length;
-                    data[0] = pcm->samples[0];
-                    data[1] = pcm->channels > 1 ? pcm->samples[1] : 0;
-
-                    lpcmFrame.LPCM[5] &= 0xcf;
-                    dvbSampleRate = 48000;
-                    if (!only48khz)
-                    {
-                        switch (pcm->samplerate)
-                        {                         // If one of the supported frequencies, do it without resampling.
-                            case 96000:
-                            {                     // Select a "even" upsampling frequency if possible, too.
-			      lpcmFrame.LPCM[5] |= 1 << 4;
-			      dvbSampleRate = 96000;
-                            }
-                            break;
-
-//case 48000: // this is already the default ...
-//  lpcmFrame.LPCM[5]|=0<<4;
-//  dvbSampleRate=48000;
-//  break;
-                            case 11025:
-                            case 22050:
-                            case 44100:
-                            {
-			      // lpcmFrame.LPCM[5] |= 2 << 4;
-			      lpcmFrame.LPCM[5] |= 0x20;
-			      dvbSampleRate = 44100;
-                            }
-                            break;
-                            case 8000:
-                            case 16000:
-                            case 32000:
-                            {
-			      // lpcmFrame.LPCM[5] |= 3 << 4;
-			      lpcmFrame.LPCM[5] |= 0x30;
-			      dvbSampleRate = 32000;
-                            }
-                            break;
-                        }
-                    }
-
-                    if (dvbSampleRate != pcm->samplerate)
-                    {
-                        if (resample[0].
-                            SetInputRate (pcm->samplerate, dvbSampleRate))
-                        {
-                            nsamples[0] =
-                                resample[0].ResampleBlock (nsamples[0], data[0]);
-                            data[0] = resample[0].Resampled ();
-                        }
-                        if (data[1]
-                            && resample[1].SetInputRate (pcm->samplerate,
-                            dvbSampleRate))
-                        {
-                            nsamples[1] =
-                                resample[1].ResampleBlock (nsamples[1], data[1]);
-                            data[1] = resample[1].Resampled ();
-                        }
-                    }
-                    m_state = msOutput;
-                }
-                break;
-                case msOutput:
-                {
-                    if (nsamples[0] > 0)
-                    {
-                        unsigned int outlen = 
-			  scale.ScaleBlock ( lpcmFrame.Data,
-					     sizeof (lpcmFrame.Data),
-					     nsamples[0], 
-					     data[0], data[1], 
-					     the_setup.AudioMode ? 
-					     amDither : amRound );
-                        if (outlen)
-                        {
-			  outlen += sizeof (lpcmFrame.LPCM) + LEN_CORR;
-			  lpcmFrame.PES[4] = outlen >> 8;
-			  lpcmFrame.PES[5] = outlen;
-			  
-			  // lPCM has 600 fps which is 80 samples at 48kHz per channel
-			  // Frame size = (sample_rate * quantization * channels)/4800
-			  size_t frame_size = 2 * (dvbSampleRate*16)/4800;
-			    
-			  lpcmFrame.LPCM[1] = (outlen - LPCM_SIZE)/frame_size;
-			  m_rframe = new cFrame ((unsigned char *) &lpcmFrame,
-						 outlen +
-						 sizeof (lpcmFrame.PES) -
-						 LEN_CORR);
-                        }
-                    }
-                    else
-                    {
-                        m_state = msDecode;
-                    }
-                }
-                break;
-                case msError:
-                case msEof:
-                {
-                    if (SkipFile ())
-                    {
-                        m_state = msStart;
-                    }
-                    else
-                    {
-                        m_state = msWait;
-                    }
-                }                                 // fall through
-                case msStop:
-                {
-                    m_playing = false;
-
-                    if (m_decoder)
-                    {                             // who deletes decoder?
-                        m_decoder->stop ();
-			delete m_decoder;
-                        m_decoder = 0;
-                    }
-
-                    levelgood = false;
-
-                    scale.Stats ();
-                    if (haslevel)
-                    {
-                        norm.Stats ();
-                    }
-                    if (m_state == msStop)
-                    {                             // might be unequal in case of fall through from eof/error
-                        SetPlayMode (pmStopped);
-                    }
-                }
-                break;
-                case msWait:
-                {
-                    if (m_ringbuffer->Available () == 0)
-                    {
-		      // m_active = false;
-		      SetPlayMode (pmStopped);
-                    }
-                }
-                break;
-            }
-        }
-
-        if (m_rframe && m_ringbuffer->Put (m_rframe))
-        {
-            m_rframe = 0;
-        }
-
-        if (!m_pframe && m_playmode == pmPlay)
-        {
-            m_pframe = m_ringbuffer->Get ();
-            if (m_pframe)
-            {
-                p = m_pframe->Data ();
-                pc = m_pframe->Count ();
-            }
-        }
-
-        if (m_pframe)
-        {
-#ifdef DEBUGPES
-	  fwrite( (void *)p, pc, sizeof( char ), peslog );
-#endif
-
-#if VDRVERSNUM >= 10318
-            int w = PlayPes (p, pc);
-#else
-            int w = PlayVideo (p, pc);
-#endif
-            if (w > 0)
-            {
-                p += w;
-                pc -= w;
-
-                if (pc <= 0)
-                {
-                    m_ringbuffer->Drop (m_pframe);
-                    m_pframe = 0;
-                }
-            }
-            else if (w < 0 && FATALERRNO)
-            {
-                LOG_ERROR;
-                break;
-            }
-        }
-        eState curr_m_state = m_state;	// avoid helgrind warning
-
-        Unlock ();
-
-        if ((m_rframe || curr_m_state == msWait) && m_pframe)
-        {
-// Wait for output to become ready
-            DevicePoll (poll, 500);
-        }
-        else
-        {
-            if (m_playmode != pmPlay)
-            {
-                m_playmode_mutex.Lock ();
-
-                if (m_playmode != pmPlay)
-                {
-                                                  // Wait on playMode change
-                    WaitPlayMode (m_playmode, true);
-                }
-                m_playmode_mutex.Unlock ();
-            }
-        }
-    }
-
-    Lock ();
-
-    if (m_rframe)
-    {
-        delete m_rframe;
-        m_rframe = 0;
-    }
-
-    if (m_decoder)
-    {                                             // who deletes decoder?
-        m_decoder->stop ();
-	delete m_decoder;
-        m_decoder = 0;
-    }
-
-    m_playing = false;
-
-    SetPlayMode (pmStopped);
-
-#ifdef DEBUGPES
-    fclose( peslog );
-#endif
-
-    Unlock ();
-
-    m_active = false;
-
-    dsyslog ("muggle: player thread ended (pid=%d)", getpid ());
-}
-
-
-void
-mgPCMPlayer::Empty (void)
-{
-    MGLOG ("mgPCMPlayer::Empty");
-
-    Lock ();
-
-    m_ringbuffer->Clear ();
-    DeviceClear ();
-
-    delete m_rframe;
-    m_rframe = 0;
-    m_pframe = 0;
-
-    Unlock ();
-}
-
-
-void
-mgPCMPlayer::StopPlay ()
-{                                                 // StopPlay() must be called in locked state!!!
-    MGLOG ("mgPCMPlayer::StopPlay");
-    if (m_playmode != pmStopped)
-    {
-        Empty ();
-        m_state = msStop;
-        SetPlayMode (pmPlay);
-        Unlock ();                                // let the decode thread process the stop signal
-
-        m_playmode_mutex.Lock ();
-        WaitPlayMode (pmStopped, false);
-        m_playmode_mutex.Unlock ();
-
-        Lock ();
-    }
-}
-
-
-bool mgPCMPlayer::SkipFile (bool skipforward)
-{
-    MGLOG("mgPCMPlayer::SkipFile");
-    mgItemGd * newcurr = NULL;
-    int skip_direction=1;
-    if (!skipforward)
-	    skip_direction=-1;
-    if (m_playlist->skipItems (skip_direction)) 
-    {
-        newcurr = dynamic_cast<mgItemGd*>(m_playlist->getCurrentItem ());
-        if (newcurr)
-	{
-	    delete m_current;
-            m_current = new mgItemGd(newcurr);
-	}
-    }
-    return (newcurr != NULL);
-}
-
-void
-mgPCMPlayer::ToggleShuffle ()
-{
-    m_playlist->toggleShuffleMode ();
-}
-
-
-void
-mgPCMPlayer::ToggleLoop (void)
-{
-    m_playlist->toggleLoopMode ();
-}
-
-
-void
-mgPCMPlayer::Pause (void)
-{
-    if (m_playmode == pmPaused)
-    {
-        Play ();
-    }
-    else
-    {
-        if (m_playmode == pmPlay)
-        {
-//    DeviceFreeze();
-            SetPlayMode (pmPaused);
-        }
-    }
-}
-
-
-void
-mgPCMPlayer::Play (void)
-{
-    MGLOG ("mgPCMPlayer::Play");
-
-    if (m_playmode != pmPlay && m_current)
-    {
-      Lock ();
-
-      if (m_playmode == pmStopped)
-        {
-	  m_state = msStart;
-        }
-      //    DevicePlay(); // TODO? Commented out in original code, too
-      SetPlayMode (pmPlay);
-      Unlock ();
-    }
-}
-
-
-void
-mgPCMPlayer::Forward ()
-{
-    MGLOG ("mgPCMPlayer::Forward");
-
-    Lock ();
-    if (SkipFile ())
-    {
-        StopPlay ();
-        Play ();
-    }
-    Unlock ();
-}
-
-
-void
-mgPCMPlayer::Backward (void)
-{
-    MGLOG ("mgPCMPlayer::Backward");
-    Lock ();
-    if (SkipFile (false))
-    {
-        StopPlay ();
-        Play ();
-    }
-    Unlock ();
-}
-
-
-void
-mgPCMPlayer::Goto (int index, bool still)
-{
-    m_playlist->GotoItemPosition (index - 1);
-    mgItemGd *next = dynamic_cast<mgItemGd*>(m_playlist->getCurrentItem ());
-
-    if (next)
-    {
-        Lock ();
-        StopPlay ();
-        delete m_current;
-	m_current = new mgItemGd(next);
-        Play ();
-        Unlock ();
-    }
-}
-
-
-void
-mgPCMPlayer::SkipSeconds (int secs)
-{
-    if (m_playmode != pmStopped)
-      {
-        Lock ();
-
-        if (m_playmode == pmPaused)
-	  {
-            SetPlayMode (pmPlay);
-	  }
-        if ( m_decoder
-             && m_decoder->skip (secs, m_ringbuffer->Available(),
-				 dvbSampleRate) )
-	  {
-            levelgood = false;
-	  }
-
-        Empty ();
-        Unlock ();
-    }
-}
-
-
-bool mgPCMPlayer::GetIndex (int &current, int &total, bool snaptoiframe)
-{
-    if (m_current)
-    {
-        current = SecondsToFrames (m_index);
-        total = SecondsToFrames (m_current->getDuration ());
-        return true;
-    }
-    return false;
-}
-
-
-void mgPCMPlayer::CheckImage()
-{
-  if( m_hasimages && m_img_provider ) 
-    {
-      if( ( m_index % the_setup.ImageShowDuration == 0 && m_index > m_lastshow) || m_lastshow < 0 )
-	{ // all n decoding steps
-	  string source;
-	  m_current_image = m_img_provider->getImagePath( source );
-	  
-	  // check for TFT display of image
-	  if( !source.empty() )
-	    {
-	      TransferImageTFT( source );
-	    }
-	  
-	  // check for background display of image
-	  if( !m_current_image.empty() )
-	    {
-	      if( the_setup.BackgrMode == 1 )
-		{
-		  ShowImage();
-		}
-	      m_lastshow = m_index;
-	    }
-	}
-    }
-}
-
-void mgPCMPlayer::ShowImage( )
-{
-  // show image .mpg referred in m_current_image
-
-  uchar *buffer;
-  int fd;
-  struct stat st;
-  struct video_still_picture sp;
-  
-  if( (fd = open( m_current_image.c_str(), O_RDONLY ) ) >= 0 )
-    {
-      fstat (fd, &st);
-      sp.iFrame = (char *) malloc (st.st_size);
-      if( sp.iFrame )
-	{
-	  sp.size = st.st_size;
-	  if( read (fd, sp.iFrame, sp.size) > 0 )
-	    {
-	      buffer = (uchar *) sp.iFrame;
-	      
-	      if( the_setup.UseDeviceStillPicture )
-		{
-		  cCondWait::SleepMs(80);
-		  DeviceStillPicture( buffer, sp.size );
-		}
-	      else
-		{
-		  for (int i = 1; i <= 25; i++)
-		    {
-		      send_pes_packet (buffer, sp.size, i);
-		    }
-		}
-	    }
-	  free (sp.iFrame);
-	}
-      else
-	{
-	  esyslog ("muggle[%d]: cannot allocate memory (%d bytes) for still image",
-		   getpid(), (int) st.st_size);
-	}
-      close (fd);
-    }
-  else
-    {
-      esyslog ("muggle[%d]: cannot open image file '%s'",
-	       getpid(), m_current_image.c_str() );
-    }
-}
-
-void mgPCMPlayer::send_pes_packet(unsigned char *data, int len, int timestamp)
-{
-#define PES_MAX_SIZE 2048
-  int ptslen = timestamp ? 5 : 1;
-  static unsigned char pes_header[PES_MAX_SIZE];
-
-  pes_header[0] = pes_header[1] = 0;
-  pes_header[2] = 1;
-  pes_header[3] = 0xe0;
-
-  while(len > 0)
-    {
-      int payload_size = len;
-      if(6 + ptslen + payload_size > PES_MAX_SIZE)
-	payload_size = PES_MAX_SIZE - (6 + ptslen);
-      
-      pes_header[4] = (ptslen + payload_size) >> 8;
-      pes_header[5] = (ptslen + payload_size) & 255;
-
-      if(ptslen == 5)
-	{
-	  int x;
-	  x = (0x02 << 4) | (((timestamp >> 30) & 0x07) << 1) | 1;
-	  pes_header[8] = x;
-	  x = ((((timestamp >> 15) & 0x7fff) << 1) | 1);
-	  pes_header[7] = x >> 8;
-	  pes_header[8] = x & 255;
-	  x = ((((timestamp) & 0x7fff) < 1) | 1);
-	  pes_header[9] = x >> 8;
-	  pes_header[10] = x & 255;
-	} 
-      else
-	{
-	  pes_header[6] = 0x0f;
-	}
-      
-      memcpy(&pes_header[6 + ptslen], data, payload_size);
-#if VDRVERSNUM >= 10318
-      PlayPes(pes_header, 6 + ptslen + payload_size);
-#else
-      PlayVideo(pes_header, 6 + ptslen + payload_size);
-#endif
-      
-      len -= payload_size;
-      data += payload_size;
-      ptslen = 1;
-    }
-}
-
-void mgPCMPlayer::TransferImageTFT( string cover )
-{
-  cPlugin * graphtft = cPluginManager::GetPlugin("graphtft");
-  
-  if( graphtft ) 
-    {
-      graphtft->SetupParse( "CoverImage", cover.c_str() );
-    } 
-}
 
 // --- mgPlayerControl -------------------------------------------------------
 
-mgPlayerControl::mgPlayerControl (mgSelection * plist):cControl (player =
-new
-mgPCMPlayer (plist))
-{
-#if VDRVERSNUM >= 10307
-    m_display = NULL;
-    m_menu = NULL;
-#endif
-    m_visible = false;
-    m_has_osd = false;
-    m_track_view = true;
-    m_progress_view = true;
-
-    m_szLastShowStatusMsg = NULL;
-
-    // Notify all cStatusMonitor
-    StatusMsgReplaying ();
+const char
+mgPlayerControl::ShuffleChar() {
+	char result='.';
+	switch (PlayList()->getShuffleMode ()) {
+		default:
+			break;
+		case mgSelection::SM_NORMAL:
+			result = 'S';		 // Shuffle mode normal
+			break;
+		case mgSelection::SM_PARTY:
+			result = 'P';		 // Shuffle mode party
+			break;
+	}
+	return result;
 }
 
+const char
+mgPlayerControl::LoopChar() {
+	char result='.';
+	switch (PlayList()->getLoopMode ()) {
+		default:
+			break;
+		case mgSelection::LM_SINGLE:
+			result = 'S';		 // Loop mode single
+			break;
+		case mgSelection::LM_FULL:
+			result = 'F';		 // Loop mode fuel
+			break;
+	}
+	return result;
+}
 
-mgPlayerControl::~mgPlayerControl ()
-{
-//      Stop();
-// Notify cleanup all cStatusMonitor
+mgPlayerControl::mgPlayerControl (mgSelection * plist):
+cControl (player = new mgPCMPlayer (plist)),
+cmdOsd(NULL) {
+	osd = 0 ;
+	cmdOsd = 0;
+	cmdMenu = 0;
+	m_img_provider = 0;
+
+	// Notify all cStatusMonitor
+	prevItem = 0;
+	prevPos=0;
+	orderchanged=false;
+	layout_initialized=false;
+	
+	ScrollPosition=-1;
+	oneartist=PlayList()->OneArtist();
+	jumpactive=jumphide=false;
+	skipfwd=skiprew=shown=selecting=selecthide=statusActive=refresh=false;
+	showbuttons=0;
+	timeoutShow=0;
+	messagetime=0;
+	lastkeytime=number=timecount=0;
+	x1=depth=0;
+	framesPerSecond=SecondsToFrames(1);
+
+#if APIVERSNUM >= 10338
+	cStatus::MsgReplaying(this,"muggle",0,true);
+#else
+	cStatus::MsgReplaying(this,"muggle");
+#endif
+}
+
+mgPlayerControl::~mgPlayerControl () {
+	Stop();
+	// Notify cleanup all cStatusMonitor
 #if VDRVERSNUM >= 10338
-    cStatus::MsgReplaying (this, 0, 0, false);
+	cStatus::MsgReplaying (this, 0, 0, false);
 #else
-    cStatus::MsgReplaying (this, 0);
+	cStatus::MsgReplaying (this, 0);
 #endif
-    if (m_szLastShowStatusMsg)
-    {
-        free (m_szLastShowStatusMsg);
-        m_szLastShowStatusMsg = NULL;
-    }
 
-    InternalHide ();
-    Stop ();
+	delete m_img_provider;
+	m_img_provider = NULL;
+	
+	Hide ();
+	Stop ();
 }
 
-
-bool mgPlayerControl::Active (void)
-{
-    return player && player->Active ();
+bool mgPlayerControl::Active (void) {
+	return player && player->Active ();
 }
 
-
-bool mgPlayerControl::Playing (void)
-{
-    return player && player->Playing ();
+bool mgPlayerControl::Playing (void) {
+	return player && player->Playing ();
 }
-
 
 void
-mgPlayerControl::Stop (void)
-{
+mgPlayerControl::Stop (void) {
 #if VDRVERSNUM >= 10338
-  cStatus::MsgReplaying( this, 0, 0, false );
+	cStatus::MsgReplaying( this, 0, 0, false );
 #else
-  cStatus::MsgReplaying( this, 0);
+	cStatus::MsgReplaying( this, 0);
 #endif
-    if (player)
-    {
-        delete player;
-        player = 0;
-    }
-}
-
-
-void
-mgPlayerControl::Pause (void)
-{
-    if (player)
-    {
-        player->Pause ();
-    }
-}
-
-
-void
-mgPlayerControl::Play (void)
-{
-    if (player)
-    {
-        player->Play ();
-    }
-}
-
-
-void
-mgPlayerControl::Forward (void)
-{
-    if (player)
-    {
-        player->Forward ();
-    }
-}
-
-
-void
-mgPlayerControl::Backward (void)
-{
-    if (player)
-    {
-        player->Backward ();
-    }
-}
-
-
-void
-mgPlayerControl::SkipSeconds(int Seconds)
-{
-    if (player)
-    {
-        player->SkipSeconds(Seconds);
-    }
-}
-
-
-void
-mgPlayerControl::Goto (int Position, bool Still)
-{
-    if (player)
-    {
-        player->Goto (Position, Still);
-    }
-}
-
-
-void
-mgPlayerControl::ToggleShuffle (void)
-{
-    if (player)
-    {
-        player->ToggleShuffle ();
-    }
-}
-
-
-void
-mgPlayerControl::ToggleLoop (void)
-{
-    if (player)
-    {
-        player->ToggleLoop ();
-    }
+	if (player) {
+		delete player;
+		player = 0;
+	}
 }
 
 void
-mgPlayerControl::ReloadPlaylist ()
-{
-    if (player)
-    {
-        player->ReloadPlaylist ();
-    }
+mgPlayerControl::Pause (void) {
+	if (player) {
+		player->Pause ();
+	}
 }
 
 void
-mgPlayerControl::NewPlaylist (mgSelection * plist)
-{
-    if (player)
-    {
-        player->NewPlaylist (plist);
-    }
+mgPlayerControl::Play (void) {
+	if (player) {
+		player->Play ();
+	}
+	ScrollPosition=-1;
 }
 
 void
-mgPlayerControl::NewImagePlaylist( const char *directory )
-{
-    if (player)
-    {
-      // cout << "Signaling new image playlist to player: " << directory << endl << flush;
-      player->NewImagePlaylist (directory);
-    }
+mgPlayerControl::Forward (void) {
+	if (player) {
+		player->Forward ();
+	}
+	ScrollPosition=-1;
 }
 
 void
-mgPlayerControl::ShowContents ()
-{
-#if VDRVERSNUM >= 10307
-    if (!m_menu)
-    {
-        m_menu = Skins.Current ()->DisplayMenu ();
-    }
+mgPlayerControl::Backward (void) {
+	if (player) {
+		player->Backward ();
+	}
+	ScrollPosition=-1;
+}
 
-    if (player && m_menu)
-    {
-        int num_items = m_menu->MaxItems ();
+void
+mgPlayerControl::SkipSeconds(int Seconds) {
+	if (player) {
+		player->SkipSeconds(Seconds);
+	}
+}
 
-        if (m_track_view)
-        {
-            m_menu->Clear ();
-            m_menu->SetTitle (tr("Track info view"));
+void
+mgPlayerControl::Goto (int Position) {
+	if (player) {
+		player->Goto (Position);
+	}
+	ScrollPosition=-1;
+}
 
-            m_menu->SetTabs (15);
+void
+mgPlayerControl::ToggleShuffle (void) {
+	if (player) {
+		player->ToggleShuffle ();
+		orderchanged=true;
+	}
+}
 
-            char *buf;
-            if (num_items > 0)
-            {
-                msprintf (&buf, tr("Title:\t%s"),
-                    player->getCurrent ()->getTitle ().c_str ());
-                m_menu->SetItem (buf, 0, false, false);
-                free (buf);
-            }
-            if (num_items > 1)
-            {
-                msprintf (&buf, tr("Artist:\t%s"),
-                    player->getCurrent ()->getArtist ().c_str ());
-                m_menu->SetItem (buf, 1, false, false);
-                free (buf);
-            }
-            if (num_items > 2)
-            {
-                msprintf (&buf, tr("Album:\t%s"),
-                    player->getCurrent ()->getAlbum ().c_str ());
-                m_menu->SetItem (buf, 2, false, false);
-                free (buf);
-            }
-            if (num_items > 3)
-            {
-                msprintf (&buf, tr("Genre:\t%s"),
-                    player->getCurrent ()->getGenre ().c_str ());
-                m_menu->SetItem (buf, 3, false, false);
-                free (buf);
-            }
-	    if( num_items > 4 )
-	      {
-                msprintf (&buf, tr("Year:\t%d"),
-			  player->getCurrent ()->getYear () );
-                m_menu->SetItem (buf, 4, false, false);
-                free (buf);
-	      }
-            if (num_items > 5)
-            {
-                int len = player->getCurrent ()->getDuration ();
-                msprintf (&buf, tr("Length:\t%s"),
-#if VDRVERSNUM >= 10318
-                    *IndexToHMSF (SecondsToFrames (len)));
+void
+mgPlayerControl::ToggleLoop (void) {
+	if (player) {
+		player->ToggleLoop ();
+		orderchanged=true;
+	}
+}
+
+void
+mgPlayerControl::ReloadPlaylist () {
+	if (player) {
+		player->ReloadPlaylist ();
+		orderchanged=true;
+	}
+	oneartist=PlayList()->OneArtist();
+}
+
+void
+mgPlayerControl::NewPlaylist (mgSelection * plist) {
+	if (player) {
+		player->NewPlaylist (plist);
+	}
+	ScrollPosition=-1;
+	oneartist=PlayList()->OneArtist();
+}
+
+void
+mgPlayerControl::NewImagePlaylist( const char *directory ) {
+	MGLOG ("mgPlayerControl::NewImagePlaylist");
+
+	delete m_img_provider;
+	m_img_provider = new mgImageProvider( directory ); // TODO
+}
+
+
+
+void
+mgPlayerControl::InitLayout(void) {
+	if (layout_initialized) return;
+	layout_initialized=true;
+	fw=6;
+	fh=27;
+
+	artistfirst = the_setup.ArtistFirst;
+	depth                 = 4;
+	clrTopBG1             = mgSkin.clrTopBG1;
+	clrTopTextFG1         = mgSkin.clrTopTextFG1;
+
+	clrTopBG2             = mgSkin.clrTopBG2;
+	clrTopTextFG2         = mgSkin.clrTopTextFG2;
+	clrTopItemBG1         = mgSkin.clrTopItemBG1;
+	clrTopItemInactiveFG  = mgSkin.clrTopItemInactiveFG;
+	clrTopItemActiveFG    = mgSkin.clrTopItemActiveFG;
+
+	clrListBG1            = mgSkin.clrListBG1;
+	clrListBG2            = mgSkin.clrListBG2;
+	clrListTextFG         = mgSkin.clrListTextFG;
+	clrListTextActiveFG   = mgSkin.clrListTextActiveFG;
+	clrListTextActiveBG   = mgSkin.clrListTextActiveBG;
+
+	clrInfoBG1            = mgSkin.clrInfoBG1;
+	clrInfoBG2            = mgSkin.clrInfoBG2;
+	clrInfoTextFG1        = mgSkin.clrInfoTextFG1;
+	clrInfoTitleFG1       = mgSkin.clrInfoTitleFG1;
+	clrInfoTextFG2        = mgSkin.clrInfoTextFG2;
+
+	clrProgressBG1        = mgSkin.clrProgressBG1;
+	clrProgressBG2        = mgSkin.clrProgressBG2;
+
+	clrStatusBG           = mgSkin.clrStatusBG;
+	clrStatusRed          = mgSkin.clrStatusRed;
+	clrStatusGreen        = mgSkin.clrStatusGreen;
+	clrStatusYellow       = mgSkin.clrStatusYellow;
+	clrStatusBlue         = mgSkin.clrStatusBlue;
+	clrStatusTextFG       = mgSkin.clrStatusTextFG;
+
+	clrProgressbarFG      = clrStatusBG;
+	clrProgressbarBG      = clrStatusTextFG;
+
+#ifdef USE_BITMAP
+	imgalpha = the_setup.ImgAlpha;
+#endif
+
+	rows        = 7;
+	osdheight   = Setup.OSDHeight;
+	osdwidth    = Setup.OSDWidth;
+	mpgdif      = 0;
+
+	lh   = 3*fh +(rows * fh) + fh/2;
+	x1 = osdwidth;
+	TopHeight = fh - 3; 
+	BottomTop=osdheight-TopHeight+1;
+	PBHeight=2*fw+10;
+	PBTop=BottomTop-PBHeight-10;
+	PBBottom=PBTop+PBHeight-1;
+	InfoTop=lh;
+	InfoBottom = PBTop - 1;
+	int imagex1,imagey1,imagex2,imagey2;
+	if (the_setup.BackgrMode==1) {
+		CoverWidth = PBBottom-lh;
+		imagex1=Setup.OSDLeft+CoverX-10;
+		imagey1=Setup.OSDTop+InfoTop;
+		imagex2=Setup.OSDLeft+CoverX+CoverWidth+3;
+		imagey2=BottomTop+Setup.OSDTop-1	;
+		CoverX = osdwidth - CoverWidth -3*fw -2;
+		CoverX /=4;
+		CoverX *=4;
+		InfoWidth = CoverX -27 -3*fw;
+	} else if (the_setup.BackgrMode==2) {
+		imagex1=0;
+		imagey1=0;
+		imagex2=703; // fix PAL
+		imagey2=575;
+		CoverWidth=0;
+		CoverX = osdwidth;
+		CoverX /=4;
+		CoverX *=4;
+		InfoWidth = CoverX -27- 3*fw;
+	}
+	if (!m_img_provider) {
+		tArea coverarea = { imagex1, imagey1, imagex2, imagey2};
+#if USE_BITMAP
+		m_img_provider = new mgImageProvider(coverarea);
 #else
-                    IndexToHMSF (SecondsToFrames (len)));
-#endif
-                m_menu->SetItem (buf, 5, false, false);
-                free (buf);
-            }
-            if (num_items > 6)
-            {
-                msprintf (&buf, tr("Bit rate:\t%s"),
-                    player->getCurrent ()->getBitrate ().c_str ());
-                m_menu->SetItem (buf, 6, false, false);
-                free (buf);
-            }
-            if (num_items > 7)
-            {
-                int sr = player->getCurrent ()->getSampleRate ();
-
-                msprintf (&buf, tr("Sampling rate:\t%d"), sr);
-                m_menu->SetItem (buf, 7, false, false);
-                free (buf);
-            }
-            if (num_items > 8)
-            {
-		int t = player->getCurrent ()->getTrack();
-                msprintf (&buf, tr("File name:\t%d"), t);
-                m_menu->SetItem (buf, 8, false, false);
-                free (buf);
-	    }
-            if (num_items > 9)
-            {
-                string sf = player->getCurrent ()->getSourceFile ();
-		char *p = strrchr(sf.c_str(),'/');
-                msprintf (&buf, tr("File name:\t%s"), p+1);
-                m_menu->SetItem (buf, 9, false, false);
-                free (buf);
-	    }
-        }
-        else
-        {
-            mgSelection *list = player->getPlaylist ();
-            if (list)
-            {
-// use items for playlist tag display
-                m_menu->Clear ();
-                m_menu->SetTitle (tr("Now playing"));
-                m_menu->SetTabs (25);
-
-                int cur = list->getItemPosition ();
-                for (int i = 0; i < num_items; i++)
-                {
-                    mgItemGd *item = dynamic_cast<mgItemGd*>(list->getItem (cur + i));
-                    if (item)
-                    {
-                        char *buf;
-                        msprintf (&buf, "%s\t%s", item->getTitle ().c_str (),
-                            item->getArtist ().c_str ());
-                        m_menu->SetItem (buf, i, i == 0, i >= 0);
-                        free (buf);
-                    }
-                }
-            }
-        }
-    }
-#endif
+		m_img_provider = new mgMpgImageProvider(coverarea);
+#endif		
+	}
 }
 
+string
+mgPlayerControl::TrackInfo(const mgItemGd* trai) {
+	string result,p2;
+	if (!trai) return "";
+	if (oneartist.size()>0) {
+		result=trai->getTitle();
+		p2="";
+	}
+	else if (artistfirst) {
+		result =trai->getArtist();
+		p2 =trai->getTitle();
+	}
+	else {
+		result =trai->getTitle();
+		p2 =trai->getArtist();
+	}
+	if (result.size()>0 && p2.size()>0) result += " - ";
+	result += p2;
+	if (result.size()==0)
+		result=trai->getSourceFile(false);
+	return result;
+}
+
+class mgPlayerOsdListItem {
+	private:
+		const cFont *font;
+		int fg;
+		int bg;
+		string number;
+		string text;
+		bool changed;
+	public:
+		mgPlayerOsdListItem() { changed=false;font=0;fg=-1;bg=-1;number="XX";text="fdsfdsafdsaf";}
+		const cFont * Font() { return font; }
+		int Fg() { return fg; }
+		int Bg() { return bg; }
+		string Number() { return number; }
+		string Text() { return text; }
+		void setFont(const cFont *f) { changed|=font!=f;font=f;}
+		void setFg(int f) { changed|=fg!=f;fg=f;}
+		void setBg(int b) { changed|=bg!=b;bg=b;}
+		void setNumber(string n) { changed|=number!=n;number=n; }
+		void setText(string t) { changed|=text!=t;text=t; }
+		bool Changed() { bool result=changed;changed=false;return result; }
+};
 
 void
-mgPlayerControl::ShowProgress ()
-{
-    if (player)
-    {
-        char *buf;
-        bool play = true, forward = true;
-        int speed = -1;
+mgPlayerControl::ShowList(void) {
+	int listsize=PlayList()->items().size();
+	int middle=ScrollPosition;
+	if (middle<0) middle=currPos;
+	int top=middle - rows/2;
+	if (top+rows>listsize) top=listsize-rows;
+	if (top<0) top=0;
+	if (!prevItem) {
+		for (unsigned int idx=0;idx<pl.size();idx++)
+			delete pl[idx];
+		pl.clear();
+		for (int idx=0;idx<rows;idx++)
+			pl.push_back(new mgPlayerOsdListItem);
+	}
+	if (top!=prevTop || ScrollPosition!=prevScrollPosition||currItem!=prevItem) {
+		num=top;
+		char *buf;
+		msprintf(&buf,tr("%d tracks : %s"),PlayList()->items().size(),oneartist.c_str());
+		osd->DrawText( 8*fw, 0 , buf, clrStatusTextFG, clrStatusBG, OsdFont(), 60*fw, fh-2, taLeft);
+		free(buf);
+		for(int i=0 ; i<rows; i++,num++) {
+			mgItemGd *pi=0;
+			if (num<listsize)
+				pi = dynamic_cast<mgItemGd*>(PlayList()->getItem (num));
+			int fg,bg;
+			const cFont *font;
+			if (ScrollPosition==num) {
+				font=BigFont();
+				bg=clrListTextActiveFG;
+				fg=clrListTextActiveBG;
+			}
+			else if (pi==currItem) {
+				font=BigFont();
+				bg=clrListTextActiveBG;
+				fg=clrListTextActiveFG;
+			}
+			else {
+				font=cFont::GetFont(fontSml);
+				fg=clrListTextFG;
+				bg=clrListBG2;
+			}
+			char number[15];
+			snprintf(number,sizeof(number),"%d    ",num+1);
+			string info=TrackInfo(pi);
+			if (info.size()==0) number[0]=0;
+			pl[i]->setFont(font);
+			pl[i]->setFg(fg);
+			pl[i]->setBg(bg);
+			pl[i]->setNumber(number);
+			pl[i]->setText(info);
+			if (pl[i]->Changed()) {
+				osd->DrawEllipse( 5*fw                    , 2*fh + (fh/2) + (i*fh)   , 	(5*fw)+(fh/2) , 2*fh + (fh/2)+ (i*fh)+fh , bg , 7);
+				osd->DrawText( (5*fw) +(fh/2) +1          , (2*fh) + (fh/2) + (i*fh) , number , fg , bg , font , 10*fw          , fh , taRight);
+				osd->DrawText( (5*fw) +(fh/2) +1 +(10*fw), 2*fh + (fh/2) + (i*fh)   , info.c_str(), fg , bg , font , x1 - (29*fw) -fh -2, fh , taLeft);
+				osd->DrawRectangle( 5*fw +fh/2+10*fw+(x1-29*fw)-fh -1, 2*fh+(fh/2)+(i*fh), x1 -(5*fw) -fh/2 +1, 2*fh + (fh/2)+ (i*fh) +fh -1, bg);
+				osd->DrawEllipse( x1 -(5*fw) -fh/2        , 2*fh + (fh/2) + (i*fh)   , x1 - (5*fw), 2*fh + (fh/2) +(i*fh) + fh, bg , 5);
+				flush=true;
+			}
+		}
+		listtime=time(0);
+		prevTop=top;
+		prevScrollPosition=ScrollPosition;
+	}
+}
 
-        int current_frame, total_frames;
-        player->GetIndex (current_frame, total_frames);
+bool
+mgPlayerControl::SetAreas(const char *caller,const tArea *Areas, int NumAreas) {
+	eOsdError result = osd->CanHandleAreas(Areas, NumAreas);
+	if (result == oeOk) 
+		osd->SetAreas(Areas, NumAreas);
+	else {
+		for (int i=0;i<NumAreas;i++)
+				mgDebug(1,"Area %d: x1=%d y1=%d x2=%d y2=%d width=%d height=%d",
+					i,Areas[i].x1,Areas[i].y1,Areas[i].x2,Areas[i].y2,Areas[i].Width(),Areas[i].Height());
+		const char *errormsg = NULL;
+		switch (result) {
+			case oeTooManyAreas:
+				errormsg = "music: Too many OSD areas"; break;
+			case oeTooManyColors:
+				errormsg = "music: Too many colors"; break;
+			case oeBppNotSupported:
+				errormsg = "music: Depth not supported"; break;
+			case oeAreasOverlap:
+				errormsg = "music: Areas are overlapped"; break;
+			case oeWrongAlignment:
+				errormsg = "music: Areas not correctly aligned"; break;
+			case oeOutOfMemory:
+				errormsg = "music: OSD memory overflow"; break;
+			case oeUnknown:
+				errormsg = "music: Unknown OSD error"; break;
+			default:
+				break;
+		}
+		esyslog("muggle: %s: ERROR! osd open failed! can't handle areas (%d)-%s\n", caller, result, errormsg);
+		if (osd){ delete osd; osd=0;}
+	}
+	return result==oeOk;
+}
 
-        if (!m_track_view)
-        {                                         // playlist stuff
-            mgSelection *list = player->getPlaylist ();
-            if (list)
-            {
-                total_frames = SecondsToFrames (list->getLength ());
-                current_frame += SecondsToFrames (list->getCompletedLength ());
-                msprintf (&buf, "(%d/%zd) %s:%s",
-                    list->getItemPosition () + 1, list->items().size(),
-                    player->getCurrent ()->getArtist ().c_str (),
-                    player->getCurrent ()->getTitle ().c_str ());
-            }
-        }
-        else
-        {                                         // track view
-            msprintf (&buf, "%s: %s",
-                player->getCurrent ()->getArtist ().c_str (),
-                player->getCurrent ()->getTitle ().c_str ());
-        }
+void
+mgPlayerControl::Display() {
+	ShowProgress();
+}
 
-#if VDRVERSNUM >= 10307
-        if (!m_display)
-        {
-            m_display = Skins.Current ()->DisplayReplay (false);
-        }
-        if (m_display)
-        {
-            m_display->SetProgress (current_frame, total_frames);
-            m_display->SetCurrent (IndexToHMSF (current_frame));
-            m_display->SetTotal (IndexToHMSF (total_frames));
-            m_display->SetTitle (buf);
-            m_display->SetMode (play, forward, speed);
-            m_display->Flush ();
-        }
+void
+mgPlayerControl::ShowProgress (bool open) {
+	CheckImage();
+	InitLayout();
+	int current_frame, total_frames;
+	player->GetIndex (current_frame, total_frames);
+	if (!osd) {
+		osd=cOsdProvider::NewOsd(Setup.OSDLeft, Setup.OSDTop,50);
+		if (!osd) return;
+		tArea Area[] = {
+			{ 0,  0, x1 -1,  TopHeight, 2 },			// border top
+			{ 0, fh -2, x1 -1,  2*fh -1, 2 },			// between top and tracklist
+#ifdef HAVE_OSDMOD
+			{ 0,  2*fh, x1 -1, lh -1, 4 },				// tracklist
+			{ 0, lh, CoverX-1, PBTop-1 , 4 },			// Info
 #else
-        int w = Interface->Width ();
-        int h = Interface->Height ();
-
-        Interface->WriteText (w / 2, h / 2, "Muggle is active!");
-        Interface->Flush ();
+			{ 0,  2*fh, x1 -1, lh -1, 2 },				// tracklist
+			{ 0, lh, CoverX-1, PBTop-1 , 2 },			// Info
 #endif
-        free (buf);
-    }
-}
+#ifdef USE_BITMAP
+			{ CoverX, lh, x1 - 1, BottomTop-1, depth },		// Cover
+#endif
+			{ 0, PBTop , CoverX-1, BottomTop-1 , 2 },		// Progressbar
+			{ 0, BottomTop , x1 -1, osdheight-1 , 4 },		// Bottom
+		};
 
+		if (!SetAreas("ShowProgress",Area,sizeof(Area) / sizeof(tArea)))
+			return;
 
-void
-mgPlayerControl::Display ()
-{
-    if (m_visible)
-    {
-        if (!m_has_osd)
-        {
-// open the osd if its not already there...
-#if VDRVERSNUM >= 10307
+		//top
+		
+		osd->DrawRectangle(0, 0, x1 - 1, fh -3, clrTopBG1);
+		osd->DrawEllipse(0, 0, fh/2 , fh/2,  clrTransparent, -2);
+		osd->DrawEllipse(x1 -1 - fh/2, 0, x1 -1 , fh/2, clrTransparent, -1);
+
+		osd->DrawRectangle(0, fh -2,    x1 -1 , 2*fh -1  ,clrTopBG2);
+
+		//tracklist
+		osd->DrawRectangle(0, 2*fh  ,  x1 -1 , lh -1 ,clrListBG1);
+		osd->DrawRectangle(3*fw, 2*fh ,  x1 - 3*fw , lh - fh/2 -1 ,clrListBG2);
+		osd->DrawEllipse(3*fw  , 2*fh , 3*fw + fh/2 , 2*fh  + fh/2, clrListBG1, -2);
+		osd->DrawEllipse(x1 - 3*fw - fh/2, 2*fh, x1 - 3*fw , 2*fh + fh/2, clrListBG1, -1);
+		osd->DrawEllipse(3*fw             , lh -fh -1, 3*fw + fh/2 , lh - fh/2 -1, clrListBG1, -3);
+		osd->DrawEllipse(x1 - 3*fw - fh/2 , lh -fh -1, x1 - 3*fw   , lh - fh/2 -1, clrListBG1, -4);
+
+		//info
+		osd->DrawRectangle(0                    , InfoTop               , CoverX-1    , PBBottom ,clrInfoBG1);
+								 
+		// Cover
+#ifdef USE_BITMAP
+		osd->DrawRectangle(CoverX     , InfoTop               , x1 -1               , PBBottom ,clrInfoBG1);
+#endif
+				
+		// Info
+		osd->DrawRectangle(3*fw, lh + 27 + fh/2   , CoverX-2*fw+1, PBBottom , clrInfoBG2);
+		osd->DrawEllipse(3*fw  , lh + 27 + fh/2   , 3*fw + fh/2        , lh + 54, clrInfoBG1 , -2);
+		osd->DrawEllipse(CoverX-fw-fh/2+1 , lh + fh + fh/2   , CoverX-2*fw+1    , lh + 2*fh, clrInfoBG1, -1);
+
+		//progressbar
+
+		osd->DrawRectangle(0, PBTop, CoverX - 1 , BottomTop-1 ,clrInfoBG1);
+		
+		//bottom
+								 // border top
+		osd->DrawRectangle(0, BottomTop , x1 - 1 , osdheight-1 , clrStatusBG);
+		osd->DrawEllipse(0, BottomTop , fh/2 , osdheight -1,  clrTransparent, -3);
+		osd->DrawEllipse(x1 -1 - fh/2, BottomTop, x1 -1 , osdheight -1, clrTransparent, -4);
+
+		ShowHelpButtons(showbuttons);
+		LoadCover();
+
+		osd->Flush();
+
+		ShowStatus(true);
+
+#if VDRVERSNUM >= 10500
+		SetNeedsFastResponse(osd!=0);
 #else
-            Interface->Open ();
+		needsFastResponse=true;
 #endif
-            m_has_osd = true;
-        }
+		fliptime=listtime=0; flipint=0; flip=-1; prevTop=-1; lastIndex=lastTotal=-1;
+		prevScrollPosition=-1;
+		prevItem=0;
 
-// now an osd is open, go on
-        if (m_progress_view)
-        {
-#if VDRVERSNUM >= 10307
-            if (m_menu)
-            {
-                delete m_menu;
-                m_menu = NULL;
-            }
-#endif
-            ShowProgress ();
-        }
-        else
-        {
-#if VDRVERSNUM >= 10307
-            if (m_display)
-            {
-                delete m_display;
-                m_display = NULL;
-            }
-#endif
-            ShowContents ();
-        }
-    }
-    else
-    {
-        InternalHide ();
-    }
-}
+	}
 
+	currItem=CurrentItem();
+	currPos=player->Position();
+	bool changed=(prevItem != currItem);
+	char buf[256];
 
-void
-mgPlayerControl::Hide ()
-{
-    m_visible = false;
-
-    InternalHide ();
-}
-
-
-void
-mgPlayerControl::InternalHide ()
-{
-    if (m_has_osd)
-    {
-#if VDRVERSNUM >= 10307
-        if (m_display)
-        {
-            delete m_display;
-            m_display = NULL;
-        }
-        if (m_menu)
-        {
-            delete m_menu;
-            m_menu = NULL;
-        }
+	if (currItem) {				 // send progress to status monitor
+		if (changed||orderchanged) {
+			snprintf(buf,sizeof(buf),currItem->getArtist().size()?"[%c%c] (%d/%d) %s - %s":"[%c%c] (%d/%d) %s",
+				LoopChar(),ShuffleChar(),currPos,PlayList()->items().size(),currItem->getTitle().c_str(),currItem->getArtist().c_str());
+#if APIVERSNUM >= 10338
+			cStatus::MsgReplaying(this,buf,currItem->getSourceFile().size()?currItem->getSourceFile().c_str():0,true);
 #else
-        Interface->Close ();
+			cStatus::MsgReplaying(this,buf);
 #endif
-        m_has_osd = false;
-    }
-}
 
+		}
+	}
 
-eOSState mgPlayerControl::ProcessKey (eKeys key)
-{
-  if( key != kNone )
-    {
-      mgDebug (1,"mgPlayerControl::ProcessKey(%u)",key);
-    }
-  
-  if (!Active ())
-    {
-      return osEnd;
-    }
+		flush=false;
 
-  StatusMsgReplaying ();
+		if (CoverChanged()) {
+#ifdef USE_BITMAP
+			osd->DrawRectangle(CoverX, lh, x1 -1, PBBottom, clrInfoBG1);
+#endif
+			LoadCover();
+			flush = true;
+		}
 
-  Display ();
+		const char *lyrics= (CurrentItem() && CurrentItem()->HasLyrics()) ? tr("Lyrics: Yes") : tr("Lyrics: No");
+		osd->DrawText( 30, lh + 3*fh + fh/2, lyrics, clrInfoTextFG2, clrInfoBG2, cFont::GetFont(fontSml), 44 * fw, fh, taLeft);
 
-  eOSState
-    state = cControl::ProcessKey (key);
-  
-  if (state == osUnknown)
-    {
-        switch (key)
-        {
-            case kUp:
-            {
-                if (m_visible && !m_progress_view && !m_track_view)
-		  {
-		    Backward();
-		  }
+		if (!selecting && changed && !statusActive || refresh) {
+			if (ScrollPosition==-1) {
+				snprintf(buf,sizeof(buf),"%.1f kHz, %s kbps", currItem->getSampleRate()/1000.0,currItem->getBitrate().c_str());
+				osd->DrawText( 30, lh + 2*fh + fh/2 +4, buf, clrInfoTextFG2, clrInfoBG2, SmallFont(), InfoWidth, fh, taLeft);
+				flush=true;
+			}
+			else {
+				snprintf(buf,sizeof(buf),"%.1f kHz, %s kbps", currItem->getSampleRate()/1000.0,currItem->getBitrate().c_str());
+				osd->DrawText( 30, lh + 2*fh + fh/2 +4, buf, clrInfoTextFG2, clrInfoBG2, cFont::GetFont(fontSml), InfoWidth, fh, taLeft);
+				snprintf(buf,sizeof(buf),currItem->getArtist().size()?"%s - %s":"%s%s",currItem->getTitle().c_str(),currItem->getArtist().c_str());
+				if (buf[0]) {
+					if (!statusActive) {
+						DisplayInfo(buf);
+						flush=true;
+					}
+				}
+			}
+		}
+
+		if (!prevItem || orderchanged) {
+			mgSelection::LoopMode lm=PlayList()->getLoopMode();
+			if (lm==mgSelection::LM_SINGLE)
+				osd->DrawBitmap(x1 - 3*fw - 246, fh , bmLoop, clrTopItemActiveFG, clrTopItemBG1 );
+			else if (lm==mgSelection::LM_FULL)
+				osd->DrawBitmap(x1 - 3*fw - 246, fh , bmLoopAll, clrTopItemActiveFG, clrTopItemBG1 );
+			else
+				osd->DrawBitmap(x1 - 3*fw - 246, fh , bmLoop, clrTopBG2, clrTopBG2);
+			flush=true;
+		}
+
+		if (!prevItem || orderchanged) {
+			if (PlayList()->getShuffleMode()!=mgSelection::SM_NONE)
+				osd->DrawBitmap(x1 - 3*fw - 216, fh , bmShuffle, clrTopItemActiveFG, clrTopItemBG1);
+			else
+				osd->DrawBitmap(x1 - 3*fw - 216, fh , bmShuffle, clrTopBG2, clrTopBG2);
+			flush=true;
+		}
+
+		switch(player->PlayMode()) {
+			case pmStopped:
+				osd->DrawBitmap(osdwidth - 3*fw - 160, fh , bmStop, clrTopItemActiveFG, clrTopItemBG1);
+				osd->DrawBitmap(osdwidth - 3*fw - 130, fh , bmPlay, clrTopItemInactiveFG, clrTopItemBG1);
+				osd->DrawBitmap(osdwidth - 3*fw - 100, fh , bmPause, clrTopItemInactiveFG, clrTopItemBG1);
+				break;
+			case pmPlay:
+				osd->DrawBitmap(osdwidth - 3*fw - 160, fh , bmStop, clrTopItemInactiveFG, clrTopItemBG1);
+				osd->DrawBitmap(osdwidth - 3*fw - 130, fh , bmPlay, clrTopItemActiveFG, clrTopItemBG1);
+				osd->DrawBitmap(osdwidth - 3*fw - 100, fh , bmPause, clrTopItemInactiveFG, clrTopItemBG1);
+				break;
+			case pmPaused:
+				osd->DrawBitmap(osdwidth - 3*fw - 160, fh , bmStop, clrTopItemInactiveFG, clrTopItemBG1);
+				osd->DrawBitmap(osdwidth - 3*fw - 130, fh , bmPlay, clrTopItemInactiveFG, clrTopItemBG1);
+				osd->DrawBitmap(osdwidth - 3*fw - 100, fh , bmPause, clrTopItemActiveFG, clrTopItemBG1);
+			case pmStartup:
+				break;
+		}
+
+		if (skiprew)
+			osd->DrawBitmap(osdwidth - 3*fw - 70, fh , bmRew, clrTopItemActiveFG, clrTopItemBG1);
 		else
-		  {
-		    Forward ();
-		  }
+			osd->DrawBitmap(osdwidth - 3*fw - 70, fh , bmRew, clrTopItemInactiveFG, clrTopItemBG1);
+
+		if (skipfwd)  osd->DrawBitmap(osdwidth - 3*fw - 40, fh , bmFwd, clrTopItemActiveFG, clrTopItemBG1);
+		else
+			osd->DrawBitmap(osdwidth - 3*fw - 40, fh , bmFwd, clrTopItemInactiveFG, clrTopItemBG1);
+
+		osd->DrawText( 8*fw, lh + fh/2 -fw, tr("Now playing :"), clrInfoTextFG1, clrInfoBG1, cFont::GetFont(fontOsd), (46*fw), fh, taLeft);
+		flush=true;
+
+		//Volume
+		snprintf(buf,sizeof(buf),"%s: %d", tr("Volume"), CurrentVolume());
+		osd->DrawText( 30, lh + 4*fh + fh/2 -4, buf , clrInfoTextFG2, clrInfoBG2, cFont::GetFont(fontSml), 0, fh, taLeft);
+
+		current_frame/=SecondsToFrames(1); total_frames/=SecondsToFrames(1);
+		if (current_frame!=lastIndex || total_frames!=lastTotal) {
+			if (total_frames>0) {
+				int my_left=3*fw;
+				int my_right=CoverX - 11; //2*fw+1;
+				int my_top=InfoBottom+1;
+				int pb_left=my_left+fh/2;
+				int pb_bottom=PBTop+2*fw+9;
+				int pb_right=my_right-fh/2;
+				int pb_width=pb_right-pb_left+1;
+				int pb_height=pb_bottom-PBTop+1;
+			//	osd->DrawRectangle( 7*fw, my_top, my_right - 7*fw, my_top + fh, clrInfoBG2);
+				osd->DrawEllipse(my_left, my_top, pb_left, pb_bottom, clrProgressbarFG, 3);
+				cProgressBar ProgressBar(pb_width, pb_height, current_frame, total_frames,
+					clrProgressbarFG , clrProgressbarBG);
+				osd->DrawBitmap(pb_left, my_top, ProgressBar);
+				osd->DrawEllipse(pb_right+1, my_top, my_right, pb_bottom,  clrProgressbarFG,4);	
+			}
+			flush=true;
+		}
+
+		if (!jumpactive) {
+			//TODO        if (!scrollmode) {
+			if (true) {
+				bool doflip=false;
+				if (!prevItem || orderchanged)
+					doflip=true;
+				if (!currItem || changed) {
+					fliptime=time(0); flip=0;
+					doflip=true;
+				}
+				else if (time(0)>fliptime+flipint) {
+					fliptime=time(0);
+					flip++; if (flip>=the_setup.DisplayMode) flip=0;
+					doflip=true;
+				}
+				if (doflip) {
+					buf[0]=0;
+
+					switch(flip) {
+						default:
+							flip=0;
+						case 0:
+							snprintf(buf,sizeof(buf),"%s",currItem->getTitle().c_str());
+							flipint=6;
+							break;
+						case 1:
+							if (currItem->getArtist().size()) {
+								snprintf(buf,sizeof(buf),"%s: %s",tr("Artist"),currItem->getArtist().c_str());
+								flipint=4;
+							}
+							else fliptime = 0;
+							break;
+						case 2:
+						{
+							const char *a=currItem->getAlbum().c_str();
+							if (a[0] && strcmp(a,"Unassigned")) {
+								snprintf(buf,sizeof(buf),"Album: %s",a);
+								flipint=4;
+							}
+							else fliptime=0;
+						}
+						break;
+						case 3:
+							if (currItem->getGenre().size()) {
+								snprintf(buf,sizeof(buf),"%s: %s",tr("Genre"), currItem->getGenre().c_str());
+								flipint=3;
+							}
+							else fliptime=0;
+							break;
+						case 4:
+							if (currItem->getYear() > 2) {
+								snprintf(buf,sizeof(buf),"%s: %d",tr("Year"), currItem->getYear());
+								flipint=3;
+							}
+							else fliptime=0;
+							break;
+					}
+					if (buf[0]) {
+						if (!statusActive) {
+							DisplayInfo(buf);
+							flush=true;
+						}
+						else { mgDebug(5,"music: ctrl: displayinfo skipped due to status active!\n"); }
+					}
+				}
+			}
+		}
+
+		ShowList();
+		if (flush) Flush();
+	skiprew=0;
+	skipfwd=0;
+	lastIndex=current_frame; lastTotal=total_frames;
+	prevPos=currPos;
+	prevItem=currItem;
+	refresh=false;
+	orderchanged=false;
+}
+
+void
+mgPlayerControl::Hide () {
+	HideStatus();
+#if 0
+	if (cmdMenu) {
+		delete cmdMenu;
+		cmdMenu=0;
+	}
+#endif
+	if (cmdOsd) {
+		delete cmdOsd;
+		cmdOsd=0;
+	}
+
+#if 0
+	if (rateMenu) {
+		delete rateMenu;
+		rateMenu=0;
+	}
+#endif
+	HidePlayOsd();
+}
+
+void
+mgPlayerControl::HidePlayOsd() {
+	delete osd; osd=0;
+}
+
+void
+mgPlayerControl::Scroll(int by) {
+	int listsize=PlayList()->items().size();
+
+	if (ScrollPosition<0)
+		ScrollPosition=player->Position();
+	ScrollPosition += by;
+	if (ScrollPosition<0) ScrollPosition=0;
+	if (ScrollPosition>listsize-1)
+		ScrollPosition=listsize-1;
+}
+
+void
+mgPlayerControl::ShowCommandMenu() {
+	Hide();
+	cmdOsd = new mgPlayOsd;
+	cmdMenu = new mgPlayerCommands;
+	cmdOsd->AddMenu(cmdMenu);
+	cmdOsd->Display();
+}
+
+eOSState mgPlayerControl::ProcessKey(eKeys Key) {
+	if (m_img_provider) {
+		if (m_img_provider->updateItem(CurrentItem())) {
+			// if the images are cached, we want them ASAP
+			m_imageshowtime = 0;
+		}
+		CheckImage();
+	}
+	switch(Key) {
+		case kFastRew:
+		case kFastRew|k_Repeat:
+			player->SkipSeconds(-the_setup.Jumptime);
+			skiprew=1;
+			return osContinue;
+		case kFastFwd:
+		case kFastFwd|k_Repeat:
+			skipfwd=1;
+			player->SkipSeconds(the_setup.Jumptime);
+			return osContinue;
+		case kPlay:
+			player->Play();
+			return osContinue;
+		case kPrev:
+		case kPrev|k_Repeat:
+			Backward();
+			return osContinue;
+		case kNext:
+		case kNext|k_Repeat:
+			Forward();
+			return osContinue;
+		case kPause:
+			Pause();
+			return osContinue;
+		case kStop:
+			Hide();
+			Stop();
+			return osEnd;
+		default:
+			break;
+	}
+	
+	if (cmdOsd) {
+		eOSState st=cmdOsd->ProcessKey(Key);
+		if (st==osBack) {
+			delete cmdOsd; cmdOsd=0;
+			return osContinue;
+		} else if (st==osContinue)
+		return osContinue;
+	}
+
+	if (!player->Active()) return osEnd;
+
+	if (timecount>0)  timecount--;
+
+	if (messagetime) {
+		if (time(0)-messagetime<Setup.OSDMessageTime && Key==kNone) {
+			return osContinue;
+		}
+		else {
+			HidePlayOsd();
+			messagetime=0;
+		}
+	}
+	else if (timecount == 0) {
 		Display();
-            }
-            break;
-            case kDown:
-            {
-                if (m_visible && !m_progress_view && !m_track_view)
-		  {
-		    Forward ();
-		  }
-		else
-		  {
-		    Backward();
-		  }
-            }
-            break;
-            case kRed:
-            {
-                if (!m_visible && player)
-                {
-                    mgSelection *
-                        pl = player->getPlaylist ();
+	}
 
-                    std::string s;
-                    switch (pl->toggleLoopMode ())
-                    {
-                        case mgSelection::LM_NONE:
-                        {
-                            s = tr ("Loop mode off");
-                        }
-                        break;
-                        case mgSelection::LM_SINGLE:
-                        {
-                            s = tr ("Loop mode single");
-                        }
-                        break;
-                        case mgSelection::LM_FULL:
-                        {
-                            s = tr ("Loop mode full");
-                        }
-                        break;
-                        default:
-                        {
-                            s = "Unknown loop mode";
-                        }
-                    }
-#if VDRVERSNUM >= 10307
-                    Skins.Message (mtInfo, s.c_str ());
-                    Skins.Flush ();
-#else
-                    Interface->Status (s.c_str ());
-                    Interface->Flush ();
+	ShowStatus(Key==kNone);
+
+	if (jumpactive && Key!=kNone) { JumpProcess(Key); return osContinue; }
+
+	if (cmdOsd) {
+
+		eOSState eOSRet = cmdOsd->ProcessKey(Key);
+		switch(eOSRet) {
+			case kRed:
+			case osBack:
+				delete cmdOsd;
+				cmdOsd = NULL;
+				Display();
+
+				return osContinue;
+			default: return eOSRet;
+		}
+	}
+#if 0
+	else if (false) {			 // war rateMenu
+		eOSState eOSRet = rateMenu->ProcessKey(Key);
+		switch(eOSRet) {
+			case kRed:
+			case osBack:
+				delete rateMenu;
+				rateMenu = NULL;
+				Display();
+
+				return osContinue;
+			default: return eOSRet;
+		}
+	}
+	else
 #endif
-                }
-                else
-                {
-// toggle progress display between simple and detail
-                    m_progress_view = !m_progress_view;
-                    Display ();
-                }
-            }
-            break;
-            case kGreen:
-            {
-                if (!m_visible && player)
-                {
-                    mgSelection *
-                        pl = player->getPlaylist ();
+	{
 
-                    std::string s;
-                    switch (pl->toggleShuffleMode ())
-                    {
-                        case mgSelection::SM_NONE:
-                        {
-                            s = tr ("Shuffle mode off");
-                        }
-                        break;
-                        case mgSelection::SM_NORMAL:
-                        {
-                            s = tr ("Shuffle mode normal");
-                        }
-                        break;
-                        case mgSelection::SM_PARTY:
-                        {
-                            s = tr ("Shuffle mode party");
-                        }
-                        break;
-                        default:
-                        {
-                            s = "Unknown shuffle mode";
-                        }
-                    }
-#if VDRVERSNUM >= 10307
-                    Skins.Message (mtInfo, s.c_str ());
-                    Skins.Flush ();
+		switch(Key) {
+
+			case kMenu:
+			case kUp:
+			case kUp|k_Repeat:
+				Scroll(-1);
+				break;
+			case kDown:
+			case kDown|k_Repeat:
+				Scroll(1);
+				break;
+
+			case kLeft:
+			case kLeft|k_Repeat:
+				Scroll(-rows);
+				break;
+
+			case kRight:
+			case kRight|k_Repeat:
+				Scroll(rows);
+				break;
+
+			case kRed:
+
+				// MENUE  OK
+				if (showbuttons==0) {
+					ShowCommandMenu();
+				}
+				else
+					// BACK  OK
+				if (showbuttons==1) {
+					ShowHelpButtons(0);
+					ShowCommandMenu();
+					ShowHelpButtons(0);
+				}
+				break;
+
+			case kGreen:
+			case kGreen|k_Repeat:
+				// TRACK-  OK
+				if (showbuttons==0) {
+					Backward();
+				}
+				break;
+
+			case kYellow:
+			case kYellow|k_Repeat:
+				if (showbuttons==0) {
+					Forward();
+				}
+				else
+					// JUMP
+				if (showbuttons==1) {
+					ShowHelpButtons(3);
+					Jump();
+				}
+				else
+					// COPY  OK
+				if (showbuttons==2) {
+					ShowHelpButtons(0);
+				}
+				break;
+
+			case kBlue:			 //OK
+				if (showbuttons==0) {
+					ShowHelpButtons(1);
+				}
+				else
+				if (showbuttons==1) {
+					ShowHelpButtons(2);
+				}
+				else
+				if (showbuttons==2) {
+					ShowHelpButtons(0);
+				}
+				break;
+
+			case kOk:
+				refresh = true;
+				if (ScrollPosition>=0) Goto(ScrollPosition);
+				Display();
+				break;
+
+			case k0 ... k9:
+			{
+				int listsize=PlayList()->items().size();
+				number=number*10+Key-k0;
+				if (prevItem && number>0 && number<listsize) {
+					if (!osd) { ShowTimed(); selecthide=true; }
+					selecting=true; lastkeytime=time_ms();
+					char buf[32];
+					snprintf(buf,sizeof(buf),"%s %d- %s %d","No.",number,tr("of"),listsize);
+					osd->DrawText( 5*fw, lh + 3*fh + fh/2, buf, clrInfoTextFG2, clrInfoBG2, SmallFont(), 40 * fw , fh, taLeft);
+					Flush();
+					break;
+				}
+				number=0; lastkeytime=0;
+			}
+			case kNone:
+
+				if (selecting && time_ms()-lastkeytime>SELECT_TIMEOUT) {
+					if (number>0) Goto(number);
+					if (selecthide) timeoutShow=time(0)+SELECTHIDE_TIMEOUT;
+					number=0; selecting=selecthide=false;
+				}
+
+				break;
+
+			case kBack:
+				if (ScrollPosition>=0) {
+					ScrollPosition=player->Position();
+					Display();
+
+				}
+				else {
+					Hide();
+#if APIVERSNUM >= 10332
+					cRemote::CallPlugin("muggle");
+					return osBack;
 #else
-                    Interface->Status (s.c_str ());
-                    Interface->Flush ();
+					return osEnd;
 #endif
-                }
-                else
-                {
-// toggle progress display between playlist and track
-                    m_track_view = !m_track_view;
-                    Display ();
-                }
-            }
-            break;
-            case kPause:
-            case kYellow:
-            {
-                Pause ();
-            }
-            break;
-            case kStop:
-            case kBlue:
-            {
-		  InternalHide ();
-		  Stop ();
+				}
+			default:
+				return osUnknown;
+		}
 
-		  return osEnd;
-            }
-            break;
-            case kOk:
-            {
-                m_visible = !m_visible;
-                Display ();
-
-                return osContinue;
-            }
-            break;
-            case kBack:
-            {
-                InternalHide ();
-                Stop ();
-
-                return osEnd;
-            }
-            break;
-	    case kLeft:
-	    {
-	      SkipSeconds( -60 );
-	      Display();
-	    } break;
-	    case kRight:
-	    {
-	      SkipSeconds( 60 );
-	      Display();
-	    } break;
-            default:
-            {
-                return osUnknown;
-            }
-        }
-    }
-    return osContinue;
+		return osContinue;
+	}
 }
 
+void mgPlayerControl::Flush(void) {
+	if (osd) osd->Flush();
+}
+
+int mgPlayerControl::CurrentVolume(void) {
+	return cDevice::PrimaryDevice()->CurrentVolume();
+}
+
+const cFont *
+mgPlayerControl::OsdFont(void) {
+	return cFont::GetFont(fontOsd);
+}
+
+const cFont *
+mgPlayerControl::BigFont(void) {
+#ifdef IM_A_MORON
+	return cFont::GetFont(fontBig);
+#else
+	return cFont::GetFont(fontOsd);
+#endif
+}
+
+const cFont *
+mgPlayerControl::SmallFont(void) {
+	return cFont::GetFont(fontSml);
+}
+
+void mgPlayerControl::DisplayInfo(const char *s) {
+	if (osd)
+		osd->DrawText( 30, lh + fh +fh/2 +fw, s, s?clrInfoTitleFG1:clrInfoBG2, clrInfoBG2, BigFont(), InfoWidth, fh, taLeft);
+}
+
+// --- cAsyncStatus ------------------------------------------------------------
+#include "menu-async.h"
+cAsyncStatus asyncStatus;
+
+cAsyncStatus::cAsyncStatus(void) {
+	text=0;
+	changed=false;
+}
+
+cAsyncStatus::~cAsyncStatus() {
+	free((void *)text);
+}
+
+void cAsyncStatus::Set(const char *Text) {
+	Lock();
+	free((void *)text);
+	text=Text ? strdup(Text) : 0;
+	changed=true;
+	Unlock();
+}
+
+const char *cAsyncStatus::Begin(void) {
+	Lock();
+	return text;
+}
+
+void cAsyncStatus::Finish(void) {
+	changed=false;
+	Unlock();
+}
+
+void mgPlayerControl::ShowStatus(bool force) {
+
+	//TODO if (cmdOsd) return;
+	InitLayout();
+	if ((asyncStatus.Changed() || (force && !statusActive))) {
+		const char *text=asyncStatus.Begin();
+		if (text) {
+			if (!statusActive) { osd->SaveRegion( 30, lh +fh +fh/2 +fw, InfoWidth, lh + 3*fh +fw); }
+			osd->DrawText(30, lh + fh +fh/2 +fw, text, clrInfoTitleFG1, clrInfoBG2, OsdFont(), InfoWidth, fh, taCenter);
+			osd->Flush();
+			statusActive=true;
+		}
+		else
+			HideStatus();
+		asyncStatus.Finish();
+	}
+
+}
+
+void mgPlayerControl::HideStatus(void) {
+	if (!osd)
+		return;
+	if (statusActive) {
+		osd->RestoreRegion();
+		osd->Flush();
+	}
+	statusActive=false;
+}
+
+bool mgPlayerControl::CoverChanged(void) {
+	return strcmp(coverpicture,m_current_imagesource.c_str());
+}
+
+void mgPlayerControl::LoadCover(void) {
+	if (!player) return;
+	if (!m_current_imagesource.size()) return;
+	strcpy(coverpicture,m_current_imagesource.c_str());
+
+	fw=6;
+	fh=27;
+
+#if USE_BITMAP
+	int bmpcolors = 15; // TODO xine can handle 256
+	int w1 = CoverWidth;
+	int h1 = CoverWidth;
+	cMP3Bitmap *bmp;
+	if ((bmp = cMP3Bitmap::Load(coverpicture, imgalpha, h1, w1, bmpcolors)) !=NULL) {
+		osd->DrawRectangle(CoverX, lh, osdwidth -1, PBBottom, clrInfoBG1);
+		osd->DrawBitmap(CoverX , PBBottom -CoverWidth, bmp->Get(), clrTransparent, clrTransparent, true);
+	}
+#endif
+	
+#ifdef HAVE_TUNED_GTFT
+	cPlugin *graphtft=cPluginManager::GetPlugin("graphtft");
+	if (graphtft) cStatus::MsgImageFile(coverpicture);
+#else
+	cPlugin *graphtft=cPluginManager::GetPlugin("graphtft");
+	if (graphtft) graphtft->SetupParse("CoverImage", coverpicture);
+#endif
+
+}
+
+void mgPlayerControl::ShowHelpButtons(int ShowButtons) {
+	if (!osd) return;
+	int tab;
+	InitLayout();
+	tab = Setup.OSDWidth/4;
+	showbuttons = ShowButtons;
+
+	osd->DrawEllipse(      14, BottomTop + 6,         28 , BottomTop +20, clrStatusRed, 0);
+	osd->DrawEllipse(  tab+14, BottomTop + 6,   tab + 28 , BottomTop +20, clrStatusGreen, 0);
+	osd->DrawEllipse(2*tab+14, BottomTop + 6, 2*tab + 28 , BottomTop +20, clrStatusYellow, 0);
+	osd->DrawEllipse(3*tab+14, BottomTop + 6, 3*tab + 28 , BottomTop +20, clrStatusBlue, 0);
+	switch(showbuttons) {
+		case 0:
+			osd->DrawText(        30, BottomTop, tr("Commands"), clrStatusTextFG, clrStatusBG, cFont::GetFont(fontSml), 14*fw, fh, taLeft);
+			osd->DrawText(  tab + 30, BottomTop, tr("Track-"), clrStatusTextFG, clrStatusBG, cFont::GetFont(fontSml), 14*fw, fh, taLeft);
+			osd->DrawText( 2*tab +30, BottomTop, tr("Track+"), clrStatusTextFG, clrStatusBG, cFont::GetFont(fontSml), 14*fw, fh, taLeft);
+			osd->DrawText( 3*tab +30, BottomTop, tr("More.."), clrStatusTextFG, clrStatusBG, cFont::GetFont(fontSml), 14*fw, fh, taLeft);
+			break;
+		case 1:
+// red was rating, green was cover:
+			osd->DrawText(        30, BottomTop, tr("Commands"), clrStatusTextFG, clrStatusBG, cFont::GetFont(fontSml), 14*fw, fh, taLeft);
+			osd->DrawText(  tab + 30, BottomTop, "", clrStatusTextFG, clrStatusBG, cFont::GetFont(fontSml), 14*fw, fh, taLeft);
+			osd->DrawText( 2*tab +30, BottomTop, tr("Jump"), clrStatusTextFG, clrStatusBG, cFont::GetFont(fontSml), 14*fw, fh, taLeft);
+			osd->DrawText( 3*tab +30, BottomTop, tr("Parent"), clrStatusTextFG, clrStatusBG, cFont::GetFont(fontSml), 14*fw, fh, taLeft);
+			break;
+		case 2:
+			osd->DrawText(        30, BottomTop, tr("Delete"), clrStatusTextFG, clrStatusBG, cFont::GetFont(fontSml), 14*fw, fh, taLeft);
+			osd->DrawText(  tab + 30, BottomTop, tr("Clear"), clrStatusTextFG, clrStatusBG, cFont::GetFont(fontSml), 14*fw, fh, taLeft);
+			osd->DrawText( 2*tab +30, BottomTop, tr("Copy"), clrStatusTextFG, clrStatusBG, cFont::GetFont(fontSml), 14*fw, fh, taLeft);
+			osd->DrawText( 3*tab +30, BottomTop, tr("Parent"), clrStatusTextFG, clrStatusBG, cFont::GetFont(fontSml), 14*fw, fh, taLeft);
+			break;
+		case 3:
+			osd->DrawText(        30, BottomTop, tr("Parent"), clrStatusTextFG, clrStatusBG, cFont::GetFont(fontSml), 14*fw, fh, taLeft);
+			osd->DrawText(  tab + 30, BottomTop, "<<", clrStatusTextFG, clrStatusBG, cFont::GetFont(fontSml), 14*fw, fh, taLeft);
+			osd->DrawText( 2*tab +30, BottomTop, ">>", clrStatusTextFG, clrStatusBG, cFont::GetFont(fontSml), 14*fw, fh, taLeft);
+			osd->DrawText( 3*tab +30, BottomTop, tr("Min/Sec"), clrStatusTextFG, clrStatusBG, cFont::GetFont(fontSml), 14*fw, fh, taLeft);
+			break;
+	}
+}
+
+// --- cProgressBar ------------------------------------------------------------
+
+cProgressBar::cProgressBar(int Width, int Height, int Current, int Total, int fgColor, int BgColor)
+:cBitmap(Width, Height, 2) {
+	char buf[256];
+	cBitmap txt(Width,Height,2);
+	if (Total > 0) {
+		int p = Current * Width / Total;;
+		snprintf(buf,sizeof(buf),Total?"%s: %02d:%02d %s %02d:%02d":"%s: %02d:%02d ",
+			tr("Time"),Current/60,Current%60, "-",Total/60,Total%60);
+		txt.DrawText(0,0,buf,fgColor,BgColor,cFont::GetFont(fontOsd),Width,Height,taCenter);
+		DrawRectangle(0, 0, p, Height, fgColor);
+		DrawRectangle(p + 1, 0, Width, Height, BgColor);
+		for (int x=0;x<Width;x++) {
+			for (int y=0;y<Height;y++) {
+				tIndex newcolor= *(txt.Data(x,y)) ^ *Data(x,y);
+				SetIndex(x,y,newcolor);
+			}
+		}
+	}
+}
+
+void mgPlayerControl::JumpDisplay(void) {
+	char buf[64];
+	const char *j=tr("Jump: "), u=jumpsecs?'s':'m';
+	if(!jumpmm)
+		sprintf(buf, "%s- %c", j,u);
+	else
+		sprintf(buf,"%s%d- %c",j,jumpmm,u);
+
+	DisplayInfo(buf);
+}
+
+void mgPlayerControl::JumpProcess(eKeys Key) {
+	int n=Key-k0, d=jumpsecs?1:60;
+	switch(Key) {
+		case k0 ... k9:
+			if(jumpmm*10+n <= lastTotal/d) jumpmm=jumpmm*10+n;
+			JumpDisplay();
+			break;
+		case kBlue:
+			jumpsecs=!jumpsecs;
+			JumpDisplay();
+			break;
+		case kPlay:
+		case kUp:
+			jumpmm-=lastIndex/d;
+			// fall through
+		case kFastRew:
+		case kFastFwd:
+		case kGreen:
+		case kYellow:
+			player->SkipSeconds(jumpmm*d * ((Key==kGreen) ? -1:1));
+			// fall through
+		default:
+			jumpactive=false;
+			break;
+	}
+
+	if(!jumpactive) {
+		if(jumphide) Hide();
+		ShowHelpButtons(0);
+	}
+}
+
+void mgPlayerControl::Jump(void) {
+	jumpmm=1; jumphide=jumpsecs=false;
+	if(!osd) {
+		ShowTimed(); if(!osd) return;
+		jumphide=true;
+	}
+	JumpDisplay();
+	jumpactive=true; fliptime=0; flip=-1;
+}
+
+void mgPlayerControl::ShowTimed(int Seconds) {
+	if(!osd) {
+		ShowProgress(true);
+		if(Seconds>0) timeoutShow=time(0)+Seconds;
+	}
+}
+
+mgSelection *
+mgPlayerControl::PlayList() {
+	if (!player) return 0;
+	return player->getPlaylist();
+}
+
+mgItemGd *
+mgPlayerControl::CurrentItem(void) {
+	if (!player) return 0;
+	return dynamic_cast<mgItemGd*>(player->getPlaylist()->getCurrentItem ());
+}
 
 void
-mgPlayerControl::StatusMsgReplaying ()
-{
-    MGLOG ("mgPlayerControl::StatusMsgReplaying()");
-    char *szBuf = NULL;
-    mgSelection * sel = NULL;
-    mgItemGd * item = NULL;
-    if (player)
-    {
-	sel = player->getPlaylist();
-        item = dynamic_cast<mgItemGd*>(player->getCurrent ());
-    }
-    if (player && sel && item)
-    {
-        char cLoopMode;
-        char cShuffle;
-
-        switch (sel->getLoopMode ())
-        {
-            default:
-            case mgSelection::LM_NONE:
-                cLoopMode = '.';                  // Loop mode off
-                break;
-            case mgSelection::LM_SINGLE:
-                cLoopMode = 'S';                  // Loop mode single
-                break;
-            case mgSelection::LM_FULL:
-                cLoopMode = 'P';                  // Loop mode fuel
-                break;
-        }
-
-        switch (sel->getShuffleMode ())
-        {
-            default:
-            case mgSelection::SM_NONE:
-                cShuffle = '.';                   // Shuffle mode off
-                break;
-            case mgSelection::SM_NORMAL:
-                cShuffle = 'S';                   // Shuffle mode normal
-                break;
-            case mgSelection::SM_PARTY:
-                cShuffle = 'P';                   // Shuffle mode party
-                break;
-        }
-
-        if (item->getArtist ().length () > 0)
-        {
-            msprintf (&szBuf, "[%c%c] (%d/%zd) %s - %s",
-                cLoopMode,
-                cShuffle,
-                sel->getItemPosition () + 1,
-                sel->items().size(),
-                item->getArtist ().c_str (),
-                item->getTitle ().c_str ());
-        }
-        else
-        {
-            msprintf (&szBuf, "[%c%c] (%d/%zd) %s",
-                cLoopMode,
-                cShuffle,
-                sel->getItemPosition () + 1,
-                sel->items().size(),
-                item->getTitle ().c_str ());
-        }
-    }
-    else
-    {
-        msprintf (&szBuf, "[muggle]");
-    }
-
-//fprintf(stderr,"StatusMsgReplaying(%s)\n",szBuf);
-    if (szBuf)
-    {
-        if (m_szLastShowStatusMsg == NULL
-            || 0 != strcmp (szBuf, m_szLastShowStatusMsg))
-        {
-            if (m_szLastShowStatusMsg)
-            {
-                free (m_szLastShowStatusMsg);
-            }
-            m_szLastShowStatusMsg = szBuf;
-#if VDRVERSNUM >= 10338
-            cStatus::MsgReplaying (this, m_szLastShowStatusMsg, 0, true);
-#else
-            cStatus::MsgReplaying (this, m_szLastShowStatusMsg);
+mgPlayerControl::CheckImage() {
+	if (!m_img_provider)
+		return;
+#ifdef USE_BITMAP
+	if (cmdOsd) return;
 #endif
-        }
-        else
-        {
-            free (szBuf);
-        }
-    }
+	if (m_img_provider) {
+		if (time(0)-m_imageshowtime >= the_setup.ImageShowDuration) {
+								 // all n decoding steps
+			m_current_image = m_img_provider->getImagePath(m_current_imagesource);
+
+			// check for TFT display of image
+			if ( !m_current_imagesource.empty() ) {
+					TransferImageTFT( m_current_imagesource );
+			}
+
+			if ( !m_current_image.empty() )
+				player->ShowMPGFile(m_current_image);
+			m_imageshowtime=time(0);
+		}
+	}
+}
+
+void
+mgPlayerControl::TransferImageTFT( string cover ) {
+	cPlugin * graphtft = cPluginManager::GetPlugin("graphtft");
+	if ( graphtft ) {
+		graphtft->SetupParse( "CoverImage", cover.c_str() );
+	}
 }

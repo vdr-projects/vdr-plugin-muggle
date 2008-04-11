@@ -38,67 +38,66 @@
 
 #include "vdr_decoder.h"
 
-#define CDFS_MAGIC 0xCDDA // cdfs filesystem-ID
+#define CDFS_MAGIC 0xCDDA		 // cdfs filesystem-ID
 
 // ----------------------------------------------------------------
 
 class mgSndfile
 {
-private:
-  SNDFILE *m_sf;
-  std::string m_filename;
+	private:
+		SNDFILE *m_sf;
+		std::string m_filename;
 
-  void Error(const char *action);
+		void Error(const char *action);
 
-  SF_INFO m_sfi;
-public:
+		SF_INFO m_sfi;
+	public:
 
-  mgSndfile( mgItemGd *item );
-  ~mgSndfile();
+		mgSndfile( mgItemGd *item );
+		~mgSndfile();
 
-  SF_INFO* SoundfileInfo();
-  bool Open( bool log = true );
-  void Close();
-  sf_count_t Seek( sf_count_t frames = 0, bool relative = false );
-  sf_count_t Stream( int *buffer, sf_count_t frames );
+		SF_INFO* SoundfileInfo();
+		bool Open( bool log = true );
+		void Close();
+		sf_count_t Seek( sf_count_t frames = 0, bool relative = false );
+		sf_count_t Stream( int *buffer, sf_count_t frames );
 };
 
 // ----------------------------------------------------------------
 
-class mgSndfileDecoder : public mgDecoder, public cThread 
+class mgSndfileDecoder : public mgDecoder, public cThread
 {
-private:
-  mgSndfile m_file;
+	private:
+		mgSndfile m_file;
 
-  struct mgDecode m_ds;
-  struct mad_pcm *m_pcm;
-  unsigned long long m_index;
-  //
-  cMutex m_buffMutex;
-  cCondVar m_fgCond, m_bgCond;
-  bool m_run, m_ready;
-  int *m_framebuff, m_deferedN, m_softCount;
-  //
-  void init();
-  bool clean();
-  struct mgDecode *done( eDecodeStatus status );
+		struct mgDecode m_ds;
+		struct mad_pcm *m_pcm;
+		unsigned long long m_index;
+		//
+		cMutex m_buffMutex;
+		cCondVar m_fgCond, m_bgCond;
+		bool m_run, m_ready;
+		int *m_framebuff, m_deferedN, m_softCount;
+		//
+		void init();
+		bool clean();
+		struct mgDecode *done( eDecodeStatus status );
 
-protected:
-  virtual void Action(void);
+	protected:
+		virtual void Action(void);
 
-public:
-  mgSndfileDecoder( mgItemGd *item );
-  ~mgSndfileDecoder();
+	public:
+		mgSndfileDecoder( mgItemGd *item );
+		~mgSndfileDecoder();
 
-  virtual bool valid(void);
-  virtual bool start(void);
-  virtual bool stop(void);
-  virtual bool skip(int seconds, int avail, int rate);
-  virtual struct mgDecode *decode();
-  virtual mgPlayInfo *playInfo();
+		virtual bool valid(void);
+		virtual bool start(void);
+		virtual bool stop(void);
+		virtual bool skip(int seconds, int avail, int rate);
+		virtual struct mgDecode *decode();
+		virtual mgPlayInfo *playInfo();
 };
 
 // ----------------------------------------------------------------
-
-#endif //HAVE_SNDFILE
-#endif //___DECODER_SND_H
+#endif							 //HAVE_SNDFILE
+#endif							 //___DECODER_SND_H

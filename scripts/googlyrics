@@ -1,0 +1,409 @@
+#!/usr/bin/perl
+use strict; # Disabled for release version
+use warnings;
+use WWW::Mechanize;
+use IO::File;
+use HTML::Entities;
+use Text::Iconv;
+
+#Necessary globals
+our $mech = WWW::Mechanize->new();
+$mech->agent_alias( 'Linux Mozilla' );
+
+#Sites used for URL matching
+
+my %metro = (
+	site => "metrolyrics.com",
+	name => "Metrolyrics",
+	regex => qr/Ringtone \*\*\*<\/a>(.*?)<img/msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %freel = (
+	site => "free-lyrics.net",
+	name => "Free-Lyrics",
+	regex => qr/<td class="style5" style="font-weight:normal;padding-left:5px;">(.*?)<\/td>/msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %hotly = (
+	site => "hotlyrics.net",
+	name => "Hot Lyrics",
+	regex => qr/<!-- GOOGLE END \/\/-->(.*?)<script type="text\/javascript">/msi,
+	disabled => 0,
+	plain => 0,
+);
+my %leos = (
+	site => "leoslyrics.com",
+	name => "Leo's Lyrics",
+	regex => qr/<font face="Trebuchet MS, Verdana, Arial" size=-1>(.*?)<\/font>/msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %mma = (
+	site => "themadmusicarchive.com",
+	name => "The Mad Music Archive",
+	regex => qr/<td><span class="Verdana8">(.*?)<\/span>/msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %lyricspy = (
+	site => "lyricspy.com",
+	name => "Lyricspy",
+	regex => qr/<\/b><br \/>(.*?)<div>/msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %lyricwiki = (
+	site => "lyricwiki.org",
+	name => "Lyricwiki",
+	regex => qr/<div id="lyric">(.*?)<\/div/msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %lyriki = (
+	site => "lyriki.org",
+	name => "Lyriki",
+	regex => qr/<\/div>\n<p>(.*?)<\/p>/msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %lyricsmania = (
+	site => "lyricsmania.com",
+	name => "Lyricsmania",
+	regex => qr/Title: <b>.*?<br><br>(.*?)<script/msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %letssingit = (
+	site => "letssingit.com",
+	name => "Let's Sing It",
+	regex => qr/<TR class=row2><TD><PRE>(.*)<\/PRE><SPAN class=credits>/msi,
+	disabled => 0,
+	plain => 1,
+);
+
+my %sing365 = (
+	site => "sing365.com",
+	name => "Sing365",
+	#regex => qr/Print the Lyrics(.*?)<hr size=1 color=#cccccc>/msi,
+	regex => qr|Ringtones</u> <<(.*?)<TABLE cellSpacing="0"|msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %azlyrics = (
+	site => "azlyrics.com",
+	name => "AZLyrics",
+	regex => qr/<FONT size=2>.*?<BR>\s*(.*?)\[ <a href="http:\/\/www.azlyrics.com">www.azlyrics.com<\/a> \]<BR><BR>/msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %l007 = (
+	site => "lyrics007.com",
+	name => "Lyrics007",
+	#regex => qr/src=\"http:\/\/pagead2\.googlesyndication\.com\/pagead\/show_ads\.js\">\n<\/script>\n<br><br>(.*?)The hottest songs from/msi,
+	regex => qr|Ringtone <<(.*?)<a|msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %actionext = (
+	site => "actionext.com",
+	name => "Actionext",
+	regex => qr/<h3>performed by .*?<\/h3>(.*)<div class="foundat">/msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %songmeanings = (
+	site => "songmeanings.net",
+	name => "Song Meanings",
+	regex => qr/<td width="100%" style="text-align:left;">.*<td width="100%" style="text-align:left;">\s*(.*?)\s*<\/td>/msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %wearethelyrics = (
+	site => "wearethelyrics.com",
+	name => "We Are The Lyrics",
+	regex => qr/<\/h3>\n<p>\s*(.*?)\s*<\/p>/msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %mp3bg = (
+	site => "mp3-bg.com",
+	name => "mp3-bg.com",
+	regex => qr/<\/h2><p>(.*?)<ul class="admin">/msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %mldb = (
+	site => "mldb.org",
+	name => "MLDb",
+	regex => qr/<p class=songtext>(.*?)<\/table>/msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %justsomelyrics = (
+	site => "justsomelyrics.com",
+	name => "JUST SOME LYRICS",
+	regex => qr/<\/h1>(.*?)<a/msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %mylyricsbox = (
+	site => "mylyricsbox.com",
+	name => "MyLyricsBox",
+	regex => qr/<div class="songLyrics">(.*?)<\/div>/msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %megalyrics = (
+	site => "megalyrics.ru",
+	name => "MegaLyrics",
+	regex => qr/<\/script>[[:cntrl:]]*?<br><br>(.*?)<br><a href=\"javascript/msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %lyricsee = (
+	site => "lyrics.ee",
+	name => "Lyrics.ee",
+	regex => qr|</td></tr> -->*?<br>\n(.*?)<p><br>|msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %lyricseeprint = (
+	site => "lyrics.ee",
+	name => "Lyrics.ee (print page)",
+	regex => qr|<td height="20"></td>(.*?)</td>|msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %kovach = (
+	site => "kovach.co.yu",
+	name => "Kovach",
+	regex => qr#>Z</a>.*?<td width="100%" valign="top">(.*?)</td></tr></table>#msi,
+	disabled => 0,
+	plain => 0,
+);
+
+my %letras = (
+        site => "letras.terra.com.br",
+        name => "letras.terra.com.br",
+        regex => qr|<p id='cmp'>.*?</p>(.*?)</p><br/>|msi,
+        disabled => 0,
+        plain => 0,
+);
+
+my %lyricstime = (
+        site => "lyricstime.com",
+        name => "Lyrics Time",
+        regex => qr|.*END ADREACTOR ADVANCED CODE BLOCK -->(.*?)<!--            main content end|msi,
+        disabled => 0,
+        plain => 0,
+);
+
+my %lyricsspot = (
+        site => "lyricsspot.com",
+        name => "Lyricsspot",
+        regex => qr/<\/h3><font size="2">(.*?)<\/p><\/font>/msi,
+        disabled => 0,
+        plain => 0,
+);
+                                        
+my %local = (
+	site => "~/lyrics",
+	name => "Local lyrics/cache",
+	disabled => 0,
+	plain => 1,
+);
+
+#put references to all the lyrics sites into the hash
+
+my @sites = (\%metro,\%freel,\%hotly,\%leos, \%mma, \%lyricspy, \%lyricwiki, \%lyriki, \%letssingit, \%sing365, \%azlyrics, \%l007, \%actionext, \%songmeanings, \%wearethelyrics, \%mp3bg, \%mldb, \%justsomelyrics, \%mylyricsbox, \%megalyrics, \%lyricsmania, \%lyricsee, \%lyricseeprint, \%kovach, \%letras, \%lyricstime, \%lyricsspot);
+
+
+sub querylyrics {
+	my $artist = urldecode(shift);
+	my $title = urldecode(shift);
+
+	# This is for local file lyrics
+	my $fh = new IO::File;
+	
+	my $file = $title . ".txt";
+	my $file2 = $artist . " - " . $title . ".txt";
+	if (open(FH, "< " . $ENV{"HOME"} . "/lyrics/$file") || open(FH,"< " . $ENV{"HOME"} . "/lyrics/$file2")) {
+        my $text = "";
+        while ($_ = <FH>) {
+        	$text .= $_
+		}
+        $fh->close;
+        showlyrics($text, \%local, "http://localhost", $artist, $title);
+        return 1;
+    }
+
+	$artist =~ s/^The //sgi; #Remove the starting word "The" from artist name, it just causes problems
+	$title =~ s/\(.*?\)//sgi;
+	$title =~ s/\[.*?\]//sgi;
+	if ($artist eq "") {
+		$title =~ /(.*) - (.*)/; # try to extract song + artist information.
+		if ($1 ne '' && $2 ne '') {
+			$artist = $1;
+			$title = $2;
+		}
+	}
+	my $attempt = 1;
+	while ($attempt != 5) {
+#	print "\n<br>Attempt #" . $attempt . "\n";
+	$mech->get("http://www.google.com/intl/en/");
+	if (!$mech->success()) {
+		return "connectfail";
+	}
+	# Try several search queries.
+	if ($attempt == 1) {
+		$mech->field("q", "lyrics intitle:\"$artist - $title\"", );
+	} elsif ($attempt == 2) {
+		$mech->field("q", "lyrics \"$artist\" intitle:\"$title\"", );
+	} elsif ($attempt == 3) {
+		$mech->field("q", "lyrics \"$artist\" \"$title\"", );
+	} elsif ($attempt == 4) {
+		$mech->field("q", "lyrics $artist $title", );
+	}
+	$mech->submit();
+	foreach ($mech->content() =~ m/<div class=g[\s>].*?<a href=\"(.*?)\"/img) {
+		my $url = $_;
+#		print "\n<br>" . $url . "\n";
+		my $o;
+		my $ly;
+		foreach $ly (@sites) {
+			my $urlregex = $ly->{site};
+			if ($url =~ m/$urlregex/si) {
+				if ($o = scrape($url, $ly, $artist, $title)) {
+	    			return $o;
+				} else {
+					next;
+				}
+			}
+		}
+	}
+	$attempt = $attempt + 1;
+	}
+	return "Fail";
+}
+
+sub scrape {
+	my $loc = shift;
+	my $site = shift;
+	my $artist = shift;
+	my $title = shift;
+	if ($site->{disabled}) {
+		return 0;
+	}
+	$mech->get($loc);
+	if (!$mech->success()) {
+		return 0; #Assume the user _does_ have an internet connection since a previous test has happened on google, let's just say the lyrics site is down.
+	}
+	my @cont_type = $mech->response()->content_type;
+	$cont_type[1]=~ s/charset=(.*)/$1/ig; # Get the charset of the response
+	my $char_converter = Text::Iconv->new($cont_type[1], "UTF-8"); # Convert the response to UTF-8
+	my $current = $mech->content();
+	my $regex = $site->{regex};
+	if ($current =~ $regex) {
+#		print "\n<br>Regex success for " . $site->{name} . "\n";
+		showlyrics($char_converter->convert($1), $site, $loc, $artist, $title);
+		return 1;
+	} else {
+#		print "\n<br>Regex failed for " . $site->{name} . "\n";
+		return 0;
+	}
+}
+
+#while (1) {
+	my $message = <STDIN>;
+	chomp($message);
+	if ($message =~ /^configure/) {
+		system("dcop", "amarok", "playlist", "popupMessage", "This script does not require any configuration.");
+	} elsif ($message =~ /^fetchLyrics/) {
+		my @tofetch = split(/ /, $message);
+		my $artist = urldecode($tofetch[1]);
+		my $title = urldecode($tofetch[2]);
+		my $out = querylyrics($artist, $title);
+		if ($out eq "Fail") {
+			system("dcop", "amarok", "contextbrowser", "showLyrics", "<?xml version=\"1.0\" encoding=\"UTF-8\" ?> <suggestions page_url=\"http://www.google.org\">Failed to find any lyrics. Press refresh to try again.</suggestions>");
+		} elsif ($out eq "connectfail") {
+			system("dcop", "amarok", "contextbrowser", "showLyrics", ""); #communications errror, "send an empty string"
+		}
+	}
+#}
+
+sub showlyrics {
+	my $out = shift;
+	my $site = shift;
+	my $loc = shift;
+	my $artist = shift;
+	my $title = shift;
+	if ($site->{plain}) {
+		$out = striphtml($out);
+	} else {
+		$out = striphtml(htmllinebreak($out));
+	}
+	$out =~ s/^\s+|\s+$//g; #Kills leading and trailing whitespace.
+	$out =~ s/\[.*? lyrics on http:\/\/www\.metrolyrics\.com\]\n//g; #metrolyrics: we're sick of your bullshit.
+	print $out . "\n";
+	my $doc = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?> <lyrics site=\"" . encode_entities($site->{name}) ."\" site_url=\"" . encode_entities($site->{site}) . "\" page_url=\"" . encode_entities($loc) . "\" artist=\"" . filter($artist) . "\" title=\"" . filter($title) . "\">" . filter($out) . "</lyrics>";
+	my $fh = new IO::File;
+	my $file = $artist . " - " . $title . " - Saved.txt";
+	if ($fh->open("> " . $ENV{"HOME"} . "/lyrics/$file")) {
+		print $fh $out
+	}
+	system("dcop", "amarok", "contextbrowser", "showLyrics", $doc);
+}
+sub htmllinebreak {
+	my $out = shift;
+	$out =~ s/\n//sgi; #Kill normal linebreaks, we're going HTML :)
+	$out =~ s/<br>/\n/sgi;
+	$out =~ s/<br *\/?>/\n/sgi;
+	return $out;
+}
+
+sub filter {
+	my $text = shift;
+    $text =~ s/&/&amp;/go;
+    $text =~ s/</&lt;/go;
+    $text =~ s/>/&gt;/go;
+    $text =~ s/'/&apos;/go;
+    $text =~ s/`/&apos;/go;
+    $text =~ s/’/&apos;/go;
+    $text =~ s/"/&quot;/go;
+    return $text;
+}
+
+sub urldecode {
+  my $str = shift;
+  $str =~ s/%([A-Fa-f0-9]{2})/pack('C', hex($1))/seg;
+  return $str;
+}
+
+sub striphtml {
+	my $str = shift;
+	$str =~ s/\<[^\<]+\>//g;
+	return $str;
+}

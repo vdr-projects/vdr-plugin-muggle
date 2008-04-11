@@ -1,4 +1,4 @@
-/*! 
+/*!
  * \file   mg_db.h
  * \brief  A generic capsule around database access
  *
@@ -20,6 +20,7 @@
 #include <tag.h>
 #include <id3v2tag.h>
 #include <fileref.h>
+#include <xiphcomment.h>
 
 #ifndef trdb
 #define trdb(a) (a)
@@ -36,10 +37,10 @@ typedef list<string> strlist;
 
 strlist& operator+=(strlist&a, strlist b);
 
-
 string sql_list (string prefix,strlist v,string sep=",",string postfix="");
 
-class mgSQLStringImp {
+class mgSQLStringImp
+{
 	public:
 		mgSQLStringImp();
 		virtual ~mgSQLStringImp();
@@ -52,7 +53,8 @@ class mgSQLStringImp {
 		mutable char *m_quoted;
 };
 
-class mgSQLString {
+class mgSQLString
+{
 	public:
 		mgSQLString(const char*s);
 		mgSQLString(string s);
@@ -78,7 +80,8 @@ class mgSQLString {
 
 enum mgQueryNoise {mgQueryNormal, mgQueryWarnOnly, mgQuerySilent};
 
-class mgQueryImp {
+class mgQueryImp
+{
 	public:
 		mgQueryImp(void *db,string sql,mgQueryNoise noise);
 		virtual ~mgQueryImp() {};
@@ -99,7 +102,8 @@ class mgQueryImp {
 		void *m_db_handle;
 };
 
-class mgQuery {
+class mgQuery
+{
 	public:
 		mgQuery(void *db,const char*s,mgQueryNoise noise = mgQueryNormal);
 		mgQuery(void *db,string s,mgQueryNoise noise = mgQueryNormal);
@@ -113,13 +117,14 @@ class mgQuery {
 		mgQueryImp* m_q;
 };
 
-class mgReference {
+class mgReference
+{
 	public:
 		mgReference(string t1,string f1,string t2,string f2);
-                string t1() const { return m_t1; }
-                string t2() const { return m_t2; }
-                string f1() const { return m_f1; }
-                string f2() const { return m_f2; }
+		string t1() const { return m_t1; }
+		string t2() const { return m_t2; }
+		string f1() const { return m_f1; }
+		string f2() const { return m_f2; }
 		bool Equal(string table1, string table2) const;
 	private:
 		string m_t1;
@@ -128,112 +133,117 @@ class mgReference {
 		string m_f2;
 };
 
-class mgReferences : public vector<mgReference*> {
-public:
-	void InitReferences();
-	unsigned int CountTable(string table) const;
+class mgReferences : public vector<mgReference*>
+{
+	public:
+		void InitReferences();
+		unsigned int CountTable(string table) const;
 };
 
-
-class mgParts {
-public:
-	mgParts();
-	~mgParts();
-	strlist valuefields; 	// if idfield and valuefield are identical, define idfield only
-	strlist idfields;
-	strlist tables;
-	strlist clauses;
-	mgParts& operator+=(mgParts a);
-	void Prepare();
-	void ConnectAllTables();
-	string sql_count();
-	string sql_select(bool distinct);
-	string sql_selectitems();
-	bool empty() const { return tables.size()==0;}
-	string special_statement;
-	bool orderByCount;
-	void Dump(string where) const;
-private:
-	mgReferences rest;
-	mgReferences positives;
-	void ConnectTables(string c1, string c2);
-	void push_table_to_front(string table);
+class mgParts
+{
+	public:
+		mgParts();
+		~mgParts();
+		strlist valuefields;	 // if idfield and valuefield are identical, define idfield only
+		strlist idfields;
+		strlist tables;
+		strlist clauses;
+		mgParts& operator+=(mgParts a);
+		void Prepare();
+		void ConnectAllTables();
+		string sql_count();
+		string sql_select(bool distinct);
+		string sql_selectitems();
+		bool empty() const { return tables.size()==0;}
+		string special_statement;
+		bool orderByCount;
+		void Dump(string where) const;
+	private:
+		mgReferences rest;
+		mgReferences positives;
+		void ConnectTables(string c1, string c2);
+		void push_table_to_front(string table);
 };
 
 /*!
  * \brief an abstract database class
- * 
+ *
  */
-class mgDb {
-   public:
-	mgDb (bool SeparateThread=false);
-	virtual ~mgDb ();
-	/*! \brief executes a query and returns the integer value from
- 	 * the first column in the first row. The query shold be a COUNT query
- 	 * returning only one row.
- 	 * \param query the SQL query to be executed
- 	 */
-	unsigned long exec_count(const string sql); 
-  	virtual bool ServerConnect() { return true; }
-	bool Connect();
-  	virtual bool ConnectDatabase() = 0;
-  	bool HasFolderFields() const { return m_hasfolderfields;}
-	virtual int AddToCollection( const string Name,const vector<mgItem*>&items,mgParts* what=0);
-	virtual int RemoveFromCollection( const string Name,const vector<mgItem*>&items,mgParts* what=0);
-	virtual bool DeleteCollection( const string Name);
-	virtual void ClearCollection( const string Name);
-	virtual bool CreateCollection( const string Name);
+class mgDb
+{
+	public:
+		mgDb (bool SeparateThread=false);
+		virtual ~mgDb ();
+		/*! \brief executes a query and returns the integer value from
+		 * the first column in the first row. The query shold be a COUNT query
+		 * returning only one row.
+		 * \param query the SQL query to be executed
+		 */
+		unsigned long exec_count(const string sql);
+		virtual bool ServerConnect() { return true; }
+		bool Connect();
+		virtual bool ConnectDatabase() = 0;
+		bool HasFolderFields() const { return m_hasfolderfields;}
+		virtual int AddToCollection( const string Name,const vector<mgItem*>&items,mgParts* what=0);
+		virtual int RemoveFromCollection( const string Name,const vector<mgItem*>&items,mgParts* what=0);
+		virtual bool DeleteCollection( const string Name);
+		virtual void ClearCollection( const string Name);
+		virtual bool CreateCollection( const string Name);
 
-	void Sync(char * const * path_argv);
-	virtual bool FieldExists(string table, string field)=0;
-	void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap);
-	string LoadItemsInto(mgParts& what,vector<mgItem*>& items);
-	string LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems,bool groupby);
-	virtual bool NeedGenre2() = 0;
-	virtual bool Threadsafe() { return false; }
-	int Execute(const string sql);
-	virtual const char* Options() const =0;
-	virtual const char* HelpText() const =0;
-	void* DbHandle();
-	virtual const char* DecadeExpr()=0;
-	virtual string Now() const =0;
-	virtual string Directory() const =0;
-   protected:
-	int m_rows;
-	int m_cols;
-	virtual void SyncEnd() {}
-	bool SyncFile(const char *filename);
-  	bool m_hasfolderfields;
-	bool m_separate_thread;
-	time_t m_connect_time;
-	time_t m_create_time;
-	string get_col0(const string sql);
-  	virtual bool Creatable() { return true; }
-  	virtual bool Create() = 0;
-  	virtual bool Clear() = 0;
-	virtual void StartTransaction() {};
-	virtual void Commit() {};
-	virtual bool SyncStart();
-	virtual void CreateFolderFields() {};
-	virtual void* ImplDbHandle() const = 0;
-   private:
-	TagLib::String m_TLAN;
-	TagLib::String m_TCON;
-	TagLib::String getId3v2Tag(TagLib::ID3v2::Tag *id3v2tags,const char *name) const;
-	void get_ID3v2_Tags(const char *filename);
-	void get_tags(TagLib::ID3v2::Tag *tags);
-	void DefineGenre(const string genre);
-	mgSQLString getGenre1(TagLib::FileRef& f);
-	mgSQLString Build_cddbid(const mgSQLString& artist) const;
-	mgSQLString getAlbum(const char *filename,const mgSQLString& c_album,
+		void Sync(const char * const * path_argv);
+		virtual bool FieldExists(string table, string field)=0;
+		void LoadMapInto(string sql,map<string,string>*idmap,map<string,string>*valmap);
+		string LoadItemsInto(mgParts& what,vector<mgItem*>& items);
+		string LoadValuesInto(mgParts& what,mgKeyTypes tp,vector<mgListItem*>& listitems,bool groupby);
+		virtual bool NeedGenre2() = 0;
+		virtual bool Threadsafe() { return false; }
+		int Execute(const string sql);
+		virtual const char* Options() const =0;
+		virtual const char* HelpText() const =0;
+		void* DbHandle();
+		virtual const char* DecadeExpr()=0;
+		virtual string Now() const =0;
+		virtual string Directory() const =0;
+	protected:
+		int m_rows;
+		int m_cols;
+		virtual void SyncEnd() {}
+		bool SyncFile(const char *filename);
+		bool m_hasfolderfields;
+		bool m_separate_thread;
+		time_t m_connect_time;
+		time_t m_create_time;
+		string get_col0(const string sql);
+		virtual bool Creatable() { return true; }
+		virtual bool Create() = 0;
+		virtual bool Clear() = 0;
+		virtual void StartTransaction() {};
+		virtual void Commit() {};
+		virtual bool SyncStart();
+		virtual void CreateFolderFields() {};
+		virtual void* ImplDbHandle() const = 0;
+	private:
+		TagLib::String m_TLAN;
+		TagLib::String m_TCON;
+		TagLib::String getId3v2Tag(TagLib::ID3v2::Tag *id3v2tags,const char *name) const;
+		void get_ID3v2_Tags(const char *filename);
+		TagLib::String getVorbisComment(const TagLib::Ogg::FieldListMap& vorbiscomments,const char* key);
+		void get_vorbis_tags(const TagLib::Ogg::FieldListMap& vorbiscomments);
+		void get_id3_tags(TagLib::ID3v2::Tag *tags);
+		void DefineGenre(const string genre);
+		mgSQLString getGenre1(TagLib::FileRef& f);
+		mgSQLString Build_cddbid(const mgSQLString& artist) const;
+		mgSQLString getAlbum(const char *filename,const mgSQLString& c_album,
 			const mgSQLString& c_artist);
-	map<string,string> m_Genres;
-	map<string,string> m_GenreIds;
-  	bool m_database_found;
-	void FillTables();
+		map<string,string> m_Genres;
+		map<string,string> m_GenreIds;
+		bool m_database_found;
+		void FillTables();
 };
 
-class mgKey {
+class mgKey
+{
 	public:
 		virtual ~mgKey() {};
 		virtual mgParts Parts(mgDb *db,bool groupby) const = 0;
@@ -251,7 +261,8 @@ class mgKey {
 		virtual string map_sql() const { return ""; }
 };
 
-class mgKeyNormal : public mgKey {
+class mgKeyNormal : public mgKey
+{
 	public:
 		mgKeyNormal(const mgKeyNormal& k);
 		mgKeyNormal(const mgKeyTypes kt, string table, string field);
@@ -274,16 +285,18 @@ class mgKeyNormal : public mgKey {
 		string m_table;
 };
 
-class mgKeyABC : public mgKeyNormal {
+class mgKeyABC : public mgKeyNormal
+{
 	public:
 		mgKeyABC(const mgKeyNormal& k) : mgKeyNormal(k) {}
 		mgKeyABC(const mgKeyTypes kt, string table, string field) : mgKeyNormal(kt,table,field) {}
-		virtual string expr(mgDb*db) const { return "substring("+mgKeyNormal::expr(db)+",1,1)"; }
+		virtual string expr(mgDb*db) const { return "substr("+mgKeyNormal::expr(db)+",1,1)"; }
 	protected:
 		//void AddIdClause(mgDb *db,mgParts &result,string what) const;
 };
 
-class mgKeyDate : public mgKeyNormal {
+class mgKeyDate : public mgKeyNormal
+{
 	public:
 		mgKeyDate(mgKeyTypes kt,string table, string field) : mgKeyNormal(kt,table,field) {}
 };
@@ -293,13 +306,14 @@ ktGenerate(const mgKeyTypes kt);
 mgDb* GenerateDB(bool SeparateThread=false);
 
 /*! \brief if the SQL command works on only 1 table, remove all table
-* qualifiers. Example: SELECT X.title FROM X becomes SELECT title
-* FROM X
-* \param spar the sql command. It will be edited in place
-* \return the new sql command is also returned
-*/
+ * qualifiers. Example: SELECT X.title FROM X becomes SELECT title
+ * FROM X
+ * \param spar the sql command. It will be edited in place
+ * \return the new sql command is also returned
+ */
 extern string optimize(string& spar);
-class mgKeyMaps {
+class mgKeyMaps
+{
 	public:
 		string value(mgKeyTypes kt, string idstr) const;
 		string id(mgKeyTypes kt, string valstr) const;
@@ -309,7 +323,8 @@ class mgKeyMaps {
 
 extern mgKeyMaps KeyMaps;
 
-class mgDbServerImp {
+class mgDbServerImp
+{
 	public:
 		mgDbServerImp() {m_escape_db = 0;}
 		virtual ~mgDbServerImp() {delete m_escape_db;}
@@ -318,7 +333,8 @@ class mgDbServerImp {
 		mgDb* m_escape_db;
 };
 
-class mgDbServer {
+class mgDbServer
+{
 	private:
 		mgDbServerImp *m_server;
 	public:
@@ -328,5 +344,4 @@ class mgDbServer {
 };
 
 extern mgDbServer* DbServer;
-
 #endif

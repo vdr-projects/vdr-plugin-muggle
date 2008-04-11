@@ -105,7 +105,6 @@
 
 // Uncomment to enable generic debugging messages to the console. This may slow
 // down operation in some cases.
-#define DEBUG
 
 // Uncomment to disable audio output to the dvb driver. The audio data is
 // simply discarded.
@@ -115,4 +114,4 @@
 // "/tmp/limiter". The generated file will be about 3MB in size. This option shouldn't
 // be enabled for day-by-day operation.
 //#define ACC_DUMP
-#endif                                            //___VDR_CONFIG_H
+#endif							 //___VDR_CONFIG_H

@@ -57,6 +57,7 @@ required:
     http://www.xiph.org/ogg/vorbis/)
  - optionally libFLAC++ to replay FLAC files
    (Debian package libflac++-dev or sources from flac.sourceforge.net)
+ - recode if you want to download lyrics
 
 The developer versions are needed because their headers are required
 for compilation.  The server need not be on the same machine as the
@@ -252,8 +253,12 @@ If a track has no ID3 tags, the following defaults will be applied:
 \section covers COVERS
 
 Muggle can display cover images (and others). Set the setup entry
-"Background mode" to "Image" to enable this feature. Please note,
-that the mechanism to find images has changed in release 0.1.9
+"Background mode" to "Cover small" or "Cover big" to enable this
+feature. "Cover small" puts it into the lower right corner which
+is unused by the main player screen, "Cover big" shows it on
+the full screen as background image.
+
+Please note that the mechanism to find images has changed in release 0.1.9
 (and may be changed again in future versions). The images are now
 found like this.
 
@@ -285,18 +290,55 @@ music playlist replayed side by side! In order to enable this
 behavior, apply the patch (vdr-image-0.2.3.diff) to the image plugin
 sources and recompile.
 
+The images need to be converted to Mpeg. Starting with muggle 0.2.0,
+the converted images are stored in a cache directory (define it in
+the setup menu). So if you change between Cover small and Cover big,
+you will need to remove all cached images. If the original image file
+changes, the image will also be regenerated.
+
+
+\section lyrics LYRICS
+
+Muggle can display lyrics from local files or from the internet.
+The lyrics are stored in the cache directory, with
+the file name extension .lyrics or .lyrics.tmp. .lyrics is for
+the saved version, .lyrics.tmp is downloaded from the internet but
+not saved. Both files can coexist, however if .lyrics.tmp exists,
+this one will be displayed with the option to save it. Saving of
+course removes .lyrics.tmp
+
+If a track starts playing and lyrics are wanted, muggle first tries the local file.
+If it does not exist, muggle will automatically get it from the
+internet. If you do not like the text, you can edit the lyrics file
+(outside of muggle) or request another load from the internet -
+maybe somebody fixed it meanwhile. If characters in the lyrics are
+not shown correcly, you can try to adjust the muggle_getlyrics script.
+
+Muggle starts the retrieval script in the background and displays
+the lyrics as soon as it is available. If you change track before
+the retrieval finished, two retrieval scripts might be running at
+the same time - no problem.
+
+Muggle calls the script muggle_getlyrics which in turn calls 
+googlyrics - this is slightly adapted to muggle. The original is
+here: http://www.kde-apps.org/content/show.php/GoogLyrics?content=73850
+googlyrics is a plugin to the amarok music player, it can currently ask
+27 different sources.
+
+
+
 \section quickuse QUICK INTRO
 
 Quick version: select Muggle on the OSD, browse titles (using up/down
 and Ok), add them using the red button. Music will start instantly
 while you can continue to browse and add tracks.
 
-During playback, Up/Down jumps forth and back in the current
-playlist. Yellow toggles play/pause mode and Ok toggles a display of
-the replay process. Using Green, the display can be switched between
-playlist and single display mode, Red toggles info and progress
-view. For VDR 1.3.6- the progress display is "quite simple",
-unfortunately.
+Starting with 0.2.0, muggle has a new OSD for playback mode. It is
+similar to the OSD of the Music plugin but with less possibilities.
+Move the cursor in the track list as usual and press enter to play
+the currently selected track. Most other thing should be self
+explaining.
+
 
 \section use DETAILED USER'S GUIDE
 

@@ -29,6 +29,11 @@ Please execute these steps before starting muggle the first time:
 3. createuser XXX
 4. createdb GiantDisc
 
+under ubuntu:
+1. sudo -u postgres createuser XXX
+2. sudo -u postgres createdb GiantDisc
+
+
 where XXX is the user name vdr is running under, normally vdr.
 You may want to define the database encoding as UTF8, see 
 http://www.postgresql.org/docs/8.3/interactive/multibyte.html.

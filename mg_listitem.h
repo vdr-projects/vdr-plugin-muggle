@@ -15,7 +15,6 @@
 
 using namespace std;
 
-
 class mgListItem
 {
 	public:
@@ -40,5 +39,4 @@ class mgListItem
 		string m_unique_id;
 		unsigned int m_count;
 };
-
 #endif

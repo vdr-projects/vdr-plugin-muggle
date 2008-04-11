@@ -18,19 +18,18 @@
 
 class mgIncrementalSearch
 {
- public:
-  mgIncrementalSearch();
+	public:
+		mgIncrementalSearch();
 
-  std::string KeyStroke( unsigned key );
+		std::string KeyStroke( unsigned key );
 
-  std::string Backspace();
+		std::string Backspace();
 
- private:
-  std::string m_buffer;
-  int m_position;
-  unsigned m_repeats, m_last_key;
- 
-  double m_last_keypress;
+	private:
+		std::string m_buffer;
+		int m_position;
+		unsigned m_repeats, m_last_key;
+
+		double m_last_keypress;
 };
-
 #endif

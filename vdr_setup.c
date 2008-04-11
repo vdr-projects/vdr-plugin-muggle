@@ -21,86 +21,98 @@
 
 #include "vdr_setup.h"
 #include "vdr_actions.h"
-#include "i18n.h"
+#include <vdr/i18n.h>
 
-static char* chars_allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_./";
+static const char* chars_allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_./";
 
-static const char *bgmodes[3];
+static const char *bgmodes[4];
 
 // --- mgMenuSetup -----------------------------------------------------------
 
-mgMenuSetup::mgMenuSetup ()
-{
-    SetSection (tr ("Muggle"));
+mgMenuSetup::mgMenuSetup () {
+	SetSection (tr ("Muggle"));
 
-    // Audio stuff    
-    Add (new
-	 cMenuEditBoolItem (tr ("Initial loop mode"),&the_setup.InitLoopMode,
-			    tr("off"), tr("on") ) );
-    Add (new
-	 cMenuEditBoolItem (tr ("Initial shuffle mode"), &the_setup.InitShuffleMode,
-			    tr("off"), tr("on") ) );
+	// Audio stuff
+	Add (new
+		cMenuEditBoolItem (tr ("Initial loop mode"),&the_setup.InitLoopMode,
+		tr("off"), tr("on") ) );
+	Add (new
+		cMenuEditBoolItem (tr ("Initial shuffle mode"), &the_setup.InitShuffleMode,
+		tr("off"), tr("on") ) );
 
-    Add (new
-	 cMenuEditBoolItem (tr ("Audio mode"), &the_setup.AudioMode,
-			    tr ("Round"), tr ("Dither")));
+	Add (new
+		cMenuEditBoolItem (tr ("Audio mode"), &the_setup.AudioMode,
+		tr ("Round"), tr ("Dither")));
 
-    Add (new
-	 cMenuEditBoolItem (tr ("Use 48kHz mode only"), &the_setup.Only48kHz,
-			    tr("no"), tr("yes") ) );
-			    
-    Add (new
-	 cMenuEditIntItem (tr ("Normalizer level"),
-			   &the_setup.TargetLevel, 0, MAX_TARGET_LEVEL));
+	Add (new
+		cMenuEditBoolItem (tr ("Use 48kHz mode only"), &the_setup.Only48kHz,
+		tr("no"), tr("yes") ) );
 
-    Add (new
-	 cMenuEditIntItem (tr ("Limiter level"),
-			   &the_setup.LimiterLevel, MIN_LIMITER_LEVEL, 100));
+	Add (new
+		cMenuEditIntItem (tr ("Normalizer level"),
+		&the_setup.TargetLevel, 0, MAX_TARGET_LEVEL));
 
-    // Image/cover display
-    bgmodes[0] = tr("Black");
-    bgmodes[1] = tr("Image");
-    bgmodes[2] = tr("Live");
-    Add (new
-	 cMenuEditStraItem (tr ("Background mode"), &the_setup.BackgrMode, 
-			    3, bgmodes ) );
-    Add (new
-	 cMenuEditIntItem (tr ("Image show duration (secs)"),
-			   &the_setup.ImageShowDuration, 1, 100));
-    Add (new
-	 cMenuEditStrItem (tr ("Image cache directory"),
-			   the_setup.ImageCacheDir, MAX_PATH, chars_allowed ) );
-    Add (new
-	 cMenuEditBoolItem (tr ("Use DVB still picture"), &the_setup.UseDeviceStillPicture,
-			    tr("no"), tr("yes") ) );
+	Add (new
+		cMenuEditIntItem (tr ("Limiter level"),
+		&the_setup.LimiterLevel, MIN_LIMITER_LEVEL, 100));
 
-    // Synchronization    
-    Add (new
-	 cMenuEditBoolItem (tr ("Delete stale references"), &the_setup.DeleteStaleReferences,
-			    tr("no"), tr("yes") ));
+	// Image/cover display
+	bgmodes[0] = tr("Black");
+	bgmodes[1] = tr("Cover small");
+	bgmodes[2] = tr("Cover big");
+	bgmodes[3] = tr("Live");
+	Add (new
+		cMenuEditStraItem (tr ("Background mode"), &the_setup.BackgrMode,
+		4, bgmodes ) );
+	Add (new
+		cMenuEditIntItem (tr ("Image show duration (secs)"),
+		&the_setup.ImageShowDuration, 1, 100));
+	Add (new
+		cMenuEditStrItem (tr ("Cache directory"),
+		the_setup.CacheDir, MAX_PATH, chars_allowed ) );
+	Add (new
+		cMenuEditBoolItem (tr ("Use DVB still picture"), &the_setup.UseDeviceStillPicture,
+		tr("no"), tr("yes") ) );
+	Add (new
+		cMenuEditBoolItem (tr ("Show artist first"), &the_setup.ArtistFirst,
+		tr("no"), tr("yes") ));
+	Add (new
+		cMenuEditIntItem (tr ("Fastforward jump (secs)"),
+		&the_setup.Jumptime, 1, 100));
+#ifdef USE_BITMAP
+	Add (new
+		cMenuEditIntItem (tr("Setup.muggle$Transparency for cover"),
+		&the_setup.ImgAlpha,1,255));
+#endif
+	// Synchronization
+	Add (new
+		cMenuEditBoolItem (tr ("Delete stale references"), &the_setup.DeleteStaleReferences,
+		tr("no"), tr("yes") ));
 
-    mgAction *a = actGenerate(actSync);
-    const char *mn = a->MenuName();
-    a->SetText(mn);
-    free(const_cast<char*>(mn));
-    Add(dynamic_cast<cOsdItem*>(a));
+	mgAction *a = actGenerate(actSync);
+	const char *mn = a->MenuName();
+	a->SetText(mn);
+	free(const_cast<char*>(mn));
+	Add(dynamic_cast<cOsdItem*>(a));
 }
-
 
 void
-mgMenuSetup::Store (void)
-{
-    SetupStore ("InitLoopMode", the_setup.InitLoopMode);
-    SetupStore ("InitShuffleMode", the_setup.InitShuffleMode);
-    SetupStore ("AudioMode", the_setup.AudioMode);
-    SetupStore ("DisplayMode", the_setup.DisplayMode);
-    SetupStore ("BackgrMode", the_setup.BackgrMode);
-    SetupStore ("TargetLevel", the_setup.TargetLevel);
-    SetupStore ("LimiterLevel", the_setup.LimiterLevel);
-    SetupStore ("Only48kHz", the_setup.Only48kHz);
-    SetupStore ("DeleteStaleReferences", the_setup.DeleteStaleReferences);
-    SetupStore ("ImageShowDuration", the_setup.ImageShowDuration);
-    SetupStore ("ImageCacheDir", the_setup.ImageCacheDir);
-    SetupStore ("UseStillPicture", the_setup.UseDeviceStillPicture );
+mgMenuSetup::Store (void) {
+	SetupStore ("InitLoopMode", the_setup.InitLoopMode);
+	SetupStore ("InitShuffleMode", the_setup.InitShuffleMode);
+	SetupStore ("AudioMode", the_setup.AudioMode);
+	SetupStore ("DisplayMode", the_setup.DisplayMode);
+	SetupStore ("BackgrMode", the_setup.BackgrMode);
+	SetupStore ("TargetLevel", the_setup.TargetLevel);
+	SetupStore ("LimiterLevel", the_setup.LimiterLevel);
+	SetupStore ("Only48kHz", the_setup.Only48kHz);
+	SetupStore ("DeleteStaleReferences", the_setup.DeleteStaleReferences);
+	SetupStore ("ImageShowDuration", the_setup.ImageShowDuration);
+#ifdef USE_BITMAP
+	SetupStore ("ImgAlpha", the_setup.ImgAlpha);
+#endif
+	SetupStore ("CacheDir", the_setup.CacheDir);
+	SetupStore ("ArtistFirst", the_setup.ArtistFirst);
+	SetupStore ("Jumptime", the_setup.Jumptime);
+	SetupStore ("UseStillPicture", the_setup.UseDeviceStillPicture );
 }
-

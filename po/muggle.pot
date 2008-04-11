@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
-"POT-Creation-Date: 2008-02-19 00:28+0100\n"
+"POT-Creation-Date: 2008-04-11 22:05+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,117 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "Loading lyrics from internet..."
+msgstr ""
+
 msgid "empty database created"
+msgstr ""
+
+#, c-format
+msgid "Cannot get exclusive lock on SQLite database %s:%d/%s"
+msgstr ""
+
+#, c-format
+msgid "File %s not found"
+msgstr ""
+
+msgid "Commands"
+msgstr ""
+
+msgid "Genre"
+msgstr ""
+
+msgid "Genre1"
+msgstr ""
+
+msgid "Genre2"
+msgstr ""
+
+msgid "Genre3"
+msgstr ""
+
+msgid "Folder1"
+msgstr ""
+
+msgid "Folder2"
+msgstr ""
+
+msgid "Folder3"
+msgstr ""
+
+msgid "Folder4"
+msgstr ""
+
+msgid "Artist"
+msgstr ""
+
+msgid "ArtistABC"
+msgstr ""
+
+msgid "Title"
+msgstr ""
+
+msgid "TitleABC"
+msgstr ""
+
+msgid "Track"
+msgstr ""
+
+msgid "Decade"
+msgstr ""
+
+msgid "Album"
+msgstr ""
+
+msgid "Created"
+msgstr ""
+
+msgid "Modified"
+msgstr ""
+
+msgid "Collection"
+msgstr ""
+
+msgid "Collection item"
+msgstr ""
+
+msgid "Language"
+msgstr ""
+
+msgid "Rating"
+msgstr ""
+
+msgid "Year"
+msgstr ""
+
+msgid "ID"
+msgstr ""
+
+msgid "not implemented"
+msgstr ""
+
+msgid "Parent"
+msgstr ""
+
+msgid "Track-"
+msgstr ""
+
+msgid "Track+"
+msgstr ""
+
+msgid "Change shuffle mode"
+msgstr ""
+
+msgid "Lyrics"
+msgstr ""
+
+msgid "Load Lyrics"
+msgstr ""
+
+msgid "Save Lyrics"
+msgstr ""
+
+msgid "Change loop mode"
 msgstr ""
 
 msgid "Order"
@@ -35,9 +145,6 @@ msgid "Button$Delete"
 msgstr ""
 
 msgid "List"
-msgstr ""
-
-msgid "Commands"
 msgstr ""
 
 msgid "Browse"
@@ -148,68 +255,44 @@ msgstr ""
 msgid "Cannot access directory %s:%d"
 msgstr ""
 
-msgid "Track info view"
-msgstr ""
-
 #, c-format
-msgid "Title:\t%s"
+msgid "%d tracks : %s"
 msgstr ""
 
-#, c-format
-msgid "Artist:\t%s"
+msgid "Lyrics: Yes"
 msgstr ""
 
-#, c-format
-msgid "Album:\t%s"
+msgid "Lyrics: No"
 msgstr ""
 
-#, c-format
-msgid "Genre:\t%s"
+msgid "Now playing :"
 msgstr ""
 
-#, c-format
-msgid "Year:\t%d"
+msgid "Volume"
 msgstr ""
 
-#, c-format
-msgid "Length:\t%s"
+msgid "of"
 msgstr ""
 
-#, c-format
-msgid "Bit rate:\t%s"
+msgid "More.."
 msgstr ""
 
-#, c-format
-msgid "Sampling rate:\t%d"
+msgid "Jump"
 msgstr ""
 
-#, c-format
-msgid "File name:\t%d"
+msgid "Delete"
 msgstr ""
 
-#, c-format
-msgid "File name:\t%s"
+msgid "Copy"
 msgstr ""
 
-msgid "Now playing"
+msgid "Min/Sec"
 msgstr ""
 
-msgid "Loop mode off"
+msgid "Time"
 msgstr ""
 
-msgid "Loop mode single"
-msgstr ""
-
-msgid "Loop mode full"
-msgstr ""
-
-msgid "Shuffle mode off"
-msgstr ""
-
-msgid "Shuffle mode normal"
-msgstr ""
-
-msgid "Shuffle mode party"
+msgid "Jump: "
 msgstr ""
 
 msgid "Muggle"
@@ -254,7 +337,10 @@ msgstr ""
 msgid "Black"
 msgstr ""
 
-msgid "Image"
+msgid "Cover small"
+msgstr ""
+
+msgid "Cover big"
 msgstr ""
 
 msgid "Live"
@@ -266,10 +352,19 @@ msgstr ""
 msgid "Image show duration (secs)"
 msgstr ""
 
-msgid "Image cache directory"
+msgid "Cache directory"
 msgstr ""
 
 msgid "Use DVB still picture"
+msgstr ""
+
+msgid "Show artist first"
+msgstr ""
+
+msgid "Fastforward jump (secs)"
+msgstr ""
+
+msgid "Setup.muggle$Transparency for cover"
 msgstr ""
 
 msgid "Delete stale references"

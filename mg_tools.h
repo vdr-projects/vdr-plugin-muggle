@@ -30,7 +30,7 @@ void mgSetDebugLevel (int new_level);
 void mgDebug (int level, const char *fmt, ...);
 void mgDebug (const char *fmt, ...);
 void mgWarning (const char *fmt, ...);
-void mgError (const char *fmt, ...); 
+void mgError (const char *fmt, ...);
 int msprintf(char **strp, const char *fmt, ...);
 int vmsprintf(char **strp, const char *fmt, va_list &ap);
 //@}
@@ -50,20 +50,18 @@ int vmsprintf(char **strp, const char *fmt, va_list &ap);
  */
 class mgLog
 {
-    public:
-        mgLog (string methodname):m_methodname (methodname)
-        {
-            mgDebug("%s entered",m_methodname.c_str());
-        };
+	public:
+		mgLog (string methodname):m_methodname (methodname) {
+			mgDebug(1,"%s entered",m_methodname.c_str());
+		};
 
-        ~mgLog ()
-        {
-            mgDebug("%s terminated",m_methodname.c_str());
-        }
+		~mgLog () {
+			mgDebug(1,"%s terminated",m_methodname.c_str());
+		}
 
-    private:
+	private:
 
-        string m_methodname;
+		string m_methodname;
 
 };
 
@@ -90,5 +88,8 @@ bool notempty(const char *s);
 
 //! \brief check whether two directory names point to the identical directory
 bool samedir(const char *s1, const char *s2);
+#endif							 /*  _MUGGLE_TOOLS_H */
 
-#endif                                            /*  _MUGGLE_TOOLS_H */
+//! \brief recursive mkdir, like shell "mkdir -p"
+// \param s this must be a filename
+bool mkdir_p(const char *s);

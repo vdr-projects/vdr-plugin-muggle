@@ -16,25 +16,24 @@
 
 class mgThreadSync : public cThread
 {
- public:
-  mgThreadSync();
-  static mgThreadSync* get_instance();
+	public:
+		mgThreadSync();
+		static mgThreadSync* get_instance();
 
-  bool Sync(char * const * path_argv=0);
+		bool Sync(const char * const * path_argv=0);
 
- protected:
-  /*! \brief Runs the import routine as a separate thread
-   */
-  virtual void Action();
+	protected:
+		/*! \brief Runs the import routine as a separate thread
+		 */
+		virtual void Action();
 
- private:
+	private:
 
-  void SetArguments( char * const * path_argv);
-  
-  char * const *m_path;
-  bool m_has_args;
-  bool m_delete;
+		void SetArguments(const char * const * path_argv);
+
+		const char * const *m_path;
+		bool m_has_args;
+		bool m_delete;
 
 };
-
 #endif

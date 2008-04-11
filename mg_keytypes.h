@@ -12,8 +12,9 @@
 #ifndef _MUGGLE_KEYTYPES_H
 #define _MUGGLE_KEYTYPES_H
 
-enum mgKeyTypes {
-	keyGdGenre1=1, // the genre types must have exactly this order!
+enum mgKeyTypes
+{
+	keyGdGenre1=1,				 // the genre types must have exactly this order!
 	keyGdGenre2,
 	keyGdGenre3,
 	keyGdGenres,
@@ -41,11 +42,11 @@ enum mgKeyTypes {
 const mgKeyTypes mgGdKeyTypesLow = keyGdGenre1;
 const mgKeyTypes mgGdKeyTypesHigh = keyGdUnique;
 
-enum mgSortBy {
+enum mgSortBy
+{
 	mgSortNone,
 	mgSortByValue,
 	mgSortById,
 	mgSortByIdNum
 };
-
 #endif

@@ -28,36 +28,36 @@ class mgOggFile;
  */
 class mgOggDecoder:public mgDecoder
 {
-    private:
+	private:
 
-        mgOggFile * m_file;
-        struct mgDecode m_ds;
-        struct mad_pcm *m_pcm;
-        unsigned long long m_index;
+		mgOggFile * m_file;
+		struct mgDecode m_ds;
+		struct mad_pcm *m_pcm;
+		unsigned long long m_index;
 
-//
-        void init (void);
-        bool clean (void);
-        struct mgDecode *done (eDecodeStatus status);
+		//
+		void init (void);
+		bool clean (void);
+		struct mgDecode *done (eDecodeStatus status);
 
-    public:
+	public:
 
-        mgOggDecoder (mgItemGd * item);
-        ~mgOggDecoder ();
+		mgOggDecoder (mgItemGd * item);
+		~mgOggDecoder ();
 
-        virtual mgPlayInfo *playInfo ();
+		virtual mgPlayInfo *playInfo ();
 
-        virtual bool valid ();
+		virtual bool valid ();
 
-        virtual bool start ();
+		virtual bool start ();
 
-        virtual bool stop ();
+		virtual bool stop ();
 
-        virtual bool skip (int Seconds, int Avail, int Rate);
+		virtual bool skip (int Seconds, int Avail, int Rate);
 
-        virtual struct mgDecode *decode (void);
+		virtual struct mgDecode *decode (void);
 };
 
 // ----------------------------------------------------------------
-#endif                                            //HAVE_VORBISFILE
-#endif                                            //___DECODER_OGG_H
+#endif							 //HAVE_VORBISFILE
+#endif							 //___DECODER_OGG_H

@@ -38,76 +38,76 @@ class mgStream;
  */
 class mgMP3Decoder:public mgDecoder
 {
-    private:
-        struct mgDecode m_ds;
+	private:
+		struct mgDecode m_ds;
 
-//
-        struct mad_stream m_madstream;
-        struct mad_frame *m_madframe;
-        struct mad_synth *m_madsynth;
-        mad_timer_t m_playtime, m_skiptime;
+		//
+		struct mad_stream m_madstream;
+		struct mad_frame *m_madframe;
+		struct mad_synth *m_madsynth;
+		mad_timer_t m_playtime, m_skiptime;
 
-//
-        struct FrameInfo
-        {
-            unsigned long long Pos;
-            mad_timer_t Time;
-        } *m_frameinfo;
+		//
+		struct FrameInfo
+		{
+			unsigned long long Pos;
+			mad_timer_t Time;
+		} *m_frameinfo;
 
-        int m_framenum, m_framemax, m_errcount, m_mute;
+		int m_framenum, m_framemax, m_errcount, m_mute;
 
-        void init ();
+		void init ();
 
-        void clean ();
+		void clean ();
 
-        struct mgDecode *done (eDecodeStatus status);
+		struct mgDecode *done (eDecodeStatus status);
 
-        virtual mgPlayInfo *playInfo ();
+		virtual mgPlayInfo *playInfo ();
 
-        eDecodeStatus decodeError (bool hdr);
+		eDecodeStatus decodeError (bool hdr);
 
-        void makeSkipTime (mad_timer_t * skiptime, mad_timer_t playtime,
-            int secs, int avail, int dvbrate);
+		void makeSkipTime (mad_timer_t * skiptime, mad_timer_t playtime,
+			int secs, int avail, int dvbrate);
 
-    protected:
-        mgStream * m_stream;
-        bool m_isStream;
+	protected:
+		mgStream * m_stream;
+		bool m_isStream;
 
-    public:
+	public:
 
-/*!
- * \brief construct a decoder from a filename
- */
-        mgMP3Decoder (mgItemGd * item, bool preinit = true);
+		/*!
+		 * \brief construct a decoder from a filename
+		 */
+		mgMP3Decoder (mgItemGd * item, bool preinit = true);
 
-/*!
- * \brief the destructor
- */
-        virtual ~ mgMP3Decoder ();
+		/*!
+		 * \brief the destructor
+		 */
+		virtual ~ mgMP3Decoder ();
 
-/*!
- * \brief check, whether the file contains useable MP3 content
- */
-        virtual bool valid ();
+		/*!
+		 * \brief check, whether the file contains useable MP3 content
+		 */
+		virtual bool valid ();
 
-/*!
- * \brief start the decoding process
- */
-        virtual bool start ();
+		/*!
+		 * \brief start the decoding process
+		 */
+		virtual bool start ();
 
-/*!
- * \brief stop the decoding process
- */
-        virtual bool stop ();
+		/*!
+		 * \brief stop the decoding process
+		 */
+		virtual bool stop ();
 
-/*!
- * \brief skip an amount of seconds
- */
-        virtual bool skip (int seconds, int avail, int rate);
+		/*!
+		 * \brief skip an amount of seconds
+		 */
+		virtual bool skip (int seconds, int avail, int rate);
 
-/*!
- * \brief the actual decoding function (uses libmad)
- */
-        virtual struct mgDecode *decode ();
+		/*!
+		 * \brief the actual decoding function (uses libmad)
+		 */
+		virtual struct mgDecode *decode ();
 };
-#endif                                            //___DECODER_MP3_H
+#endif							 //___DECODER_MP3_H

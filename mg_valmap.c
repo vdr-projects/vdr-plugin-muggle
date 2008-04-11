@@ -18,7 +18,7 @@ void mgValmap::Read(FILE *f) {
 	while (fgets(line,1000,f)) {
 		if (strncmp(line,prefix,strlen(prefix))) continue;
 		if (line[strlen(line)-1]=='\n')
-				line[strlen(line)-1]=0;
+			line[strlen(line)-1]=0;
 		char *name = line + strlen(prefix);
 		char *eq = strchr(name,'=');
 		if (!eq) continue;
@@ -79,8 +79,7 @@ void mgValmap::put(const bool value,const char* name, ...) {
 	va_end(ap);
 }
 
-void mgValmap::put(const char* value, const char* name, ...)
-{
+void mgValmap::put(const char* value, const char* name, ...) {
 	if (!value) return;
 	va_list ap;
 	va_start(ap, name);
@@ -89,8 +88,7 @@ void mgValmap::put(const char* value, const char* name, ...)
 }
 
 string
-mgValmap::getstr(const char* name, ...)
-{
+mgValmap::getstr(const char* name, ...) {
 	va_list ap;
 	va_start(ap, name);
 	string result = my_get(name, ap);
@@ -99,45 +97,40 @@ mgValmap::getstr(const char* name, ...)
 }
 
 bool
-mgValmap::getbool(const char* name, ...)
-{
+mgValmap::getbool(const char* name, ...) {
 	va_list ap;
 	va_start(ap, name);
 	bool result = my_get(name, ap)=="true";
 	va_end(ap);
 	return result;
 }
-	
+
 long
-mgValmap::getlong(const char* name, ...)
-{
+mgValmap::getlong(const char* name, ...) {
 	va_list ap;
 	va_start(ap, name);
 	long result = atol(my_get(name, ap).c_str());
 	va_end(ap);
 	return result;
 }
-	
+
 unsigned int
-mgValmap::getuint(const char* name, ...)
-{
+mgValmap::getuint(const char* name, ...) {
 	va_list ap;
 	va_start(ap, name);
 	unsigned int result = atol(my_get(name, ap).c_str());
 	va_end(ap);
 	return result;
 }
-	
-void mgValmap::my_put(const string value, const char* name, va_list& ap)
-{
+
+void mgValmap::my_put(const string value, const char* name, va_list& ap) {
 	char buffer[600];
 	vsnprintf(buffer, 599, name, ap);
 	(*this)[string(buffer)] = value;
 }
 
 string
-mgValmap::my_get(const char *name, va_list& ap)
-{
+mgValmap::my_get(const char *name, va_list& ap) {
 	char buffer[600];
 	vsnprintf(buffer, 599, name, ap);
 	return (*this)[buffer];

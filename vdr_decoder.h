@@ -35,7 +35,7 @@
  */
 enum eDecodeStatus
 {
-    dsOK = 0, dsPlay, dsSkip, dsEof, dsError, dsSoftError
+	dsOK = 0, dsPlay, dsSkip, dsEof, dsError, dsSoftError
 };
 
 // ----------------------------------------------------------------
@@ -46,9 +46,9 @@ enum eDecodeStatus
  */
 struct mgDecode
 {
-    eDecodeStatus status;
-    int index;
-    struct mad_pcm *pcm;
+	eDecodeStatus status;
+	int index;
+	struct mad_pcm *pcm;
 };
 
 // ----------------------------------------------------------------
@@ -59,8 +59,8 @@ struct mgDecode
  */
 class mgPlayInfo
 {
-    public:
-        int m_index, m_total;
+	public:
+		int m_index, m_total;
 };
 
 // ----------------------------------------------------------------
@@ -71,7 +71,7 @@ class mgPlayInfo
  */
 enum mgMediaType
 {
-    MT_MP3, MT_MP3_STREAM, MT_OGG, MT_FLAC, MT_SND, MT_UNKNOWN
+	MT_MP3, MT_MP3_STREAM, MT_OGG, MT_FLAC, MT_SND, MT_UNKNOWN
 };
 
 /*!
@@ -80,73 +80,70 @@ enum mgMediaType
  */
 class mgDecoder
 {
-    protected:
+	protected:
 
-  /*! \brief database handle to the track being decoded */
-  mgItemGd * m_item;
+		/*! \brief database handle to the track being decoded */
+		mgItemGd * m_item;
 
-  /*! \brief The currently playing file */
-  std::string m_filename;
+		/*! \brief The currently playing file */
+		std::string m_filename;
 
-  /*! \brief Mutexes to coordinate threads */
-  cMutex m_lock, m_locklock;
-  int m_locked;
-  bool m_urgentLock;
-  
-  /*! \brief Whether the decoder is currently active */
-  bool m_playing;
-  
-  /*! \brief ??? */
-  mgPlayInfo m_playinfo;
-  
-  /*! \brief Place a lock */
-  virtual void lock (bool urgent = false);
+		/*! \brief Mutexes to coordinate threads */
+		cMutex m_lock, m_locklock;
+		int m_locked;
+		bool m_urgentLock;
 
-  /*! \brief Release a lock */
-  virtual void unlock (void);
-  
-  /*! \brief Try to obtain a lock */
-  virtual bool tryLock (void);
-  
- public:
-  
-  //@{
-  /*! \brief The constructor */
-  mgDecoder (mgItemGd * item);
-  
-  /*! \brief The destructor */
-  virtual ~ mgDecoder ();
-  //@}
-  
-  /*! \brief Whether a decoder instance is able to play the given file */
-  virtual bool valid () = 0;
-  
-  /*! \brief Whether a stream (i.e. from the network is being decoded */
-  virtual bool isStream ()
-    {
-      return false;
-    }
-  
-  /*! \brief Start decoding */
-  virtual bool start () = 0;
-  
-  /*! \brief Stop decoding */
-  virtual bool stop () = 0;
-  
-  /*! \brief Skip an amount of time. Impossible by default */
-  virtual bool skip (int seconds, int avail, int rate)
-    {
-      return false;
-    }
-  
-  /*! \brief Return decoded data */
-  virtual struct mgDecode *decode () = 0;
-  
-  /*! \brief Information about the current playback status */
-  virtual mgPlayInfo *playInfo ()
-    {
-      return 0;
-    }
+		/*! \brief Whether the decoder is currently active */
+		bool m_playing;
+
+		/*! \brief ??? */
+		mgPlayInfo m_playinfo;
+
+		/*! \brief Place a lock */
+		virtual void lock (bool urgent = false);
+
+		/*! \brief Release a lock */
+		virtual void unlock (void);
+
+		/*! \brief Try to obtain a lock */
+		virtual bool tryLock (void);
+
+	public:
+
+		//@{
+		/*! \brief The constructor */
+		mgDecoder (mgItemGd * item);
+
+		/*! \brief The destructor */
+		virtual ~ mgDecoder ();
+		//@}
+
+		/*! \brief Whether a decoder instance is able to play the given file */
+		virtual bool valid () = 0;
+
+		/*! \brief Whether a stream (i.e. from the network is being decoded */
+		virtual bool isStream () {
+			return false;
+		}
+
+		/*! \brief Start decoding */
+		virtual bool start () = 0;
+
+		/*! \brief Stop decoding */
+		virtual bool stop () = 0;
+
+		/*! \brief Skip an amount of time. Impossible by default */
+		virtual bool skip (int seconds, int avail, int rate) {
+			return false;
+		}
+
+		/*! \brief Return decoded data */
+		virtual struct mgDecode *decode () = 0;
+
+		/*! \brief Information about the current playback status */
+		virtual mgPlayInfo *playInfo () {
+			return 0;
+		}
 };
 
 // ----------------------------------------------------------------
@@ -156,15 +153,15 @@ class mgDecoder
  */
 class mgDecoders
 {
- public:
-  
-  /*! \brief Try to find a valid decoder for a file
-   */
-  static mgDecoder *findDecoder (mgItemGd * item);
+	public:
 
-  /*! \brief determine the media type for a given source
-   */
-  static mgMediaType getMediaType (std::string filename);
-  
+		/*! \brief Try to find a valid decoder for a file
+		 */
+		static mgDecoder *findDecoder (mgItemGd * item);
+
+		/*! \brief determine the media type for a given source
+		 */
+		static mgMediaType getMediaType (std::string filename);
+
 };
-#endif                                            //___DECODER_H
+#endif							 //___DECODER_H

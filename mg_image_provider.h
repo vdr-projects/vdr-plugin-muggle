@@ -1,5 +1,4 @@
 
-
 #ifndef MG_IMAGE_PROVIDER
 #define MG_IMAGE_PROVIDER
 
@@ -10,97 +9,101 @@ class mgItemGd;
 #include <string>
 #include <vector>
 
+using namespace std;
+
 #include <id3v2frame.h>
 #include <tbytevector.h>
 #include <id3v2tag.h>
 
-class mgImageProvider : public cThread
+#include <vdr/osd.h>
+
+class mgImageProvider
 {
- public:
+	public:
 
-  /*! \brief obtain next image in list
-   */
-  std::string getImagePath( std::string &source );
+		/*! \brief obtain next image in list
+		 */
+		virtual string getImagePath( std::string &source );
 
-  /*! \brief tell the image provider that we are replaying a different item now. Return, whether images were found.
-   */
-  bool updateItem( mgItemGd *item );
+		/*! \brief tell the image provider that we are replaying a different item now. Return, whether images were found.
+		 */
+		virtual bool updateItem( mgItemGd *newitem );
 
-  /*! \brief Initialize image provider with all files in the given directory
-   */
-  static mgImageProvider* Create( std::string dir );
+		mgImageProvider(string dir);
 
-  /*! \brief Initialize image provider for use with a Giantdisc item
-   */
-  static mgImageProvider* Create();
+		mgImageProvider(tArea area);
 
-  /*! \brief destroy instance and delete remaining temporary files
-   */
-  ~mgImageProvider();
+		~mgImageProvider() {};
 
- protected:
+	protected: // TODO was davon ist private?
 
-  /*! \brief Executes image conversion (.jpg to .mpg) in a separate thread
-   */
-  virtual void Action();
+		/*! \brief Obtain all images in dir in alphabetic order
+		 */
+		void fillImageList( std::string dir );
 
- private:
+		/*! \brief update images according to GD scheme from database entry
+		 */
+		bool extractImagesFromDatabase();
 
-  mgImageProvider( std::string dir );
+		/*! \brief find images for an item
+		 */
+		void updateFromItemDirectory();
 
-  mgImageProvider( );
-  
-  /*! \brief Obtain all images in dir in alphabetic order
-   */
-  void fillImageList( std::string dir );
+		/*! \brief write image from an id3v2 frame to a file
+		 */
+		void writeImage( TagLib::ByteVector &image, int num, std::string &image_cache );
 
-  /*! \brief update images according to GD scheme from database entry
-   */
-  bool extractImagesFromDatabase( mgItemGd *item );
+		/*! \brief convert all images found in the APIC frame list
+		 */
+		std::string treatFrameList( TagLib::ID3v2::FrameList &l, std::string &image_cache );
 
-  /*! \brief find images for an item
-   */
-  void updateFromItemDirectory( mgItemGd *item );
+		/*! \brief save images from APIC tag and save to file. returns directory where images were saved or empty string if no images were found in the APIC tag
+		 */
+		std::string extractImagesFromTag( std::string filename );
 
-  /*! \brief write image from an id3v2 frame to a file
-   */
-  void writeImage( TagLib::ByteVector &image, int num, std::string &image_cache );
+		//! \brief define various modes how images can be obtained
+		enum ImageMode
+		{
+			IM_ITEM_DIR,		 //< Use images from the directory in which the mgItem resides
+			IM_PLAYLIST			 //< Use a separate playlist passed from an external plugin
+		};
 
-  /*! \brief convert all images found in the APIC frame list 
-   */
-  std::string treatFrameList( TagLib::ID3v2::FrameList &l, std::string &image_cache );
+		ImageMode m_mode;
+		mgItemGd *currItem;
 
-  /*! \brief save images from APIC tag and save to file. returns directory where images were saved or empty string if no images were found in the APIC tag
-   */
-  std::string extractImagesFromTag( std::string filename );
+		//! \brief index of last image delivered
+		unsigned m_image_index;
 
-  /*! \brief delete temporary images
-   */
-  void deleteTemporaryImages();
+		//! \brief list of all image filenames when in modes ITEM_DIR or PLAYLIST
+		std::vector<std::string> m_image_list;
 
-  //! \brief define various modes how images can be obtained
-  enum ImageMode 
-    { 
-      IM_ITEM_DIR, //< Use images from the directory in which the mgItem resides
-      IM_PLAYLIST  //< Use a separate playlist passed from an external plugin
-    };
+		std::vector<std::string> m_need_conversion;
 
-  //! \brief the current image delivery mode
-  ImageMode m_mode;
+		//! \brief list of all converted image filenames (.mpg) when in modes ITEM_DIR or PLAYLIST
+		std::vector<std::string> m_converted_images;
+		
+		std::string m_source_dir;
 
-  //! \brief index of last image delivered
-  unsigned m_image_index;
+		bool m_delete_imgs_from_tag;
 
-  //! \brief list of all image filenames when in modes ITEM_DIR or PLAYLIST
-  std::vector<std::string> m_image_list;
+		tArea coverarea;
+		bool CollectImages();
+		string getCachedMPGFile(mgItemGd *item,string f);
+};
 
-  //! \brief list of all converted image filenames (.mpg) when in modes ITEM_DIR or PLAYLIST
-  std::vector<std::string> m_converted_images;
-  
-  std::string m_source_dir;  
+class mgMpgImageProvider : public mgImageProvider, public cThread
+{
+	public:
 
-  bool m_delete_imgs_from_tag;
+		/*! \brief Executes image conversion (.jpg to .mpg) in a separate thread
+		 */
+		mgMpgImageProvider(string dir);
+		mgMpgImageProvider(tArea area);
+		~mgMpgImageProvider();	
+		string getImagePath( std::string &source );
+		void Action();
+		bool updateItem( mgItemGd *newitem );
+
 };
 
 #endif
-

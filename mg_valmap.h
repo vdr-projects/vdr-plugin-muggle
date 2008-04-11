@@ -8,8 +8,9 @@
 
 using namespace std;
 
-//! \brief a map for reading / writing configuration data. 
-class mgValmap : public map<string,string> {
+//! \brief a map for reading / writing configuration data.
+class mgValmap : public map<string,string>
+{
 	private:
 		const char *m_key;
 	public:
@@ -33,14 +34,14 @@ class mgValmap : public map<string,string> {
 		void put(unsigned int value, const char*name, ...);
 		//! \brief enter a bool value
 		void put(bool value, const char*name, ...);
-	 //! \brief return a string
-	 string getstr(const char* name, ...);
-	 //! \brief return a bool
-	 bool getbool(const char* name, ...);
-	 //! \brief return a long
-	 long getlong(const char* name, ...);
-	 //! \brief return an unsigned int
-	 unsigned int getuint(const char* name, ...);
+		//! \brief return a string
+		string getstr(const char* name, ...);
+		//! \brief return a bool
+		bool getbool(const char* name, ...);
+		//! \brief return a long
+		long getlong(const char* name, ...);
+		//! \brief return an unsigned int
+		unsigned int getuint(const char* name, ...);
 	private:
 		void my_put(const string value, const char *name, va_list& ap);
 		string my_get(const char *name, va_list& ap);
