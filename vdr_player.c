@@ -363,24 +363,24 @@ mgPlayerControl::InitLayout(void) {
 	int imagex1,imagey1,imagex2,imagey2;
 	if (the_setup.BackgrMode==1) {
 		CoverWidth = PBBottom-lh;
-		imagex1=Setup.OSDLeft+CoverX-10;
-		imagey1=Setup.OSDTop+InfoTop;
-		imagex2=Setup.OSDLeft+CoverX+CoverWidth+3;
-		imagey2=BottomTop+Setup.OSDTop-1	;
 		CoverX = osdwidth - CoverWidth -3*fw -2;
 		CoverX /=4;
 		CoverX *=4;
 		InfoWidth = CoverX -27 -3*fw;
+		imagex1=Setup.OSDLeft+CoverX-10;
+		imagey1=Setup.OSDTop+InfoTop;
+		imagex2=Setup.OSDLeft+CoverX+CoverWidth+3;
+		imagey2=BottomTop+Setup.OSDTop-1	;
 	} else if (the_setup.BackgrMode==2) {
-		imagex1=0;
-		imagey1=0;
-		imagex2=703; // fix PAL
-		imagey2=575;
 		CoverWidth=0;
 		CoverX = osdwidth;
 		CoverX /=4;
 		CoverX *=4;
 		InfoWidth = CoverX -27- 3*fw;
+		imagex1=0;
+		imagey1=0;
+		imagex2=703; // fix PAL
+		imagey2=575;
 	}
 	if (!m_img_provider) {
 		tArea coverarea = { imagex1, imagey1, imagex2, imagey2};
