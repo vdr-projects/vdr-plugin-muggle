@@ -31,7 +31,7 @@
 
 using namespace std;
 
-int SysLogLevel = 9;
+int SysLogLevel = 1;
 
 void showmessage(int duration,const char *msg,...) {
 	va_list ap;
