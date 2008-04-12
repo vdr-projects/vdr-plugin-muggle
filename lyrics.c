@@ -64,19 +64,26 @@ mgLyrics::Process(eKeys key) {
 		if (!access(playItem->getCachedFilename("lyrics.tmp.loading").c_str(),R_OK)) {
 			state=lyricsLoading;
 			playItem->setCheckedForTmpLyrics(time(0));
-		} else if (!access(playItem->getCachedFilename("lyrics.tmp").c_str(),R_OK)) {
-			state=lyricsLoaded;
-			playItem->setCheckedForTmpLyrics(0);
-		} else if (displayItem!=playItem) {
-			if (!access(playItem->getCachedFilename("lyrics").c_str(),R_OK)) {
+		} else {
+			bool normfound=!access(playItem->getCachedFilename("lyrics").c_str(),R_OK);
+			if (!access(playItem->getCachedFilename("lyrics.tmp").c_str(),R_OK)) {
+				playItem->setCheckedForTmpLyrics(0);
+				state=lyricsLoaded;
+				if (!normfound) {
+					SaveExternal();
+					state=lyricsSaved;
+				}
+			} else if (displayItem!=playItem) {
+				if (normfound) {
+					state=lyricsSaved;
+					playItem->setCheckedForTmpLyrics(0);
+				} else {
+					LoadExternal();
+				}
+			} else {
 				state=lyricsSaved;
 				playItem->setCheckedForTmpLyrics(0);
-			} else {
-				LoadExternal();
 			}
-		} else {
-			state=lyricsSaved;
-			playItem->setCheckedForTmpLyrics(0);
 		}
 	} 
 	if (displayItem!=playItem || state!=prevstate) {
