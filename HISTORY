@@ -327,5 +327,6 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
   by the flac people
 
 2008-x-x Version 0.2.1-BETA
-- if lyrics are loaded from internet and no local lyrics exist yet, the are now
+- if lyrics are loaded from internet and no local lyrics exist yet, they are now
   saved automatically
+- display small cover: Appeared at left border instead at the right side
