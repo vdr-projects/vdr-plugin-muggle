@@ -464,6 +464,13 @@ unsigned int
 mgSelection::gotoPosition () {
 	assert(m_level<ordersize());
 	listitems.refresh();
+	if (listitems.size()==0 && m_level>0) {
+		if (m_level>0) {
+			DecLevel();
+			refreshValues();
+		}
+		return 0;
+	}
 	unsigned int itemsize = listitems.size();
 	if (itemsize==0)
 		m_position = 0;
