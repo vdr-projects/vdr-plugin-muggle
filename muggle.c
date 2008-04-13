@@ -108,11 +108,13 @@ bool mgMuggle::SetupParse (const char *Name, const char *Value) {
 		the_setup.DeleteStaleReferences = atoi (Value);
 	else if (!strcasecmp (Name, "ImageShowDuration"))
 		the_setup.ImageShowDuration = atoi (Value);
-	else if (!strcasecmp (Name, "ImageCacheDir")) // old version
-		strn0cpy (the_setup.CacheDir, Value, MAX_PATH);
-	else if (!strcasecmp (Name, "CacheDir"))
-		strn0cpy (the_setup.CacheDir, Value, MAX_PATH);
-	else if (!strcasecmp (Name, "UseStillPicture"))
+	else if (!strcasecmp (Name, "ImageCacheDir")) { // old version
+		free(the_setup.CacheDir);
+		the_setup.CacheDir=strdup(Value);
+	} else if (!strcasecmp (Name, "CacheDir")) {
+		free(the_setup.CacheDir);
+		the_setup.CacheDir=strdup(Value);
+	} else if (!strcasecmp (Name, "UseStillPicture"))
 		the_setup.UseDeviceStillPicture = atoi (Value);
 	else if (!strcasecmp(Name, "Jumptime"))
 		the_setup.Jumptime = atoi(Value);

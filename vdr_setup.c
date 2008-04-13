@@ -67,6 +67,7 @@ mgMenuSetup::mgMenuSetup () {
 	Add (new
 		cMenuEditIntItem (tr ("Image show duration (secs)"),
 		&the_setup.ImageShowDuration, 1, 100));
+	the_setup.CacheDir=(char*)realloc(the_setup.CacheDir,MAX_PATH+1);
 	Add (new
 		cMenuEditStrItem (tr ("Cache directory"),
 		the_setup.CacheDir, MAX_PATH, chars_allowed ) );

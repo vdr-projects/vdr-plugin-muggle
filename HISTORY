@@ -330,3 +330,5 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - if lyrics are loaded from internet and no local lyrics exist yet, they are now
   saved automatically
 - display small cover: Appeared at left border instead at the right side
+- sqlite3: muggle segfaulted in special situations
+- fix segfault if the cache directory has a long path
