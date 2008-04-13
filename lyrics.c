@@ -58,8 +58,14 @@ mgLyrics::SaveExternal() {
 eOSState
 mgLyrics::Process(eKeys key) {
 	playItem=mutPlayingItem();
-	long cl=playItem->getCheckedForTmpLyrics();
 	LyricsState prevstate=state;
+	if (displayItem!=playItem && prevstate==lyricsLoaded) {
+		char *cmd;
+		msprintf(&cmd,"rm -f %s",displayItem->getCachedFilename("lyrics.tmp").c_str());
+		SystemExec(cmd,true); // run detached
+		free(cmd);
+	}
+	long cl=playItem->getCheckedForTmpLyrics();
 	if (displayItem!=playItem || cl>0 && cl<time(0)) {
 		if (!access(playItem->getCachedFilename("lyrics.tmp.loading").c_str(),R_OK)) {
 			state=lyricsLoading;

@@ -336,3 +336,6 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
   match the database, it could happen that we never get anything displayed until
   we delete muggle.state and restart muggle. Now muggle goes up to the parent level
 - reintroduced Finnish translation
+- if we got lyrics from the net but did not save it, the temporary file .lyrics.tmp
+  will be deleted when the next track starts playing (only while in lyrics mode,
+  if you leave it, the tmp file remains)
