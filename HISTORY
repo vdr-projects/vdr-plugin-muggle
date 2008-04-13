@@ -335,3 +335,4 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - if at muggle start we land in an empty list because the saved state does not
   match the database, it could happen that we never get anything displayed until
   we delete muggle.state and restart muggle. Now muggle goes up to the parent level
+- reintroduced Finnish translation

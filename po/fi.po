@@ -1,0 +1,375 @@
+# translation of fi.po to Finnish
+# translation of PACKAGE.
+# Copyright (C) 2008 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#
+# <>, 2008.
+# Ville Skyttä <ville.skytta@iki.fi>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: fi\n"
+"Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
+"POT-Creation-Date: 2008-04-13 09:27+0200\n"
+"PO-Revision-Date: 2008-04-13 12:59+0300\n"
+"Last-Translator: Ville Skyttä <ville.skytta@iki.fi>\n"
+"Language-Team: Finnish <vdr-muggle-i18n@sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
+
+msgid "Loading lyrics from internet..."
+msgstr "Ladataan sanoituksia verkosta..."
+
+msgid "empty database created"
+msgstr "tyhjä tietokanta luotu"
+
+#, c-format
+msgid "Cannot get exclusive lock on SQLite database %s:%d/%s"
+msgstr ""
+
+#, c-format
+msgid "File %s not found"
+msgstr "Tiedostoa %s ei löydy"
+
+msgid "Commands"
+msgstr "Komennot"
+
+msgid "Genre"
+msgstr "Tyylilaji"
+
+msgid "Genre1"
+msgstr "Tyylilaji1"
+
+msgid "Genre2"
+msgstr "Tyylilaji2"
+
+msgid "Genre3"
+msgstr "Tyylilaji3"
+
+msgid "Folder1"
+msgstr "Kansio1"
+
+msgid "Folder2"
+msgstr "Kansio2"
+
+msgid "Folder3"
+msgstr "Kansio3"
+
+msgid "Folder4"
+msgstr "Kansio4"
+
+msgid "Artist"
+msgstr "Artisti"
+
+msgid "ArtistABC"
+msgstr "ArtistiABC"
+
+msgid "Title"
+msgstr "Nimi"
+
+msgid "TitleABC"
+msgstr "NimiABC"
+
+msgid "Track"
+msgstr "Kappale"
+
+msgid "Decade"
+msgstr "Vuosikymmen"
+
+msgid "Album"
+msgstr "Albumi"
+
+msgid "Created"
+msgstr "Luotu"
+
+msgid "Modified"
+msgstr "Muokattu"
+
+msgid "Collection"
+msgstr "Kokoelma"
+
+msgid "Collection item"
+msgstr "Kokoelma"
+
+msgid "Language"
+msgstr "Kieli"
+
+msgid "Rating"
+msgstr "Arvosana"
+
+msgid "Year"
+msgstr "Vuosi"
+
+msgid "ID"
+msgstr ""
+
+msgid "not implemented"
+msgstr "ei toteutettu"
+
+msgid "Parent"
+msgstr ""
+
+msgid "Track-"
+msgstr "Kappale-"
+
+msgid "Track+"
+msgstr "Kappale+"
+
+msgid "Change shuffle mode"
+msgstr "Vaihda satunnaissoittotila"
+
+msgid "Lyrics"
+msgstr "Sanoitukset"
+
+msgid "Load Lyrics"
+msgstr "Lataa sanoitukset"
+
+msgid "Save Lyrics"
+msgstr "Tallenna sanoitukset"
+
+msgid "Change loop mode"
+msgstr "Vaihda jatkuvasoittotila"
+
+msgid "Order"
+msgstr "Järjestä"
+
+msgid "Select an order"
+msgstr "Valitse järjestys"
+
+msgid "Button$Edit"
+msgstr "Muokkaa"
+
+msgid "Create"
+msgstr "Luo"
+
+msgid "Button$Delete"
+msgstr "Tuhoa"
+
+msgid "List"
+msgstr "Lista"
+
+msgid "Browse"
+msgstr "Selaa"
+
+msgid "Collections"
+msgstr "Kokoelmat"
+
+msgid "Synchronize database"
+msgstr "Tahdista tietokanta"
+
+msgid "Default"
+msgstr "Oletus"
+
+#, c-format
+msgid "Set default to collection '%s'"
+msgstr "Aseta kokoelma '%s' oletukseksi"
+
+msgid "Set"
+msgstr "Aseta"
+
+msgid "Instant play"
+msgstr "Soita nyt"
+
+msgid "Add"
+msgstr "Lisää"
+
+msgid "Add all to a collection"
+msgstr "Lisää kaikki kokoelmaan"
+
+#, c-format
+msgid "'%s' to collection"
+msgstr "'%s' kokoelmaan"
+
+#, c-format
+msgid "Add all to '%s'"
+msgstr "Lisää kaikki kokoelmaan '%s'"
+
+msgid "Add to a collection"
+msgstr "Lisää kokoelmaan"
+
+#, c-format
+msgid "Add to '%s'"
+msgstr "Lisää kokoelmaan '%s'"
+
+#, c-format
+msgid "Remove '%s' from collection"
+msgstr "Poista '%s' kokoelmasta"
+
+msgid "Remove all from a collection"
+msgstr "Poista kaikki kokoelmasta"
+
+msgid "Clear"
+msgstr "Tyhjennä"
+
+msgid "Clear the collection"
+msgstr "Tyhjennä kokoelma"
+
+msgid "Clear the collection?"
+msgstr "Tyhjennetäänkö kokoelma?"
+
+msgid "Remove"
+msgstr "Poista"
+
+msgid "Remove from a collection"
+msgstr "Poista kokoelmasta"
+
+msgid "Create collection"
+msgstr "Luo kokoelma"
+
+msgid "Delete the collection"
+msgstr "Tuhoa kokoelma"
+
+msgid "Delete the collection?"
+msgstr "Tuhotaanko kokoelma?"
+
+msgid "Export"
+msgstr "Vie"
+
+msgid "Export track list"
+msgstr "Vie kappalelista"
+
+msgid "Order is undefined"
+msgstr "Järjestystä ei ole määritelty"
+
+msgid "play"
+msgstr "soita"
+
+#, c-format
+msgid "Commands:%s"
+msgstr "Komennot: %s"
+
+#, c-format
+msgid "Key %d"
+msgstr "Avain %d"
+
+msgid "Sort by count"
+msgstr "Järjestä lukumäärän mukaan"
+
+#, c-format
+msgid "Create database %s?"
+msgstr "Luodaanko tietokanta %s?"
+
+msgid "Import items?"
+msgstr "Tuodaanko kappaleet?"
+
+#, c-format
+msgid "Cannot access directory %s:%d"
+msgstr ""
+
+#, c-format
+msgid "%d tracks : %s"
+msgstr "%d kappaletta: %s"
+
+msgid "Lyrics: Yes"
+msgstr "Sanoitukset: päällä"
+
+msgid "Lyrics: No"
+msgstr "Sanoitukset: pois"
+
+msgid "Now playing :"
+msgstr "Nyt soitetaan:"
+
+msgid "Volume"
+msgstr "Äänenvoimakkuus"
+
+msgid "of"
+msgstr ""
+
+msgid "More.."
+msgstr "Lisää..."
+
+msgid "Jump"
+msgstr ""
+
+msgid "Delete"
+msgstr "Tuhoa"
+
+msgid "Copy"
+msgstr "Kopioi"
+
+msgid "Min/Sec"
+msgstr "min/sek"
+
+msgid "Time"
+msgstr "Aika"
+
+msgid "Jump: "
+msgstr ""
+
+msgid "Muggle"
+msgstr "Muggle"
+
+msgid "Initial loop mode"
+msgstr "Jatkuvasoitto oletuksena"
+
+msgid "off"
+msgstr "pois"
+
+msgid "on"
+msgstr "päällä"
+
+msgid "Initial shuffle mode"
+msgstr "Satunnaissoitto oletuksena"
+
+msgid "Audio mode"
+msgstr "Äänimoodi"
+
+msgid "Round"
+msgstr "pyöristetty"
+
+msgid "Dither"
+msgstr "ditteroitu"
+
+msgid "Use 48kHz mode only"
+msgstr "Käytä vain 48kHz moodia"
+
+msgid "no"
+msgstr "ei"
+
+msgid "yes"
+msgstr "kyllä"
+
+msgid "Normalizer level"
+msgstr "Normalisoinnin taso"
+
+msgid "Limiter level"
+msgstr "Rajoittimen taso"
+
+msgid "Black"
+msgstr "musta"
+
+msgid "Cover small"
+msgstr "Pieni kansikuva"
+
+msgid "Cover big"
+msgstr "Suuri kansikuva"
+
+msgid "Live"
+msgstr "live"
+
+msgid "Background mode"
+msgstr "Taustamoodi"
+
+msgid "Image show duration (secs)"
+msgstr "Kuvien näyttöaika (sekuntia)"
+
+msgid "Cache directory"
+msgstr "Välimuistihakemisto"
+
+msgid "Use DVB still picture"
+msgstr "Käytä DVB-pysäytyskuvaa"
+
+msgid "Show artist first"
+msgstr "Näytä artisti ensin"
+
+msgid "Fastforward jump (secs)"
+msgstr ""
+
+msgid "Setup.muggle$Transparency for cover"
+msgstr "Kansikuvan läpinäkyvyys"
+
+msgid "Delete stale references"
+msgstr "Tuhoa vanhentuneet viittaukset"
+
