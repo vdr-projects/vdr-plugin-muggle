@@ -512,24 +512,33 @@ mgKeyNormal::AddIdClause(mgDb *db,mgParts &result,string what) const
 }
 
 bool
-mgKey::LoadMap() const
+mgKey::LoadMapFrom(mgDb *db) const
 {
 	if (map_sql().empty())
 		return false;
-	mgDb *db = GenerateDB();
 	db->LoadMapInto(map_sql(), &map_ids[Type()], &map_values[Type()]);
-	delete db;
 	return true;
 }
 
+mgKeyMaps::mgKeyMaps() {
+	kmdb = 0;
+}
+
+mgKeyMaps::~mgKeyMaps() {
+	delete kmdb;
+}
+
 mgKeyMaps KeyMaps;
+
 bool
 mgKeyMaps::loadvalues (mgKeyTypes kt) const
 {
 	if (map_ids[kt].size()>0)
 		return true;
 	mgKey* k = ktGenerate(kt);
-	bool result = k->LoadMap();
+	if (!kmdb)
+		kmdb = GenerateDB();
+	bool result = k->LoadMapFrom(kmdb);
 	delete k;
 	return result;
 }

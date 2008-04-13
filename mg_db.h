@@ -256,7 +256,7 @@ class mgKey
 		virtual mgKeyTypes Type() const = 0;
 		virtual mgSortBy SortBy() const { return mgSortByValue; }
 		virtual bool Enabled(mgDb *db) { return true; }
-		virtual bool LoadMap() const;
+		virtual bool LoadMapFrom(mgDb *db) const;
 	protected:
 		virtual string map_sql() const { return ""; }
 };
@@ -317,7 +317,10 @@ class mgKeyMaps
 	public:
 		string value(mgKeyTypes kt, string idstr) const;
 		string id(mgKeyTypes kt, string valstr) const;
+		mgKeyMaps();
+		~mgKeyMaps();
 	private:
+		mutable mgDb* kmdb;
 		bool loadvalues (mgKeyTypes kt) const;
 };
 
