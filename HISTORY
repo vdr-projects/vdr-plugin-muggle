@@ -339,3 +339,7 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - if we got lyrics from the net but did not save it, the temporary file .lyrics.tmp
   will be deleted when the next track starts playing (only while in lyrics mode,
   if you leave it, the tmp file remains)
+- vdr versions before 1.5.4 supported again: With them, lyrics cannot be fetched in the
+  background. So muggle will not answer to commands until the fetching script has
+  finished. And the message "loading lyrics" will only appear after they have been
+  loaded. If you don't like it, update vdr or send me a patch.

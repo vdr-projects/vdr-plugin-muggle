@@ -20,7 +20,11 @@ int mgLyrics::RunCommand(const string cmd) {
 		playItem->getTitle().c_str(),
 		playItem->getCachedFilename("lyrics.tmp").c_str());
 	mgDebug(1,"muggle[%d]: lyrics: executing '%s'\n",getpid (), tmp);
+#if VDRVERSNUM >= 10504
 	res=SystemExec(tmp,true); // run detached
+#else
+	res=SystemExec(tmp);
+#endif
 	free(tmp);
 	return res;
 }
@@ -32,8 +36,6 @@ mgLog("LoadExternal");
 	string script=the_setup.ConfigDirectory + "/scripts/muggle_getlyrics";
 	if (RunCommand(script)==0) {
 		state=lyricsLoading;
-//		BlueAction=actNone;
-//		SetHelpKeys();
 		playItem->setCheckedForTmpLyrics(time(0));
 	}
 }
@@ -62,8 +64,9 @@ mgLyrics::Process(eKeys key) {
 	if (displayItem!=playItem && prevstate==lyricsLoaded) {
 		char *cmd;
 		msprintf(&cmd,"rm -f %s",displayItem->getCachedFilename("lyrics.tmp").c_str());
-		SystemExec(cmd,true); // run detached
+		SystemExec(cmd);
 		free(cmd);
+		state=lyricsSaved;
 	}
 	long cl=playItem->getCheckedForTmpLyrics();
 	if (displayItem!=playItem || cl>0 && cl<time(0)) {
