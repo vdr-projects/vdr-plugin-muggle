@@ -319,6 +319,11 @@ the lyrics as soon as it is available. If you change track before
 the retrieval finished, two retrieval scripts might be running at
 the same time - no problem.
 
+with vdr versions before 1.5.4, muggle cannot start this in the background.
+Instead it waits until the script has finished. Meanwhile it will not
+respond to commands, and the message "loading lyrics" will only appear
+after they have been loaded.
+
 Muggle calls the script muggle_getlyrics which in turn calls 
 googlyrics - this is slightly adapted to muggle. The original is
 here: http://www.kde-apps.org/content/show.php/GoogLyrics?content=73850
