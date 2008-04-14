@@ -343,3 +343,4 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
   background. So muggle will not answer to commands until the fetching script has
   finished. And the message "loading lyrics" will only appear after they have been
   loaded. If you don't like it, update vdr or send me a patch.
+- make the compile option USE_BITMAP work again on unmodified FF cards
