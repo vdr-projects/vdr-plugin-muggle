@@ -75,7 +75,7 @@ class mgPlayerControl:public cControl, cStatus
 		time_t fliptime, listtime;
 		int rows;
 		int flip, flipint, osdwidth, osdheight, lh, showbuttons;
-		int x0, x1, depth, CoverX, CoverWidth, TopHeight,BottomTop,PBTop,PBHeight,PBBottom;
+		int x0, x1, coverdepth, listdepth,CoverX, CoverWidth, TopHeight,BottomTop,PBTop,PBHeight,PBBottom;
 		int InfoTop,InfoWidth,InfoBottom;
 		int lastIndex, lastTotal, prevTop, prevScrollPosition;
 		int framesPerSecond;
@@ -151,7 +151,9 @@ class mgPlayerControl:public cControl, cStatus
 		const cFont * OsdFont(void);
 		const cFont * BigFont(void);
 		const cFont * SmallFont(void);
+		void DumpAreas(const char *caller,const tArea *Areas, int NumAreas,eOsdError err);
 		bool SetAreas(const char *caller,const tArea *Areas, int NumAreas);
+		tArea * ProgressAreas(int& NumAreas);
 		void Scroll(int by);
 		void ShowCommandMenu();
 

@@ -162,7 +162,7 @@ cmdOsd(NULL) {
 	timeoutShow=0;
 	messagetime=0;
 	lastkeytime=number=timecount=0;
-	x1=depth=0;
+	x1=coverdepth=0;
 	framesPerSecond=SecondsToFrames(1);
 
 #if APIVERSNUM >= 10338
@@ -307,7 +307,7 @@ mgPlayerControl::InitLayout(void) {
 	fh=27;
 
 	artistfirst = the_setup.ArtistFirst;
-	depth                 = 4;
+	coverdepth                 = 4;
 	clrTopBG1             = mgSkin.clrTopBG1;
 	clrTopTextFG1         = mgSkin.clrTopTextFG1;
 
@@ -361,16 +361,28 @@ mgPlayerControl::InitLayout(void) {
 	InfoTop=lh;
 	InfoBottom = PBTop - 1;
 	int imagex1,imagey1,imagex2,imagey2;
+	listdepth=4;
 	if (the_setup.BackgrMode==1) {
 		CoverWidth = PBBottom-lh;
-		CoverX = osdwidth - CoverWidth -3*fw -2;
-		CoverX /=4;
-		CoverX *=4;
-		InfoWidth = CoverX -27 -3*fw;
-		imagex1=Setup.OSDLeft+CoverX-10;
-		imagey1=Setup.OSDTop+InfoTop;
-		imagex2=Setup.OSDLeft+CoverX+CoverWidth+3;
-		imagey2=BottomTop+Setup.OSDTop-1	;
+		int areanum;
+		tArea *pa;
+		while (1) {
+			CoverX = osdwidth - CoverWidth -3*fw -2;
+			CoverX /=4;
+			CoverX *=4;
+			InfoWidth = CoverX -27 -3*fw;
+			imagex1=Setup.OSDLeft+CoverX-10;
+			imagey1=Setup.OSDTop+InfoTop;
+			imagex2=Setup.OSDLeft+CoverX+CoverWidth+3;
+			imagey2=BottomTop+Setup.OSDTop-1;
+			pa=ProgressAreas(areanum);
+		 	if (osd->CanHandleAreas(pa, areanum)!=oeOutOfMemory)
+				break;
+			if (listdepth==4)
+				listdepth=2;
+			else
+				CoverWidth--;
+		}
 	} else if (the_setup.BackgrMode==2) {
 		CoverWidth=0;
 		CoverX = osdwidth;
@@ -504,35 +516,45 @@ mgPlayerControl::ShowList(void) {
 	}
 }
 
+void
+mgPlayerControl::DumpAreas(const char *caller,const tArea *Areas, int NumAreas,eOsdError err) {
+	for (int i=0;i<NumAreas;i++) {
+		int AreaMemory = Areas[i].Width() * Areas[i].Height() / (8 / Areas[i].bpp);
+		mgDebug(5,"Area %d: x1=%d y1=%d x2=%d y2=%d width=%d height=%d,coverdepth=%d,mem=%d",
+			i,Areas[i].x1,Areas[i].y1,Areas[i].x2,Areas[i].y2,
+			Areas[i].Width(),Areas[i].Height(),Areas[i].bpp,AreaMemory);
+	}
+	const char *errormsg = NULL;
+	switch (err) {
+		case oeTooManyAreas:
+			errormsg = "Too many OSD areas"; break;
+		case oeTooManyColors:
+			errormsg = "Too many colors"; break;
+		case oeBppNotSupported:
+			errormsg = "Depth not supported"; break;
+		case oeAreasOverlap:
+			errormsg = "Areas are overlapped"; break;
+		case oeWrongAlignment:
+			errormsg = "Areas not correctly aligned"; break;
+		case oeOutOfMemory:
+			errormsg = "OSD memory overflow"; break;
+		case oeUnknown:
+			errormsg = "Unknown OSD error"; break;
+		default:
+			break;
+	}
+	if (errormsg)
+		mgError("muggle: %s: ERROR! osd open failed! can't handle areas (%d)-%s\n",
+			caller, err, errormsg);
+}
+
 bool
 mgPlayerControl::SetAreas(const char *caller,const tArea *Areas, int NumAreas) {
 	eOsdError result = osd->CanHandleAreas(Areas, NumAreas);
-	if (result == oeOk) 
+	if (result == oeOk)
 		osd->SetAreas(Areas, NumAreas);
-	else {
-		for (int i=0;i<NumAreas;i++)
-				mgDebug(1,"Area %d: x1=%d y1=%d x2=%d y2=%d width=%d height=%d",
-					i,Areas[i].x1,Areas[i].y1,Areas[i].x2,Areas[i].y2,Areas[i].Width(),Areas[i].Height());
-		const char *errormsg = NULL;
-		switch (result) {
-			case oeTooManyAreas:
-				errormsg = "music: Too many OSD areas"; break;
-			case oeTooManyColors:
-				errormsg = "music: Too many colors"; break;
-			case oeBppNotSupported:
-				errormsg = "music: Depth not supported"; break;
-			case oeAreasOverlap:
-				errormsg = "music: Areas are overlapped"; break;
-			case oeWrongAlignment:
-				errormsg = "music: Areas not correctly aligned"; break;
-			case oeOutOfMemory:
-				errormsg = "music: OSD memory overflow"; break;
-			case oeUnknown:
-				errormsg = "music: Unknown OSD error"; break;
-			default:
-				break;
-		}
-		esyslog("muggle: %s: ERROR! osd open failed! can't handle areas (%d)-%s\n", caller, result, errormsg);
+	else { 
+		DumpAreas(caller,Areas,NumAreas,result);
 		if (osd){ delete osd; osd=0;}
 	}
 	return result==oeOk;
@@ -544,32 +566,42 @@ mgPlayerControl::Display() {
 }
 
 void
+InitArea(tArea& a,int x1,int y1,int x2,int y2,int bpp) {
+	a.x1=x1;
+	a.y1=y1;
+	a.x2=x2;
+	a.y2=y2;
+	a.bpp=bpp;
+}
+
+tArea *
+mgPlayerControl::ProgressAreas(int& NumAreas) {
+	static tArea result[10];
+	NumAreas=0;
+	InitArea(result[NumAreas++],0,0,x1-1,TopHeight, 2);	// border top
+	InitArea(result[NumAreas++],0, fh -2, x1 -1,  2*fh -1, 2);	// between top and tracklist
+	InitArea(result[NumAreas++],0,  2*fh, x1 -1, lh -1, listdepth);		// tracklist
+	InitArea(result[NumAreas++],0, lh, CoverX-1, PBTop-1 , listdepth);	// Info
+#ifdef USE_BITMAP
+	InitArea(result[NumAreas++],CoverX, lh, x1 - 1, BottomTop-1, coverdepth);	// Cover
+#endif
+	InitArea(result[NumAreas++],0, PBTop , CoverX-1, BottomTop-1 , 2);	// Progressbar
+	InitArea(result[NumAreas++],0, BottomTop , x1 -1, osdheight-1 , 4);	// Bottom
+	return result;
+}
+
+void
 mgPlayerControl::ShowProgress (bool open) {
 	CheckImage();
-	InitLayout();
 	int current_frame, total_frames;
 	player->GetIndex (current_frame, total_frames);
 	if (!osd) {
 		osd=cOsdProvider::NewOsd(Setup.OSDLeft, Setup.OSDTop,50);
 		if (!osd) return;
-		tArea Area[] = {
-			{ 0,  0, x1 -1,  TopHeight, 2 },			// border top
-			{ 0, fh -2, x1 -1,  2*fh -1, 2 },			// between top and tracklist
-#ifdef HAVE_OSDMOD
-			{ 0,  2*fh, x1 -1, lh -1, 4 },				// tracklist
-			{ 0, lh, CoverX-1, PBTop-1 , 4 },			// Info
-#else
-			{ 0,  2*fh, x1 -1, lh -1, 2 },				// tracklist
-			{ 0, lh, CoverX-1, PBTop-1 , 2 },			// Info
-#endif
-#ifdef USE_BITMAP
-			{ CoverX, lh, x1 - 1, BottomTop-1, depth },		// Cover
-#endif
-			{ 0, PBTop , CoverX-1, BottomTop-1 , 2 },		// Progressbar
-			{ 0, BottomTop , x1 -1, osdheight-1 , 4 },		// Bottom
-		};
-
-		if (!SetAreas("ShowProgress",Area,sizeof(Area) / sizeof(tArea)))
+		InitLayout();
+		int num;
+		tArea* areas=ProgressAreas(num);
+		if (!SetAreas("ShowProgress",areas,num))
 			return;
 
 		//top
@@ -1222,10 +1254,8 @@ void mgPlayerControl::LoadCover(void) {
 
 #if USE_BITMAP
 	int bmpcolors = 15; // TODO xine can handle 256
-	int w1 = CoverWidth;
-	int h1 = CoverWidth;
 	cMP3Bitmap *bmp;
-	if ((bmp = cMP3Bitmap::Load(coverpicture, imgalpha, h1, w1, bmpcolors)) !=NULL) {
+	if ((bmp = cMP3Bitmap::Load(coverpicture, imgalpha, CoverWidth, CoverWidth, bmpcolors)) !=NULL) {
 		osd->DrawRectangle(CoverX, lh, osdwidth -1, PBBottom, clrInfoBG1);
 		osd->DrawBitmap(CoverX , PBBottom -CoverWidth, bmp->Get(), clrTransparent, clrTransparent, true);
 	}
