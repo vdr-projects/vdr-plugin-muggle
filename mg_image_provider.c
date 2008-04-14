@@ -109,7 +109,9 @@ mgImageProvider::mgImageProvider(tArea area ) {
 }
 
 mgMpgImageProvider::~mgMpgImageProvider() {
+	Lock();
 	m_converted_images.clear();
+	Unlock();
 }
 
 bool mgImageProvider::extractImagesFromDatabase() {
@@ -349,22 +351,41 @@ void mgMpgImageProvider::Action() {
 	mgItemGd *cnvItem = currItem;
 	Unlock();
 	for( unsigned i=0; i < images.size(); i++ ) {
-		string tmpFile = getCachedMPGFile(cnvItem,images[i]);
-		char *tmp;
-		msprintf( &tmp, "%s/scripts/muggle-image-convert \"%s\" \"%s\" %d %d %d %d", the_setup.ConfigDirectory.c_str(),
-		images[i].c_str(), tmpFile.c_str(),
+		if (i>0)
+			// sleep 1 sec: we don't want to start all image conversions simultaneously
+			usleep(1000*1000);	
+		string cachedFile = getCachedMPGFile(cnvItem,images[i]);
+		char *cmd;
+		msprintf( &cmd, "%s/scripts/muggle-image-convert \"%s\" \"%s\" %d %d %d %d &",
+			the_setup.ConfigDirectory.c_str(),
+		images[i].c_str(), cachedFile.c_str(),
 		coverarea.x1,coverarea.y1,coverarea.Width(),coverarea.Height() );
-		mgDebug(1,"%d %s",system( (const char*) tmp ),tmp);
-		free(tmp);
-		// if file can be read by process, add to the list of converted images
-		if( !access( tmpFile.c_str(), R_OK ) ) {
-			Lock();
-			m_converted_images.push_back( tmpFile );
-			Unlock();
-		}
-		// Check whether we need to continue this!? Next song may be playing already...
+		mgDebug(5,"%d %s",system( (const char*) cmd ),cmd);
+		free(cmd);
 	}
-	// cout << "Image conversion thread ending." << endl << flush;
+	int waitcount=0;
+	while (images.size() && waitcount<20) { // wait up to 20 seconds for all conversions
+		for( unsigned i=0; i < images.size(); i++ ) {
+			Lock();
+			mgItemGd *expectItem = currItem;
+			Unlock();
+			if (expectItem!=cnvItem) {
+				images.clear();
+				break;
+			}
+			string cachedFile = getCachedMPGFile(cnvItem,images[i]);
+			// if file can be read by process, add to the list of converted images
+			if( !access( cachedFile.c_str(), R_OK ) ) {
+				Lock();
+				m_converted_images.push_back( cachedFile );
+				Unlock();
+				images.erase(images.begin()+i);
+			}
+		}
+		// wait 1/2 second
+		usleep(1000*500);
+		waitcount++;
+	}
 }
 
 void mgImageProvider::fillImageList( string dir ) {
