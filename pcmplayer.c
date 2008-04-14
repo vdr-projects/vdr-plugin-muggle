@@ -665,6 +665,7 @@ void mgPCMPlayer::internShowMPGFile() {
 	struct video_still_picture sp;
 
 	if ( (fd = open( imagefile.c_str(), O_RDONLY ) ) >= 0 ) {
+		mgDebug(9,"internShowMPGFile:%s",imagefile.c_str());
 		fstat (fd, &st);
 		sp.iFrame = (char *) malloc (st.st_size);
 		if ( sp.iFrame ) {

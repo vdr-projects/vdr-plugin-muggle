@@ -1,3 +1,4 @@
+
 /*! \file  mg_tools.h
  *  \ingroup muggle
  *  \brief  A few utility functions for standalone and plugin messaging for the vdr muggle plugindatabase
@@ -93,3 +94,5 @@ bool samedir(const char *s1, const char *s2);
 //! \brief recursive mkdir, like shell "mkdir -p"
 // \param s this must be a filename
 bool mkdir_p(const char *s);
+
+void mgTimestamp(const char *s);

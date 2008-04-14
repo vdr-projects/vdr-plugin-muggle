@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <syslog.h>
+#include <sys/time.h>
+#include <time.h>
 
 #include "mg_tools.h"
 
@@ -225,4 +227,14 @@ bool mkdir_p(const char *s) {
 	}
 	free(sc);
 	return true;
+}
+
+void
+mgTimestamp(const char *s) {
+	char *buf;
+	struct timeval tv;
+	gettimeofday(&tv,0);
+	msprintf(&buf,"%s:%ld %ld ",s,tv.tv_sec,tv.tv_usec);
+	mgDebug(5,buf);
+	free(buf);
 }

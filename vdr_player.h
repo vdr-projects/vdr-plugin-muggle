@@ -73,6 +73,7 @@ class mgPlayerControl:public cControl, cStatus
 		unsigned int prevPos;
 		bool orderchanged;
 		time_t fliptime, listtime;
+		time_t flushtime;
 		int rows;
 		int flip, flipint, osdwidth, osdheight, lh, showbuttons;
 		int x0, x1, coverdepth, listdepth,CoverX, CoverWidth, TopHeight,BottomTop,PBTop,PBHeight,PBBottom;

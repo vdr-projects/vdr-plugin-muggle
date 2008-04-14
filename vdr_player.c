@@ -164,6 +164,7 @@ cmdOsd(NULL) {
 	lastkeytime=number=timecount=0;
 	x1=coverdepth=0;
 	framesPerSecond=SecondsToFrames(1);
+	flushtime=0;
 
 #if APIVERSNUM >= 10338
 	cStatus::MsgReplaying(this,"muggle",0,true);
@@ -364,8 +365,6 @@ mgPlayerControl::InitLayout(void) {
 	listdepth=4;
 	if (the_setup.BackgrMode==1) {
 		CoverWidth = PBBottom-lh;
-		int areanum;
-		tArea *pa;
 		while (1) {
 			CoverX = osdwidth - CoverWidth -3*fw -2;
 			CoverX /=4;
@@ -375,7 +374,8 @@ mgPlayerControl::InitLayout(void) {
 			imagey1=Setup.OSDTop+InfoTop;
 			imagex2=Setup.OSDLeft+CoverX+CoverWidth+3;
 			imagey2=BottomTop+Setup.OSDTop-1;
-			pa=ProgressAreas(areanum);
+			int areanum;
+			tArea *pa=ProgressAreas(areanum);
 		 	if (osd->CanHandleAreas(pa, areanum)!=oeOutOfMemory)
 				break;
 			if (listdepth==4)
@@ -393,6 +393,10 @@ mgPlayerControl::InitLayout(void) {
 		imagey1=0;
 		imagex2=703; // fix PAL
 		imagey2=575;
+		int areanum;
+		tArea *pa=ProgressAreas(areanum);
+		if (osd->CanHandleAreas(pa, areanum)==oeOutOfMemory)
+			listdepth=2;
 	}
 	if (!m_img_provider) {
 		tArea coverarea = { imagex1, imagey1, imagex2, imagey2};
@@ -520,7 +524,7 @@ void
 mgPlayerControl::DumpAreas(const char *caller,const tArea *Areas, int NumAreas,eOsdError err) {
 	for (int i=0;i<NumAreas;i++) {
 		int AreaMemory = Areas[i].Width() * Areas[i].Height() / (8 / Areas[i].bpp);
-		mgDebug(5,"Area %d: x1=%d y1=%d x2=%d y2=%d width=%d height=%d,coverdepth=%d,mem=%d",
+		mgDebug(5,"Area %d: x1=%d y1=%d x2=%d y2=%d width=%d height=%d,depth=%d,mem=%d",
 			i,Areas[i].x1,Areas[i].y1,Areas[i].x2,Areas[i].y2,
 			Areas[i].Width(),Areas[i].Height(),Areas[i].bpp,AreaMemory);
 	}
@@ -544,7 +548,7 @@ mgPlayerControl::DumpAreas(const char *caller,const tArea *Areas, int NumAreas,e
 			break;
 	}
 	if (errormsg)
-		mgError("muggle: %s: ERROR! osd open failed! can't handle areas (%d)-%s\n",
+		mgError("muggle: %s: ERROR! osd open failed! can't handle areas (err=%d)-%s\n",
 			caller, err, errormsg);
 }
 
@@ -645,8 +649,7 @@ mgPlayerControl::ShowProgress (bool open) {
 
 		ShowHelpButtons(showbuttons);
 		LoadCover();
-
-		osd->Flush();
+		Flush();
 
 		ShowStatus(true);
 
@@ -678,8 +681,6 @@ mgPlayerControl::ShowProgress (bool open) {
 
 		}
 	}
-
-		flush=false;
 
 		if (CoverChanged()) {
 #ifdef USE_BITMAP
@@ -749,17 +750,19 @@ mgPlayerControl::ShowProgress (bool open) {
 				break;
 		}
 
-		if (skiprew)
+		if (skiprew) {
 			osd->DrawBitmap(osdwidth - 3*fw - 70, fh , bmRew, clrTopItemActiveFG, clrTopItemBG1);
-		else
+			flush=true;
+		} else
 			osd->DrawBitmap(osdwidth - 3*fw - 70, fh , bmRew, clrTopItemInactiveFG, clrTopItemBG1);
 
-		if (skipfwd)  osd->DrawBitmap(osdwidth - 3*fw - 40, fh , bmFwd, clrTopItemActiveFG, clrTopItemBG1);
-		else
+		if (skipfwd) {
+			osd->DrawBitmap(osdwidth - 3*fw - 40, fh , bmFwd, clrTopItemActiveFG, clrTopItemBG1);
+			flush=true;
+		} else
 			osd->DrawBitmap(osdwidth - 3*fw - 40, fh , bmFwd, clrTopItemInactiveFG, clrTopItemBG1);
 
 		osd->DrawText( 8*fw, lh + fh/2 -fw, tr("Now playing :"), clrInfoTextFG1, clrInfoBG1, cFont::GetFont(fontOsd), (46*fw), fh, taLeft);
-		flush=true;
 
 		//Volume
 		snprintf(buf,sizeof(buf),"%s: %d", tr("Volume"), CurrentVolume());
@@ -855,7 +858,9 @@ mgPlayerControl::ShowProgress (bool open) {
 		}
 
 		ShowList();
-		if (flush) Flush();
+		if (flush) {
+			Flush();
+		}
 	skiprew=0;
 	skipfwd=0;
 	lastIndex=current_frame; lastTotal=total_frames;
@@ -915,10 +920,13 @@ mgPlayerControl::ShowCommandMenu() {
 }
 
 eOSState mgPlayerControl::ProcessKey(eKeys Key) {
+	if (Key!=kNone)
+		flushtime=0; // react immediately
 	if (m_img_provider) {
 		if (m_img_provider->updateItem(CurrentItem())) {
 			// if the images are cached, we want them ASAP
-			m_imageshowtime = 0;
+			m_current_image.clear();
+			m_imageshowtime=0;
 		}
 		CheckImage();
 	}
@@ -1149,7 +1157,11 @@ eOSState mgPlayerControl::ProcessKey(eKeys Key) {
 }
 
 void mgPlayerControl::Flush(void) {
+	if (time(0)-flushtime<1)
+		return;
 	if (osd) osd->Flush();
+	flush=false;
+	flushtime=time(0);
 }
 
 int mgPlayerControl::CurrentVolume(void) {
@@ -1220,7 +1232,7 @@ void mgPlayerControl::ShowStatus(bool force) {
 		if (text) {
 			if (!statusActive) { osd->SaveRegion( 30, lh +fh +fh/2 +fw, InfoWidth, lh + 3*fh +fw); }
 			osd->DrawText(30, lh + fh +fh/2 +fw, text, clrInfoTitleFG1, clrInfoBG2, OsdFont(), InfoWidth, fh, taCenter);
-			osd->Flush();
+			Flush();
 			statusActive=true;
 		}
 		else
@@ -1235,7 +1247,7 @@ void mgPlayerControl::HideStatus(void) {
 		return;
 	if (statusActive) {
 		osd->RestoreRegion();
-		osd->Flush();
+		Flush();
 	}
 	statusActive=false;
 }
@@ -1412,20 +1424,18 @@ mgPlayerControl::CheckImage() {
 #ifdef USE_BITMAP
 	if (cmdOsd) return;
 #endif
-	if (m_img_provider) {
-		if (time(0)-m_imageshowtime >= the_setup.ImageShowDuration) {
-								 // all n decoding steps
-			m_current_image = m_img_provider->getImagePath(m_current_imagesource);
-
+	long elapsed=time(0)-m_imageshowtime;
+	if (elapsed >= the_setup.ImageShowDuration
+		|| (m_current_image.size()==0 && elapsed>1)) {
+							 // all n decoding steps
+		m_current_image = m_img_provider->getImagePath(m_current_imagesource);
 			// check for TFT display of image
-			if ( !m_current_imagesource.empty() ) {
-					TransferImageTFT( m_current_imagesource );
-			}
-
-			if ( !m_current_image.empty() )
-				player->ShowMPGFile(m_current_image);
-			m_imageshowtime=time(0);
+		if ( !m_current_imagesource.empty() ) {
+				TransferImageTFT( m_current_imagesource );
 		}
+			if ( !m_current_image.empty() )
+			player->ShowMPGFile(m_current_image);
+		m_imageshowtime=time(0);
 	}
 }
 
