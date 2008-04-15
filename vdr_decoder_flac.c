@@ -77,15 +77,16 @@ bool mgFlacDecoder::initialize() {
 	m_reservoir[0] = new FLAC__int32[MAX_RES_SIZE];
 	m_reservoir[1] = new FLAC__int32[MAX_RES_SIZE];
 
-	// TODO: check init() return value
 #ifdef LEGACY_FLAC
 	set_filename( m_filename.c_str() );
-	/*FLAC::Decoder::File::State d =*/ init();
+	FLAC::Decoder::File::State d = init();
 #else
-	/*FLAC__StreamDecoderInitStatus d =*/ init( m_filename.c_str() );
+	FLAC__StreamDecoderInitStatus d = init( m_filename.c_str() );
 #endif
-
-								 // basically just skip metadata
+	if (d) {
+		mgError("FLAC: init() returns %d",d);
+		return false;
+	}
 	process_until_end_of_metadata();
 
 	return state;
@@ -208,7 +209,7 @@ struct mgDecode *mgFlacDecoder::decode() {
 		mad_fixed_t *sam1 = m_pcm->samples[1];
 
 		// determine shift value for mad_fixed conversion
-		// TODO -- check for real bitsize and shit accordingly (left/right)
+		// TODO -- check for real bitsize and shift accordingly (left/right)
 		const int s = MAD_F_FRACBITS + 1 - ( sizeof(short)*8 );
 		// const int s = ( sizeof(int)*8 ) - 1 - MAD_F_FRACBITS;      // from libsoundfile decoder
 

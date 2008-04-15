@@ -14,7 +14,6 @@
  * (C) 2001,2002 Stefan Huelswitt <huels@iname.com>
  */
 
-// TODO: wenn es nur ein Bild gibt, nicht loopen
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
