@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fi\n"
 "Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
-"POT-Creation-Date: 2008-04-18 03:44+0200\n"
+"POT-Creation-Date: 2008-04-18 04:08+0200\n"
 "PO-Revision-Date: 2008-04-13 12:59+0300\n"
 "Last-Translator: Ville Skyttä <ville.skytta@iki.fi>\n"
 "Language-Team: Finnish <vdr-muggle-i18n@sourceforge.net>\n"
@@ -355,8 +355,9 @@ msgstr "live"
 msgid "Bitmap"
 msgstr ""
 
-msgid "Background mode"
-msgstr "Taustamoodi"
+#, fuzzy
+msgid "Image mode"
+msgstr "Vaihda jatkuvasoittotila"
 
 msgid "Image show duration (secs)"
 msgstr "Kuvien näyttöaika (sekuntia)"
@@ -378,3 +379,6 @@ msgstr "Kansikuvan läpinäkyvyys"
 
 msgid "Delete stale references"
 msgstr "Tuhoa vanhentuneet viittaukset"
+
+#~ msgid "Background mode"
+#~ msgstr "Taustamoodi"

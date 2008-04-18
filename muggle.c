@@ -96,8 +96,8 @@ bool mgMuggle::SetupParse (const char *Name, const char *Value) {
 		the_setup.AudioMode = atoi (Value);
 	else if (!strcasecmp (Name, "DisplayMode"))
 		the_setup.DisplayMode = atoi (Value);
-	else if (!strcasecmp (Name, "BackgrMode"))
-		the_setup.BackgrMode = atoi (Value);
+	else if (!strcasecmp (Name, "ImgMode"))
+		the_setup.ImgMode = atoi (Value);
 	else if (!strcasecmp (Name, "TargetLevel"))
 		the_setup.TargetLevel = atoi (Value);
 	else if (!strcasecmp (Name, "LimiterLevel"))

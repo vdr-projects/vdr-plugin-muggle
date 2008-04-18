@@ -361,7 +361,7 @@ mgPlayerControl::InitLayout(void) {
 	InfoBottom = PBTop - 1;
 	int imagex1,imagey1,imagex2,imagey2;
 	listdepth=4;
-	if (the_setup.BackgrMode==backgrCoverSmall || the_setup.BackgrMode==backgrBitmap) {
+	if (the_setup.ImgMode==imgCoverSmall || the_setup.ImgMode==imgBitmap) {
 		CoverWidth = PBBottom-lh;
 		while (1) {
 			CoverX = osdwidth - CoverWidth -3*fw -2;
@@ -381,7 +381,7 @@ mgPlayerControl::InitLayout(void) {
 			else
 				CoverWidth--;
 		}
-	} else if (the_setup.BackgrMode==backgrCoverBig) {
+	} else if (the_setup.ImgMode==imgCoverBig) {
 		CoverWidth=0;
 		CoverX = osdwidth;
 		CoverX /=4;
@@ -398,7 +398,7 @@ mgPlayerControl::InitLayout(void) {
 	}
 	if (!m_img_provider) {
 		tArea coverarea = { imagex1, imagey1, imagex2, imagey2};
-		if (the_setup.BackgrMode==backgrBitmap)
+		if (the_setup.ImgMode==imgBitmap)
 			m_img_provider = new mgImageProvider(coverarea);
 		else
 			m_img_provider = new mgMpgImageProvider(coverarea);
@@ -583,7 +583,7 @@ mgPlayerControl::ProgressAreas(int& NumAreas) {
 	InitArea(result[NumAreas++],0, fh -2, x1 -1,  2*fh -1, 2);	// between top and tracklist
 	InitArea(result[NumAreas++],0,  2*fh, x1 -1, lh -1, listdepth);		// tracklist
 	InitArea(result[NumAreas++],0, lh, CoverX-1, PBTop-1 , listdepth);	// Info
-	if (the_setup.BackgrMode==backgrBitmap)
+	if (the_setup.ImgMode==imgBitmap)
 		InitArea(result[NumAreas++],CoverX, lh, x1 - 1, BottomTop-1, coverdepth);	// Cover
 	InitArea(result[NumAreas++],0, PBTop , CoverX-1, BottomTop-1 , 2);	// Progressbar
 	InitArea(result[NumAreas++],0, BottomTop , x1 -1, osdheight-1 , 4);	// Bottom
@@ -627,7 +627,7 @@ mgPlayerControl::ShowProgress (bool open) {
 		osd->DrawRectangle(0                    , InfoTop               , CoverX-1    , PBBottom ,clrInfoBG1);
 								 
 		// Cover
-		if (the_setup.BackgrMode==backgrBitmap)
+		if (the_setup.ImgMode==imgBitmap)
 			osd->DrawRectangle(CoverX     , InfoTop               , x1 -1               , PBBottom ,clrInfoBG1);
 				
 		// Info
@@ -681,7 +681,7 @@ mgPlayerControl::ShowProgress (bool open) {
 	}
 
 		if (CoverChanged()) {
-			if (the_setup.BackgrMode==backgrBitmap)
+			if (the_setup.ImgMode==imgBitmap)
 				osd->DrawRectangle(CoverX, lh, x1 -1, PBBottom, clrInfoBG1);
 			LoadCover();
 			flush = true;
@@ -1266,7 +1266,7 @@ void mgPlayerControl::LoadCover(void) {
 	fw=6;
 	fh=27;
 
-	if (the_setup.BackgrMode==backgrBitmap) {
+	if (the_setup.ImgMode==imgBitmap) {
 		int bmpcolors = 15; // TODO xine can handle 256
 		cMP3Bitmap *bmp;
 		if ((bmp = cMP3Bitmap::Load(coverpicture, imgalpha, CoverWidth, CoverWidth, bmpcolors)) !=NULL) {
@@ -1425,7 +1425,7 @@ mgPlayerControl::CheckImage() {
 		return;
 	if (!player)
 		return;
-	if (the_setup.BackgrMode==backgrBitmap && cmdOsd)
+	if (the_setup.ImgMode==imgBitmap && cmdOsd)
 		return;
 	long elapsed=time(0)-m_imageshowtime;
 	if (elapsed >= the_setup.ImageShowDuration

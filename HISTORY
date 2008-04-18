@@ -349,3 +349,6 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - change the compile option USE_BITMAP into a setup variant: New background mode "Bitmap".
   This is for those whose computers have problems with showing mpeg covers like
   "timeout waiting for LoadBitmap" in the FF card driver
+- rename background mode to image mode which is more appropriate since the last changes.
+  Since this also changes the name under which the value is stored in the setup file,
+  you will lose your old value after updating.

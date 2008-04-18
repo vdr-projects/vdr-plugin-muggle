@@ -57,13 +57,13 @@ mgMenuSetup::mgMenuSetup () {
 		&the_setup.LimiterLevel, MIN_LIMITER_LEVEL, 100));
 
 	// Image/cover display
-	bgmodes[backgrBlack] = tr("Black");
-	bgmodes[backgrCoverSmall] = tr("Cover small");
-	bgmodes[backgrCoverBig] = tr("Cover big");
-	bgmodes[backgrLive] = tr("Live");
-	bgmodes[backgrBitmap] = tr("Bitmap");
+	bgmodes[imgBlack] = tr("Black");
+	bgmodes[imgCoverSmall] = tr("Cover small");
+	bgmodes[imgCoverBig] = tr("Cover big");
+	bgmodes[imgLive] = tr("Live");
+	bgmodes[imgBitmap] = tr("Bitmap");
 	Add (new
-		cMenuEditStraItem (tr ("Background mode"), &the_setup.BackgrMode,
+		cMenuEditStraItem (tr ("Image mode"), &the_setup.ImgMode,
 		5, bgmodes ) );
 	Add (new
 		cMenuEditIntItem (tr ("Image show duration (secs)"),
@@ -102,7 +102,7 @@ mgMenuSetup::Store (void) {
 	SetupStore ("InitShuffleMode", the_setup.InitShuffleMode);
 	SetupStore ("AudioMode", the_setup.AudioMode);
 	SetupStore ("DisplayMode", the_setup.DisplayMode);
-	SetupStore ("BackgrMode", the_setup.BackgrMode);
+	SetupStore ("ImgMode", the_setup.ImgMode);
 	SetupStore ("TargetLevel", the_setup.TargetLevel);
 	SetupStore ("LimiterLevel", the_setup.LimiterLevel);
 	SetupStore ("Only48kHz", the_setup.Only48kHz);

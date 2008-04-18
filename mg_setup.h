@@ -28,11 +28,11 @@ using namespace std;
 #define DEFAULT_LIMITER_LEVEL 70
 #define MIN_LIMITER_LEVEL     25
 
-#define backgrBlack 0
-#define backgrCoverSmall 1
-#define backgrCoverBig 2
-#define backgrLive 3
-#define backgrBitmap 4
+#define imgBlack 0
+#define imgCoverSmall 1
+#define imgCoverBig 2
+#define imgLive 3
+#define imgBitmap 4
 
 /*!
  * \brief storage for setup data
@@ -50,7 +50,7 @@ class mgSetup
 		int InitShuffleMode;
 		int AudioMode;
 		int DisplayMode;
-		int BackgrMode;
+		int ImgMode;
 		int TargetLevel;
 		int LimiterLevel;
 		int Only48kHz;

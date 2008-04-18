@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fr\n"
 "Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
-"POT-Creation-Date: 2008-04-18 03:44+0200\n"
+"POT-Creation-Date: 2008-04-18 04:08+0200\n"
 "PO-Revision-Date: 2008-04-11 20:27+0200\n"
 "Last-Translator: Wolfgang Rohdewald <wolfgang@rohdewald.de>\n"
 "Language-Team: deutsch <vdr-muggle-i18n@sourceforge.net>\n"
@@ -355,8 +355,9 @@ msgstr "Live"
 msgid "Bitmap"
 msgstr ""
 
-msgid "Background mode"
-msgstr "Background mode"
+#, fuzzy
+msgid "Image mode"
+msgstr "changer mode répétition"
 
 msgid "Image show duration (secs)"
 msgstr "Duration par image (sec)"
@@ -378,3 +379,6 @@ msgstr "Setup.muggle$Transparancy de l'image"
 
 msgid "Delete stale references"
 msgstr "Effacer références éventées"
+
+#~ msgid "Background mode"
+#~ msgstr "Background mode"

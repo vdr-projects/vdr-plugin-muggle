@@ -32,7 +32,7 @@ mgSetup::mgSetup () {
 	InitShuffleMode = 0;
 	AudioMode = 1;
 	DisplayMode = 3;
-	BackgrMode = backgrCoverSmall;
+	ImgMode = imgCoverSmall;
 	TargetLevel = DEFAULT_TARGET_LEVEL;
 	LimiterLevel = DEFAULT_LIMITER_LEVEL;
 	Only48kHz = 0;
