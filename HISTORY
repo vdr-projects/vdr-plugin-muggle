@@ -346,3 +346,6 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - make the compile option USE_BITMAP work again on unmodified FF cards
 - make sure a displayed list is never empty by moving up in the tree if needed.
   If the list is then still empty, display an item "Synchronize data base".
+- change the compile option USE_BITMAP into a setup variant: New background mode "Bitmap".
+  This is for those whose computers have problems with showing mpeg covers like
+  "timeout waiting for LoadBitmap" in the FF card driver

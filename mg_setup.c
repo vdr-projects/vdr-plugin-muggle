@@ -60,9 +60,7 @@ mgSetup::mgSetup () {
 
 	//Player:
 	ArtistFirst = 0;
-#ifdef USE_BITMAP
 	ImgAlpha = 255;
-#endif
 	Jumptime = 30;
 
 	// stuff related to cover image display

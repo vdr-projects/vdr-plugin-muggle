@@ -120,10 +120,8 @@ bool mgMuggle::SetupParse (const char *Name, const char *Value) {
 		the_setup.Jumptime = atoi(Value);
 	else if (!strcasecmp(Name, "ArtistFirst"))
 		the_setup.ArtistFirst = atoi(Value);
-#ifdef USE_BITMAP
 	else if (!strcasecmp(Name, "ImgAlpha"))
 		the_setup.ImgAlpha = atoi(Value);
-#endif
 	else
 		return false;
 

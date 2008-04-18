@@ -2,7 +2,6 @@
  * Borrowed from vdr-text2skin
  */
 
-#ifdef USE_BITMAP
 #ifndef VDR_MP3BITMAP_H
 #define VDR_MP3BITMAP_H
 
@@ -98,4 +97,3 @@ inline void cMP3Bitmap::SetColor(int Index, tColor Color) {
 	mBitmaps[mCurrent]->SetColor(Index, Color);
 }
 #endif							 // VDR_MP3BITMAP_H
-#endif

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fi\n"
 "Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
-"POT-Creation-Date: 2008-04-13 09:27+0200\n"
+"POT-Creation-Date: 2008-04-18 03:44+0200\n"
 "PO-Revision-Date: 2008-04-13 12:59+0300\n"
 "Last-Translator: Ville Skyttä <ville.skytta@iki.fi>\n"
 "Language-Team: Finnish <vdr-muggle-i18n@sourceforge.net>\n"
@@ -35,6 +35,9 @@ msgstr "Tiedostoa %s ei löydy"
 
 msgid "Commands"
 msgstr "Komennot"
+
+msgid "Database is empty"
+msgstr ""
 
 msgid "Genre"
 msgstr "Tyylilaji"
@@ -349,6 +352,9 @@ msgstr "Suuri kansikuva"
 msgid "Live"
 msgstr "live"
 
+msgid "Bitmap"
+msgstr ""
+
 msgid "Background mode"
 msgstr "Taustamoodi"
 
@@ -372,4 +378,3 @@ msgstr "Kansikuvan läpinäkyvyys"
 
 msgid "Delete stale references"
 msgstr "Tuhoa vanhentuneet viittaukset"
-

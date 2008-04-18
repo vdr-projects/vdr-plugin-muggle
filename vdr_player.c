@@ -343,9 +343,7 @@ mgPlayerControl::InitLayout(void) {
 	clrProgressbarFG      = clrStatusBG;
 	clrProgressbarBG      = clrStatusTextFG;
 
-#ifdef USE_BITMAP
 	imgalpha = the_setup.ImgAlpha;
-#endif
 
 	rows        = 7;
 	osdheight   = Setup.OSDHeight;
@@ -363,7 +361,7 @@ mgPlayerControl::InitLayout(void) {
 	InfoBottom = PBTop - 1;
 	int imagex1,imagey1,imagex2,imagey2;
 	listdepth=4;
-	if (the_setup.BackgrMode==backgrCoverSmall) {
+	if (the_setup.BackgrMode==backgrCoverSmall || the_setup.BackgrMode==backgrBitmap) {
 		CoverWidth = PBBottom-lh;
 		while (1) {
 			CoverX = osdwidth - CoverWidth -3*fw -2;
@@ -400,11 +398,10 @@ mgPlayerControl::InitLayout(void) {
 	}
 	if (!m_img_provider) {
 		tArea coverarea = { imagex1, imagey1, imagex2, imagey2};
-#if USE_BITMAP
-		m_img_provider = new mgImageProvider(coverarea);
-#else
-		m_img_provider = new mgMpgImageProvider(coverarea);
-#endif		
+		if (the_setup.BackgrMode==backgrBitmap)
+			m_img_provider = new mgImageProvider(coverarea);
+		else
+			m_img_provider = new mgMpgImageProvider(coverarea);
 	}
 }
 
@@ -586,9 +583,8 @@ mgPlayerControl::ProgressAreas(int& NumAreas) {
 	InitArea(result[NumAreas++],0, fh -2, x1 -1,  2*fh -1, 2);	// between top and tracklist
 	InitArea(result[NumAreas++],0,  2*fh, x1 -1, lh -1, listdepth);		// tracklist
 	InitArea(result[NumAreas++],0, lh, CoverX-1, PBTop-1 , listdepth);	// Info
-#ifdef USE_BITMAP
-	InitArea(result[NumAreas++],CoverX, lh, x1 - 1, BottomTop-1, coverdepth);	// Cover
-#endif
+	if (the_setup.BackgrMode==backgrBitmap)
+		InitArea(result[NumAreas++],CoverX, lh, x1 - 1, BottomTop-1, coverdepth);	// Cover
 	InitArea(result[NumAreas++],0, PBTop , CoverX-1, BottomTop-1 , 2);	// Progressbar
 	InitArea(result[NumAreas++],0, BottomTop , x1 -1, osdheight-1 , 4);	// Bottom
 	return result;
@@ -631,9 +627,8 @@ mgPlayerControl::ShowProgress (bool open) {
 		osd->DrawRectangle(0                    , InfoTop               , CoverX-1    , PBBottom ,clrInfoBG1);
 								 
 		// Cover
-#ifdef USE_BITMAP
-		osd->DrawRectangle(CoverX     , InfoTop               , x1 -1               , PBBottom ,clrInfoBG1);
-#endif
+		if (the_setup.BackgrMode==backgrBitmap)
+			osd->DrawRectangle(CoverX     , InfoTop               , x1 -1               , PBBottom ,clrInfoBG1);
 				
 		// Info
 		osd->DrawRectangle(3*fw, lh + 27 + fh/2   , CoverX-2*fw+1, PBBottom , clrInfoBG2);
@@ -686,9 +681,8 @@ mgPlayerControl::ShowProgress (bool open) {
 	}
 
 		if (CoverChanged()) {
-#ifdef USE_BITMAP
-			osd->DrawRectangle(CoverX, lh, x1 -1, PBBottom, clrInfoBG1);
-#endif
+			if (the_setup.BackgrMode==backgrBitmap)
+				osd->DrawRectangle(CoverX, lh, x1 -1, PBBottom, clrInfoBG1);
 			LoadCover();
 			flush = true;
 		}
@@ -1272,14 +1266,14 @@ void mgPlayerControl::LoadCover(void) {
 	fw=6;
 	fh=27;
 
-#if USE_BITMAP
-	int bmpcolors = 15; // TODO xine can handle 256
-	cMP3Bitmap *bmp;
-	if ((bmp = cMP3Bitmap::Load(coverpicture, imgalpha, CoverWidth, CoverWidth, bmpcolors)) !=NULL) {
-		osd->DrawRectangle(CoverX, lh, osdwidth -1, PBBottom, clrInfoBG1);
-		osd->DrawBitmap(CoverX , PBBottom -CoverWidth, bmp->Get(), clrTransparent, clrTransparent, true);
+	if (the_setup.BackgrMode==backgrBitmap) {
+		int bmpcolors = 15; // TODO xine can handle 256
+		cMP3Bitmap *bmp;
+		if ((bmp = cMP3Bitmap::Load(coverpicture, imgalpha, CoverWidth, CoverWidth, bmpcolors)) !=NULL) {
+			osd->DrawRectangle(CoverX, lh, osdwidth -1, PBBottom, clrInfoBG1);
+			osd->DrawBitmap(CoverX , PBBottom -CoverWidth, bmp->Get(), clrTransparent, clrTransparent, true);
+		}
 	}
-#endif
 	
 #ifdef HAVE_TUNED_GTFT
 	cPlugin *graphtft=cPluginManager::GetPlugin("graphtft");
@@ -1431,9 +1425,8 @@ mgPlayerControl::CheckImage() {
 		return;
 	if (!player)
 		return;
-#ifdef USE_BITMAP
-	if (cmdOsd) return;
-#endif
+	if (the_setup.BackgrMode==backgrBitmap && cmdOsd)
+		return;
 	long elapsed=time(0)-m_imageshowtime;
 	if (elapsed >= the_setup.ImageShowDuration
 		|| (m_current_image.size()==0 && elapsed>1)) {

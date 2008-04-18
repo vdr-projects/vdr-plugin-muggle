@@ -94,16 +94,11 @@ OBJS = $(PLUGIN).o mg_valmap.o mg_thread_sync.o \
 	vdr_decoder_mp3.o vdr_stream.o vdr_decoder.o vdr_player.o \
 	vdr_setup.o mg_setup.o mg_incremental_search.o mg_image_provider.o \
 	mg_skin.o quantize.o mg_playcommands.o pcmplayer.o \
-	lyrics.o
+	lyrics.o bitmap.o imagecache.o
 
-PLAYLIBS = -lmad $(shell taglib-config --libs) 
+PLAYLIBS = -lmad $(shell taglib-config --libs) -lImlib2 
 MILIBS =  $(shell taglib-config --libs)
 
-ifdef USE_BITMAP
-DEFINES += -DUSE_BITMAP
-OBJS += bitmap.o imagecache.o
-PLAYLIBS += -lImlib2
-endif
 
 ifdef HAVE_SQLITE
 DB_OBJ = mg_db_gd_sqlite.o

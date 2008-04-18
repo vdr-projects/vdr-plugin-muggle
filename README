@@ -74,6 +74,10 @@ required packages are
  - mjpegtools (Debian package mjpegtools)
  - netpbm (Debian package netpbm)
 
+Since release 0.2.0 Muggle has a new player OSD. It now also requires
+the package
+ - Imlib2 (Debian packages libimlib2 and libimlib2-dev for compilation)
+
 \section install INSTALLING 
 
 Unpack the sources in PLUGINS/src below your VDR directory (i.e. where
@@ -256,7 +260,9 @@ Muggle can display cover images (and others). Set the setup entry
 "Background mode" to "Cover small" or "Cover big" to enable this
 feature. "Cover small" puts it into the lower right corner which
 is unused by the main player screen, "Cover big" shows it on
-the full screen as background image.
+the full screen as background image. If you get problems with your
+FF card like "timeout waiting for Loadbitmap", please use the background
+mode "Bitmap".
 
 Please note that the mechanism to find images has changed in release 0.1.9
 (and may be changed again in future versions). The images are now

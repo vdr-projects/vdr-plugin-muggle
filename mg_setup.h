@@ -32,6 +32,7 @@ using namespace std;
 #define backgrCoverSmall 1
 #define backgrCoverBig 2
 #define backgrLive 3
+#define backgrBitmap 4
 
 /*!
  * \brief storage for setup data
@@ -70,9 +71,7 @@ class mgSetup
 
 		// Player:
 		int ArtistFirst;
-#ifdef USE_BITMAP
 		int ImgAlpha;
-#endif
 		int Jumptime;
 
 		int DeleteStaleReferences;

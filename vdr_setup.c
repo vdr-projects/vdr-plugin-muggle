@@ -25,7 +25,7 @@
 
 static const char* chars_allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_./";
 
-static const char *bgmodes[4];
+static const char *bgmodes[5];
 
 // --- mgMenuSetup -----------------------------------------------------------
 
@@ -61,9 +61,10 @@ mgMenuSetup::mgMenuSetup () {
 	bgmodes[backgrCoverSmall] = tr("Cover small");
 	bgmodes[backgrCoverBig] = tr("Cover big");
 	bgmodes[backgrLive] = tr("Live");
+	bgmodes[backgrBitmap] = tr("Bitmap");
 	Add (new
 		cMenuEditStraItem (tr ("Background mode"), &the_setup.BackgrMode,
-		4, bgmodes ) );
+		5, bgmodes ) );
 	Add (new
 		cMenuEditIntItem (tr ("Image show duration (secs)"),
 		&the_setup.ImageShowDuration, 1, 100));
@@ -80,11 +81,9 @@ mgMenuSetup::mgMenuSetup () {
 	Add (new
 		cMenuEditIntItem (tr ("Fastforward jump (secs)"),
 		&the_setup.Jumptime, 1, 100));
-#ifdef USE_BITMAP
 	Add (new
 		cMenuEditIntItem (tr("Setup.muggle$Transparency for cover"),
 		&the_setup.ImgAlpha,1,255));
-#endif
 	// Synchronization
 	Add (new
 		cMenuEditBoolItem (tr ("Delete stale references"), &the_setup.DeleteStaleReferences,
@@ -109,9 +108,7 @@ mgMenuSetup::Store (void) {
 	SetupStore ("Only48kHz", the_setup.Only48kHz);
 	SetupStore ("DeleteStaleReferences", the_setup.DeleteStaleReferences);
 	SetupStore ("ImageShowDuration", the_setup.ImageShowDuration);
-#ifdef USE_BITMAP
 	SetupStore ("ImgAlpha", the_setup.ImgAlpha);
-#endif
 	SetupStore ("CacheDir", the_setup.CacheDir);
 	SetupStore ("ArtistFirst", the_setup.ArtistFirst);
 	SetupStore ("Jumptime", the_setup.Jumptime);

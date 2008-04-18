@@ -120,9 +120,7 @@ class mgPlayerControl:public cControl, cStatus
 		int clrStatusYellow;
 		int clrStatusBlue;
 		int clrStatusTextFG;
-#ifdef USE_BITMAP
 		int imgalpha;
-#endif
 		int mpgdif;
 		bool layout_initialized;
 		//

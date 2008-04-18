@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fr\n"
 "Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
-"POT-Creation-Date: 2008-04-15 03:21+0200\n"
+"POT-Creation-Date: 2008-04-18 03:44+0200\n"
 "PO-Revision-Date: 2008-04-11 20:27+0200\n"
 "Last-Translator: Wolfgang Rohdewald <wolfgang@rohdewald.de>\n"
 "Language-Team: deutsch <vdr-muggle-i18n@sourceforge.net>\n"
@@ -351,6 +351,9 @@ msgstr "Image grand"
 
 msgid "Live"
 msgstr "Live"
+
+msgid "Bitmap"
+msgstr ""
 
 msgid "Background mode"
 msgstr "Background mode"
