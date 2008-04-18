@@ -9,6 +9,7 @@
  *
  */
 
+
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/stat.h>
@@ -23,10 +24,15 @@
 
 #include "mg_item_gd.h"
 
+#define __STL_CONFIG_H
+#include <vdr/i18n.h>
+
 #if VDRVERSNUM >= 10307
 #include <vdr/interface.h>
 #include <vdr/skins.h>
 #endif
+
+
 
 /*! \brief returns a random integer within some range
  */
@@ -422,7 +428,7 @@ string mgSelection::exportM3U () {
 }
 
 bool
-mgSelection::empty() {
+mgSelection::empty() const {
 	listitems.refresh();
 	return ( listitems.size () == 0);
 }
@@ -464,12 +470,16 @@ unsigned int
 mgSelection::gotoPosition () {
 	assert(m_level<ordersize());
 	listitems.refresh();
-	if (listitems.size()==0 && m_level>0) {
+	while (listitems.size()==0 && m_level>0) {
 		if (m_level>0) {
 			DecLevel();
 			refreshValues();
 		}
-		return 0;
+		if (listitems.size())
+			return 0;
+//TODO testen: DB loeschen, muggle starten:Darf keine leere Liste zeigen.
+//evtl einen Dummmy-Eintrag "Nichts gefunden" mit passender Action
+//danach in mg_menu das spezielle osBack entfernen - respektive assert machen
 	}
 	unsigned int itemsize = listitems.size();
 	if (itemsize==0)
@@ -568,6 +578,8 @@ mgSelection::getCompletedLength () const
 
 string mgSelection::getListname () const
 {
+	if (empty())
+		return tr("Database is empty");
 	list<string> st;
 	for (unsigned int i = 0; i < m_level; i++) {
 		string val=getKeyItem(i)->value();

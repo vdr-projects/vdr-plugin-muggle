@@ -342,6 +342,32 @@ mgOsd::Message1(const char *msg, const string &arg) {
 
 eOSState mgOsd::ProcessKey (eKeys key) {
 	eOSState result = osContinue;
+ 	switch (key) {
+ 		case kFastRew:
+		case kFastRew|k_Repeat:
+		case kFastFwd:
+		case kFastFwd|k_Repeat:
+		case kPlay:
+		case kPrev:
+		case kPrev|k_Repeat:
+		case kNext:
+		case kNext|k_Repeat:
+		case kChanUp:
+		case kChanUp|k_Repeat:
+		case kChanDn:
+		case kChanDn|k_Repeat:
+		// case kStop: does hide the player osd, but the player is still there in limbo
+		case kPause: { 
+			mgPlayerControl *c = PlayerControl();
+			if (c) {
+				result=c->ProcessKey(key);
+				goto pr_exit;
+			}
+			break;
+		}
+		default:
+			break;
+	}
 	if (Menus.size()<1)
 		mgError("mgOsd::ProcessKey: Menus is empty");
 	newmenu = Menus.back();		 // Default: Stay in current menu
@@ -357,34 +383,9 @@ eOSState mgOsd::ProcessKey (eKeys key) {
 		if (result == osUnknown)
 			result = oldmenu->Process (key);
 	}
-	// catch osBack for empty OSD lists . This should only happen for playlistitems
-	// (because if the list was empty, no mgActions::ProcessKey was ever called)
 	if (result == osBack) {
-		// do as if there was an entry
-		mgAction *a = Menus.back()->GenerateAction(actEntry,actEntry);
-		if (a) {
-			result = a->Back();
-			delete a;
-		}
-	}
-	switch (key) {
- 		case kFastRew:
-		case kFastRew|k_Repeat:
-		case kFastFwd:
-		case kFastFwd|k_Repeat:
-		case kPlay:
-		case kPrev:
-		case kPrev|k_Repeat:
-		case kNext:
-		case kNext|k_Repeat:
-		// case kStop: does hide the player osd, but the player is still there in limbo
-		case kPause: { 
-			mgPlayerControl *c = PlayerControl();
-			if (c) c->ProcessKey(key);
-			break;
-		}
-		default:
-			break;
+		mgError("vdr_menu found osBack: Should never happen");
+		result=osUnknown;
 	}
 	// do nothing for unknown keys:
 	if (result == osUnknown)
@@ -408,6 +409,11 @@ eOSState mgOsd::ProcessKey (eKeys key) {
 
 	if (forcerefresh) {
 		forcerefresh = false;
+		if (newposition<0) {
+			mgSelMenu*sm = dynamic_cast<mgSelMenu*>(this);
+			if (sm)
+				newposition = sm->selection()->gotoPosition();
+		}
 		Menus.back ()->Display ();
 	}
 	pr_exit:
@@ -458,7 +464,7 @@ mgOsd::AddMenu (mgMenu * m,int position) {
 		m->setParentName(Get(Current())->Text());
 	if (position<0) position=0;
 	newposition = position;
-	m->Display ();
+//	m->Display ();
 }
 
 void

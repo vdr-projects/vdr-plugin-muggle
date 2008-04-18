@@ -311,6 +311,7 @@ mgSelOsd::mgSelOsd () {
 	m_selroot->CollGreenAction = mgActions(nmain.getuint("CollGreenAction"));
 	m_selroot->CollYellowAction = mgActions(nmain.getuint("CollYellowAction"));
 	AddMenu (m_root,posi);
+	m_root->Display();
 	forcerefresh = false;
 }
 
@@ -583,14 +584,12 @@ void
 mgTree::BuildOsd () {
 	InitOsd (false);
 	AddSelectionItems (selection());
+	if (m_osd->Count()==0)
+		AddAction(actSync);
 }
 
 eOSState mgSelOsd::ProcessKey (eKeys key) {
-								 // TODO factor out to mgOsd
 	eOSState result = osContinue;
-	if (Menus.size()<1)
-		mgError("mgSelOsd::ProcessKey: Menus is empty");
-
 	mgPlayerControl * c = PlayerControl ();
 	if (c) {
 		if (!c->Playing ()) {
@@ -605,9 +604,6 @@ eOSState mgSelOsd::ProcessKey (eKeys key) {
 		}
 		else {
 			switch (key) {
-				case kPause:
-					c->Pause ();
-					break;
 				case kStop:
 					if (instant_playing && queue_playing) {
 						PlayQueue();
@@ -616,12 +612,6 @@ eOSState mgSelOsd::ProcessKey (eKeys key) {
 						queue_playing = false;
 						c->Stop ();
 					}
-					break;
-				case kChanUp:
-					c->Forward ();
-					break;
-				case kChanDn:
-					c->Backward ();
 					break;
 				default:
 					goto otherkeys;
@@ -635,58 +625,8 @@ eOSState mgSelOsd::ProcessKey (eKeys key) {
 		goto pr_exit;
 	}
 	otherkeys:
-	newmenu = Menus.back();		 // Default: Stay in current menu
-	newposition = -1;
-
-	{
-		mgMenu * oldmenu = newmenu;
-
-		// item specific key logic:
-		result = cOsdMenu::ProcessKey (key);
-
-		// mgMenu specific key logic:
-		if (result == osUnknown)
-			result = oldmenu->Process (key);
-	}
-	// catch osBack for empty OSD lists . This should only happen for playlistitems
-	// (because if the list was empty, no mgActions::ProcessKey was ever called)
-	if (result == osBack) {
-		// do as if there was an entry
-		mgAction *a = Menus.back()->GenerateAction(actEntry,actEntry);
-		if (a) {
-			result = a->Back();
-			delete a;
-		}
-	}
-
-	// do nothing for unknown keys:
-	if (result == osUnknown)
-		goto pr_exit;
-
-	// change OSD menu as requested:
-	if (newmenu == NULL) {
-		if (Menus.size () > 1) {
-			CloseMenu();
-			forcerefresh = true;
-		}
-		else {
-			result = osBack;	 // game over
-			goto pr_exit;
-		}
-	}
-	else if (newmenu != Menus.back ())
-		AddMenu (newmenu,newposition);
-
 	forcerefresh |= selection()->cacheIsEmpty();
-
-	forcerefresh |= (newposition>=0);
-
-	if (forcerefresh) {
-		forcerefresh = false;
-		if (newposition<0)
-			newposition = selection()->gotoPosition();
-		Menus.back ()->Display ();
-	}
+	return mgOsd::ProcessKey(key);
 	pr_exit:
 	showMessage();
 	return result;
@@ -706,15 +646,8 @@ showimportcount(unsigned int impcount,bool final=false) {
 
 void
 mgSelOsd::AddMenu (mgMenu * m,int position) {
-	// TODO zwischen mgSelOsd und mgOsd auseinanderdividieren
-	Menus.push_back (m);
 	selection()->Activate();
-	m->setosd (this);
-	m->setParentIndex(Current());
-	if (Get(Current()))
-		m->setParentName(Get(Current())->Text());
-	newposition = position;
-	m->Display ();
+	mgOsd::AddMenu(m,position);
 }
 
 void

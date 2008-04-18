@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fr\n"
 "Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
-"POT-Creation-Date: 2008-04-11 19:35+0200\n"
+"POT-Creation-Date: 2008-04-15 03:21+0200\n"
 "PO-Revision-Date: 2008-04-11 20:27+0200\n"
 "Last-Translator: Wolfgang Rohdewald <wolfgang@rohdewald.de>\n"
 "Language-Team: deutsch <vdr-muggle-i18n@sourceforge.net>\n"
@@ -35,6 +35,9 @@ msgstr "Fichier %s pas trouvé"
 
 msgid "Commands"
 msgstr "Commandes"
+
+msgid "Database is empty"
+msgstr ""
 
 msgid "Genre"
 msgstr "Genre"
@@ -372,4 +375,3 @@ msgstr "Setup.muggle$Transparancy de l'image"
 
 msgid "Delete stale references"
 msgstr "Effacer références éventées"
-

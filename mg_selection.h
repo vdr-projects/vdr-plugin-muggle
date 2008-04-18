@@ -202,7 +202,7 @@ class mgSelection
 		}
 
 		//! \brief true if the selection holds no items
-		bool empty();
+		bool empty() const;
 
 		/*! \brief returns detailed info about all selected items.
 		 * The ordering is done only by the keyfield of the current level.

@@ -363,7 +363,7 @@ mgPlayerControl::InitLayout(void) {
 	InfoBottom = PBTop - 1;
 	int imagex1,imagey1,imagex2,imagey2;
 	listdepth=4;
-	if (the_setup.BackgrMode==1) {
+	if (the_setup.BackgrMode==BackgroundCoverSmall) {
 		CoverWidth = PBBottom-lh;
 		while (1) {
 			CoverX = osdwidth - CoverWidth -3*fw -2;
@@ -383,7 +383,7 @@ mgPlayerControl::InitLayout(void) {
 			else
 				CoverWidth--;
 		}
-	} else if (the_setup.BackgrMode==2) {
+	} else if (the_setup.BackgrMode==BackgroundCoverBig) {
 		CoverWidth=0;
 		CoverX = osdwidth;
 		CoverX /=4;
@@ -598,7 +598,10 @@ void
 mgPlayerControl::ShowProgress (bool open) {
 	CheckImage();
 	int current_frame, total_frames;
-	player->GetIndex (current_frame, total_frames);
+	if (player)
+		player->GetIndex (current_frame, total_frames);
+	else
+		current_frame=total_frames=0;
 	if (!osd) {
 		osd=cOsdProvider::NewOsd(Setup.OSDLeft, Setup.OSDTop,50);
 		if (!osd) return;
@@ -665,7 +668,7 @@ mgPlayerControl::ShowProgress (bool open) {
 	}
 
 	currItem=CurrentItem();
-	currPos=player->Position();
+	currPos=player?player->Position():0;
 	bool changed=(prevItem != currItem);
 	char buf[256];
 
@@ -731,7 +734,7 @@ mgPlayerControl::ShowProgress (bool open) {
 			flush=true;
 		}
 
-		switch(player->PlayMode()) {
+		switch(player?player->PlayMode():pmStopped) {
 			case pmStopped:
 				osd->DrawBitmap(osdwidth - 3*fw - 160, fh , bmStop, clrTopItemActiveFG, clrTopItemBG1);
 				osd->DrawBitmap(osdwidth - 3*fw - 130, fh , bmPlay, clrTopItemInactiveFG, clrTopItemBG1);
@@ -903,7 +906,7 @@ mgPlayerControl::Scroll(int by) {
 	int listsize=PlayList()->items().size();
 
 	if (ScrollPosition<0)
-		ScrollPosition=player->Position();
+		ScrollPosition=player?player->Position():0;
 	ScrollPosition += by;
 	if (ScrollPosition<0) ScrollPosition=0;
 	if (ScrollPosition>listsize-1)
@@ -916,6 +919,7 @@ mgPlayerControl::ShowCommandMenu() {
 	cmdOsd = new mgPlayOsd;
 	cmdMenu = new mgPlayerCommands;
 	cmdOsd->AddMenu(cmdMenu);
+	cmdMenu->Display();
 	cmdOsd->Display();
 }
 
@@ -933,23 +937,27 @@ eOSState mgPlayerControl::ProcessKey(eKeys Key) {
 	switch(Key) {
 		case kFastRew:
 		case kFastRew|k_Repeat:
-			player->SkipSeconds(-the_setup.Jumptime);
+			SkipSeconds(-the_setup.Jumptime);
 			skiprew=1;
 			return osContinue;
 		case kFastFwd:
 		case kFastFwd|k_Repeat:
 			skipfwd=1;
-			player->SkipSeconds(the_setup.Jumptime);
+			SkipSeconds(the_setup.Jumptime);
 			return osContinue;
 		case kPlay:
-			player->Play();
+			Play();
 			return osContinue;
 		case kPrev:
 		case kPrev|k_Repeat:
+		case kChanDn:
+		case kChanDn|k_Repeat:
 			Backward();
 			return osContinue;
 		case kNext:
 		case kNext|k_Repeat:
+		case kChanUp:
+		case kChanUp|k_Repeat:
 			Forward();
 			return osContinue;
 		case kPause:
@@ -972,7 +980,7 @@ eOSState mgPlayerControl::ProcessKey(eKeys Key) {
 		return osContinue;
 	}
 
-	if (!player->Active()) return osEnd;
+	if (!Active()) return osEnd;
 
 	if (timecount>0)  timecount--;
 
@@ -1135,7 +1143,7 @@ eOSState mgPlayerControl::ProcessKey(eKeys Key) {
 
 			case kBack:
 				if (ScrollPosition>=0) {
-					ScrollPosition=player->Position();
+					ScrollPosition=player?player->Position():0;
 					Display();
 
 				}
@@ -1375,7 +1383,7 @@ void mgPlayerControl::JumpProcess(eKeys Key) {
 		case kFastFwd:
 		case kGreen:
 		case kYellow:
-			player->SkipSeconds(jumpmm*d * ((Key==kGreen) ? -1:1));
+			SkipSeconds(jumpmm*d * ((Key==kGreen) ? -1:1));
 			// fall through
 		default:
 			jumpactive=false;
@@ -1420,6 +1428,8 @@ mgPlayerControl::CurrentItem(void) {
 void
 mgPlayerControl::CheckImage() {
 	if (!m_img_provider)
+		return;
+	if (!player)
 		return;
 #ifdef USE_BITMAP
 	if (cmdOsd) return;
