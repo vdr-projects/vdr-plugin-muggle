@@ -63,7 +63,7 @@ mgLyrics::Process(eKeys key) {
 	LyricsState prevstate=state;
 	if (displayItem!=playItem && prevstate==lyricsLoaded) {
 		char *cmd;
-		msprintf(&cmd,"rm -f %s",displayItem->getCachedFilename("lyrics.tmp").c_str());
+		msprintf(&cmd,"rm -f \"%s\"",displayItem->getCachedFilename("lyrics.tmp").c_str());
 		SystemExec(cmd);
 		free(cmd);
 		state=lyricsSaved;
