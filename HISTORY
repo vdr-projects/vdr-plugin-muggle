@@ -326,7 +326,7 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - import: for flac files, prefer vorbis comments over id3 tags as recommended
   by the flac people
 
-2008-x-x Version 0.2.1-BETA
+2008-04-18 Version 0.2.1-BETA
 - if lyrics are loaded from internet and no local lyrics exist yet, they are now
   saved automatically
 - display small cover: Appeared at left border instead at the right side

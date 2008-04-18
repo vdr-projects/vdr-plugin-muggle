@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: de\n"
 "Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
 "POT-Creation-Date: 2008-04-18 04:08+0200\n"
-"PO-Revision-Date: 2008-04-11 19:38+0200\n"
+"PO-Revision-Date: 2008-04-18 15:02+0200\n"
 "Last-Translator: Wolfgang Rohdewald <wolfgang@rohdewald.de>\n"
 "Language-Team: deutsch <vdr-muggle-i18n@sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -38,7 +38,7 @@ msgid "Commands"
 msgstr "Befehle"
 
 msgid "Database is empty"
-msgstr ""
+msgstr "Datenbank ist leer"
 
 msgid "Genre"
 msgstr "Stil"
@@ -354,11 +354,10 @@ msgid "Live"
 msgstr "TV-Bild"
 
 msgid "Bitmap"
-msgstr ""
+msgstr "Bitmap"
 
-#, fuzzy
 msgid "Image mode"
-msgstr "Ändere Schleifenmodus"
+msgstr "Bildmodus"
 
 msgid "Image show duration (secs)"
 msgstr "Anzeigedauer für Bilder"
@@ -381,5 +380,3 @@ msgstr "Setup.muggle$Transparenz für Cover"
 msgid "Delete stale references"
 msgstr "Einträge löschen, wenn Datei fehlt"
 
-#~ msgid "Background mode"
-#~ msgstr "Hintergrundmodus"
