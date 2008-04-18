@@ -363,7 +363,7 @@ mgPlayerControl::InitLayout(void) {
 	InfoBottom = PBTop - 1;
 	int imagex1,imagey1,imagex2,imagey2;
 	listdepth=4;
-	if (the_setup.BackgrMode==BackgroundCoverSmall) {
+	if (the_setup.BackgrMode==backgrCoverSmall) {
 		CoverWidth = PBBottom-lh;
 		while (1) {
 			CoverX = osdwidth - CoverWidth -3*fw -2;
@@ -383,7 +383,7 @@ mgPlayerControl::InitLayout(void) {
 			else
 				CoverWidth--;
 		}
-	} else if (the_setup.BackgrMode==BackgroundCoverBig) {
+	} else if (the_setup.BackgrMode==backgrCoverBig) {
 		CoverWidth=0;
 		CoverX = osdwidth;
 		CoverX /=4;

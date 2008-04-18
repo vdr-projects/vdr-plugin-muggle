@@ -28,6 +28,11 @@ using namespace std;
 #define DEFAULT_LIMITER_LEVEL 70
 #define MIN_LIMITER_LEVEL     25
 
+#define backgrBlack 0
+#define backgrCoverSmall 1
+#define backgrCoverBig 2
+#define backgrLive 3
+
 /*!
  * \brief storage for setup data
  */

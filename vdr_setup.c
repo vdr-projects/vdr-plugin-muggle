@@ -57,10 +57,10 @@ mgMenuSetup::mgMenuSetup () {
 		&the_setup.LimiterLevel, MIN_LIMITER_LEVEL, 100));
 
 	// Image/cover display
-	bgmodes[0] = tr("Black");
-	bgmodes[1] = tr("Cover small");
-	bgmodes[2] = tr("Cover big");
-	bgmodes[3] = tr("Live");
+	bgmodes[backgrBlack] = tr("Black");
+	bgmodes[backgrCoverSmall] = tr("Cover small");
+	bgmodes[backgrCoverBig] = tr("Cover big");
+	bgmodes[backgrLive] = tr("Live");
 	Add (new
 		cMenuEditStraItem (tr ("Background mode"), &the_setup.BackgrMode,
 		4, bgmodes ) );

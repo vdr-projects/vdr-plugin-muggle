@@ -19,7 +19,7 @@
 #include "vdr_sound.c"
 
 mgPCMPlayer::mgPCMPlayer (mgSelection * plist)
-: cPlayer(the_setup.BackgrMode==3? pmAudioOnly:pmAudioOnlyBlack ) {
+: cPlayer(the_setup.BackgrMode==backgrLive? pmAudioOnly:pmAudioOnlyBlack ) {
 	m_playlist = plist;
 
 	m_active = true;
