@@ -316,39 +316,42 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - mugglei: after importing, always delete albums without corresponding tracks
 - mugglei: New german and french translations using the new mechanisms
 - while playing, some text was not yet translatable
-- switch to new internalisation system. Currently, no finnish translation.
+- switch to new internationalisation system. Currently, no finnish translation.
   Maybe somebody will do that?
 - more complete german and french translations. 
 - gcc 4.3 build fixes
 - rename image cache directory to cache directory and use it for lyrics too.
-  Cached files are permanently cached. If the last modification of the original image
+  Cached files are permanently cached. If the last modification of the
+  original image
   indicates a change, the cached file is regenerated.
 - import: for flac files, prefer vorbis comments over id3 tags as recommended
   by the flac people
 
 2008-04-18 Version 0.2.1-BETA
-- if lyrics are loaded from internet and no local lyrics exist yet, they are now
-  saved automatically
+- if lyrics are loaded from internet and no local lyrics exist yet, they are
+  now saved automatically
 - display small cover: Appeared at left border instead at the right side
 - sqlite3: muggle segfaulted in special situations
 - fix segfault if the cache directory has a long path
 - if at muggle start we land in an empty list because the saved state does not
-  match the database, it could happen that we never get anything displayed until
-  we delete muggle.state and restart muggle. Now muggle goes up to the parent level
+  match the database, it could happen that we never get anything displayed
+  until we delete muggle.state and restart muggle. Now muggle goes up to the
+  parent level
 - reintroduced Finnish translation
-- if we got lyrics from the net but did not save it, the temporary file .lyrics.tmp
-  will be deleted when the next track starts playing (only while in lyrics mode,
-  if you leave it, the tmp file remains)
-- vdr versions before 1.5.4 supported again: With them, lyrics cannot be fetched in the
-  background. So muggle will not answer to commands until the fetching script has
-  finished. And the message "loading lyrics" will only appear after they have been
-  loaded. If you don't like it, update vdr or send me a patch.
+- if we got lyrics from the net but did not save it, the temporary file
+  .lyrics.tmp will be deleted when the next track starts playing (only while
+  in lyrics mode, if you leave it, the tmp file remains)
+- vdr versions before 1.5.4 supported again: With them, lyrics cannot be
+  fetched in the background. So muggle will not answer to commands until the
+  fetching script has finished. And the message "loading lyrics" will only
+  appear after they have been loaded. If you don't like it, update vdr or send
+  me a patch.
 - make the compile option USE_BITMAP work again on unmodified FF cards
 - make sure a displayed list is never empty by moving up in the tree if needed.
   If the list is then still empty, display an item "Synchronize data base".
-- change the compile option USE_BITMAP into a setup variant: New background mode "Bitmap".
-  This is for those whose computers have problems with showing mpeg covers like
-  "timeout waiting for LoadBitmap" in the FF card driver
-- rename background mode to image mode which is more appropriate since the last changes.
-  Since this also changes the name under which the value is stored in the setup file,
-  you will lose your old value after updating.
+- change the compile option USE_BITMAP into a setup variant: New background
+  mode "Bitmap". This is for those whose computers have problems with showing
+  mpeg covers like "timeout waiting for LoadBitmap" in the FF card driver
+- rename background mode to image mode which is more appropriate since the
+  last changes. Since this also changes the name under which the value is
+  stored in the setup file, you will lose your old value after updating.
