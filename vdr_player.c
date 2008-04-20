@@ -1429,7 +1429,7 @@ mgPlayerControl::CheckImage() {
 		return;
 	long elapsed=time(0)-m_imageshowtime;
 	if (elapsed >= the_setup.ImageShowDuration
-		|| (m_current_image.size()==0 && elapsed>1)) {
+		|| (m_current_imagesource.size()==0 && elapsed>1)) {
 							 // all n decoding steps
 		m_current_image = m_img_provider->getImagePath(m_current_imagesource);
 			// check for TFT display of image

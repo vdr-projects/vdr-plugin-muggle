@@ -355,3 +355,6 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - rename background mode to image mode which is more appropriate since the
   last changes. Since this also changes the name under which the value is
   stored in the setup file, you will lose your old value after updating.
+
+2008-xx-xx Version 0.2.2-BETA
+- when showing covers as bitmaps, honour the image show duration from setup
