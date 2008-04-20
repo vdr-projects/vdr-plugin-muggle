@@ -114,6 +114,7 @@ mgLyrics::Process(eKeys key) {
 			result = mgMenu::Process(key);
 			break;
 	}
+	displayItem=playItem;
 	return result;
 }
 
@@ -155,5 +156,4 @@ mgLyrics::BuildOsd () {
 	InitOsd();
 	if (!access(loadfile.c_str(),R_OK))
 		osd()->AddFile(loadfile);
-	displayItem=playItem;
 }

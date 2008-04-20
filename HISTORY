@@ -358,3 +358,5 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 
 2008-xx-xx Version 0.2.2-BETA
 - when showing covers as bitmaps, honour the image show duration from setup
+- after changing into lyrics mode, the lyrics for the first song were not
+  automatically loaded from the internet
