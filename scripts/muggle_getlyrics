@@ -2,7 +2,6 @@ rm -f "$3"
 txtfound=0
 artist=`echo $1 | sed 's/ /%20/'g`
 title=`echo $2 | sed 's/ /%20/'g`
-echo ich bin $0 mit $1 $2 $3 artist=$artist title=$title>> /tmp/log.wr
 echo fetchLyrics $artist $title | `dirname $0`/googlyrics 2>/dev/null |
 	sed 's/\x0d//g' |
 	sed 's/\xc2\xb4/\x27/g' |
