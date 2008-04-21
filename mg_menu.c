@@ -360,7 +360,7 @@ eOSState mgOsd::ProcessKey (eKeys key) {
 		case kPause: { 
 			mgPlayerControl *c = PlayerControl();
 			if (c) {
-				result=c->ProcessKey(key);
+				result=c->ProcessPlayerKey(key);
 				goto pr_exit;
 			}
 			break;

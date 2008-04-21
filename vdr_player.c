@@ -381,7 +381,7 @@ mgPlayerControl::InitLayout(void) {
 			else
 				CoverWidth--;
 		}
-	} else if (the_setup.ImgMode==imgCoverBig) {
+	} else {
 		CoverWidth=0;
 		CoverX = osdwidth;
 		CoverX /=4;
@@ -917,17 +917,7 @@ mgPlayerControl::ShowCommandMenu() {
 	cmdOsd->Display();
 }
 
-eOSState mgPlayerControl::ProcessKey(eKeys Key) {
-	if (Key!=kNone)
-		flushtime=0; // react immediately
-	if (m_img_provider) {
-		if (m_img_provider->updateItem(CurrentItem())) {
-			// if the images are cached, we want them ASAP
-			m_current_image.clear();
-			m_imageshowtime=0;
-		}
-		CheckImage();
-	}
+eOSState mgPlayerControl::ProcessPlayerKey(eKeys Key) {
 	switch(Key) {
 		case kFastRew:
 		case kFastRew|k_Repeat:
@@ -962,9 +952,25 @@ eOSState mgPlayerControl::ProcessKey(eKeys Key) {
 			Stop();
 			return osEnd;
 		default:
-			break;
+			return osUnknown;
 	}
-	
+}
+
+eOSState mgPlayerControl::ProcessKey(eKeys Key) {
+	if (Key!=kNone)
+		flushtime=0; // react immediately
+	if (m_img_provider) {
+		if (m_img_provider->updateItem(CurrentItem())) {
+			// if the images are cached, we want them ASAP
+			m_current_image.clear();
+			m_imageshowtime=0;
+		}
+		CheckImage();
+	}
+	eOSState result = ProcessPlayerKey(Key);
+	if (result!=osUnknown)
+		return result;
+
 	if (cmdOsd) {
 		eOSState st=cmdOsd->ProcessKey(Key);
 		if (st==osBack) {
@@ -1436,7 +1442,9 @@ mgPlayerControl::CheckImage() {
 		if ( !m_current_imagesource.empty() ) {
 				TransferImageTFT( m_current_imagesource );
 		}
-			if ( !m_current_image.empty() )
+		if (the_setup.ImgMode==imgCoverSmall
+		 || the_setup.ImgMode==imgCoverBig)
+		if ( !m_current_image.empty() )
 			player->ShowMPGFile(m_current_image);
 		m_imageshowtime=time(0);
 	}

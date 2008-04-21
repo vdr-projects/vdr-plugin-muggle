@@ -360,3 +360,4 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - when showing covers as bitmaps, honour the image show duration from setup
 - after changing into lyrics mode, the lyrics for the first song were not
   automatically loaded from the internet
+- fix image modes TV and Black: They also showed the cover image

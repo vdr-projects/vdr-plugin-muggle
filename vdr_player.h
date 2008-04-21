@@ -257,5 +257,7 @@ class mgPlayerControl:public cControl, cStatus
 		//! \brief process key events
 		eOSState ProcessKey (eKeys key);
 
+		eOSState ProcessPlayerKey(eKeys Key);
+
 };
 #endif							 //___VDR_PLAYER_H
