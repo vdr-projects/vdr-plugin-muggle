@@ -15,15 +15,21 @@ int mgLyrics::RunCommand(const string cmd) {
 	int res=-1;
 	if (access(cmd.c_str(),R_OK|X_OK)) return res;
 	char *tmp;
-	msprintf(&tmp,"%s \"%s\" \"%s\" \"%s\"",cmd.c_str(),
+#if VDRVERSNUM < 10504
+	const char *backgr="&";
+#else
+	const char *backgr="";
+#endif	
+	msprintf(&tmp,"%s \"%s\" \"%s\" \"%s\" %s",cmd.c_str(),
 		playItem->getArtist().c_str(),
 		playItem->getTitle().c_str(),
-		playItem->getCachedFilename("lyrics.tmp").c_str());
+		playItem->getCachedFilename("lyrics.tmp").c_str(),
+		backgr);
 	mgDebug(1,"muggle[%d]: lyrics: executing '%s'\n",getpid (), tmp);
 #if VDRVERSNUM >= 10504
 	res=SystemExec(tmp,true); // run detached
 #else
-	res=SystemExec(tmp);
+	res=system(tmp); // SystemExec cannot yet run detached 	
 #endif
 	free(tmp);
 	return res;
