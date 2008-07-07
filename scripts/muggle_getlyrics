@@ -1,8 +1,20 @@
+#!/bin/sh
+
+export GOOGLYRICS=/usr/share/apps/amarok/scripts/googlyrics/googlyrics
+
 rm -f "$3"
 txtfound=0
 artist=`echo $1 | sed 's/ /%20/'g`
 title=`echo $2 | sed 's/ /%20/'g`
-echo fetchLyrics $artist $title | `dirname $0`/googlyrics 2>/dev/null |
+
+if test ! -x $GOOGLYRICS
+then
+	echo $GOOGLYRICS nicht gefunden > $3
+	exit 2
+fi
+
+export success=0
+echo fetchLyrics $artist $title | $GOOGLYRICS 2>&1 |
 	sed 's/\x0d//g' |
 	sed 's/\xc2\xb4/\x27/g' |
 	sed 's/\xc3\x82\x27/\x27/g' |
@@ -10,18 +22,38 @@ echo fetchLyrics $artist $title | `dirname $0`/googlyrics 2>/dev/null |
 	sed 's/\xc3\xb9/\x27/g' |
 	sed 's/\xe2\x80\x99/\x27/g' |
 	grep -ive 'NEW.*ringtones' |
+	grep -v '--------------' |
 	recode HTML..utf8 |
 	sed 's/\xc2\x91/\x27/g' |	# in unicode, those two are reserved for
 	sed 's/\xc2\x92/\x27/g' |   # private use, but still some sites use them...
 while read line
 do
-# strip starting empty lines
+# did we find a text yet?
+	if expr "$line" : '<br>Regex success' >/dev/null  2>&1
+	then
+		success=1
+		continue
+	fi
+# googlyrics tries to send the finished text to amarok:
+	if expr "$line" : 'object not accessible' >/dev/null  2>&1
+	then
+		killall googlyrics >/dev/null 2>&1
+		break
+	fi
+# googlyrics starts main loop again:
+	if expr "$line" : '.*scalar chomp.*STDIN' >/dev/null  2>&1
+	then
+		killall googlyrics >/dev/null 2>&1
+		break
+	fi
+	test $success = 0 && continue
+# suppress other googlyrics error messages
+	expr "$line" : '.*'$GOOGLYRICS >/dev/null 2>&1 && continue
 	notempty=0
 	test x"$line" = x || notempty=1;
 	test $notempty -eq 1 && txtfound=1;
-	test $txtfound -eq 1 -o $notempty -eq 1 && echo $line
-done > "$3".loading
-
+	test $txtfound -eq 1 && echo $line
+done > "$3".loading 2>/dev/null
 # use .loading because the file is already there when googlyrics starts
 # but muggle thinks we are done as soon as $3 exists
 
