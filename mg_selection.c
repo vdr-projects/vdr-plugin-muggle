@@ -14,6 +14,7 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <stdio.h>
+#include <libintl.h>
 #include <assert.h>
 #include <cstring>
 

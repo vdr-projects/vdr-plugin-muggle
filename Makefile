@@ -202,13 +202,15 @@ i18n: $(I18Nmsgs) $(I18Npot)
 libvdr-$(PLUGIN).so: $(OBJS) $(MOBJS)
 	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(MOBJS) $(PLAYLIBS) $(MLIBS) $(SQLLIBS) -o $@
 	@cp --remove-destination $@ $(LIBDIR)/$@.$(APIVERSION)
+	chmod 644 $(LIBDIR)/$@.$(APIVERSION)
 
 mugglei: mg_tools.o mugglei.o $(DB_OBJ) mg_listitem.o mg_item.o mg_item_gd.o mg_valmap.o mg_setup.o 
 	$(CXX) $(CXXFLAGS) $^ $(MILIBS) $(SQLLIBS) -o $@
 
 install: all
 	@cp --remove-destination $(LIBDIR)/libvdr-muggle*.so.* \
-		$(DESTDIR)/usr/lib/vdr/
+		$(DESTDIR)$(PLUGINLIBDIR)
+	@chmod 644 $(DESTDIR)$(PLUGINLIBDIR)/libvdr-muggle*.so*
 	@cp mugglei $(DESTDIR)$(BINDIR)/
 	@cp scripts/muggle-image-convert $(DESTDIR)$(BINDIR)/
 

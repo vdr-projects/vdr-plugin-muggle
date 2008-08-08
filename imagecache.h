@@ -19,21 +19,21 @@ private:
 
 	item_map   mItems;
 	usage_list mUsage;
-	uint       mMaxItems;
+	unsigned int       mMaxItems;
 
 protected:
 	virtual void DeleteObject(const key_type &Key, data_type &Data) = 0;
 	virtual void ResetObject(data_type &Data) = 0;
 
 public:
-	cxCache(uint MaxItems);
+	cxCache(unsigned int MaxItems);
 	virtual ~cxCache();
 
 	void Reset(void);
 	void Flush(void);
 	bool Contains(const key_type &Key);
 	data_type &operator[](const key_type &Key);
-	uint Count(void) { return mUsage.size(); }
+	unsigned int Count(void) { return mUsage.size(); }
 };
 
 template<class key_type, class data_type>
@@ -43,7 +43,7 @@ inline bool cxCache<key_type, data_type>::Contains(const key_type &Key)
 }
 
 template<class key_type, class data_type>
-cxCache<key_type, data_type>::cxCache(uint MaxItems) 
+cxCache<key_type, data_type>::cxCache(unsigned int MaxItems) 
 {
 	mMaxItems = MaxItems;
 }

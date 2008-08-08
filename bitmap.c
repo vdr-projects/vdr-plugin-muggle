@@ -103,7 +103,7 @@ cBitmap &cMP3Bitmap::Get(void) {
 			upd = mDelay - diff;
 		}
 
-		if (UpdateIn == 0 || UpdateIn > (uint)upd)
+		if (UpdateIn == 0 || UpdateIn > (unsigned int)upd)
 			UpdateIn = upd;
 	*/
 	mCurrent = (mCurrent + 1) % mBitmaps.size();

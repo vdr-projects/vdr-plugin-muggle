@@ -58,7 +58,7 @@ class cBitmapCache: public cxCache<tBitmapSpec,cMP3Bitmap*>
 		virtual void ResetObject(cMP3Bitmap *&Data);
 
 	public:
-		cBitmapCache(uint MaxItems): cxCache<tBitmapSpec,cMP3Bitmap*>(MaxItems) {}
+		cBitmapCache(unsigned int MaxItems): cxCache<tBitmapSpec,cMP3Bitmap*>(MaxItems) {}
 		virtual ~cBitmapCache() { Flush(); }
 };
 
