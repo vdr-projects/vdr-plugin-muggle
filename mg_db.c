@@ -921,7 +921,7 @@ void mgDb::FillTables() {
 		char id[4];
 		char lang[41];
 		strncpy(id,languages[i].id,3);
-		id[4]=0;
+		id[3]=0;
 		strncpy(lang,languages[i].name,40);
 		lang[40]=0;
 		sprintf(b,"INSERT INTO language (id,language) VALUES('%s',%s)",
