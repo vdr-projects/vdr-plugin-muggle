@@ -1,0 +1,377 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
+"POT-Creation-Date: 2008-04-18 13:44+0200\n"
+"PO-Revision-Date: 2008-08-20 11:17+0100\n"
+"Last-Translator: Wolfgang Rohdewald <wolfgang@rohdewald.de>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Loading lyrics from internet..."
+msgstr "Caricamento testi canzoni da Internet..."
+
+msgid "empty database created"
+msgstr "Creato database vuoto"
+
+#, c-format
+msgid "Cannot get exclusive lock on SQLite database %s:%d/%s"
+msgstr "Impossibile il blocco esclusivo sul database SQLite %s:%d/%s"
+
+#, c-format
+msgid "File %s not found"
+msgstr "File %s non trovato"
+
+msgid "Commands"
+msgstr "Comandi"
+
+msgid "Database is empty"
+msgstr "Il database è vuoto"
+
+msgid "Genre"
+msgstr "Genere"
+
+msgid "Genre1"
+msgstr "Genere1"
+
+msgid "Genre2"
+msgstr "Genere2"
+
+msgid "Genre3"
+msgstr "Genere3"
+
+msgid "Folder1"
+msgstr "Cartella1"
+
+msgid "Folder2"
+msgstr "Cartella2"
+
+msgid "Folder3"
+msgstr "Cartella3"
+
+msgid "Folder4"
+msgstr "Cartella4"
+
+msgid "Artist"
+msgstr "Artista"
+
+msgid "ArtistABC"
+msgstr "ArtistaABC"
+
+msgid "Title"
+msgstr "Titolo"
+
+msgid "TitleABC"
+msgstr "TitoloABC"
+
+msgid "Track"
+msgstr "Traccia"
+
+msgid "Decade"
+msgstr "Decade"
+
+msgid "Album"
+msgstr "Album"
+
+msgid "Created"
+msgstr "Creato"
+
+msgid "Modified"
+msgstr "Modificato"
+
+msgid "Collection"
+msgstr "Raccolta"
+
+msgid "Collection item"
+msgstr "Elemento raccolta"
+
+msgid "Language"
+msgstr "Lingua"
+
+msgid "Rating"
+msgstr "Valutazione"
+
+msgid "Year"
+msgstr "Anno"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "not implemented"
+msgstr "non implementato"
+
+msgid "Parent"
+msgstr "Principale"
+
+msgid "Track-"
+msgstr "Traccia -"
+
+msgid "Track+"
+msgstr "Traccia +"
+
+msgid "Change shuffle mode"
+msgstr "Imposta mod. riprod. casuale"
+
+msgid "Lyrics"
+msgstr "Testi"
+
+msgid "Load Lyrics"
+msgstr "Carica testi"
+
+msgid "Save Lyrics"
+msgstr "Salva testi"
+
+msgid "Change loop mode"
+msgstr "Cambia mod. ripetizione"
+
+msgid "Order"
+msgstr "Ordine"
+
+msgid "Select an order"
+msgstr "Seleziona un ordine"
+
+msgid "Button$Edit"
+msgstr "Modifica"
+
+msgid "Create"
+msgstr "Crea"
+
+msgid "Button$Delete"
+msgstr "Elimina"
+
+msgid "List"
+msgstr "Lista"
+
+msgid "Browse"
+msgstr "Sfoglia"
+
+msgid "Collections"
+msgstr "Raccolte"
+
+msgid "Synchronize database"
+msgstr "Sincronizza database"
+
+msgid "Default"
+msgstr "Predefinito"
+
+#, c-format
+msgid "Set default to collection '%s'"
+msgstr "Imposta predefinito alla collezione '%s'"
+
+msgid "Set"
+msgstr "Imposta"
+
+msgid "Instant play"
+msgstr "Riprod. istantanea"
+
+msgid "Add"
+msgstr "Aggiungi"
+
+msgid "Add all to a collection"
+msgstr "Aggiungi tutti alla raccolta"
+
+#, c-format
+msgid "'%s' to collection"
+msgstr "'%s' alla raccolta"
+
+#, c-format
+msgid "Add all to '%s'"
+msgstr "Aggiungi tutti a '%s'"
+
+msgid "Add to a collection"
+msgstr "Aggiungi alla raccolta"
+
+#, c-format
+msgid "Add to '%s'"
+msgstr "Aggiungi a '%s'"
+
+#, c-format
+msgid "Remove '%s' from collection"
+msgstr "Rimuovi '%s' dalla raccolta"
+
+msgid "Remove all from a collection"
+msgstr "Rimuovi tutti dalla raccolta"
+
+msgid "Clear"
+msgstr "Pulisci"
+
+msgid "Clear the collection"
+msgstr "Pulisci la raccolta"
+
+msgid "Clear the collection?"
+msgstr "Pulire la raccolta?"
+
+msgid "Remove"
+msgstr "Rimuovi"
+
+msgid "Remove from a collection"
+msgstr "Rimuovi dalla raccolta"
+
+msgid "Create collection"
+msgstr "Crea raccolta"
+
+msgid "Delete the collection"
+msgstr "Elimina raccolta"
+
+msgid "Delete the collection?"
+msgstr "Eliminare la raccolta?"
+
+msgid "Export"
+msgstr "Esporta"
+
+msgid "Export track list"
+msgstr "Esporta elenco traccia"
+
+msgid "Order is undefined"
+msgstr "Ordine non definito"
+
+msgid "play"
+msgstr "riproduci"
+
+#, c-format
+msgid "Commands:%s"
+msgstr "Comandi:%s"
+
+#, c-format
+msgid "Key %d"
+msgstr "Chiave %d"
+
+msgid "Sort by count"
+msgstr "Ordina per numero"
+
+#, c-format
+msgid "Create database %s?"
+msgstr "Creare database %s?"
+
+msgid "Import items?"
+msgstr "Importare elementi?"
+
+#, c-format
+msgid "Cannot access directory %s:%d"
+msgstr "Impossibile accedere alla dir. %s:%d"
+
+#, c-format
+msgid "%d tracks : %s"
+msgstr "%d tracce : %s"
+
+msgid "Lyrics: Yes"
+msgstr "Testi: Sì"
+
+msgid "Lyrics: No"
+msgstr "Testi: No"
+
+msgid "Now playing :"
+msgstr "In esecuzione :"
+
+msgid "Volume"
+msgstr "Volume"
+
+msgid "of"
+msgstr "di"
+
+msgid "More.."
+msgstr "Altro..."
+
+msgid "Jump"
+msgstr "Vai a"
+
+msgid "Delete"
+msgstr "Elimina"
+
+msgid "Copy"
+msgstr "Copia"
+
+msgid "Min/Sec"
+msgstr "Min/Sec"
+
+msgid "Time"
+msgstr "Tempo"
+
+msgid "Jump: "
+msgstr "Vai a: "
+
+msgid "Muggle"
+msgstr "Muggle"
+
+msgid "Initial loop mode"
+msgstr "Mod. iniziale ripetizione"
+
+msgid "off"
+msgstr "disattivo"
+
+msgid "on"
+msgstr "attivo"
+
+msgid "Initial shuffle mode"
+msgstr "Mod. inziale casuale"
+
+msgid "Audio mode"
+msgstr "Mod. audio"
+
+msgid "Round"
+msgstr "Arrotonda"
+
+msgid "Dither"
+msgstr "Compatta"
+
+msgid "Use 48kHz mode only"
+msgstr "Utilizza solo mod. 48KHz"
+
+msgid "no"
+msgstr "no"
+
+msgid "yes"
+msgstr "sì"
+
+msgid "Normalizer level"
+msgstr "Livello normalizzazione"
+
+msgid "Limiter level"
+msgstr "Livello limitatore"
+
+msgid "Black"
+msgstr "Nero"
+
+msgid "Cover small"
+msgstr "Copertina piccola"
+
+msgid "Cover big"
+msgstr "Copertina grande"
+
+msgid "Live"
+msgstr "Dal vivo"
+
+msgid "Bitmap"
+msgstr "Bitmap"
+
+msgid "Image mode"
+msgstr "Mod. immagine"
+
+msgid "Image show duration (secs)"
+msgstr "Durata visualizz. immagine (s)"
+
+msgid "Cache directory"
+msgstr "Directory cache"
+
+msgid "Use DVB still picture"
+msgstr "Utilizza ancora immagine DVB"
+
+msgid "Show artist first"
+msgstr "Mostra prima artista"
+
+msgid "Fastforward jump (secs)"
+msgstr "Salto avanz. veloce (sec)"
+
+msgid "Setup.muggle$Transparency for cover"
+msgstr "Trasparenza copertina"
+
+msgid "Delete stale references"
+msgstr "Elimina riferimenti blocco"
+

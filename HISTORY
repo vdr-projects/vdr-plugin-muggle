@@ -361,3 +361,4 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 - after changing into lyrics mode, the lyrics for the first song were not
   automatically loaded from the internet
 - fix image modes TV and Black: They also showed the cover image
+- add italian translation, contributed by Diego Perotto
