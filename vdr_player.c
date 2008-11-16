@@ -693,7 +693,7 @@ mgPlayerControl::ShowProgress (bool open) {
 		const char *lyrics= (CurrentItem() && CurrentItem()->HasLyrics()) ? tr("Lyrics: Yes") : tr("Lyrics: No");
 		osd->DrawText( 30, lh + 3*fh + fh/2, lyrics, clrInfoTextFG2, clrInfoBG2, cFont::GetFont(fontSml), 44 * fw, fh, taLeft);
 
-		if (!selecting && changed && !statusActive || refresh) {
+		if ((!selecting && changed && !statusActive) || refresh) {
 			if (ScrollPosition==-1) {
 				snprintf(buf,sizeof(buf),"%.1f kHz, %s kbps", currItem->getSampleRate()/1000.0,currItem->getBitrate().c_str());
 				osd->DrawText( 30, lh + 2*fh + fh/2 +4, buf, clrInfoTextFG2, clrInfoBG2, SmallFont(), InfoWidth, fh, taLeft);

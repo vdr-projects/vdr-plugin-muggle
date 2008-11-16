@@ -1506,14 +1506,15 @@ mgKeyGdGenres::GenreClauses(mgDb *db,bool groupby) const
 	strlist g1;
 	strlist g2;
 
-	if (groupby)
-	if (genrelevel()==4) {
-		g1.push_back("tracks.genre1=genre.id");
-		g2.push_back("tracks.genre2=genre.id");
-	}
-	else {
-		g1.push_back("substr(tracks.genre1,1,"+ltos(genrelevel())+")=genre.id");
-		g2.push_back("substr(tracks.genre2,1,"+ltos(genrelevel())+")=genre.id");
+	if (groupby) {
+	  if (genrelevel()==4) {
+			g1.push_back("tracks.genre1=genre.id");
+			g2.push_back("tracks.genre2=genre.id");
+		}
+		else {
+			g1.push_back("substr(tracks.genre1,1,"+ltos(genrelevel())+")=genre.id");
+			g2.push_back("substr(tracks.genre2,1,"+ltos(genrelevel())+")=genre.id");
+		}
 	}
 
 	if (valid()) {

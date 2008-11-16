@@ -75,7 +75,7 @@ mgLyrics::Process(eKeys key) {
 		state=lyricsSaved;
 	}
 	long cl=playItem->getCheckedForTmpLyrics();
-	if (displayItem!=playItem || cl>0 && cl<time(0)) {
+	if (displayItem!=playItem || (cl>0 && cl<time(0))) {
 		if (!access(playItem->getCachedFilename("lyrics.tmp.loading").c_str(),R_OK)) {
 			state=lyricsLoading;
 			playItem->setCheckedForTmpLyrics(time(0));

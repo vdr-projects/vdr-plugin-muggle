@@ -497,11 +497,12 @@ mgSelection::gotoPosition () {
 unsigned int
 mgSelection::getItemPosition() const
 {
-	if (m_items_position>=m_items.size())
+	if (m_items_position>=m_items.size()) {
 		if (m_items.size()==0)
 			m_items_position=0;
-	else
-		m_items_position = m_items.size()-1;
+		else
+			m_items_position = m_items.size()-1;
+	}
 	return m_items_position;
 }
 

@@ -1109,11 +1109,12 @@ mgCreate::Notify() {
 
 eOSState
 mgCreate::Process(eKeys key) {
-	if (key == kOk)
+	if (key == kOk) {
 		if (Editing())
 			Execute();
-	else
-		return cMenuEditStrItem::ProcessKey(kRight);
+		else
+			return cMenuEditStrItem::ProcessKey(kRight);
+	}
 	if (key != kYellow || Editing())
 		return cMenuEditStrItem::ProcessKey(key);
 	else

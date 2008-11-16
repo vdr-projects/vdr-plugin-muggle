@@ -105,7 +105,7 @@ mgOggFile::close () {
 
 void
 mgOggFile::error (const char *action, const int err) {
-	char *errstr;
+	const char *errstr;
 	switch (err) {
 		case OV_FALSE:
 			errstr = "false/no data available";
