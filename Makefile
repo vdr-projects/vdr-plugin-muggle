@@ -44,8 +44,7 @@ CXXFLAGS ?= -fPIC -O0 -Wall -Wformat=2 -Woverloaded-virtual -Wno-deprecated -g
 
 ### The directory environment:
 
-DVBDIR ?= ../../../../DVB
-VDRDIR ?= ../../../
+VDRDIR ?= ../../..
 LIBDIR ?= ../../lib
 TMPDIR ?= /tmp
 BINDIR ?= /usr/local/bin
@@ -81,7 +80,7 @@ PACKAGE = vdr-$(ARCHIVE)
 
 ### Includes and Defines (add further entries here):
 
-INCLUDES += -I$(VDRDIR) -I$(VDRDIR)/include -I$(DVBDIR)/include \
+INCLUDES += -I$(VDRDIR) -I$(VDRDIR)/include \
 	$(shell taglib-config --cflags)
 
 DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
