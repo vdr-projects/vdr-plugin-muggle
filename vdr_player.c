@@ -365,6 +365,9 @@ mgPlayerControl::InitLayout(void) {
 		CoverWidth = PBBottom-lh;
 		while (1) {
 			CoverX = osdwidth - CoverWidth -3*fw -2;
+			if (CoverX<0)
+				mgError("muggle: InitLayout: ERROR! CoverX=%d,osdwidth=%d,CoverWidth=%d,fh=%d\n",
+				CoverX,osdwidth,CoverWidth,fh);
 			CoverX /=4;
 			CoverX *=4;
 			InfoWidth = CoverX -27 -3*fw;
