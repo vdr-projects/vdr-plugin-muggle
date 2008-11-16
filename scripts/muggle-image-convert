@@ -83,4 +83,5 @@ else
     ppmntsc --pal |
     ppmtoy4m -v 0 -n 1 -r -S 420mpeg2 -F 25:1 |
     mpeg2enc -f 7 -T 90 -F 3 -np -a 2 -v 0 -o "$MPG"
+# variant:     mpeg2enc -f 3 -b 12500 -a 2 -q 1 -n p -I 0 -v 0 -o "$MPG"
 fi
