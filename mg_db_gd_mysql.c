@@ -6,6 +6,7 @@
  * \date    $Date: 2005-04-13 17:42:54 +0100 (Thu, 13 Apr 2005) $
  * \author  Wolfgang Rohdewald * \author  Responsible author: $Author: wolfgang61 $ */
 
+#include <cstring>
 #include <string>
 #include <sys/types.h>
 #include <sys/stat.h>
