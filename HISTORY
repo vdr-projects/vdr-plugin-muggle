@@ -366,3 +366,4 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
 found by Thomas Balke
 - DisplayMode is now configurable, found by Thomas Balke. This defines between
 how many different types of information the first line toggles in the player.
+- README.mysql was incomplete

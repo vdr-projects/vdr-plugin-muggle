@@ -66,7 +66,20 @@ NOTE: The GiantDisc web interface only works with remote MySQL.
 
 If you already have a MySQL server running in your network (e.g. as a basis
 for a webserver) or want to access the music database with other programs
-(e.g. the GiantDisc web interface) you may be interested in using
+(e.g. the GiantDisc web interface) you may be interested in using MySql
+as a server.
+
+If you want to create a new data base: 
+
+- First define a user e.g. vdr: From the shell prompt start "mysql -u root"
+  using the password for root (this is not login root but mysql user root)
+
+- now enter those commands:
+	create user vdr;
+	create database GiantDisc;
+	grant all on GiantDisc.* to vdr;
+	commit;
+	quit;
 
 \section config MUGGLE CONFIGURATION
 
