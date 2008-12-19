@@ -548,7 +548,7 @@ mgDbGd::AddToCollection( const string Name,const vector<mgItem*>&items, mgParts*
 	// insert a unique trackid:
 	string trackid = ltos(thread_id()+1000000);
 	Execute("INSERT INTO playlistitem SELECT "+listid+","
-		"MAX(tracknumber)+"+ltos(tracksize)+","+trackid+
+		"CASE WHEN MAX(tracknumber) IS NULL THEN 0 ELSE MAX(tracknumber) END +"+ltos(tracksize)+","+trackid+
 		" FROM playlistitem WHERE playlist="+listid);
 
 	// find tracknumber of the trackid we just inserted:
