@@ -362,3 +362,5 @@ XXXXXXXXXX: Version 0.0.8-ALPHA
   automatically loaded from the internet
 - fix image modes TV and Black: They also showed the cover image
 - add italian translation, contributed by Diego Pierotto
+- fix off by one error when selecting tracks in play mode by using number keys,
+found by Thomas Balke
