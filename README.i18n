@@ -39,3 +39,7 @@ This means the database should be deleted and rebuilt. The option mugglei -c
 now actually does what it should: it also deletes and recreates existing
 data bases.
 
+Mysql Users beware: Please create the database with charset utf8 as
+in "create database charset utf8;". Otherwise mysql will not be able
+to handle characters outside of the normal latin charset like greek
+characters.

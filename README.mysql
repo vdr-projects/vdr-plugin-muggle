@@ -81,6 +81,11 @@ If you want to create a new data base:
 	commit;
 	quit;
 
+If you want to use the UTF8 charset (you should do so if you use vdr-1.6
+upwards), please say "create database GiantDisc charset utf8;"
+Otherwise mysql will not be able to handle characters outside of the
+normal latin charset like greek characters.
+
 \section config MUGGLE CONFIGURATION
 
 When using the remote MySQL server, muggle and mugglei use a small set of
