@@ -1137,7 +1137,7 @@ eOSState mgPlayerControl::ProcessKey(eKeys Key) {
 			case kNone:
 
 				if (selecting && time_ms()-lastkeytime>SELECT_TIMEOUT) {
-					if (number>0) Goto(number);
+					if (number>0) Goto(number-1);
 					if (selecthide) timeoutShow=time(0)+SELECTHIDE_TIMEOUT;
 					number=0; selecting=selecthide=false;
 				}

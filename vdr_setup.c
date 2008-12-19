@@ -41,6 +41,10 @@ mgMenuSetup::mgMenuSetup () {
 		tr("off"), tr("on") ) );
 
 	Add (new
+		cMenuEditIntItem (tr ("Display mode"), &the_setup.DisplayMode,
+		0, 5));
+
+	Add (new
 		cMenuEditBoolItem (tr ("Audio mode"), &the_setup.AudioMode,
 		tr ("Round"), tr ("Dither")));
 
