@@ -39,6 +39,9 @@ and HAVE_ONLY_SERVER if you do not want the embedded version.
 HAVE_MYSQL=1
 HAVE_ONLY_SERVER=1
 
+NOTE: If you get errors about undefined references to yaSSL_*,
+define HAVE_ONLY_SERVER or bug the MySql/Debian people.
+
 NOTE: If the package mysql-server is not installed on your machine you might
 see an error message like this:
 
