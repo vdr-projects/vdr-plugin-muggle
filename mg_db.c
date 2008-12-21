@@ -1166,13 +1166,6 @@ mgDb::SyncFile(const char *filename) {
 
 	mgDebug(2,"Importing %s",filename);
 	get_ID3v2_Tags(filename);
-	char *folders[4];
-	char *fbuf=SeparateFolders(filename,folders,4);
-	mgSQLString c_folder1(folders[0]);
-	mgSQLString c_folder2(folders[1]);
-	mgSQLString c_folder3(folders[2]);
-	mgSQLString c_folder4(folders[3]);
-	free(fbuf);
 	mgSQLString c_artist("Unknown");
 	mgSQLString c_album("Unassigned");
 	mgSQLString c_title("Unknown");
@@ -1218,7 +1211,14 @@ mgDb::SyncFile(const char *filename) {
 	char *b;
 	msprintf(&b,"%s%s",relpath,cfilename);
 	mgSQLString c_mp3file(b);
+	char *folders[4];
+	char *fbuf=SeparateFolders(b,folders,4);
+	mgSQLString c_folder1(folders[0]);
+	mgSQLString c_folder2(folders[1]);
+	mgSQLString c_folder3(folders[2]);
+	mgSQLString c_folder4(folders[3]);
 	free(b);
+	free(fbuf);
 	sprintf(sql,"SELECT id from tracks WHERE mp3file=%s",c_mp3file.quoted());
 	string id = get_col0(sql);
 	if (id!="NULL") {
