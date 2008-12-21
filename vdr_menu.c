@@ -409,6 +409,11 @@ mgSelMenu::AddSelectionItems (mgSelection *sel,mgActions act) {
 			osd()->AddItem(a);
 		}
 	}
+// we place the cursor ourself, and we do not want vdr to interfere:
+	osd()->newposition = sel->gotoPosition();
+	cOsdItem *c = osd()->Get(osd()->newposition);
+	mgAction *a = dynamic_cast<mgAction *>(c);
+	a->IgnoreNextEvent = true;
 }
 
 string
@@ -787,10 +792,6 @@ mgTreeCollSelector::BuildOsd () {
 	coll->leave_all();
 	coll->setPosition(Selosd()->default_collection);
 	AddSelectionItems (coll,coll_action());
-	osd()->newposition = coll->gotoPosition();
-	cOsdItem *c = osd()->Get(osd()->newposition);
-	mgAction *a = dynamic_cast<mgAction *>(c);
-	a->IgnoreNextEvent = true;
 }
 
 mgTreeAddToCollSelector::mgTreeAddToCollSelector(string title) {
