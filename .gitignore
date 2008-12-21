@@ -1,0 +1,4 @@
+*.o
+.dependencies
+*.so
+mugglei
