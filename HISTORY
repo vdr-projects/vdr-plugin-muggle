@@ -372,3 +372,4 @@ Balke.
 - update README.* about MySQL with utf8
 - importing subdirectories with mugglei: sorting by folder did not work for
   those tracks. Found by Thomas Balke.
+- fix bug #32 reported by Anonymous: mugglei will not run from a linked subfolder

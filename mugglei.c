@@ -64,13 +64,8 @@ import() {
 
 bool
 path_within_tld() {
-	char path[5000];
-	if (!getcwd(path,4999)) {
-		std::cout << "Path too long" << std::endl;
-		exit (1);
-	}
+	const char* path = mugglepath();
 	int tldlen = strlen(the_setup.ToplevelDir);
-	strcat(path,"/");
 	int pathlen = strlen(path);
 	if (pathlen<tldlen)
 		return false;

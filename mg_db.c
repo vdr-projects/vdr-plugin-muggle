@@ -40,6 +40,18 @@ static map <mgKeyTypes, map<string,string> > map_ids;
 
 mgDbServer* DbServer;
 
+const char *
+mugglepath() {
+	char buf[5000];
+	memset(buf,0,5000);
+	if (getenv("PWD"))
+		strncpy(buf,getenv("PWD"),4990);
+	else
+		getcwd(buf,4990);
+	strcat(buf,"/");
+	return strdup(buf);
+}
+
 mgDbServer::mgDbServer() {
 #ifdef HAVE_SQLITE
 	m_server = new mgDbServerSQLite;
@@ -1198,18 +1210,14 @@ mgDb::SyncFile(const char *filename) {
 	mgSQLString c_lang(m_TLAN);
 	mgSQLString c_cddbid(getAlbum(filename,c_album,c_artist));
 
-	char cwd[5000];
-	if (!getcwd(cwd,4999)) {
-		std::cout << "Path too long" << std::endl;
-		exit (1);
-	}
+	const char *cwd = mugglepath();
 	int tldlen = strlen(the_setup.ToplevelDir);
-	strcat(cwd,"/");
 	int cwdlen = strlen(cwd);
 	const char *relpath=cwd;
 	if (cwdlen>tldlen); relpath += tldlen;
 	char *b;
 	msprintf(&b,"%s%s",relpath,cfilename);
+	free((void*)cwd);
 	mgSQLString c_mp3file(b);
 	char *folders[4];
 	char *fbuf=SeparateFolders(b,folders,4);

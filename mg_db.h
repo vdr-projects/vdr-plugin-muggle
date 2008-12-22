@@ -39,6 +39,8 @@ strlist& operator+=(strlist&a, strlist b);
 
 string sql_list (string prefix,strlist v,string sep=",",string postfix="");
 
+const char *mugglepath(void);
+
 class mgSQLStringImp
 {
 	public:
