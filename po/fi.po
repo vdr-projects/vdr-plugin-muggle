@@ -10,14 +10,14 @@ msgstr ""
 "Project-Id-Version: fi\n"
 "Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
 "POT-Creation-Date: 2008-04-18 04:08+0200\n"
-"PO-Revision-Date: 2008-04-13 12:59+0300\n"
+"PO-Revision-Date: 2008-12-24 00:29+0200\n"
 "Last-Translator: Ville Skyttä <ville.skytta@iki.fi>\n"
 "Language-Team: Finnish <vdr-muggle-i18n@sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
-"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "Loading lyrics from internet..."
 msgstr "Ladataan sanoituksia verkosta..."
@@ -37,7 +37,7 @@ msgid "Commands"
 msgstr "Komennot"
 
 msgid "Database is empty"
-msgstr ""
+msgstr "Tietokanta on tyhjä"
 
 msgid "Genre"
 msgstr "Tyylilaji"
@@ -353,11 +353,10 @@ msgid "Live"
 msgstr "live"
 
 msgid "Bitmap"
-msgstr ""
+msgstr "Bittikartta"
 
-#, fuzzy
 msgid "Image mode"
-msgstr "Vaihda jatkuvasoittotila"
+msgstr "Kuvien näyttötila"
 
 msgid "Image show duration (secs)"
 msgstr "Kuvien näyttöaika (sekuntia)"
@@ -382,3 +381,4 @@ msgstr "Tuhoa vanhentuneet viittaukset"
 
 #~ msgid "Background mode"
 #~ msgstr "Taustamoodi"
+
