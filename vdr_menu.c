@@ -360,6 +360,7 @@ mgSelOsd::LoadSelections(mgValmap& nv) {
 
 mgSelOsd::~mgSelOsd() {
 	mgDebug("mgSelOsd terminates");
+	SaveState();
 	delete m_collectionsel;
 	delete m_playsel;
 	delete moveselection;

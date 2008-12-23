@@ -376,3 +376,5 @@ Balke.
 - when checking if we are in or under the top level dictory, no longer translate
   current path to realpath - always go through all symlinks. Fixes bug fix for
   bug #32, reported by Thomas. Hoping this does not break other configurations.
+- when destroying the OSD object, save muggle state. Fixes bug #37 reported by
+  Thomas
