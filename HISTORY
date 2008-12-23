@@ -373,3 +373,6 @@ Balke.
 - importing subdirectories with mugglei: sorting by folder did not work for
   those tracks. Found by Thomas Balke.
 - fix bug #32 reported by Anonymous: mugglei will not run from a linked subfolder
+- when checking if we are in or under the top level dictory, no longer translate
+  current path to realpath - always go through all symlinks. Fixes bug fix for
+  bug #32, reported by Thomas. Hoping this does not break other configurations.

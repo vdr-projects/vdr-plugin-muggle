@@ -198,8 +198,20 @@ bool mgSetup::ProcessArguments (int argc, char *argv[]) {
 			break;
 			case 't':
 			{
+				// whatever we get, fix it so it ends with
+				// exactly one /
 				free(ToplevelDir);
-				ToplevelDir = strdup(optarg);
+				// alloc space for ToplevelDir plus one /
+				msprintf(&ToplevelDir,"%s/",optarg);
+				// strip all trailing /
+				while (1) {
+					if (strlen(ToplevelDir)==0) break;
+					char *p=ToplevelDir+strlen(ToplevelDir)-1;
+					if (*p!='/') break;
+					*p=0;
+				}
+				// add back exactly one
+				strcat(ToplevelDir,"/");
 			}
 			break;
 			case 'z':
@@ -216,18 +228,6 @@ bool mgSetup::ProcessArguments (int argc, char *argv[]) {
 				return false;
 		}
 	}
-// we want to get the absolute path with symlinks resolved
-	char prev[1000];
-	if (!getcwd(prev,1000))
-		mgError("current path too long");
-	if (chdir(the_setup.ToplevelDir))
-		mgError("cannnot change to directory %s",the_setup.ToplevelDir);
-	char ndir[1000];
-	if (!getcwd(ndir,1000))
-		mgError("new path too long");
-	free(ToplevelDir);
-	msprintf(&the_setup.ToplevelDir,"%s/",ndir);
-	chdir(prev);
 	mgDebug(1,ArgsMessage);
 	return true;
 }
