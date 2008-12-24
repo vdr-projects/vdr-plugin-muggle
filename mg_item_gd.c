@@ -222,8 +222,9 @@ mgItemGd::getSourceFile(bool AbsolutePath,bool Silent) const
 				continue;
 			char *file;
 			msprintf(&file,"%02d/%s",i,m_mp3file.c_str());
-			if (readable(file)) {
-				m_mp3file = file;
+			string fstr = string(file);
+			if (readable(fstr)) {
+				m_mp3file = fstr;
 				result = m_mp3file;
 			}
 			free(file);
@@ -233,8 +234,14 @@ mgItemGd::getSourceFile(bool AbsolutePath,bool Silent) const
 	}
 	m_validated=true;
 	if (result.empty()) {
-		if (!Silent)
+		if (!Silent) {
 			analyze_failure(m_mp3file);
+			// in debug mode, analyze_failure might replace
+			// the missing file by a file which speaks the
+			// name of the missing file
+			if (readable(m_mp3file))
+				return m_mp3file;
+		}	
 		m_valid = false;
 		return m_mp3file;
 	}

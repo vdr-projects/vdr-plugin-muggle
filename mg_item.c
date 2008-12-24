@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <cstring>
 
 #include "mg_item.h"
@@ -59,6 +60,19 @@ mgItem::analyze_failure(string filename) const
 {
 	readable(filename);			 // sets errno
 	int err = errno;
+#ifdef DEBUGSEL
+	if (err==ENOENT) {
+		char *command;
+		msprintf(&command,"cd '%s';%s/scripts/speak.sh '%s'>/dev/null 2>&1",
+			the_setup.ToplevelDir,
+			the_setup.ConfigDirectory.c_str(),
+			filename.c_str());
+		system(command);
+		free(command);
+		readable(filename);			 // sets errno
+		err = errno;
+	}
+#endif
 	int nsize = filename.size();
 	const char *p;
 	if (err==123456)
