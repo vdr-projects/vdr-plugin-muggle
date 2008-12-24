@@ -8,16 +8,16 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: fr\n"
-"Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
-"POT-Creation-Date: 2008-04-18 04:08+0200\n"
-"PO-Revision-Date: 2008-04-18 15:03+0200\n"
+"Report-Msgid-Bugs-To: <wolfgang@rohdewald.de>\n"
+"POT-Creation-Date: 2008-12-23 22:35+0100\n"
+"PO-Revision-Date: 2008-12-23 22:45+0100\n"
 "Last-Translator: Wolfgang Rohdewald <wolfgang@rohdewald.de>\n"
-"Language-Team: deutsch <vdr-muggle-i18n@sourceforge.net>\n"
+"Language-Team: French <wolfgang@rohdewald.de>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: KBabel 1.11.4\n"
+"X-Generator: Lokalize 0.2\n"
 
 msgid "Loading lyrics from internet..."
 msgstr "Cherchant le texte dans le web"
@@ -169,6 +169,10 @@ msgstr "Destinataire"
 msgid "Set default to collection '%s'"
 msgstr "Changer destination à la collection '%s'"
 
+#, c-format
+msgid "Default collection now is '%s'"
+msgstr "destination est maintenant '%s'"
+
 msgid "Set"
 msgstr "Définir"
 
@@ -315,6 +319,9 @@ msgstr "actif"
 
 msgid "Initial shuffle mode"
 msgstr "mode alléatoire initial"
+
+msgid "Display mode"
+msgstr "mode de display"
 
 msgid "Audio mode"
 msgstr "Mode audio"

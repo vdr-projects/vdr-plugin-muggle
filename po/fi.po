@@ -8,11 +8,11 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: fi\n"
-"Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
-"POT-Creation-Date: 2008-04-18 04:08+0200\n"
+"Report-Msgid-Bugs-To: <wolfgang@rohdewald.de>\n"
+"POT-Creation-Date: 2008-12-24 12:05+0100\n"
 "PO-Revision-Date: 2008-12-24 00:29+0200\n"
 "Last-Translator: Ville Skyttä <ville.skytta@iki.fi>\n"
-"Language-Team: Finnish <vdr-muggle-i18n@sourceforge.net>\n"
+"Language-Team: Finnish <ville.skytta@iki.fi>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -169,6 +169,10 @@ msgstr "Oletus"
 msgid "Set default to collection '%s'"
 msgstr "Aseta kokoelma '%s' oletukseksi"
 
+#, fuzzy, c-format
+msgid "Default collection now is '%s'"
+msgstr "Aseta kokoelma '%s' oletukseksi"
+
 msgid "Set"
 msgstr "Aseta"
 
@@ -316,6 +320,9 @@ msgstr "päällä"
 msgid "Initial shuffle mode"
 msgstr "Satunnaissoitto oletuksena"
 
+msgid "Display mode"
+msgstr ""
+
 msgid "Audio mode"
 msgstr "Äänimoodi"
 
@@ -381,4 +388,3 @@ msgstr "Tuhoa vanhentuneet viittaukset"
 
 #~ msgid "Background mode"
 #~ msgstr "Taustamoodi"
-
