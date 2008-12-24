@@ -797,7 +797,7 @@ mgSetDefaultCollection::Enabled(mgActions on) {
 bool
 mgSetDefaultCollection::Execute () {
 	Selosd ()->default_collection = selection ()->getCurrentValue();
-	osd()->Message1 ("Default collection now is '%s'",
+	osd()->Message1 (tr("Default collection now is '%s'"),
 		Selosd ()->default_collection.c_str());
 	return true;
 }
