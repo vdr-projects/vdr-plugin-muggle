@@ -9,8 +9,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: de\n"
-"Report-Msgid-Bugs-To: <wolfgang@rohdewald.de>\n"
-"POT-Creation-Date: 2008-12-23 22:35+0100\n"
+"Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
+"POT-Creation-Date: 2008-12-25 15:40+0200\n"
 "PO-Revision-Date: 2008-12-23 22:40+0100\n"
 "Last-Translator: Wolfgang Rohdewald <wolfgang@rohdewald.de>\n"
 "Language-Team: German <wolfgang@rohdewald.de>\n"
@@ -171,7 +171,7 @@ msgid "Set default to collection '%s'"
 msgstr "Setze Ziel auf Sammlung '%s'"
 
 #, c-format
-msgid "Default collection now is '%s'"
+msgid "Default collection is now '%s'"
 msgstr "Ziel-Sammlung ist jetzt '%s'"
 
 msgid "Set"
@@ -386,4 +386,3 @@ msgstr "Setup.muggle$Transparenz für Cover"
 
 msgid "Delete stale references"
 msgstr "Einträge löschen, wenn Datei fehlt"
-

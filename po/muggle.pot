@@ -7,8 +7,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: <wolfgang@rohdewald.de>\n"
-"POT-Creation-Date: 2008-12-24 12:05+0100\n"
+"Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
+"POT-Creation-Date: 2008-12-25 15:40+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -167,7 +167,7 @@ msgid "Set default to collection '%s'"
 msgstr ""
 
 #, c-format
-msgid "Default collection now is '%s'"
+msgid "Default collection is now '%s'"
 msgstr ""
 
 msgid "Set"

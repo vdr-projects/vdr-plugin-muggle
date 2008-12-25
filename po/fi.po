@@ -8,8 +8,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: fi\n"
-"Report-Msgid-Bugs-To: <wolfgang@rohdewald.de>\n"
-"POT-Creation-Date: 2008-12-24 12:05+0100\n"
+"Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
+"POT-Creation-Date: 2008-12-25 15:40+0200\n"
 "PO-Revision-Date: 2008-12-25 15:37+0200\n"
 "Last-Translator: Ville Skyttä <ville.skytta@iki.fi>\n"
 "Language-Team: Finnish <ville.skytta@iki.fi>\n"
@@ -170,7 +170,7 @@ msgid "Set default to collection '%s'"
 msgstr "Aseta kokoelma '%s' oletukseksi"
 
 #, c-format
-msgid "Default collection now is '%s'"
+msgid "Default collection is now '%s'"
 msgstr "Oletuskokoelma on nyt '%s'"
 
 msgid "Set"
@@ -388,4 +388,3 @@ msgstr "Tuhoa vanhentuneet viittaukset"
 
 #~ msgid "Background mode"
 #~ msgstr "Taustamoodi"
-

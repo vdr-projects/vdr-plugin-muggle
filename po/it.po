@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: <wolfgang@rohdewald.de>\n"
-"POT-Creation-Date: 2008-12-24 12:05+0100\n"
+"Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
+"POT-Creation-Date: 2008-12-25 15:40+0200\n"
 "PO-Revision-Date: 2008-08-21 01:36+0100\n"
 "Last-Translator: Diego Pierotto <vdr-italian@tiscali.it>\n"
 "Language-Team: Italian <vdr-italian@tiscali.it>\n"
@@ -166,7 +166,7 @@ msgid "Set default to collection '%s'"
 msgstr "Imposta predefinito alla collezione '%s'"
 
 #, fuzzy, c-format
-msgid "Default collection now is '%s'"
+msgid "Default collection is now '%s'"
 msgstr "Imposta predefinito alla collezione '%s'"
 
 msgid "Set"
