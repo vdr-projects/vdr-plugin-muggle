@@ -414,6 +414,7 @@ mgSelMenu::AddSelectionItems (mgSelection *sel,mgActions act) {
 	osd()->newposition = sel->gotoPosition();
 	cOsdItem *c = osd()->Get(osd()->newposition);
 	mgAction *a = dynamic_cast<mgAction *>(c);
+	SetHelpKeys(a->Type());
 	a->IgnoreNextEvent = true;
 }
 
