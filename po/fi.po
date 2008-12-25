@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: fi\n"
 "Report-Msgid-Bugs-To: <wolfgang@rohdewald.de>\n"
 "POT-Creation-Date: 2008-12-24 12:05+0100\n"
-"PO-Revision-Date: 2008-12-24 00:29+0200\n"
+"PO-Revision-Date: 2008-12-25 15:37+0200\n"
 "Last-Translator: Ville Skyttä <ville.skytta@iki.fi>\n"
 "Language-Team: Finnish <ville.skytta@iki.fi>\n"
 "MIME-Version: 1.0\n"
@@ -169,9 +169,9 @@ msgstr "Oletus"
 msgid "Set default to collection '%s'"
 msgstr "Aseta kokoelma '%s' oletukseksi"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Default collection now is '%s'"
-msgstr "Aseta kokoelma '%s' oletukseksi"
+msgstr "Oletuskokoelma on nyt '%s'"
 
 msgid "Set"
 msgstr "Aseta"
@@ -321,7 +321,7 @@ msgid "Initial shuffle mode"
 msgstr "Satunnaissoitto oletuksena"
 
 msgid "Display mode"
-msgstr ""
+msgstr "Näyttötila"
 
 msgid "Audio mode"
 msgstr "Äänimoodi"
@@ -388,3 +388,4 @@ msgstr "Tuhoa vanhentuneet viittaukset"
 
 #~ msgid "Background mode"
 #~ msgstr "Taustamoodi"
+
