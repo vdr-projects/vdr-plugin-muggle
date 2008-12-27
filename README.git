@@ -6,4 +6,27 @@ git clone git://projects.vdr-developer.org/vdr-plugin-muggle.git muggle
 how to make a new release
 =========================
 
-placeholder, need to test this first
+adapt version in version.h, muggle.c and HISTORY
+
+set date in HISTORY
+
+git commit
+git status # must be clean
+git tag -a -m'new release' '0.2.3'
+git push --tags
+
+cd
+cd tmp
+rm -rf muggle-0.2.3
+git clone git://projects.vdr-developer.org/vdr-plugin-muggle.git muggle-0.2.3
+cd muggle-0.2.3
+git checkout 0.2.3-BETA
+rm -rf .git*
+cd ..
+tar cfz vdr-muggle-0.2.3.tgz muggle-0.2.3
+
+in the project configuration, add new version 0.2.3
+upload vdr-muggle-0.2.3.tgz  
+
+announce new version at vdr@linuxtv.org
+
