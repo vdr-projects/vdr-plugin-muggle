@@ -378,3 +378,4 @@ Balke.
   bug #32, reported by Thomas. Hoping this does not break other configurations.
 - when destroying the OSD object, save muggle state. Fixes bug #37 reported by
   Thomas
+- updated translations by Ville Skyttä and Diego Pierotto
