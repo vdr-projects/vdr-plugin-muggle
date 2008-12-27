@@ -1,0 +1,9 @@
+how to anonymously get the current source
+=========================================
+
+git clone git://projects.vdr-developer.org/vdr-plugin-muggle.git muggle
+
+how to make a new release
+=========================
+
+placeholder, need to test this first
