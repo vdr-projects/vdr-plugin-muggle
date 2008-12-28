@@ -198,8 +198,12 @@ bool samedir( const char *d1, const char *d2 ) {
 
 	char rp1[path_max], rp2[path_max];
 
-	realpath(d1, rp1);
-	realpath(d2, rp2);
+	if (!realpath(d1, rp1))
+		mgWarning("Error canonicalizing pathname %s: %s",
+			  d1, strerror(errno));
+	if (!realpath(d2, rp2))
+		mgWarning("Error canonicalizing pathname %s: %s",
+			  d2, strerror(errno));
 
 	return (!strcmp( rp1, rp2 ) );
 }

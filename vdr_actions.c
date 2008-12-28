@@ -588,12 +588,13 @@ mgExternal::Execute() {
 				string quoted = "'" + m3u_file + "'";
 				char prev[1000];
 				if (!getcwd(prev,1000))
-					mgError("current path too long");
+					mgError("cannot get current directory: %s", strerror(errno));
 				if (chdir(the_setup.ToplevelDir))
-					mgError("cannnot change to directory %s",
+					mgError("cannot change to directory %s",
 						the_setup.ToplevelDir);
 				command->Execute (quoted.c_str ());
-				chdir(prev);
+				if (chdir(prev))
+					mgError("cannot change to directory %s", prev);
 				selection()->clearCache();
 								 // the ext cmd could change the database
 				osd()->forcerefresh = true;
