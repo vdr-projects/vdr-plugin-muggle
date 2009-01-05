@@ -21,7 +21,7 @@ msgid "Loading lyrics from internet..."
 msgstr "Caricamento testi canzoni da Internet..."
 
 msgid "Save this version?"
-msgstr "Salva questa versione?"
+msgstr "Salvare questa versione?"
 
 msgid "empty database created"
 msgstr "Creato database vuoto"
