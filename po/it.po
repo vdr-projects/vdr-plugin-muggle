@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: <wolfgang@rohdewald.de>\n"
-"POT-Creation-Date: 2008-12-24 12:05+0100\n"
+"Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
+"POT-Creation-Date: 2009-01-05 11:43+0100\n"
 "PO-Revision-Date: 2008-12-24 18:33+0100\n"
 "Last-Translator: Diego Pierotto <vdr-italian@tiscali.it>\n"
 "Language-Team: Italian <vdr-italian@tiscali.it>\n"
@@ -19,6 +19,9 @@ msgstr ""
 
 msgid "Loading lyrics from internet..."
 msgstr "Caricamento testi canzoni da Internet..."
+
+msgid "Save this version?"
+msgstr "Salva questa versione?"
 
 msgid "empty database created"
 msgstr "Creato database vuoto"
@@ -167,8 +170,8 @@ msgstr "Predefinito"
 msgid "Set default to collection '%s'"
 msgstr "Imposta predefiniti nella raccolta '%s'"
 
-#, c-format
-msgid "Default collection now is '%s'"
+#, fuzzy, c-format
+msgid "Default collection is now '%s'"
 msgstr "Ora la raccolta predefinita è '%s'"
 
 msgid "Set"
@@ -383,4 +386,3 @@ msgstr "Trasparenza copertina"
 
 msgid "Delete stale references"
 msgstr "Elimina riferimenti blocco"
-

@@ -382,3 +382,6 @@ Balke.
 
 2009-XX-XX Version 0.2.3
 - last version broke importing from setup menu
+- Lyrics now work with Googlyrics2
+- if several versions of lyrics for a song are found, it is now possible
+  to choose among them. 

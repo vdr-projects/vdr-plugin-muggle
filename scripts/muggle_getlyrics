@@ -1,66 +1,72 @@
 #!/bin/sh
 
-export GOOGLYRICS=/usr/share/apps/amarok/scripts/googlyrics/googlyrics
+# usage:
+# artist title outfile
+#
+# we might find several different lyrics for a song. This is handled
+# by this script: We use a subdirectory outfile.new. If it exists
+# and contains a file, we just return that file and remove it from
+# outfile.new. If outfile.new is empty, we read all versions again
+# with googlyrics.
 
-rm -f "$3"
-txtfound=0
-artist=`echo $1 | sed 's/ /%20/'g`
-title=`echo $2 | sed 's/ /%20/'g`
+# ultimately I want to integrate this shell script into mgLyrics.py
 
-if test ! -x $GOOGLYRICS
+artist="$1"
+title="$2"
+outfile="$3"
+orgoutfile=`echo "$3" | sed 's/.tmp$//'`
+outdir="$3.new"
+
+echo > "$outfile".loading
+
+if test ! -d "$outdir"
 then
-	echo $GOOGLYRICS nicht gefunden > $3
-	exit 2
+	mkdir "$outdir"
+	MGLYRICS="`dirname $0`/mgLyric.py"
+	if test ! -x "$MGLYRICS"
+	then
+		echo $MGLYRICS not found > "$outdir"/1.raw
+	else
+		"$MGLYRICS" "$title" "$artist" "$outdir" 
+	fi
+
+	for i in "$outdir"/*.raw
+	do	
+		test -r "$i" || break
+		cat "$i" |
+		sed 's/\x0d//g' |
+		sed 's/\xc2\xb4/\x27/g' |
+		sed 's/\xc3\x82\x27/\x27/g' |
+		sed 's/\xc3\x82/\x27/g' |
+		sed 's/\xc3\xb9/\x27/g' |
+		sed 's/\xe2\x80\x99/\x27/g' |
+		grep -ive 'NEW.*ringtones' |
+		grep -v -e '--------------' |
+		recode HTML..utf8 |
+		sed 's/\xc2\x91/\x27/g' |	# in unicode, those two are reserved for
+		sed 's/\xc2\x92/\x27/g' |   # private use, but still some sites use them...
+		cat > "$i.converted" 2>/dev/null
+		rm -f "$i"
+		echo cmp -s "$i.converted" "$orgoutfile">>/tmp/log.wr
+		cmp -s "$i.converted" "$orgoutfile"
+		if test $? -eq 0
+		then
+			echo rm -f "$i.converted" >>/tmp/log.wr
+			rm -f "$i.converted"
+			continue
+		fi
+	done
 fi
 
-export success=0
-echo fetchLyrics $artist $title | $GOOGLYRICS 2>&1 |
-	sed 's/\x0d//g' |
-	sed 's/\xc2\xb4/\x27/g' |
-	sed 's/\xc3\x82\x27/\x27/g' |
-	sed 's/\xc3\x82/\x27/g' |
-	sed 's/\xc3\xb9/\x27/g' |
-	sed 's/\xe2\x80\x99/\x27/g' |
-	grep -ive 'NEW.*ringtones' |
-	grep -v '--------------' |
-	recode HTML..utf8 |
-	sed 's/\xc2\x91/\x27/g' |	# in unicode, those two are reserved for
-	sed 's/\xc2\x92/\x27/g' |   # private use, but still some sites use them...
-while read line
-do
-# did we find a text yet?
-	if expr "$line" : '<br>Regex success' >/dev/null  2>&1
-	then
-		success=1
-		continue
-	fi
-# googlyrics tries to send the finished text to amarok:
-	if expr "$line" : 'object not accessible' >/dev/null  2>&1
-	then
-		killall googlyrics >/dev/null 2>&1
-		break
-	fi
-# googlyrics starts main loop again:
-	if expr "$line" : '.*scalar chomp.*STDIN' >/dev/null  2>&1
-	then
-		killall googlyrics >/dev/null 2>&1
-		break
-	fi
-	test $success = 0 && continue
-# suppress other googlyrics error messages
-	expr "$line" : '.*'$GOOGLYRICS >/dev/null 2>&1 && continue
-	notempty=0
-	test x"$line" = x || notempty=1;
-	test $notempty -eq 1 && txtfound=1;
-	test $txtfound -eq 1 && echo $line
-done > "$3".loading 2>/dev/null
-# use .loading because the file is already there when googlyrics starts
-# but muggle thinks we are done as soon as $3 exists
-
-if test -s "$3".loading
+rmdir "$outdir" 2>/dev/null
+if test -d "$outdir"
 then
-	mv "$3".loading "$3"
-else
-	rm -f "$3".loading
+	ls -l  "$outdir"
+	ls "$outdir"/*.converted | head -1 | while read fn
+	do
+		test -r "$fn" || break
+		mv "$fn" "$outfile"
+	done
+	rmdir "$outdir" 2>/dev/null
 fi
-test -s "$3"	# we want the exit code
+rm -f "$outfile".loading

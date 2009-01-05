@@ -35,10 +35,19 @@ int mgLyrics::RunCommand(const string cmd) {
 	return res;
 }
 
+bool
+mgLyrics::HasMoreVersions() {
+	struct stat stbuf;
+	if (!displayItem)
+		return 0;
+	return (!stat(displayItem->getCachedFilename("lyrics.tmp.new").c_str(),&stbuf));
+}
+
 void
 mgLyrics::LoadExternal() {
 mgLog("LoadExternal");
-	osd()->Message1(tr("Loading lyrics from internet..."));
+	if (!HasMoreVersions())
+		osd()->Message1(tr("Loading lyrics from internet..."));
 	string script=the_setup.ConfigDirectory + "/scripts/muggle_getlyrics";
 	if (RunCommand(script)==0) {
 		state=lyricsLoading;
@@ -63,17 +72,21 @@ mgLyrics::SaveExternal() {
 	free(cmd);
 }
 
+void
+mgLyrics::ThrowTmpAway(const mgItemGd& item) {
+	char *cmd;
+	msprintf(&cmd,"rm -f \"%s\"",item.getCachedFilename("lyrics.tmp").c_str());
+	SystemExec(cmd);
+	free(cmd);
+	state=lyricsSaved;
+}
+
 eOSState
 mgLyrics::Process(eKeys key) {
 	playItem=mutPlayingItem();
 	LyricsState prevstate=state;
-	if (displayItem!=playItem && prevstate==lyricsLoaded) {
-		char *cmd;
-		msprintf(&cmd,"rm -f \"%s\"",displayItem->getCachedFilename("lyrics.tmp").c_str());
-		SystemExec(cmd);
-		free(cmd);
-		state=lyricsSaved;
-	}
+	if (displayItem!=playItem && prevstate==lyricsAsking) 
+		ThrowTmpAway(displayItem);
 	long cl=playItem->getCheckedForTmpLyrics();
 	if (displayItem!=playItem || (cl>0 && cl<time(0))) {
 		if (!access(playItem->getCachedFilename("lyrics.tmp.loading").c_str(),R_OK)) {
@@ -83,10 +96,24 @@ mgLyrics::Process(eKeys key) {
 			bool normfound=!access(playItem->getCachedFilename("lyrics").c_str(),R_OK);
 			if (!access(playItem->getCachedFilename("lyrics.tmp").c_str(),R_OK)) {
 				playItem->setCheckedForTmpLyrics(0);
-				state=lyricsLoaded;
 				if (!normfound) {
 					SaveExternal();
 					state=lyricsSaved;
+				} else {
+					state=lyricsAsking;
+					BuildOsd();
+					osd()->Display();
+					if (Interface->Confirm(tr("Save this version?"))) {
+						SaveExternal();
+						state=lyricsSaved;
+					}  else {
+						if (HasMoreVersions())
+							LoadExternal();
+						else {
+							ThrowTmpAway(playItem);
+							state=lyricsSaved;
+						}
+					}
 				}
 			} else if (displayItem!=playItem) {
 				if (normfound) {
@@ -150,8 +177,8 @@ mgLyrics::BuildOsd () {
 		case lyricsLoading:
 			BlueAction=actNone;
 			break;
-		case lyricsLoaded:
-			BlueAction=actSaveExternalLyrics;
+		case lyricsAsking:
+			BlueAction=actLoadExternalLyrics;
 			loadfile=playItem->getCachedFilename("lyrics.tmp");
 			break;
 		default:

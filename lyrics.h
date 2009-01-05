@@ -6,7 +6,7 @@
 enum LyricsState {
 	lyricsNone,
 	lyricsLoading,
-	lyricsLoaded,
+	lyricsAsking,
 	lyricsSaved
 };
 
@@ -16,6 +16,8 @@ class mgLyrics : public mgMenu
 		int RunCommand(string cmd);
 		void LoadExternal();
 		void SaveExternal();
+		void ThrowTmpAway(const mgItemGd& item);
+		bool HasMoreVersions();
 		const mgItemGd *displayItem;
 		mgItemGd *playItem;
 		LyricsState state;

@@ -57,7 +57,7 @@ required:
     http://www.xiph.org/ogg/vorbis/)
  - optionally libFLAC++ to replay FLAC files
    (Debian package libflac++-dev or sources from flac.sourceforge.net)
- - recode if you want to download lyrics
+ - recode, python and Googlyrics2 if you want to download lyrics
 
 The developer versions are needed because their headers are required
 for compilation.  The server need not be on the same machine as the
@@ -313,17 +313,25 @@ not saved. Both files can coexist, however if .lyrics.tmp exists,
 this one will be displayed with the option to save it. Saving of
 course removes .lyrics.tmp
 
+The directory lyrics.tmp.new contains all versions downloaded from
+the internet. If the user wants to download or rejects a version,
+the first version from this directory is returned and removed
+from the lyrics.tmp.new. Only if no version is available from
+lyrics.tmp.new, muggle actually invokes googlyrics2 for a new
+download.
+
 If a track starts playing and lyrics are wanted, muggle first tries the local file.
 If it does not exist, muggle will automatically get it from the
-internet. If you do not like the text, you can edit the lyrics file
+internet and save the first version. If you do not like the text,
+you can edit the lyrics file
 (outside of muggle) or request another load from the internet -
 maybe somebody fixed it meanwhile. If characters in the lyrics are
 not shown correcly, you can try to adjust the muggle_getlyrics script.
 
 Muggle starts the retrieval script in the background and displays
 the lyrics as soon as it is available. If you change track before
-the retrieval finished, two retrieval scripts might be running at
-the same time - no problem.
+the retrieval finished, two ore more retrieval scripts might be
+running at the same time - no problem.
 
 with vdr versions before 1.5.4, muggle cannot start this in the background.
 Instead it waits until the script has finished. Meanwhile it will not
@@ -331,10 +339,9 @@ respond to commands, and the message "loading lyrics" will only appear
 after they have been loaded.
 
 Muggle calls the script muggle_getlyrics which in turn calls 
-googlyrics - this is slightly adapted to muggle. The original is
-here: http://www.kde-apps.org/content/show.php/GoogLyrics?content=73850
-googlyrics is a plugin to the amarok music player, it can currently ask
-27 different sources.
+mgLyrics.py which in turn uses the Googlyrics2 python modules.
+Googlyrics2 is a plugin to the amarok music player, it can currently ask
+26 different sources.
 
 
 

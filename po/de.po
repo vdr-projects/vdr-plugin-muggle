@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: de\n"
 "Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
-"POT-Creation-Date: 2008-12-25 15:40+0200\n"
+"POT-Creation-Date: 2009-01-05 11:43+0100\n"
 "PO-Revision-Date: 2008-12-23 22:40+0100\n"
 "Last-Translator: Wolfgang Rohdewald <wolfgang@rohdewald.de>\n"
 "Language-Team: German <wolfgang@rohdewald.de>\n"
@@ -22,6 +22,9 @@ msgstr ""
 
 msgid "Loading lyrics from internet..."
 msgstr "Lade Text aus dem Internet..."
+
+msgid "Save this version?"
+msgstr "Diese Version speichern?"
 
 msgid "empty database created"
 msgstr "leere Datenbank angelegt"
