@@ -1210,11 +1210,15 @@ mgDb::SyncFile(const char *filename) {
 	mgSQLString c_lang(m_TLAN);
 	mgSQLString c_cddbid(getAlbum(filename,c_album,c_artist));
 
-	const char *cwd = mugglepath();
+	const char *cwd;
+	if (the_setup.IsMugglei())
+		cwd = mugglepath();
+	else
+		cwd  = strdup("");
 	int tldlen = strlen(the_setup.ToplevelDir);
 	int cwdlen = strlen(cwd);
 	const char *relpath=cwd;
-	if (cwdlen>tldlen); relpath += tldlen;
+	if (cwdlen>tldlen) relpath += tldlen;
 	char *b;
 	msprintf(&b,"%s%s",relpath,cfilename);
 	free((void*)cwd);
