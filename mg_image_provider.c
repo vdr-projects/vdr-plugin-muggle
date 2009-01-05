@@ -345,7 +345,7 @@ bool mgMpgImageProvider::updateItem( mgItemGd *newitem ) {
 }
 
 void mgMpgImageProvider::Action() {
-	// convert all imges
+	// convert all images
 	Lock();
 	vector<string> images( m_need_conversion );
 	mgItemGd *cnvItem = currItem;
@@ -406,14 +406,15 @@ void mgImageProvider::fillImageList( string dir ) {
 
 void mgImageProvider::writeImage( TagLib::ByteVector &image, int num, string &image_cache ) {
 	char* image_data = image.data();
-	int len = image.size();
+	uint len = image.size();
 
 	// save image_data to temporary file
 	char *buf;
 	msprintf( &buf, "%s/image-%d.jpg", image_cache.c_str(), num );
 
 	FILE *f = fopen( buf, "w+" );
-	fwrite( image_data, sizeof(char), len, f );
+	if (fwrite( image_data, sizeof(char), len, f ) != len)
+		mgWarning("Potential short write while writing to %s", buf);
 	fclose( f );
 	free( buf );
 }

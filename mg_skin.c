@@ -231,7 +231,7 @@ int cmgSkin::StoreSkin(const char *ThemeName) {
 		if(filestr) {
 			while (getline(filestr, line, '\n')) {
 				line = line + "\n";
-				fprintf(f, line.c_str());
+				fprintf(f, "%s", line.c_str());
 			}
 			filestr.close();
 		}

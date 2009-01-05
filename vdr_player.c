@@ -672,7 +672,7 @@ mgPlayerControl::ShowProgress (bool open) {
 
 	if (currItem) {				 // send progress to status monitor
 		if (changed||orderchanged) {
-			snprintf(buf,sizeof(buf),currItem->getArtist().size()?"[%c%c] (%d/%d) %s - %s":"[%c%c] (%d/%d) %s",
+			snprintf(buf,sizeof(buf),currItem->getArtist().size()?"[%c%c] (%d/%zd) %s - %s":"[%c%c] (%d/%zd) %s",
 				LoopChar(),ShuffleChar(),currPos,PlayList()->items().size(),currItem->getTitle().c_str(),currItem->getArtist().c_str());
 #if APIVERSNUM >= 10338
 			cStatus::MsgReplaying(this,buf,currItem->getSourceFile().size()?currItem->getSourceFile().c_str():0,true);

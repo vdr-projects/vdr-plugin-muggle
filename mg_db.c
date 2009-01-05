@@ -46,8 +46,8 @@ mugglepath() {
 	memset(buf,0,5000);
 	if (getenv("PWD"))
 		strncpy(buf,getenv("PWD"),4990);
-	else
-		getcwd(buf,4990);
+	else if (!getcwd(buf,4990))
+		mgError("Cannot get current directory: %s", strerror(errno));
 	strcat(buf,"/");
 	return strdup(buf);
 }
