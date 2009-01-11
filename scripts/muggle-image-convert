@@ -4,6 +4,7 @@
 #           mktemp, awk, file
 #
 
+
 # video format. pal or ntsc
 FORMAT=pal
 
@@ -67,6 +68,16 @@ case "$FILE_TYPE" in
   exit 1
   ;;
 esac
+
+for requires in $TO_PNM pnmpad ppmntsc pnmscale ppmtoy4m mpeg2enc
+do
+	which $requires >/dev/null 2>&1
+	if test $? -ne 0
+	then
+		echo $requires not installed
+		exit 1
+	fi
+done
 
 $TO_PNM "$IMG" >"$TMP" 2>/dev/null
 
