@@ -255,35 +255,23 @@ mgOsd::AddText(const char* text,bool selectable) {
 }
 
 void
-mgOsd::AddLongText(const char* text) {
-	char *s=strdup(text);
-	char *p=s;
-	unsigned int brk=57;
-	bool selectable = strlen(s);
-	while (strlen(p)>=brk) {
-		char save=p[brk];
-		p[brk]=0;
-		AddText(p,selectable);
-		p[brk]=save;
-		p+=brk;
-	}
-	if (strlen(p))
-		AddText(p,selectable);
-	free(s);
-}
-
-void
 mgOsd::AddFile(const string filename) {
-	ifstream infile(filename.c_str());
-	string line;
-	if(infile) {
-		while(getline(infile, line , '\n'))
-			AddLongText(line.c_str());
-	}
-	else {
+	FILE *fp = fopen(filename.c_str(),"r");
+	if (fp) {
+		char* line = NULL;
+		size_t len = 0;
+		while (getline(&line, &len , fp) != -1) {
+			char *lf = strrchr(line,'\n');
+			if (lf) *lf = 0;
+			AddText(line,strlen(line));
+		}
+		if (line)
+			free(line);
+		fclose(fp);
+	} else {
 		char *s;
 		msprintf(&s,tr("File %s not found"),filename.c_str());
-		AddLongText(s);
+		AddText(s);
 		free(s);
 	}
 }

@@ -340,10 +340,15 @@ Instead it waits until the script has finished. Meanwhile it will not
 respond to commands, and the message "loading lyrics" will only appear
 after they have been loaded.
 
-Muggle calls the script muggle_getlyrics which in turn calls 
-mgLyrics.py which in turn uses the Googlyrics2 python modules.
+Muggle calls the python program muggle_getlyrics which 
+uses the Googlyrics2 python modules.
 Googlyrics2 is a plugin to the amarok music player, it can currently ask
-26 different sources.
+27 different sources.
+
+If the lyrics lines are too long, they are split by muggle_getlyrics. If
+those lines are too short or too long, adapt MAXLINELENGTH in muggle_getlyrics.
+Currently lines are split at normal space and at nbsp (unicode non breaking
+space). Lines that have no such spaces are not split.
 
 
 

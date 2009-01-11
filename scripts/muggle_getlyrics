@@ -6,6 +6,28 @@ import os, sys, locale, re, codecs
 import filecmp
 from htmlentitydefs import name2codepoint as n2cp
 
+MAXLINELENGTH = 50
+
+def writeFile(name,s):
+	if not os.path.isdir(outdir):
+		os.mkdir(outdir)
+	outname = outdir + '/' + name
+	outfile = open(outname,"w")
+	lines = s.splitlines()
+	for line in lines:
+# xa0 is unicode non breaking space
+		words = re.split(r' |\xa0',line)
+		widx1 = 0
+		while widx1 < len(words):
+			widx2 = len(words) 
+			while widx2 > widx1 + 1 and len(' '.join(words[widx1:widx2])) > MAXLINELENGTH:
+				widx2 -= 1
+			newline = ' '.join(words[widx1:widx2])+'\n'
+			newline = newline.encode(locale.getdefaultlocale()[1])
+			outfile.write(newline)
+			widx1 = widx2		
+	outfile.close
+	
 charset = locale.getdefaultlocale()[1]
 title = sys.argv[1].decode(charset).encode('UTF8')
 artist = sys.argv[2].decode(charset).encode('UTF8')
@@ -52,13 +74,6 @@ def countFiles():
 		return 0
 	return len(os.listdir(outdir))
 
-def writeFile(name,s):
-	if not os.path.isdir(outdir):
-		os.mkdir(outdir)
-	outfile = open(outdir + '/' + name,"w")
-	outfile.write(s)
-	outfile.close
-	
 def load(debug=False):
 	if debug:
 		outlyric=["Version 1","Version 2","Version 3"]
@@ -98,7 +113,6 @@ def load(debug=False):
 # private use, but still some sites use them..
 			s = s.replace(r'\xc2\x91',r'\x27')
 			s = s.replace(r'\xc2\x92',r'\x27')
-			s = s.encode(locale.getdefaultlocale()[1])
 			writeFile(str(idx)+'-'+l.sitename,s)
 
 # -----------------------------------------------

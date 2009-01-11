@@ -388,3 +388,7 @@ Balke.
 - Lyrics: rewrite the shell script muggle_getlyrics in python and talk 
   directly to the Googlyrics2 python code
 - load images: fix buggy error handling (reported in vdr-portal.de by stevie101)
+- Lyrics: Fix bug #52: line split could split within 2byte unicode char. Now
+  removed this code from C++ and put it into the python script muggle_getlyrics.
+- Lyrics: when calling "mv" to rename a file make sure mv never gets interactive
+- muggle-image-convert produces less output if needed programs are not installed
