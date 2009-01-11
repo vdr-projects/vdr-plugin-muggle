@@ -63,7 +63,7 @@ mgLyrics::SaveExternal() {
 	string tmp=item->getCachedFilename("lyrics.tmp");
 	PlayerControl()->CurrentItem()->resetHasLyricsFile();
 	char *cmd;
-	msprintf(&cmd, "mv -f \"%s\" \"%s\" >/dev/null 2>&1 & ", tmp.c_str(), local.c_str());
+	msprintf(&cmd, "mv -f \"%s\" \"%s\" >/dev/null 2>&1", tmp.c_str(), local.c_str());
 	mgDebug(1,"muggle[%d]: lyrics: Executing %s\n",getpid(), cmd);
 	if (!SystemExec(cmd)) {
 		BlueAction=actLoadExternalLyrics;
@@ -76,6 +76,7 @@ void
 mgLyrics::ThrowTmpAway(const mgItemGd& item) {
 	char *cmd;
 	msprintf(&cmd,"rm -f \"%s\"",item.getCachedFilename("lyrics.tmp").c_str());
+	mgDebug(5,"muggle[%d]: lyrics: ThrowTmpAway: Executing %s\n",getpid(), cmd);
 	SystemExec(cmd);
 	free(cmd);
 	state=lyricsSaved;
@@ -114,6 +115,7 @@ mgLyrics::Process(eKeys key) {
 							state=lyricsSaved;
 						}
 					}
+					key = kNone;
 				}
 			} else if (displayItem!=playItem) {
 				if (normfound) {
