@@ -63,7 +63,7 @@ mgLyrics::SaveExternal() {
 	string tmp=item->getCachedFilename("lyrics.tmp");
 	PlayerControl()->CurrentItem()->resetHasLyricsFile();
 	char *cmd;
-	msprintf(&cmd, "mv \"%s\" \"%s\"", tmp.c_str(), local.c_str());
+	msprintf(&cmd, "mv -f \"%s\" \"%s\" >/dev/null 2>&1 & ", tmp.c_str(), local.c_str());
 	mgDebug(1,"muggle[%d]: lyrics: Executing %s\n",getpid(), cmd);
 	if (!SystemExec(cmd)) {
 		BlueAction=actLoadExternalLyrics;
