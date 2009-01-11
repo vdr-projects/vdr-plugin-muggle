@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: fi\n"
 "Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
 "POT-Creation-Date: 2009-01-05 11:43+0100\n"
-"PO-Revision-Date: 2008-12-25 15:37+0200\n"
+"PO-Revision-Date: 2009-01-06 00:38+0200\n"
 "Last-Translator: Ville Skyttä <ville.skytta@iki.fi>\n"
 "Language-Team: Finnish <ville.skytta@iki.fi>\n"
 "MIME-Version: 1.0\n"
@@ -23,14 +23,14 @@ msgid "Loading lyrics from internet..."
 msgstr "Ladataan sanoituksia verkosta..."
 
 msgid "Save this version?"
-msgstr ""
+msgstr "Tallenna tämä versio?"
 
 msgid "empty database created"
 msgstr "tyhjä tietokanta luotu"
 
 #, c-format
 msgid "Cannot get exclusive lock on SQLite database %s:%d/%s"
-msgstr ""
+msgstr "SQLite-tietokannan %s varaaminen yksityiseen käyttöön ei onnistunut: %d/%s"
 
 #, c-format
 msgid "File %s not found"
@@ -266,7 +266,7 @@ msgstr "Tuodaanko kappaleet?"
 
 #, c-format
 msgid "Cannot access directory %s:%d"
-msgstr ""
+msgstr "Hakemistoon %s siirtyminen ei onnistu: %d"
 
 #, c-format
 msgid "%d tracks : %s"
@@ -391,3 +391,4 @@ msgstr "Tuhoa vanhentuneet viittaukset"
 
 #~ msgid "Background mode"
 #~ msgstr "Taustamoodi"
+
