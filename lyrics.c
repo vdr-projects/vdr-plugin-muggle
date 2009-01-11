@@ -189,6 +189,10 @@ mgLyrics::BuildOsd () {
 			break;
 	}
 	InitOsd();
-	if (!access(loadfile.c_str(),R_OK))
-		osd()->AddFile(loadfile);
+	if (state == lyricsLoading) {
+		osd()->AddText(tr("Loading lyrics from internet..."),0);
+	} else {
+		if (!access(loadfile.c_str(),R_OK))
+			osd()->AddFile(loadfile);
+	}
 }

@@ -392,3 +392,5 @@ Balke.
   removed this code from C++ and put it into the python script muggle_getlyrics.
 - Lyrics: when calling "mv" to rename a file make sure mv never gets interactive
 - muggle-image-convert produces less output if needed programs are not installed
+- When loading lyrics, do not show just empty text but the line "loading lyrics
+  from the internet"
