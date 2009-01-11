@@ -57,7 +57,9 @@ required:
     http://www.xiph.org/ogg/vorbis/)
  - optionally libFLAC++ to replay FLAC files
    (Debian package libflac++-dev or sources from flac.sourceforge.net)
- - recode, python and Googlyrics2 if you want to download lyrics
+ - recode, python, python-chardet and Googlyrics2 if you want to download lyrics.
+   Googlyrics2 must be newer than Beta3, otherwise umlauts will be
+   wrong
 
 The developer versions are needed because their headers are required
 for compilation.  The server need not be on the same machine as the

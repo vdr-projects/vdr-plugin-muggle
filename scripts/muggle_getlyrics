@@ -1,72 +1,126 @@
-#!/bin/sh
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-# usage:
-# artist title outfile
-#
-# we might find several different lyrics for a song. This is handled
-# by this script: We use a subdirectory outfile.new. If it exists
-# and contains a file, we just return that file and remove it from
-# outfile.new. If outfile.new is empty, we read all versions again
-# with googlyrics.
+from __future__ import with_statement
+import os, sys, locale, re, codecs
+import filecmp
+from htmlentitydefs import name2codepoint as n2cp
 
-# ultimately I want to integrate this shell script into mgLyrics.py
+charset = locale.getdefaultlocale()[1]
+title = sys.argv[1].decode(charset).encode('UTF8')
+artist = sys.argv[2].decode(charset).encode('UTF8')
+outfile = sys.argv[3]
 
-artist="$1"
-title="$2"
-outfile="$3"
-orgoutfile=`echo "$3" | sed 's/.tmp$//'`
-outdir="$3.new"
+lyricsfile = os.path.splitext(outfile)[0]
+outdir = outfile+'.new'
 
-echo > "$outfile".loading
+# add other possible paths here:
+googlFound = False
+for scriptdir in ('/usr/share/apps/amarok/scripts/Googlyrics2', \
+               	'NULL'):
+       	if os.path.isdir(scriptdir+'/sites/'):
+               	sys.path.append(scriptdir + "/lib/")
+               	sys.path.append(scriptdir + "/sites/")
+               	os.chdir(scriptdir)
+               	googlFound = True
+               	break 
 
-if test ! -d "$outdir"
-then
-	mkdir "$outdir"
-	MGLYRICS="`dirname $0`/mgLyric.py"
-	if test ! -x "$MGLYRICS"
-	then
-		echo $MGLYRICS not found > "$outdir"/1.raw
-	else
-		"$MGLYRICS" "$title" "$artist" "$outdir" 
-	fi
+if not googlFound:
+	writeFile("Googlyrics2 is not installed\nSee http://quicode.com/googlyircs2")
+	sys.exit(0)
 
-	for i in "$outdir"/*.raw
-	do	
-		test -r "$i" || break
-		cat "$i" |
-		sed 's/\x0d//g' |
-		sed 's/\xc2\xb4/\x27/g' |
-		sed 's/\xc3\x82\x27/\x27/g' |
-		sed 's/\xc3\x82/\x27/g' |
-		sed 's/\xc3\xb9/\x27/g' |
-		sed 's/\xe2\x80\x99/\x27/g' |
-		grep -ive 'NEW.*ringtones' |
-		grep -v -e '--------------' |
-		recode HTML..utf8 |
-		sed 's/\xc2\x91/\x27/g' |	# in unicode, those two are reserved for
-		sed 's/\xc2\x92/\x27/g' |   # private use, but still some sites use them...
-		cat > "$i.converted" 2>/dev/null
-		rm -f "$i"
-		echo cmp -s "$i.converted" "$orgoutfile">>/tmp/log.wr
-		cmp -s "$i.converted" "$orgoutfile"
-		if test $? -eq 0
-		then
-			echo rm -f "$i.converted" >>/tmp/log.wr
-			rm -f "$i.converted"
-			continue
-		fi
-	done
-fi
+from Googlyrics import *
 
-rmdir "$outdir" 2>/dev/null
-if test -d "$outdir"
-then
-	ls -l  "$outdir"
-	ls "$outdir"/*.converted | head -1 | while read fn
-	do
-		test -r "$fn" || break
-		mv "$fn" "$outfile"
-	done
-	rmdir "$outdir" 2>/dev/null
-fi
-rm -f "$outfile".loading
+def substitute_entity(match):
+    ent = match.group(2)
+    if match.group(1) == "#":
+        return unichr(int(ent))
+    else:
+        cp = n2cp.get(ent)
+
+        if cp:
+            return unichr(cp)
+        else:
+            return match.group()
+
+def decode_htmlentities(string):
+    entity_re = re.compile("&(#?)(\d{1,5}|\w{1,8});")
+    return entity_re.subn(substitute_entity, string)[0]
+
+def countFiles():
+	if not os.path.isdir(outdir):
+		return 0
+	return len(os.listdir(outdir))
+
+def writeFile(name,s):
+	if not os.path.isdir(outdir):
+		os.mkdir(outdir)
+	outfile = open(outdir + '/' + name,"w")
+	outfile.write(s)
+	outfile.close
+	
+def load(debug=False):
+	if debug:
+		outlyric=["Version 1","Version 2","Version 3"]
+		for idx,item in enumerate(outlyric):
+			outfile = open(outdir + '/' + str(idx) + '.raw',"w")
+			outfile.write(item)
+			outfile.close
+		sys.exit(0)
+
+	g = Googlyrics()
+
+	outlyric = g.find_lyrics(title, artist)
+	if len(outlyric) > 0:
+		print 'versions:',len(outlyric)
+		for idx,item in enumerate(outlyric):
+			l = item.getLyric()
+			if l is None:
+				continue
+			if l.lyrics is None:
+				print 'lyrics is None'
+				continue
+			if len(l.lyrics)<3:
+				print 'lyrics is too short',l.lyrics
+				continue
+			s = l.lyrics
+			s = decode_htmlentities(s)
+#			s = re.sub(r'&#([0-9]*);',lambda cc: unichr(int(cc.group(1))),s)
+# replace lots of apostrophe variants with want we want:
+			s = s.replace(r'\xc2\xb4',r'\x27')
+			s = s.replace(r'\xc3\x82\x27',r'\x27')
+			s = s.replace(r'\xc3\x82',r'\x27')
+			s = s.replace(r'\xc3\xb9',r'\x27')
+			s = s.replace(r'\xe2\x80',r'x99/\x27')
+			s = s.replace(r'\n.*NEW.*ringtones.*\n',r'\n')
+			s = s.replace(r'\n.*---------.*\n',r'\n')
+# in unicode, those two are reserved for
+# private use, but still some sites use them..
+			s = s.replace(r'\xc2\x91',r'\x27')
+			s = s.replace(r'\xc2\x92',r'\x27')
+			s = s.encode(locale.getdefaultlocale()[1])
+			writeFile(str(idx)+'-'+l.sitename,s)
+
+# -----------------------------------------------
+# main :
+
+semaphore = outfile+'.loading'
+with open(semaphore,"w") as f:
+	f.write('')
+try:
+	if countFiles() == 0:
+		load()
+	if countFiles() > 0:
+		for item in os.listdir(outdir):
+			itemfile = outdir + '/' + item
+			if os.path.exists(lyricsfile):
+				if filecmp.cmp(lyricsfile,itemfile) == 1:
+					print 'removing duplicate ',itemfile
+					os.remove(itemfile)
+	if countFiles() > 0:
+		os.rename(outdir+'/'+os.listdir(outdir)[0],outfile)
+	if countFiles() == 0 and os.path.exists(outdir):
+		os.rmdir(outdir)
+finally:
+	os.remove(semaphore)
+

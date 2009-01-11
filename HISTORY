@@ -385,3 +385,5 @@ Balke.
 - Lyrics now work with Googlyrics2
 - if several versions of lyrics for a song are found, it is now possible
   to choose among them. 
+- Lyrics: rewrite the shell script muggle_getlyrics in python and talk 
+  directly to the Googlyrics2 python code
