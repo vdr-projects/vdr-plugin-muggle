@@ -391,16 +391,19 @@ void mgMpgImageProvider::Action() {
 void mgImageProvider::fillImageList( string dir ) {
 	// obtain all .png, .jpg in dir and gather them in m_image_list
 
-	struct dirent **files;
+	struct dirent **files = 0;
 	int count = scandir( dir.c_str(), &files, picture_select, alphasort );
 
-	if( count ) {
+	if( count>0 ) {
 		for ( int i=0; i < count; i++ ) {
 			string fname = dir + "/" + string( files[i]->d_name );
 			m_image_list.push_back( fname );
 			free( files[i] );
 		}
 		free( files );
+	} else if (count<0) {
+		mgDebug( 1, "Cannot scan directory %s: %s",
+			dir.c_str(), strerror( errno ) );
 	}
 }
 

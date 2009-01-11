@@ -387,3 +387,4 @@ Balke.
   to choose among them. 
 - Lyrics: rewrite the shell script muggle_getlyrics in python and talk 
   directly to the Googlyrics2 python code
+- load images: fix buggy error handling (reported in vdr-portal.de by stevie101)
