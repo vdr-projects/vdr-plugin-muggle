@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: <vdr-muggle-develop@sourceforge.net>\n"
 "POT-Creation-Date: 2009-01-05 11:43+0100\n"
-"PO-Revision-Date: 2008-12-24 18:33+0100\n"
+"PO-Revision-Date: 2009-01-12 00:18+0100\n"
 "Last-Translator: Diego Pierotto <vdr-italian@tiscali.it>\n"
 "Language-Team: Italian <vdr-italian@tiscali.it>\n"
 "MIME-Version: 1.0\n"
@@ -170,7 +170,7 @@ msgstr "Predefinito"
 msgid "Set default to collection '%s'"
 msgstr "Imposta predefiniti nella raccolta '%s'"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Default collection is now '%s'"
 msgstr "Ora la raccolta predefinita è '%s'"
 
@@ -386,3 +386,4 @@ msgstr "Trasparenza copertina"
 
 msgid "Delete stale references"
 msgstr "Elimina riferimenti blocco"
+
