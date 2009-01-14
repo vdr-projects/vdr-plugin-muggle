@@ -6,9 +6,11 @@ import os, sys, locale, re, codecs
 import filecmp
 from htmlentitydefs import name2codepoint as n2cp
 
+# adjust MAXLINELENGTH to your needs
 MAXLINELENGTH = 50
 
 def writeFile(name,s):
+	"""create directory if needed. Wrap lines without splitting words."""
 	if not os.path.isdir(outdir):
 		os.mkdir(outdir)
 	outname = outdir + '/' + name
@@ -74,15 +76,7 @@ def countFiles():
 		return 0
 	return len(os.listdir(outdir))
 
-def load(debug=False):
-	if debug:
-		outlyric=["Version 1","Version 2","Version 3"]
-		for idx,item in enumerate(outlyric):
-			outfile = open(outdir + '/' + str(idx) + '.raw',"w")
-			outfile.write(item)
-			outfile.close
-		sys.exit(0)
-
+def load():
 	g = Googlyrics()
 
 	outlyric = g.find_lyrics(title, artist)
@@ -129,7 +123,6 @@ try:
 			itemfile = outdir + '/' + item
 			if os.path.exists(lyricsfile):
 				if filecmp.cmp(lyricsfile,itemfile) == 1:
-					print 'removing duplicate ',itemfile
 					os.remove(itemfile)
 	if countFiles() > 0:
 		os.rename(outdir+'/'+os.listdir(outdir)[0],outfile)
