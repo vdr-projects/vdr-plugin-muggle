@@ -380,9 +380,10 @@ Balke.
   Thomas
 - updated translations by Ville Skyttä and Diego Pierotto
 
-2009-XX-XX Version 0.2.3
+2009-01-15 Version 0.2.3
 - last version broke importing from setup menu
-- Lyrics now work with Googlyrics2
+- Lyrics now work with Googlyrics2. Please use Googlyrics2 post beta3, the
+  beta3 version only handles ascii text
 - if several versions of lyrics for a song are found, it is now possible
   to choose among them. 
 - Lyrics: rewrite the shell script muggle_getlyrics in python and talk 
