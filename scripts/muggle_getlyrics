@@ -24,7 +24,7 @@ def writeFile(name,s):
 			widx2 = len(words) 
 			while widx2 > widx1 + 1 and len(' '.join(words[widx1:widx2])) > MAXLINELENGTH:
 				widx2 -= 1
-			newline = ' '.join(words[widx1:widx2])+'\n'
+			newline = ' '.join(words[widx1:widx2]).rstrip()+'\n'
 			newline = newline.encode(locale.getdefaultlocale()[1])
 			outfile.write(newline)
 			widx1 = widx2		
@@ -81,16 +81,13 @@ def load():
 
 	outlyric = g.find_lyrics(title, artist)
 	if len(outlyric) > 0:
-		print 'versions:',len(outlyric)
 		for idx,item in enumerate(outlyric):
 			l = item.getLyric()
 			if l is None:
 				continue
 			if l.lyrics is None:
-				print 'lyrics is None'
 				continue
 			if len(l.lyrics)<3:
-				print 'lyrics is too short',l.lyrics
 				continue
 			s = l.lyrics
 			s = decode_htmlentities(s)
