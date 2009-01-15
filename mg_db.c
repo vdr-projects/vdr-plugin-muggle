@@ -1218,7 +1218,10 @@ mgDb::SyncFile(const char *filename) {
 	int tldlen = strlen(the_setup.ToplevelDir);
 	int cwdlen = strlen(cwd);
 	const char *relpath=cwd;
-	if (cwdlen>tldlen) relpath += tldlen;
+	if (cwdlen>tldlen)
+		relpath += tldlen;
+	else if (cwdlen==tldlen)
+		relpath = "";
 	char *b;
 	msprintf(&b,"%s%s",relpath,cfilename);
 	free((void*)cwd);
