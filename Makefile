@@ -80,6 +80,9 @@ PACKAGE = vdr-$(ARCHIVE)
 
 ### Includes and Defines (add further entries here):
 
+FTWNOTWANTED = -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
+DEFINES := $(filter-out $(FTWNOTWANTED),$(DEFINES))
+
 INCLUDES += -I$(VDRDIR) -I$(VDRDIR)/include \
 	$(shell taglib-config --cflags)
 

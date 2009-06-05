@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # requires: *topnm, pnmpad, pnmscale, ppmntsc, ppmtoy4m, mpeg2enc,
 #           mktemp, awk, file
