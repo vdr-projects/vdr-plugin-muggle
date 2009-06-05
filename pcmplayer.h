@@ -219,6 +219,7 @@ class mgPCMPlayer : public cPlayer, cThread
 
 		virtual bool GetIndex (int &Current, int &Total, bool SnapToIFrame = false);
 		//  bool GetPlayInfo(cMP3PlayInfo *rm); // LVW
+   virtual bool GetReplayMode(bool &Play, bool &Forward, int &Speed);
 
 		void ReloadPlaylist();
 		void NewPlaylist (mgSelection * plist);

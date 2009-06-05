@@ -656,6 +656,17 @@ bool mgPCMPlayer::GetIndex (int &current, int &total, bool snaptoiframe) {
 	return false;
 }
 
+bool mgPCMPlayer::GetReplayMode(bool &Play, bool &Forward, int &Speed) {
+  Speed = -1;
+  Forward = true;
+  switch(PlayMode()) {
+    case pmPlay:  Play = true; break;
+    default:  
+                  Play = false; break;
+  }
+  return true;
+}
+
 void mgPCMPlayer::internShowMPGFile() {
 	if (!imagefile.size())
 		return;
