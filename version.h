@@ -23,5 +23,5 @@
 #define ___VERSION_H
 
 #define PLUGIN_NAME    "VDR-music"
-#define PLUGIN_VERSION "0.2.2"
+#define PLUGIN_VERSION "0.2.3"
 #endif							 //___VERSION_H
