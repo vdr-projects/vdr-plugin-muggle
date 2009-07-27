@@ -11,9 +11,17 @@
 #include "mg_setup.h"
 #include "vdr_player.h"
 
+static int script_warned;
+
 int mgLyrics::RunCommand(const string cmd) {
 	int res=-1;
-	if (access(cmd.c_str(),R_OK|X_OK)) return res;
+	if (access(cmd.c_str(),R_OK|X_OK)) {
+		if (!script_warned) {
+			mgDebug(1,"muggle[%d]: lyrics: Script %s not found\n",getpid(),cmd.c_str());
+			script_warned = 1;
+		}
+		return res;
+	}
 	char *tmp;
 #if VDRVERSNUM < 10504
 	const char *backgr="&";
