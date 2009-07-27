@@ -17,6 +17,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <cstdarg>
 
 using namespace std;
 

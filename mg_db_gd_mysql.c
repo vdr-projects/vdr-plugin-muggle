@@ -148,9 +148,9 @@ mgDbGd::Threadsafe() {
 
 #ifndef HAVE_ONLY_SERVER
 static char *mysql_embedded_args[] = {
-	"muggle",
+	0,
 	0,							 // placeholder for --datadir=
-	"--key_buffer_size=32M"
+	0
 };
 
 static void
@@ -169,6 +169,11 @@ mgDbServerMySQL::mgDbServerMySQL() {
 	mysql_embedded_groups[2] = "muggle_SERVER";
 	mysql_embedded_groups[3] = 0;
 	int argv_size;
+	if (!mysql_embedded_args[0]) {
+		// we never free those but only allocate them once:
+		mysql_embedded_args[0] = strdup("muggle");
+		mysql_embedded_args[2] = strdup("--key_buffer_size=32M");
+	}
 	if (UsingEmbeddedMySQL()) {
 		argv_size = sizeof(mysql_embedded_args) / sizeof(char *);
 		struct stat stbuf;
