@@ -185,7 +185,7 @@ I18Npot   = $(PODIR)/$(PLUGIN).pot
 	msgfmt -c -o $@ $<
 
 $(I18Npot): $(wildcard *.c)
-	xgettext -C -cTRANSLATORS --no-wrap --no-location -k -ktr -ktrNOOP -ktrdb --msgid-bugs-address=http://projects.vdr-developer.org/projects/show/plg-muggle -o $@ $^
+	xgettext -C -cTRANSLATORS --no-wrap --no-location -k -ktr -ktrNOOP -ktrdb --package-name=vdr-$(PLUGIN) --package-version=$(VERSION) --msgid-bugs-address=http://projects.vdr-developer.org/projects/show/plg-muggle -o $@ $^
 
 %.po: $(I18Npot)
 	msgmerge -U --no-wrap --no-location --backup=none -q $@ $<
