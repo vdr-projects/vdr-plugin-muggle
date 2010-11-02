@@ -39,7 +39,7 @@ int picture_select( struct dirent const *entry ) {
 		return (FALSE);
 	}
 	else {
-		char *ext = rindex( entry->d_name, '.' );
+		const char *ext = rindex( entry->d_name, '.' );
 
 		if( ext ) {
 			if( !strcmp( ext, ".jpg" ) || !strcmp( ext, ".png" ) || !strcmp( ext, ".JPG" ) || !strcmp( ext, ".PNG" ) ) {

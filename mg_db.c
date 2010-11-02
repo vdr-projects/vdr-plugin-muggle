@@ -1140,7 +1140,7 @@ mgDb::getGenre1(TagLib::FileRef& f) {
 	if (genre1.empty()) {
 		genre1 = m_TCON.toCString(the_setup.utf8);
 		const char *tcon=genre1.c_str();
-		char *rparen=strchr(tcon,')');
+		char *rparen=strchr((char *)tcon,')');
 		if (tcon[0]=='(' && rparen) {
 			*rparen=0;
 			genre1 = m_GenreIds[tcon+1];

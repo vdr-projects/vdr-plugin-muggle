@@ -170,9 +170,9 @@ ltos (long l) {
 
 char *
 extension(const char *filename) {
-	char *dot = strrchr(filename,'.');
+	char *dot = strrchr((char *)filename,'.');
 	if (!dot)
-		dot = strrchr(filename,0)-1;
+		dot = strrchr((char *)filename,0)-1;
 	return dot+1;
 }
 
@@ -209,7 +209,7 @@ bool samedir( const char *d1, const char *d2 ) {
 }
 
 bool mkdir_p(const char *s) {
-	char *slash=strrchr(s,'/');
+	char *slash=strrchr((char *)s,'/');
 	if (!slash) return false;
 	char *sc = strdup(s);
 	*strrchr(sc,'/')=0;	// cut off the filename
