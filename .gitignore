@@ -2,3 +2,4 @@
 .dependencies
 *.so
 mugglei
+mg_tables.h
