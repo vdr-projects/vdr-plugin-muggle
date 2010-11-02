@@ -6,7 +6,7 @@ git clone git://projects.vdr-developer.org/vdr-plugin-muggle.git muggle
 how to make a new release
 =========================
 
-adapt version in version.h, muggle.c and HISTORY
+adapt version in muggle.c and HISTORY
 
 set date in HISTORY
 

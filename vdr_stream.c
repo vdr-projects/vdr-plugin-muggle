@@ -28,7 +28,6 @@
 #include "vdr_network.h"
 #include "vdr_config.h"
 // #include "i18n.h"
-// #include "version.h"
 
 //#define tr(x) x
 
