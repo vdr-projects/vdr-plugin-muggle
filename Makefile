@@ -202,7 +202,7 @@ i18n: $(I18Nmsgs) $(I18Npot)
 ### Targets:
 
 libvdr-$(PLUGIN).so: $(OBJS) $(MOBJS)
-	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(MOBJS) $(PLAYLIBS) $(MLIBS) $(SQLLIBS) -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -shared $(OBJS) $(MOBJS) $(PLAYLIBS) $(MLIBS) $(SQLLIBS) -o $@
 	@cp --remove-destination $@ $(LIBDIR)/$@.$(APIVERSION)
 	chmod 644 $(LIBDIR)/$@.$(APIVERSION)
 
@@ -216,7 +216,7 @@ install: all
 	@cp mugglei $(DESTDIR)$(BINDIR)/
 	@cp scripts/muggle-image-convert $(DESTDIR)$(BINDIR)/
 
-dist: distclean mg_tables.h
+dist: $(I18Npo) distclean mg_tables.h
 	@-rm -rf $(TMPDIR)/$(ARCHIVE)
 	@mkdir $(TMPDIR)/$(ARCHIVE)
 	@cp -a * $(TMPDIR)/$(ARCHIVE)
