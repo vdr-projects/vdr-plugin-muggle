@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file   mg_db_gd_pg.c
  * \brief  A capsule around postgresql database access
  *

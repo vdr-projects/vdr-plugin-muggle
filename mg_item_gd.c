@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file mg_item_gd.c
  * \brief An interface to GiantDisc data items
  *

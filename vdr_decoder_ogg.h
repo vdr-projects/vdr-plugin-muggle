@@ -1,4 +1,5 @@
-/*! \file vdr_decoder_ogg.h
+/*!								-*- c++ -*-
+ *  \file vdr_decoder_ogg.h
  *  \ingroup vdr
  *
  *  The file contains a decoder which is used by the player to decode ogg vorbis audio files.

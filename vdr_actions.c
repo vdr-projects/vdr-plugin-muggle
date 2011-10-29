@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file   vdr_actions.c
  * \brief  Implements all actions for browsing media libraries within VDR
  *

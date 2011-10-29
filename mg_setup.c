@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file mg_setup.c
  * \brief A setup class for a VDR media plugin (muggle)
  *

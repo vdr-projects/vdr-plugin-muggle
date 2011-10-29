@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file  mg_tools.c
  * \brief  A few util functions for standalone and plugin messaging for the vdr muggle plugindatabase
  *

@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file   vdr_menu.h
  * \brief  Implements menu handling for broswing media libraries within VDR
  *

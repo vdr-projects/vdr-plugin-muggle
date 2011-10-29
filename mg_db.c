@@ -1,4 +1,5 @@
-/*!  * \file   mg_db.c
+/*!								-*- c++ -*-
+ * \file   mg_db.c
  * \brief  A capsule around database access
  *
  * \version $Revision: 1.2 $

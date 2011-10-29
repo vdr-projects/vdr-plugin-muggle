@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file  vdr_decoder_mp3.h
  * \brief An mp3 decoder for a VDR media plugin (muggle)
  *

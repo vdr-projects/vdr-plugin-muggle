@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file mg_sel_gd.c
  * \brief A general interface to data items, currently only GiantDisc
  *

@@ -1,6 +1,7 @@
-/*! \file  mg_keytypes.h
- *  \ingroup muggle
- *  \brief  key type definitions for all backends
+/*!								-*- c++ -*-
+ * \file  mg_keytypes.h
+ * \ingroup muggle
+ * \brief  key type definitions for all backends
  *
  * \version $Revision: 1.4 $
  * \author  Wolfgang Rohdewald

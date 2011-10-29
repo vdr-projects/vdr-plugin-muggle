@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file vdr_decoder.h
  * \brief A generic decoder for a VDR media plugin (muggle)
  * \ingroup vdr

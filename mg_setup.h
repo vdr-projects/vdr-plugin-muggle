@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file vdr_setup.h
  * \brief A setup class for a VDR media plugin (muggle)
  *

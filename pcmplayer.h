@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file pcmplayer.c
  * \brief A generic PCM player for a VDR media plugin (muggle)
  *

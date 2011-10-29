@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file   mg_db_gd_sqlite.h
  * \brief  A capsule around giantdisc database access
  *

@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file   mg_db_gd_mysql.c
  * \brief  A capsule around database access
  *

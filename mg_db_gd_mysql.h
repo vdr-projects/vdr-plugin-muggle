@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file   mg_db_gd_mysql.h
  * \brief  A capsule around giantdisc database access
  *

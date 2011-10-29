@@ -1,4 +1,4 @@
-/*
+/*								-*- c++ -*-
  * MP3/MPlayer plugin to VDR (C++)
  *
  * (C) 2001-2006 Stefan Huelswitt <s.huelswitt@gmx.de>

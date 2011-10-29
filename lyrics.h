@@ -1,3 +1,5 @@
+//								-*- c++ -*-
+
 #ifndef __LYRICS_H
 #define __LYRICS_H
 

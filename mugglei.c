@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file mugglei.c
  * \brief implement a small utility for importing files
  *

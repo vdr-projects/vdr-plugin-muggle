@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file   mg_db.h
  * \brief  A generic capsule around database access
  *

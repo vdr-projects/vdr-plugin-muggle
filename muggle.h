@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file   muggle.h
  * \ingroup vdr
  * \brief  Implements a plugin for browsing media libraries within VDR

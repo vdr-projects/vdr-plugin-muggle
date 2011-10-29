@@ -1,4 +1,4 @@
-/*
+/*								-*- c++ -*-
  * Muggle plugin to VDR (C++)
  *
  * (C) 2005 Lars von Wedel, Wolfgang Rohdewald, mainly copied from

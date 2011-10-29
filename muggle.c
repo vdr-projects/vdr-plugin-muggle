@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file   muggle.c
  * \brief  Implements a plugin for browsing media libraries within VDR
  *

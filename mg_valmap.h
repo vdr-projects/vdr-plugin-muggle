@@ -1,3 +1,5 @@
+//								-*- c++ -*-
+
 #ifndef _MG_VALMAP_H
 #define _MG_VALMAP_H
 

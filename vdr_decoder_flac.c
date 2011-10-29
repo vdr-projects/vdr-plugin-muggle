@@ -1,4 +1,5 @@
-/*! \file vdr_decoder_flac.c
+/*!								-*- c++ -*-
+ *  \file vdr_decoder_flac.c
  *  \ingroup vdr
  *
  *  The file implements a decoder which is used by the player to decode flac audio files.

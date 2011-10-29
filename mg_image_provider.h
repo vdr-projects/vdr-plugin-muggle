@@ -1,3 +1,4 @@
+//								-*- c++ -*-
 
 #ifndef MG_IMAGE_PROVIDER
 #define MG_IMAGE_PROVIDER

@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file  vdr_stream.h
  * \brief Definitions of media streams
  *

@@ -1,5 +1,5 @@
-
-/*! \file  mg_tools.h
+/*!								-*- c++ -*-
+ *  \file  mg_tools.h
  *  \ingroup muggle
  *  \brief  A few utility functions for standalone and plugin messaging for the vdr muggle plugindatabase
  *

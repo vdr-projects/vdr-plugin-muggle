@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file vdr_player.h
  * \brief A player/control combination to let VDR play music
  *

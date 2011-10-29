@@ -1,4 +1,5 @@
-/* \file mg_item.h
+/*!								-*- c++ -*-
+ * \file mg_item.h
  * \brief A general interface to data items, currently only GiantDisc
  *
  * \version $Revision: 1.0 $

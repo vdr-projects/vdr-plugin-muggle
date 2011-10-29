@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file mg_listitem.c
  * \brief An item as delivered by mgSelection
  *

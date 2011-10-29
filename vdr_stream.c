@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file  vdr_stream.c
  * \brief Implementation of media stream classes
  *

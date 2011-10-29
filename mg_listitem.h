@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file mg_listitem.h
  * \brief an item as delivered by mgSelection
  * \version $Revision: 1.0 $

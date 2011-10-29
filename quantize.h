@@ -1,3 +1,5 @@
+//								-*- c++ -*-
+
 #ifndef VDR_GRAPHTFT_QUANTIZE_H
 #define VDR_GRAPHTFT_QUANTIZE_H
 

@@ -1,4 +1,4 @@
-/*
+/*								-*- c++ -*-
  * Music plugin to VDR (C++)
  *
  * (C) 2006 Morone

@@ -1,4 +1,5 @@
-//
+//								-*- c++ -*-
+
 #include "mg_image_provider.h"
 
 #include "mg_item_gd.h"

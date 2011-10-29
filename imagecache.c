@@ -1,4 +1,4 @@
-/*
+/*								-*- c++ -*-
  * borrowed from vdr-text2skin
  */
 

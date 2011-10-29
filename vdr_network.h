@@ -1,4 +1,4 @@
-/*
+/*								-*- c++ -*-
  * Adapted from
  * MP3/MPlayer plugin to VDR (C++)
  * (C) 2001,2002 Stefan Huelswitt <huels@iname.com>

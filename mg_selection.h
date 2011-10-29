@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file mg_selection.h
  * \brief A general interface to data items, currently only GiantDisc
  *

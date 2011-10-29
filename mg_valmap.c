@@ -1,3 +1,5 @@
+//								-*- c++ -*-
+
 #include "mg_valmap.h"
 #include "mg_tools.h"
 

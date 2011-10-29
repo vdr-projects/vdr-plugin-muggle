@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file vdr_sound.c
  * \brief Sound manipulation classes for a VDR media plugin (muggle)
  *

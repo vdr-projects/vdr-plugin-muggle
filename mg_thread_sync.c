@@ -1,3 +1,4 @@
+//								-*- c++ -*-
 
 #include "mg_thread_sync.h"
 #include "mg_db.h"

@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file mg_sync.h
  * \brief synchronization between SQL and filesystem
  *

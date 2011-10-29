@@ -1,4 +1,5 @@
-/*! \file  mg_incremental_search.c
+/*!								-*- c++ -*-
+ *  \file  mg_incremental_search.c
  *  \ingroup muggle
  *  \brief  A class that encapsulates incremental search
  *

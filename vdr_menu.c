@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file   vdr_menu.c
  * \brief  Implements menu handling for browsing media libraries within VDR
  *

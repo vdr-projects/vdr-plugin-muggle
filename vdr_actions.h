@@ -1,4 +1,4 @@
-/*!
+/*!								-*- c++ -*-
  * \file   vdr_actions.h
  * \brief  Implements all actions for broswing media libraries within VDR
  *
