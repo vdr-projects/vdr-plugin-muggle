@@ -303,7 +303,7 @@ void mgFlacDecoder::error_callback( ::FLAC__StreamDecoderErrorStatus status ) {
 		case FLAC__STREAM_DECODER_ERROR_STATUS_FRAME_CRC_MISMATCH:
 		{
 			m_error = "The frame's data did not match the CRC in the footer.";
-		};
+		} break;
 		default:
 		{
 			m_error = "Unknown error occurred.";
