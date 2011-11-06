@@ -266,8 +266,8 @@ msgid "Import items?"
 msgstr "Tuodaanko kappaleet?"
 
 #, c-format
-msgid "Cannot access directory %s:%d"
-msgstr "Hakemistoon %s siirtyminen ei onnistu: %d"
+msgid "Cannot change to directory %s: %m"
+msgstr "Hakemistoon %s siirtyminen ei onnistu: %m"
 
 #, c-format
 msgid "%d tracks : %s"

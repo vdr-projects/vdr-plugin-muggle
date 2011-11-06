@@ -265,9 +265,9 @@ msgstr "Générer la base des données %s?"
 msgid "Import items?"
 msgstr "Importer les titres?"
 
-#, c-format
-msgid "Cannot access directory %s:%d"
-msgstr "Ne peux pas lire %s:%d"
+#, fuzzy, c-format
+msgid "Cannot change to directory %s: %m"
+msgstr "Ne peux pas lire %s: %m"
 
 #, c-format
 msgid "%d tracks : %s"

@@ -266,9 +266,9 @@ msgstr "Datenbank %s anlegen?"
 msgid "Import items?"
 msgstr "Titel importieren?"
 
-#, c-format
-msgid "Cannot access directory %s:%d"
-msgstr "Kein Zugriff auf Verzeichnis %s:%d"
+#, fuzzy, c-format
+msgid "Cannot change to directory %s: %m"
+msgstr "Kein Zugriff auf Verzeichnis %s: %m"
 
 #, c-format
 msgid "%d tracks : %s"

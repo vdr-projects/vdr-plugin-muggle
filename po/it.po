@@ -263,9 +263,9 @@ msgstr "Creare database %s?"
 msgid "Import items?"
 msgstr "Importare elementi?"
 
-#, c-format
-msgid "Cannot access directory %s:%d"
-msgstr "Impossibile accedere alla dir. %s:%d"
+#, fuzzy, c-format
+msgid "Cannot change to directory %s: %m"
+msgstr "Impossibile accedere alla dir. %s: %m"
 
 #, c-format
 msgid "%d tracks : %s"

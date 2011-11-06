@@ -263,7 +263,7 @@ msgid "Import items?"
 msgstr ""
 
 #, c-format
-msgid "Cannot access directory %s:%d"
+msgid "Cannot change to directory %s: %m"
 msgstr ""
 
 #, c-format

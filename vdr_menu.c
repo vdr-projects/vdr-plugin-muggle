@@ -826,8 +826,8 @@ import() {
 	static const char *tld_arg[] = { ".", 0};
 	int res = chdir(the_setup.ToplevelDir);
 	if (res) {
-		showmessage(2,tr("Cannot access directory %s:%d"),
-			the_setup.ToplevelDir,errno);
+		showmessage(2,tr("Cannot change to directory %s: %m"),
+			the_setup.ToplevelDir);
 		return false;
 	}
 	s->Sync(tld_arg);
