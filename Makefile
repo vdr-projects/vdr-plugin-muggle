@@ -80,8 +80,7 @@ PACKAGE = vdr-$(ARCHIVE)
 
 ### Includes and Defines (add further entries here):
 
-FTWNOTWANTED = -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
-DEFINES := $(filter-out $(FTWNOTWANTED),$(DEFINES))
+FTWNOTWANTED := -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
 
 INCLUDES += -I$(VDRDIR) -I$(VDRDIR)/include \
 	$(shell taglib-config --cflags)
@@ -148,6 +147,8 @@ OBJS += vdr_decoder_sndfile.o
 PLAYLIBS += -lsndfile
 endif
 
+DEFINES := $(filter-out $(FTWNOTWANTED),$(DEFINES))
+DB_CFLAGS := $(filter-out $(FTWNOTWANTED),$(DB_CFLAGS))
 
 OBJS += $(DB_OBJ)
 
