@@ -124,8 +124,7 @@ bool mgSndfileDecoder::clean(void) {
 	m_fgCond.Broadcast();
 	m_buffMutex.Unlock();
 
-	delete m_pcm;
-	m_pcm=0;
+	DELETENULL(m_pcm);
 
 #ifdef GUARD_DEBUG
 	if(m_framebuff) {

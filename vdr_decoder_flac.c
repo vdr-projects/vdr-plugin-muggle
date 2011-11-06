@@ -96,8 +96,7 @@ bool mgFlacDecoder::initialize() {
 bool mgFlacDecoder::clean() {
 	m_playing = false;
 
-	delete m_pcm;
-	m_pcm = 0;
+	DELETENULL(m_pcm);
 
 	if( m_reservoir ) {
 		delete[] m_reservoir[0];

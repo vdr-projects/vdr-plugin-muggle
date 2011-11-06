@@ -127,8 +127,7 @@ mgDecoders::findDecoder (mgItemGd * item) {
 	if (decoder && !decoder->valid ()) {
 		// no decoder found or decoder doesn't match
 
-		delete decoder;			 // might be carried out on NULL pointer
-		decoder = 0;
+		DELETENULL(decoder);			 // might be carried out on NULL pointer
 
 		esyslog ("ERROR: no valid decoder found for %s", filename.c_str ());
 	}

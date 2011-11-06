@@ -108,8 +108,7 @@ mgPCMPlayer::NewPlaylist (mgSelection * plist) {
 	Lock ();
 	StopPlay ();
 
-	delete m_current;
-	m_current = 0;
+	DELETENULL(m_current);
 	delete m_playlist;
 	m_playlist = plist;
 	PlayTrack();
@@ -394,8 +393,7 @@ mgPCMPlayer::Action (void) {
 					if (m_decoder) {
 								 // who deletes decoder?
 						m_decoder->stop ();
-						delete m_decoder;
-						m_decoder = 0;
+						DELETENULL(m_decoder);
 					}
 
 					levelgood = false;
@@ -481,16 +479,12 @@ mgPCMPlayer::Action (void) {
 
 	Lock ();
 
-	if (m_rframe) {
-		delete m_rframe;
-		m_rframe = 0;
-	}
+	DELETENULL(m_rframe);
 
 	if (m_decoder) {
 								 // who deletes decoder?
 		m_decoder->stop ();
-		delete m_decoder;
-		m_decoder = 0;
+		DELETENULL(m_decoder);
 	}
 
 	m_playing = false;
@@ -516,8 +510,7 @@ mgPCMPlayer::Empty (void) {
 	m_ringbuffer->Clear ();
 	DeviceClear ();
 
-	delete m_rframe;
-	m_rframe = 0;
+	DELETENULL(m_rframe);
 	m_pframe = 0;
 
 	Unlock ();

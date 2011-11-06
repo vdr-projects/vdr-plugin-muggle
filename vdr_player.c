@@ -182,8 +182,7 @@ mgPlayerControl::~mgPlayerControl () {
 	cStatus::MsgReplaying (this, 0);
 #endif
 
-	delete m_img_provider;
-	m_img_provider = NULL;
+	DELETENULL(m_img_provider);
 	
 	Hide ();
 	Stop ();
@@ -204,10 +203,7 @@ mgPlayerControl::Stop (void) {
 #else
 	cStatus::MsgReplaying( this, 0);
 #endif
-	if (player) {
-		delete player;
-		player = 0;
-	}
+	DELETENULL(player);
 }
 
 void
@@ -559,7 +555,7 @@ mgPlayerControl::SetAreas(const char *caller,const tArea *Areas, int NumAreas) {
 		osd->SetAreas(Areas, NumAreas);
 	else { 
 		DumpAreas(caller,Areas,NumAreas,result);
-		if (osd){ delete osd; osd=0;}
+		DELETENULL(osd);
 	}
 	return result==oeOk;
 }
@@ -874,28 +870,19 @@ void
 mgPlayerControl::Hide () {
 	HideStatus();
 #if 0
-	if (cmdMenu) {
-		delete cmdMenu;
-		cmdMenu=0;
-	}
+	DELETENULL(cmdMenu);
 #endif
-	if (cmdOsd) {
-		delete cmdOsd;
-		cmdOsd=0;
-	}
+	DELETENULL(cmdOsd);
 
 #if 0
-	if (rateMenu) {
-		delete rateMenu;
-		rateMenu=0;
-	}
+	DELETENULL(rateMenu);
 #endif
 	HidePlayOsd();
 }
 
 void
 mgPlayerControl::HidePlayOsd() {
-	delete osd; osd=0;
+	DELETENULL(osd);
 }
 
 void
@@ -977,7 +964,7 @@ eOSState mgPlayerControl::ProcessKey(eKeys Key) {
 	if (cmdOsd) {
 		eOSState st=cmdOsd->ProcessKey(Key);
 		if (st==osBack) {
-			delete cmdOsd; cmdOsd=0;
+			DELETENULL(cmdOsd);
 			return osContinue;
 		} else if (st==osContinue)
 		return osContinue;
@@ -1010,8 +997,7 @@ eOSState mgPlayerControl::ProcessKey(eKeys Key) {
 		switch(eOSRet) {
 			case kRed:
 			case osBack:
-				delete cmdOsd;
-				cmdOsd = NULL;
+				DELETENULL(cmdOsd);
 				Display();
 
 				return osContinue;
@@ -1024,8 +1010,7 @@ eOSState mgPlayerControl::ProcessKey(eKeys Key) {
 		switch(eOSRet) {
 			case kRed:
 			case osBack:
-				delete rateMenu;
-				rateMenu = NULL;
+				DELETENULL(rateMenu);
 				Display();
 
 				return osContinue;

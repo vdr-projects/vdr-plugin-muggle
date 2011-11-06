@@ -34,6 +34,7 @@ using namespace std;
 #include <errno.h>
 #include <mpegfile.h>
 #include <flacfile.h>
+#include <vdr/tools.h>
 
 
 static map <mgKeyTypes, map<string,string> > map_values;
@@ -64,8 +65,7 @@ mgDbServer::mgDbServer() {
 }
 
 mgDbServer::~mgDbServer() {
-	delete m_server;
-	m_server = 0;
+	DELETENULL(m_server);
 }
 
 mgSQLString::~mgSQLString() {

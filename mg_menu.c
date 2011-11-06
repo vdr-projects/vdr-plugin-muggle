@@ -60,8 +60,7 @@ mgMenu::GenerateAction(const mgActions action,mgActions on) {
 	if (result) {
 		result->SetMenu(this);
 		if (!result->Enabled(on)) {
-			delete result;
-			result=NULL;
+			DELETENULL(result);
 		}
 	}
 	return result;
@@ -144,8 +143,7 @@ mgOsd::LoadExternalCommands() {
 #endif
 
 	if (!have_cmd_file) {
-		delete external_commands;
-		external_commands = NULL;
+		DELETENULL(external_commands);
 	}
 }
 

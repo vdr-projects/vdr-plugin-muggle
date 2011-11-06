@@ -23,6 +23,7 @@
 #include <cmath>
 #include <cstring>
 #include <iostream>
+#include <vdr/tools.h>
 
 #include "vdr_config.h"
 #include "vdr_decoder_mp3.h"
@@ -99,14 +100,12 @@ mgMP3Decoder::clean () {
 	m_playing = false;
 	if (m_madsynth) {
 		mad_synth_finish (m_madsynth);
-		delete m_madsynth;
-		m_madsynth = 0;
+		DELETENULL(m_madsynth);
 	}
 
 	if (m_madframe) {
 		mad_frame_finish (m_madframe);
-		delete m_madframe;
-		m_madframe = 0;
+		DELETENULL(m_madframe);
 	}
 	mad_stream_finish (&m_madstream);
 }

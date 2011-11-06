@@ -46,8 +46,7 @@ mgMuggle::mgMuggle (void) {
 
 void
 mgMuggle::Stop (void) {
-	delete DbServer;
-	DbServer = 0;
+	DELETENULL(DbServer);
 }
 
 const char *

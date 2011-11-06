@@ -62,7 +62,7 @@ mgImage::mgImage() {
 }
 
 mgImage::~mgImage() {
-	delete bmp;bmp=0;
+	DELETENULL(bmp);
 }
 #endif
 

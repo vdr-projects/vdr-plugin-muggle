@@ -113,8 +113,7 @@ mgSelection* mgSelOsd::getSelection(unsigned int idx) {
 
 void
 mgSelOsd::CollectionChanged(string name,bool added) {
-	delete moveselection;
-	moveselection = NULL;
+	DELETENULL(moveselection);
 	forcerefresh = true;		 // TODO brauchen wir das?
 	if (name == play_collection) {
 		playselection()->clearCache();
@@ -564,8 +563,7 @@ mgTree::UpdateIncrementalSearch( eKeys key ) {
 void mgTree::TerminateIncrementalSearch( bool remain_on_current ) {
 	if( m_incsearch ) {
 		m_filter = "";
-		delete m_incsearch;
-		m_incsearch = NULL;
+		DELETENULL(m_incsearch);
 
 		if( remain_on_current ) {
 			m_start_position = osd()->Current();

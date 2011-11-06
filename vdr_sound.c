@@ -302,8 +302,7 @@ mgNormalize::mgNormalize (void) {
 		printf ("norm: accuracy %.12f\n", mad_f_todouble (maxdiff));
 		if (mad_f_todouble (maxdiff) > 1e-6) {
 			esyslog ("ERROR: accuracy check failed, normalizer disabled");
-			delete table;
-			table = 0;
+			DELETENULL(table);
 		}
 	}
 	else
