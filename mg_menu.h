@@ -24,7 +24,26 @@
 
 void showmessage(int duration, const char *msg, ...);
 
+#if VDRVERSNUM >= 10712
+// Borrowed from epgsearch
+class cCommand : public cListObject {
+private:
+	char *title;
+	char *command;
+	bool confirm;
+	static char *result;
+public:
+	cCommand(void);
+	virtual ~cCommand();
+	bool Parse(const char *s);
+	const char *Title(void) { return title; }
+	bool Confirm(void) { return confirm; }
+	const char *Execute(const char *Parameters = NULL);
+};
+class cCommands : public cConfig<cCommand> {};
+#else
 class cCommands;
+#endif
 
 class mgSelection;
 class mgMenu;
