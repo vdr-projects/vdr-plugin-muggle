@@ -603,7 +603,7 @@ string mgSelection::ListFilename () {
 	string res = getListname ();
 	// convert char set ?
 	string::iterator it;
-	for (it=res.begin();it!=res.end();it++) {
+	for (it=res.begin();it!=res.end();++it) {
 		char& c = *it;
 		switch (c) {
 			case '\'':
