@@ -38,7 +38,7 @@
 //#define DEBUG
 #define NO_DEBUG
 
-// Defines the filename extention to use for playlist files.
+// Defines the filename extension to use for playlist files.
 #define PLAYLISTEXT ".m3u"
 
 // Defines the text to identify WinAmp-Style playlists.

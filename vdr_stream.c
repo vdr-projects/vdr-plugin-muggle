@@ -191,7 +191,7 @@ unsigned long &len, const unsigned char *rest) {
 			else {
 				if (rest && m_fill) {
 								 // copy remaining data to start of buffer
-								 // remaing bytes
+								 // remaining bytes
 					m_fill -= (rest - m_buffer);
 					memmove (m_buffer, rest, m_fill);
 				}

@@ -310,7 +310,7 @@ void mgFlacDecoder::error_callback( ::FLAC__StreamDecoderErrorStatus status ) {
 		}
 	}
 
-	// cout << "Error occured: " << m_error << endl;
+	// cout << "Error occurred: " << m_error << endl;
 	m_decode_status = dsError;
 }
 

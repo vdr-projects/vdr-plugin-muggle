@@ -284,7 +284,7 @@ class mgSelection
 		string exportM3U ();
 
 		/*! \brief go to a position in the current level. If we are at the
-		 * most detailled level this also sets the item position since
+		 * most detailed level this also sets the item position since
 		 * they are identical.
 		 * \param position the wanted position. If it is too big, go to the
 		 * last existing position

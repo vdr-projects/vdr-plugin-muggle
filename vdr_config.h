@@ -43,7 +43,7 @@
 // accurate (rel. error about 1e-7).
 #define USE_FAST_LIMITER
 
-// Defines the filename extention to use for playlist files.
+// Defines the filename extension to use for playlist files.
 #define PLAYLISTEXT ".m3u"
 
 // Defines the text to identify WinAmp-Style playlists.
@@ -68,7 +68,7 @@
 #define CACHEFILENAME "id3info.cache"
 
 // The interval in seconds in which the id3 cache is saved to disk (only
-// if any changes occured).
+// if any changes occurred).
 #define CACHESAVETIMEOUT 120
 
 // How many days to keep unused entries in the id3 cache. Unused entries from
