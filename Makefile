@@ -149,6 +149,7 @@ endif
 
 DEFINES := $(filter-out $(FTWNOTWANTED),$(DEFINES))
 DB_CFLAGS := $(filter-out $(FTWNOTWANTED),$(DB_CFLAGS))
+CXXFLAGS := $(filter-out $(FTWNOTWANTED),$(CXXFLAGS))
 
 OBJS += $(DB_OBJ)
 
